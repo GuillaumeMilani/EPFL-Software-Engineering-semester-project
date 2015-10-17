@@ -15,4 +15,11 @@ public class Text extends Item {
         if(!o.getString("type").equals("text")) throw new IllegalArgumentException("expected text Item");
         data = o.getString("data");
     }
+
+    @Override
+    public void compose(JSONObject o) throws JSONException {
+        super.compose(o);
+        o.accumulate("data", data);
+        o.accumulate("type", "text");
+    }
 }

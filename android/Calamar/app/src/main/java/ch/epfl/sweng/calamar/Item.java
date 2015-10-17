@@ -20,6 +20,13 @@ public abstract class Item {
         date = o.getLong("date");
     }
 
+    public void compose(JSONObject o) throws JSONException {
+        o.accumulate("ID", ID);
+        o.accumulate("from", Recipient.toJSON(from));
+        o.accumulate("to", Recipient.toJSON(to));
+        o.accumulate("date", date);
+    }
+
     public static Item fromJSON(JSONObject o) throws JSONException, IllegalArgumentException {
         Item item;
         switch(o.getString("type")) {
@@ -31,5 +38,11 @@ public abstract class Item {
                 throw new IllegalArgumentException("Unexpected Item type");
         }
         return item;
+    }
+
+    public static JSONObject toJSON(Item i) throws JSONException {
+        JSONObject ret = new JSONObject();
+        i.compose(ret);
+        return ret;
     }
 }

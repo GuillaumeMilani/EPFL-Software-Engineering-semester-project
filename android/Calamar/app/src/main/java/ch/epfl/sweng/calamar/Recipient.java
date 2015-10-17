@@ -27,4 +27,14 @@ public abstract class Recipient {
         }
         return ret;
     }
+
+    public void compose(JSONObject o) throws JSONException {
+        o.accumulate("ID", ID);
+    }
+
+    public static JSONObject toJSON(Recipient r) throws JSONException {
+        JSONObject ret = new JSONObject();
+        r.compose(ret);
+        return ret;
+    }
 }

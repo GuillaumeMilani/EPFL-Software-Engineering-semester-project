@@ -12,4 +12,10 @@ public class User extends Recipient {
     public void parse(JSONObject o) throws JSONException {
         super.parse(o);
     }
+
+    @Override
+    public void compose(JSONObject o) throws JSONException {
+        super.compose(o);
+        o.accumulate("type", "user");
+    }
 }
