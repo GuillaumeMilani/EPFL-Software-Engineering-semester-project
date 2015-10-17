@@ -11,6 +11,7 @@ public class Text extends Item {
 
     @Override
     public void parse(JSONObject o) throws JSONException {
+        super.parse(o);
         if(!o.getString("type").equals("text")) throw new IllegalArgumentException("expected text Item");
         data = o.getString("data");
     }
