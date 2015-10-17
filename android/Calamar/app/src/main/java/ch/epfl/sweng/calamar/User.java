@@ -11,13 +11,14 @@ public final class User extends Recipient {
     @Override
     public void compose(JSONObject o) throws JSONException {
         super.compose(o);
-        o.accumulate("type", "user");//TODO problem type...must be inner
+        o.accumulate("type", "user");//TODO
     }
 
     public static User fromJSON(JSONObject json) throws JSONException {
         return new User.Builder().parse(json).build();
     }
 
+    @Override
     public JSONObject toJSON() throws JSONException {
         JSONObject json = new JSONObject();
         this.compose(json);

@@ -34,6 +34,8 @@ public abstract class Recipient {
         o.accumulate("name", name);
     }
 
+    public abstract JSONObject toJSON() throws JSONException;
+
     public static Recipient fromJSON(JSONObject json) throws JSONException, IllegalArgumentException {
         Recipient ret;
         switch (json.getString("type")) {

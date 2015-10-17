@@ -27,6 +27,11 @@ public final class SimpleTextItem extends Item {
         o.accumulate("type", "simpleText");
     }
 
+    public static SimpleTextItem fromJSON(JSONObject json) throws JSONException {
+        return new SimpleTextItem.Builder().parse(json).build();
+    }
+
+    @Override
     public JSONObject toJSON() throws JSONException {
         JSONObject ret = new JSONObject();
         this.compose(ret);

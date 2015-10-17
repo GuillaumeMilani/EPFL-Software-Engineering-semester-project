@@ -40,9 +40,11 @@ public abstract class Item {
     protected void compose(JSONObject o) throws JSONException {
         o.accumulate("ID", ID);
         o.accumulate("from", from.toJSON());
-        o.accumulate("to", to.toJSON()); //TODO how to infer type ?
+        o.accumulate("to", to.toJSON());
         o.accumulate("date", date);
     }
+
+    public abstract JSONObject toJSON() throws JSONException;
 
     public static Item fromJSON(JSONObject json) throws JSONException, IllegalArgumentException {
         Item item;
