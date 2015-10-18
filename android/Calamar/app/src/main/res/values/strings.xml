@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Clamar</string>
+    <string name="title_activity_chat">chat</string>
+    <string name="message_edit_hint">Type your message.</string>
+    <string name="recipient">Her/Him</string>
+    <string name="send_message">Send</string>
+    <string name="refresh_button">Refresh</string>
 </resources>
