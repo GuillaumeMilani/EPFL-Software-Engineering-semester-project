@@ -46,8 +46,11 @@ public class NetworkItemClient implements ItemClient {
                             "\"recipient\": " + recipient.toJSON().toString() +
                             "\"lastRefresh\": " + from.getTime() +
                             " }", "UTF-8");
-             connection = NetworkItemClient.createConnection(networkProvider, url);
+            connection = NetworkItemClient.createConnection(networkProvider, url);
             String response = NetworkItemClient.post(connection, jsonParameter);
+
+
+
             return NetworkItemClient.itemsFromJSON(response);
         } catch (IOException | JSONException e) {
             throw new ItemClientException(e);
@@ -55,62 +58,6 @@ public class NetworkItemClient implements ItemClient {
             NetworkItemClient.close(connection);
         }
     }
-
-    private static List<Item> itemsFromJSON(String response) throws JSONException {
-        JSONArray array = new JSONArray(response);
-        List<Item> result = new ArrayList<>();
-        for(int i = 0; i < array.length(); ++i) {
-            result.add(Item.fromJSON(array.getJSONObject(i)));
-        }
-        return result;
-    }
-
-    private static void close(HttpURLConnection connection) {
-        if (connection != null) {
-            connection.disconnect();
-        }
-    }
-
-    private static HttpURLConnection createConnection(NetworkProvider networkProvider, URL url)
-            throws IOException
-    {
-        return networkProvider.getConnection(url);
-    }
-
-    /**
-     * used to post data on connection
-     * @param connection the connection used to post data
-     * @param jsonParameter the data posted
-     * @return the result of the request
-     * @throws IOException
-     * @throws ItemClientException
-     */
-    private static String post(HttpURLConnection connection, String jsonParameter)
-            throws IOException, ItemClientException
-    {
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type",
-                "application/json");//TODO clarify
-        connection.setRequestProperty("Content-Length",
-                Integer.toString(jsonParameter.getBytes().length));
-        connection.setDoInput(true);//to retrieve result
-        connection.setDoOutput(true);//to send request
-
-        int responseCode = connection.getResponseCode();
-        if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
-            throw new ItemClientException("Invalid HTTP response code");
-        }
-
-        //send request
-        DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-        wr.writeBytes(jsonParameter);
-        wr.flush();
-        wr.close();
-
-        //get result
-        return NetworkItemClient.fetchContent(connection);
-    }
-
 
     @Override
     public List<Item> getAllItems(Recipient recipient) throws ItemClientException {
@@ -157,5 +104,62 @@ public class NetworkItemClient implements ItemClient {
                 reader.close();
             }
         }
+    }
+
+    /**
+     * used to post data on connection
+     * @param connection the connection used to post data
+     * @param jsonParameter the data posted
+     * @return the result of the request
+     * @throws IOException
+     * @throws ItemClientException
+     */
+    private static String post(HttpURLConnection connection, String jsonParameter)
+            throws IOException, ItemClientException
+    {
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type",
+                "application/json");//TODO clarify
+        connection.setRequestProperty("Content-Length",
+                Integer.toString(jsonParameter.getBytes().length));
+        connection.setDoInput(true);//to retrieve result
+        connection.setDoOutput(true);//to send request
+
+        connection.connect();
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
+            throw new ItemClientException("Invalid HTTP response code");
+        }
+
+        //send request
+        DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+        wr.writeBytes(jsonParameter);
+        wr.flush();
+        wr.close();
+
+        //get result
+        return NetworkItemClient.fetchContent(connection);
+    }
+
+    private static void close(HttpURLConnection connection) {
+        if (connection != null) {
+            connection.disconnect();
+        }
+    }
+
+    private static HttpURLConnection createConnection(NetworkProvider networkProvider, URL url)
+            throws IOException
+    {
+        return networkProvider.getConnection(url);
+    }
+
+    private static List<Item> itemsFromJSON(String response) throws JSONException {
+        JSONArray array = new JSONArray(response);
+        List<Item> result = new ArrayList<>();
+        for(int i = 0; i < array.length(); ++i) {
+            result.add(Item.fromJSON(array.getJSONObject(i)));
+        }
+        return result;
     }
 }
