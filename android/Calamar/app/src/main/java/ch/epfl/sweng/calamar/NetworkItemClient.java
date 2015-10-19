@@ -41,15 +41,17 @@ public class NetworkItemClient implements ItemClient {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + "/retrieve.php");
-            String jsonParameter = URLEncoder.encode(
+            /*String jsonParameter = URLEncoder.encode(
                     "{ " +
                             "\"recipient\": " + recipient.toJSON().toString() +
-                            "\"lastRefresh\": " + from.getTime() +
-                            " }", "UTF-8");
+                            "\",lastRefresh\": " + from.getTime() +
+                            " }", "UTF-8");*/
+            String jsonParameter = "{ " +
+                    "\"recipient\": " + recipient.toJSON().toString() +
+                    ",\"lastRefresh\": " + from.getTime() +
+                    " }";
             connection = NetworkItemClient.createConnection(networkProvider, url);
             String response = NetworkItemClient.post(connection, jsonParameter);
-
-
 
             return NetworkItemClient.itemsFromJSON(response);
         } catch (IOException | JSONException e) {

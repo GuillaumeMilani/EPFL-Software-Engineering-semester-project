@@ -30,7 +30,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     private ItemClient client;
 
-    private User actualUser = new User(2,"Bob");
+    public static User actualUser = new User(2,"Bob");
     private User correspondent;
 
     private Date lastRefresh;
@@ -62,7 +62,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         refreshButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
 
-        refresh();
+        //refresh();
     }
 
     /**
@@ -70,16 +70,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void refresh() {
         //TODO only get new messages without clearing
-       // try {
-            //messagesHistory = client.getAllItems(actualUser,lastRefresh);
-            //adapter.add(messagesHistory);
-            adapter.add(new SimpleTextItem(1,actualUser,correspondent,new Date(),"blabla"));
-            adapter.notifyDataSetChanged();
-            messagesContainer.setSelection(messagesContainer.getCount() - 1);
-        //} catch (ItemClientException e) {
-            //TODO : Toast
-       //     e.printStackTrace();
-       // }
+         new refreshTask(actualUser).execute(client);
+        //TODO : Update lastRefresh
     }
 
     /**
@@ -88,8 +80,9 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private void send() {
         EditText editText = (EditText)findViewById(R.id.messageEdit);
         String message = editText.getText().toString();
+        //TODO : add message to adapter
         new sendItemTask(message).execute(client);
-}
+    }
 
     @Override
     public void onClick(View v) {
@@ -105,7 +98,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
 
     /**
-     * Async task for retrieving a random quiz question.
+     * Async task for sending a message.
      *
      */
     private class sendItemTask extends AsyncTask<ItemClient, Void, Void> {
@@ -120,7 +113,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             try {
                 //TODO : Determine id of the message ?
                 Item textMessage = new SimpleTextItem(1,actualUser,correspondent,new Date(),message);
-                client.send(textMessage);
+                itemClients[0].send(textMessage);
                 return null;
                 //return itemClients[0].send(textMessage);
             } catch (ItemClientException e) {
@@ -129,5 +122,39 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 return null;
             }
         }
+    }
+
+    /**
+     * Async task for sending a message.
+     *
+     */
+    private class refreshTask extends AsyncTask<ItemClient, Void, List<Item>> {
+
+        private Recipient recipient;
+
+        public refreshTask(Recipient recipient){
+            this.recipient = recipient;
+        }
+
+        @Override
+        protected List<Item> doInBackground(ItemClient... itemClients) {
+            try {
+                return itemClients[0].getAllItems(recipient,lastRefresh);
+            } catch (ItemClientException e) {
+                //TODO : TOAST
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(List<Item> items) {
+            if(items != null) {
+                adapter.add(items);
+                adapter.notifyDataSetChanged();
+                messagesContainer.setSelection(messagesContainer.getCount() - 1);
+            }
+        }
+
     }
 }

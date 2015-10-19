@@ -63,7 +63,7 @@ public class ChatAdapter extends BaseAdapter {
         }
 
         //TODO : how to check outgoing or not?
-        //boolean outgoing = item.getFrom().id==myId
+        //boolean outgoing = item.getFrom().getID() == ChatActivity.actualUser.getID();
         boolean outgoing = true;
         setAlignment(holder, outgoing);
         holder.textMessage.setText(item.getMessage());
