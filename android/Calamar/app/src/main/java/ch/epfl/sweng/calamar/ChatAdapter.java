@@ -20,13 +20,18 @@ import ch.epfl.sweng.calamar.SimpleTextItem;
 
 public class ChatAdapter extends BaseAdapter {
 
-    private final ArrayList<SimpleTextItem> messages;
+    private final List<SimpleTextItem> messages;
     private final Activity context;
 
-    public ChatAdapter(Activity context, List<SimpleTextItem> messages) {
+    public ChatAdapter(Activity context, List<Item> messages) {
         assert (context != null && messages != null);
         this.context = context;
-        this.messages = new ArrayList<>(messages);
+        this.messages = new ArrayList<>();
+
+        //Add the items
+        for(Item i : messages){
+            addItem(i);
+        }
     }
 
     @Override
@@ -70,16 +75,25 @@ public class ChatAdapter extends BaseAdapter {
      * Add a message to the adapter
      * @param message the message to be added
      */
-    public void add(SimpleTextItem message) {
-        messages.add(message);
+    public void add(Item message) {
+        addItem(message);
     }
 
     /**
      * Add a list of messages to the adapter
      * @param messages the list of messages
      */
-    public void add(List<SimpleTextItem> messages) {
-        this.messages.addAll(messages);
+    public void add(List<Item> messages) {
+        for(Item i : messages) {
+            addItem(i);
+        }
+    }
+
+    private void addItem(Item i){
+        //TODO : Identify type (with an enum in item ? )
+        if(i.getClass() == SimpleTextItem.class){
+            this.messages.add((SimpleTextItem)i);
+        }
     }
 
     /**

@@ -9,6 +9,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import ch.epfl.sweng.calamar.SimpleTextItem;
 
@@ -21,17 +23,25 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private EditText messageText;
     private Button sendButton;
     private Button refreshButton;
-    private ArrayList<SimpleTextItem> messagesHistory;
+    private List<Item> messagesHistory;
     private ListView messagesContainer;
     private ChatAdapter adapter;
 
     private ItemClient client;
+
+    private User actualUser = new User(2,"Bob");
+    private User correspondent;
+
+    private Date lastRefresh;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        correspondent = new User(1,"Alice");
+        lastRefresh = new Date(0);
 
         messageText = (EditText) findViewById(R.id.messageEdit);
         sendButton = (Button) findViewById(R.id.chatSendButton);
@@ -57,17 +67,32 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void refresh() {
         //TODO only get new messages without clearing
-        messagesHistory = new ArrayList<>(client.getAllSimpleTextItems());
-        adapter.add(messagesHistory);
-        adapter.notifyDataSetChanged();
-        messagesContainer.setSelection(messagesContainer.getCount() - 1);
+        try {
+            messagesHistory = client.getAllItems(actualUser,lastRefresh);
+            adapter.add(messagesHistory);
+            //adapter.add(new SimpleTextItem(1,actualUser,correspondent,new Date(),"blabla"));
+            adapter.notifyDataSetChanged();
+            messagesContainer.setSelection(messagesContainer.getCount() - 1);
+        } catch (ItemClientException e) {
+            //TODO : Toast
+            e.printStackTrace();
+        }
     }
 
     /**
      * Sends a new message
      */
     private void send() {
-        //TODO do something with messageText
+        EditText editText = (EditText)findViewById(R.id.messageEdit);
+        String message = editText.getText().toString();
+        //TODO : Determine id of the message ?
+        Item textMessage = new SimpleTextItem(1,actualUser,correspondent,new Date(),message);
+        try {
+            client.send(textMessage);
+        } catch (ItemClientException e) {
+            //TODO: Toast
+            e.printStackTrace();
+        }
     }
 
     @Override
