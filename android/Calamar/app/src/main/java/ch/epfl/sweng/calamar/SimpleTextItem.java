@@ -46,7 +46,7 @@ public final class SimpleTextItem extends Item {
             if(!json.getString("type").equals("simpleText")) {
                 throw new IllegalArgumentException("expected text Item");
             }
-            message = json.getString("message");
+            message = json.getString("text"); // Text or message ?
             return this;
         }
 

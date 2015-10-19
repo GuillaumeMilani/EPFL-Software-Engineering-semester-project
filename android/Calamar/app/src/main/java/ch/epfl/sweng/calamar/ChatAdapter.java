@@ -62,9 +62,7 @@ public class ChatAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        //TODO : how to check outgoing or not?
-        //boolean outgoing = item.getFrom().getID() == ChatActivity.actualUser.getID();
-        boolean outgoing = true;
+        boolean outgoing = !(item.getFrom().getID() == ChatActivity.actualUser.getID());
         setAlignment(holder, outgoing);
         holder.textMessage.setText(item.getMessage());
         holder.textTime.setText(item.getDate().toString());

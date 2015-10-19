@@ -69,9 +69,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      * Gets all messages and display them
      */
     private void refresh() {
-        //TODO only get new messages without clearing
          new refreshTask(actualUser).execute(client);
-        //TODO : Update lastRefresh
     }
 
     /**
@@ -80,8 +78,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private void send() {
         EditText editText = (EditText)findViewById(R.id.messageEdit);
         String message = editText.getText().toString();
-        //TODO : add message to adapter
-        new sendItemTask(message).execute(client);
+        Item textMessage = new SimpleTextItem(1,actualUser,correspondent,new Date(),message);
+        adapter.add(textMessage);
+        adapter.notifyDataSetChanged();
+        messagesContainer.setSelection(messagesContainer.getCount() - 1);
+        new sendItemTask(textMessage).execute(client);
     }
 
     @Override
@@ -103,16 +104,16 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      */
     private class sendItemTask extends AsyncTask<ItemClient, Void, Void> {
 
-        private String message;
-        public sendItemTask(String message){
-            this.message = message;
+        private Item textMessage;
+        public sendItemTask(Item textMessage){
+            this.textMessage = textMessage;
         }
 
         @Override
         protected Void doInBackground(ItemClient... itemClients) {
             try {
                 //TODO : Determine id of the message ?
-                Item textMessage = new SimpleTextItem(1,actualUser,correspondent,new Date(),message);
+
                 itemClients[0].send(textMessage);
                 return null;
                 //return itemClients[0].send(textMessage);
@@ -153,6 +154,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 adapter.add(items);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
+                lastRefresh = new Date();
             }
         }
 

@@ -155,10 +155,13 @@ public class NetworkItemClient implements ItemClient {
     }
 
     private static List<Item> itemsFromJSON(String response) throws JSONException {
-        JSONArray array = new JSONArray(response);
         List<Item> result = new ArrayList<>();
-        for(int i = 0; i < array.length(); ++i) {
-            result.add(Item.fromJSON(array.getJSONObject(i)));
+        if(!response.contains("No records found in the database")){
+            //No new message !
+            JSONArray array = new JSONArray(response);
+            for(int i = 0; i < array.length(); ++i) {
+                result.add(Item.fromJSON(array.getJSONObject(i)));
+            }
         }
         return result;
     }
