@@ -11,6 +11,9 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ch.epfl.sweng.calamar.SimpleTextItem;
 
 //TODO : Support other item types
@@ -59,7 +62,7 @@ public class ChatAdapter extends BaseAdapter {
         boolean outgoing = true;
         setAlignment(holder, outgoing);
         holder.textMessage.setText(item.getMessage());
-        holder.textTime.setText(item.getDate());
+        holder.textTime.setText(item.getDate().toString());
         return convertView;
     }
 

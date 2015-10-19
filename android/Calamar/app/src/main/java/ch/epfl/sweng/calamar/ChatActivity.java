@@ -25,6 +25,9 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private ListView messagesContainer;
     private ChatAdapter adapter;
 
+    private ItemClient client;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,7 +57,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void refresh() {
         //TODO only get new messages without clearing
-        messagesHistory = new ArrayList<>(provider.getAllSimpleTextItems());
+        messagesHistory = new ArrayList<>(client.getAllSimpleTextItems());
         adapter.add(messagesHistory);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);

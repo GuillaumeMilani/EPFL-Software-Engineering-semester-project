@@ -4,9 +4,7 @@ import android.location.Location;
 
 import java.util.Date;
 
-/**
- * Created by LPI on 16.10.2015.
- */
+//TODO : ajouter le code JSON pour location
 public abstract class LocalizedItem extends Item {
     private final Location location;
 
