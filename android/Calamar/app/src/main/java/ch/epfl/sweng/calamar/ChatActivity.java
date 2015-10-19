@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -43,6 +44,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         correspondent = new User(1,"Alice");
         lastRefresh = new Date(0);
 
+        client = new NetworkItemClient("http://calamar.japan-impact.ch",new DefaultNetworkProvider());
+
         messageText = (EditText) findViewById(R.id.messageEdit);
         sendButton = (Button) findViewById(R.id.chatSendButton);
         refreshButton = (Button) findViewById(R.id.refreshButton);
@@ -67,16 +70,16 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void refresh() {
         //TODO only get new messages without clearing
-        try {
-            messagesHistory = client.getAllItems(actualUser,lastRefresh);
-            adapter.add(messagesHistory);
-            //adapter.add(new SimpleTextItem(1,actualUser,correspondent,new Date(),"blabla"));
+       // try {
+            //messagesHistory = client.getAllItems(actualUser,lastRefresh);
+            //adapter.add(messagesHistory);
+            adapter.add(new SimpleTextItem(1,actualUser,correspondent,new Date(),"blabla"));
             adapter.notifyDataSetChanged();
             messagesContainer.setSelection(messagesContainer.getCount() - 1);
-        } catch (ItemClientException e) {
+        //} catch (ItemClientException e) {
             //TODO : Toast
-            e.printStackTrace();
-        }
+       //     e.printStackTrace();
+       // }
     }
 
     /**
@@ -85,15 +88,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private void send() {
         EditText editText = (EditText)findViewById(R.id.messageEdit);
         String message = editText.getText().toString();
-        //TODO : Determine id of the message ?
-        Item textMessage = new SimpleTextItem(1,actualUser,correspondent,new Date(),message);
-        try {
-            client.send(textMessage);
-        } catch (ItemClientException e) {
-            //TODO: Toast
-            e.printStackTrace();
-        }
-    }
+        new sendItemTask(message).execute(client);
+}
 
     @Override
     public void onClick(View v) {
@@ -106,4 +102,32 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
+
+    /**
+     * Async task for retrieving a random quiz question.
+     *
+     */
+    private class sendItemTask extends AsyncTask<ItemClient, Void, Void> {
+
+        private String message;
+        public sendItemTask(String message){
+            this.message = message;
+        }
+
+        @Override
+        protected Void doInBackground(ItemClient... itemClients) {
+            try {
+                //TODO : Determine id of the message ?
+                Item textMessage = new SimpleTextItem(1,actualUser,correspondent,new Date(),message);
+                client.send(textMessage);
+                return null;
+                //return itemClients[0].send(textMessage);
+            } catch (ItemClientException e) {
+                //TODO : TOAST
+                e.printStackTrace();
+                return null;
+            }
+        }
+    }
 }

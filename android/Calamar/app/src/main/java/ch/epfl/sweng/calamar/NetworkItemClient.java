@@ -125,18 +125,16 @@ public class NetworkItemClient implements ItemClient {
         connection.setDoInput(true);//to retrieve result
         connection.setDoOutput(true);//to send request
 
-        connection.connect();
-
-        int responseCode = connection.getResponseCode();
-        if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
-            throw new ItemClientException("Invalid HTTP response code");
-        }
-
         //send request
         DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
         wr.writeBytes(jsonParameter);
         wr.flush();
         wr.close();
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
+            throw new ItemClientException("Invalid HTTP response code");
+        }
 
         //get result
         return NetworkItemClient.fetchContent(connection);
