@@ -1,4 +1,10 @@
 <?php
+
+/**
+* Add an item into the database
+* TODO : Better management of the type
+* TODO : integrate this method into a MVC structures
+*/
 function add_items($from,$to,$date,$type,$type_data)
 {
 	global $pdo;
@@ -21,7 +27,9 @@ function add_items($from,$to,$date,$type,$type_data)
 	}
 
 }
-
+/**
+*	Add an item of type text into the database
+*/
 function add_items_text($ID,$text)
 {
 	global $pdo;
