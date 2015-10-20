@@ -30,18 +30,17 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     private ItemClient client;
 
-    public static User actualUser = new User(2,"Bob");
+    public static User actualUser = new User(1,"Alice");
     private User correspondent;
 
     private Date lastRefresh;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        correspondent = new User(1,"Alice");
+        correspondent = new User(2,"Bob");
         lastRefresh = new Date(0);
 
         client = new NetworkItemClient("http://calamar.japan-impact.ch",new DefaultNetworkProvider());
@@ -82,6 +81,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         adapter.add(textMessage);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
+        editText.setText("");
         new sendItemTask(textMessage).execute(client);
     }
 
