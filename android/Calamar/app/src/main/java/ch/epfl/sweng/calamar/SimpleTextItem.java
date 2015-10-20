@@ -3,6 +3,7 @@ package ch.epfl.sweng.calamar;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.Date;
 
 public final class SimpleTextItem extends Item {
