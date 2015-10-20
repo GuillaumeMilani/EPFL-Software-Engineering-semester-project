@@ -34,7 +34,7 @@ function add_items_text($ID,$text)
 {
 	global $pdo;
 	
-	$id = (int) $id;
+	$id = (int) $ID;
 	
 	$query = $pdo->prepare('INSERT INTO `tb_item_text` (`ID`, `text`) VALUES (:id, :text)');
 	$query->bindParam(':id',$ID,PDO::PARAM_INT);

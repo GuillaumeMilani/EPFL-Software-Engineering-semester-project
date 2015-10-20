@@ -1,6 +1,5 @@
 <?php
-include_once('include/utils.inc.php');
-include_once('models/add_items.php');
+include_once('models/items/add_items.php');
 
 // Retrieve post data
 $content = urldecode(file_get_contents('php://input'));
