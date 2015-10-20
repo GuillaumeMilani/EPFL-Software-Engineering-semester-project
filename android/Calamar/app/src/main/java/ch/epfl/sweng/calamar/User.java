@@ -4,7 +4,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Models an user, (kind of {@link Recipient}).
+ * Models an user, (kind of {@link Recipient}).<br><br>
+ *     User is immutable.
  */
 public final class User extends Recipient {
     private final static String RECIPIENT_TYPE = "user";

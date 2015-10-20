@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Models a Group (of users).
+ * Models a Group (of users). <br><br>
+ *     Group is immutable.
  * Created by LPI on 16.10.2015.
  */
 public final class Group extends Recipient {
