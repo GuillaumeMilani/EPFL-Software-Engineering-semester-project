@@ -1,10 +1,13 @@
 <?php
 include_once('utils/utils.php');
 
-if (@$_GET['action'] == 'retrieve') {
+$action = @$_GET['action'];
+
+if ($action == 'retrieve') {
 	include_once('controllers/items/retrieve_items.php');
-} else if (@$_GET['action'] == 'send') {
+} else if ($action == 'send') {
 	include_once('controllers/items/send_item.php');
 } else {
-	die("You must specify an action to perform");
+	http_response_code(404);
+	die("Page not found. Specify a correct action to perform");
 }

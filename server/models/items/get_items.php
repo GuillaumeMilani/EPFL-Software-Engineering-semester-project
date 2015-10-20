@@ -1,4 +1,9 @@
 <?php
+
+/**
+ * Get a user from the DB using his ID
+ * @param int $user_id
+ */
 function get_user($user_id) {
 	global $pdo;
 	$res = $pdo->prepare('SELECT *, "user" as "type"
@@ -14,6 +19,12 @@ function get_user($user_id) {
 	return $res[0];
 }
 
+/**
+ * Get items sent to a specific recipient from a given date
+ * @param Recipient.User (JSON) $recipient
+ * @param posix_time $last_refresh
+ * @return array of items (indexed by column name)
+ */
 function get_items($recipient, $last_refresh) {
 	global $pdo;
 	
@@ -28,10 +39,12 @@ function get_items($recipient, $last_refresh) {
 	
 	$ret = [];
 	
+	// Fill the "from" and "to" columns with the users data instead of their ID
 	while ($data = $res->fetch()) {
 		$data['from'] = get_user($data['from']);
 		$data['to'] = get_user($data['to']);
 		$ret[] = $data;
 	}
+	
 	return $ret;
 }

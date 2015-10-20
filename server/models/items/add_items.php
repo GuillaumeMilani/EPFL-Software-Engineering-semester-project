@@ -3,7 +3,6 @@
 /**
 * Add an item into the database
 * TODO : Better management of the type
-* TODO : integrate this method into a MVC structures
 */
 function add_items($from,$to,$date,$type,$type_data)
 {
