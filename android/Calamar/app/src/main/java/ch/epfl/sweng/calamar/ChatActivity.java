@@ -30,20 +30,22 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     private ItemClient client;
 
-    public static User actualUser = new User(1,"Alice");
+    public static User actualUser = new User(1, "Alice");
     private User correspondent;
 
     private Date lastRefresh;
+
+    private SQLiteDatabaseHandler databaseHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        correspondent = new User(2,"Bob");
+        correspondent = new User(2, "Bob");
         lastRefresh = new Date(0);
 
-        client = new NetworkItemClient("http://calamar.japan-impact.ch",new DefaultNetworkProvider());
+        client = new NetworkItemClient("http://calamar.japan-impact.ch", new DefaultNetworkProvider());
 
         editText = (EditText) findViewById(R.id.messageEdit);
         sendButton = (Button) findViewById(R.id.chatSendButton);
@@ -61,14 +63,17 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         refreshButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
 
-        //refresh();
+        databaseHandler = ((CalamarApplication) getApplication()).getDB();
+
+        boolean offline=true;
+        refresh(offline);
     }
 
     /**
      * Gets all messages and display them
      */
-    private void refresh() {
-         new refreshTask(actualUser).execute(client);
+    private void refresh(boolean offline) {
+        new refreshTask(actualUser,offline).execute(client);
     }
 
     /**
@@ -76,7 +81,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void send() {
         String message = editText.getText().toString();
-        Item textMessage = new SimpleTextItem(1,actualUser,correspondent,new Date(),message);
+        Item textMessage = new SimpleTextItem(1, actualUser, correspondent, new Date(), message);
         adapter.add(textMessage);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
@@ -89,22 +94,21 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         if (v.getId() == R.id.chatSendButton) {
             send();
         } else if (v.getId() == R.id.refreshButton) {
-            refresh();
+            refresh(false);
         } else {
             throw new IllegalArgumentException("Got an unexpected view Id in Onclick");
         }
     }
 
 
-
     /**
      * Async task for sending a message.
-     *
      */
     private class sendItemTask extends AsyncTask<ItemClient, Void, Void> {
 
         private Item textMessage;
-        public sendItemTask(Item textMessage){
+
+        public sendItemTask(Item textMessage) {
             this.textMessage = textMessage;
         }
 
@@ -114,6 +118,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 //TODO : Determine id of the message ?
 
                 itemClients[0].send(textMessage);
+                databaseHandler.addMessage((SimpleTextItem) textMessage);
                 return null;
                 //return itemClients[0].send(textMessage);
             } catch (ItemClientException e) {
@@ -125,35 +130,44 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * Async task for sending a message.
-     *
+     * Async task for refreshing / getting new messages.
      */
     private class refreshTask extends AsyncTask<ItemClient, Void, List<Item>> {
 
-        private Recipient recipient;
+        private final Recipient recipient;
+        private final boolean offline;
 
-        public refreshTask(Recipient recipient){
+        public refreshTask(Recipient recipient, boolean offline) {
             this.recipient = recipient;
+            this.offline = offline;
         }
 
         @Override
         protected List<Item> doInBackground(ItemClient... itemClients) {
-            try {
-                return itemClients[0].getAllItems(recipient,lastRefresh);
-            } catch (ItemClientException e) {
-                //TODO : TOAST
-                e.printStackTrace();
-                return null;
+            if (offline) {
+                return databaseHandler.getAllMessages();
+            } else {
+                try {
+                    List<Item> items = itemClients[0].getAllItems(recipient, lastRefresh);
+                    databaseHandler.addMessages(items);
+                    return itemClients[0].getAllItems(recipient, lastRefresh);
+                } catch (ItemClientException e) {
+                    //TODO : TOAST
+                    e.printStackTrace();
+                    return null;
+                }
             }
         }
 
         @Override
         protected void onPostExecute(List<Item> items) {
-            if(items != null) {
+            if (items != null) {
                 adapter.add(items);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                lastRefresh = new Date();
+                if (!offline) {
+                    lastRefresh = new Date();
+                }
             }
         }
 
