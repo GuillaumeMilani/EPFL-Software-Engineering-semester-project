@@ -21,7 +21,7 @@ import ch.epfl.sweng.calamar.SimpleTextItem;
  * This activity manages the chat between two users (or in a group)
  */
 public class ChatActivity extends AppCompatActivity implements View.OnClickListener {
-    private EditText messageText;
+    private EditText editText;
     private Button sendButton;
     private Button refreshButton;
     private List<Item> messagesHistory;
@@ -45,7 +45,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         client = new NetworkItemClient("http://calamar.japan-impact.ch",new DefaultNetworkProvider());
 
-        messageText = (EditText) findViewById(R.id.messageEdit);
+        editText = (EditText) findViewById(R.id.messageEdit);
         sendButton = (Button) findViewById(R.id.chatSendButton);
         refreshButton = (Button) findViewById(R.id.refreshButton);
 
@@ -75,7 +75,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      * Sends a new message
      */
     private void send() {
-        EditText editText = (EditText)findViewById(R.id.messageEdit);
         String message = editText.getText().toString();
         Item textMessage = new SimpleTextItem(1,actualUser,correspondent,new Date(),message);
         adapter.add(textMessage);
