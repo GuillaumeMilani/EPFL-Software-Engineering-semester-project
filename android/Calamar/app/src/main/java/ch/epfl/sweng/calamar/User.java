@@ -11,9 +11,9 @@ public final class User extends Recipient {
     }
 
     @Override
-    public void compose(JSONObject o) throws JSONException {
-        super.compose(o);
-        o.accumulate("type", "user");
+    protected void compose(JSONObject json) throws JSONException {
+        super.compose(json);
+        json.accumulate("type", "user");
     }
 
     public static User fromJSON(JSONObject json) throws JSONException {

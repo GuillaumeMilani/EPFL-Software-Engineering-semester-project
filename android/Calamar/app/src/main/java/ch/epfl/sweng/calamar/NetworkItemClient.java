@@ -27,6 +27,8 @@ public class NetworkItemClient implements ItemClient {
     private final NetworkProvider networkProvider;
     private final static int HTTP_SUCCESS_START = 200;
     private final static int HTTP_SUCCESS_END = 299;
+    private final static String SEND_PATH = "/items.php?action=send";
+    private final static String RETRIEVE_PATH = "/items.php?action=retrieve";
 
     public NetworkItemClient(String serverUrl, NetworkProvider networkProvider)  {
         if(null == serverUrl || null == networkProvider) {
@@ -40,7 +42,7 @@ public class NetworkItemClient implements ItemClient {
     public List<Item> getAllItems(Recipient recipient, Date from) throws ItemClientException {
         HttpURLConnection connection = null;
         try {
-            URL url = new URL(serverUrl + "/retrieve.php");
+            URL url = new URL(serverUrl + NetworkItemClient.RETRIEVE_PATH);
             /*String jsonParameter = URLEncoder.encode(
                     "{ " +
                             "\"recipient\": " + recipient.toJSON().toString() +
@@ -70,7 +72,7 @@ public class NetworkItemClient implements ItemClient {
     public void send(Item item) throws ItemClientException {
         HttpURLConnection connection = null;
         try {
-            URL url = new URL(serverUrl + "/send.php");
+            URL url = new URL(serverUrl + NetworkItemClient.SEND_PATH);
             String jsonParameter = item.toJSON().toString();
             connection = NetworkItemClient.createConnection(networkProvider, url);
             String response = NetworkItemClient.post(connection, jsonParameter);

@@ -62,6 +62,7 @@ public class ChatAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
+        //TODO uses (define) equals on Recipient/User
         boolean ingoing = !(item.getFrom().getID() == ChatActivity.actualUser.getID());
         setAlignment(holder, ingoing);
         holder.textMessage.setText(item.getMessage());

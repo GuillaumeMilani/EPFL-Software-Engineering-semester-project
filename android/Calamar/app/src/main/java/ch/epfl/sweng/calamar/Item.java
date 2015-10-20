@@ -47,13 +47,17 @@ public abstract class Item {
     public abstract JSONObject toJSON() throws JSONException;
 
     public static Item fromJSON(JSONObject json) throws JSONException, IllegalArgumentException {
+        if (null == json || json.isNull("type")) {
+            throw new IllegalArgumentException("malformed json, either null or no 'type' value");
+        }
         Item item;
-        switch(json.getString("type")) {
+        String type = json.getString("type");
+        switch(type) {
             case "simpleText":
                 item = SimpleTextItem.fromJSON(json);
                 break;
             default:
-                throw new IllegalArgumentException("Unexpected Item type");
+                throw new IllegalArgumentException("Unexpected Item type (" + type + ")");
         }
         return item;
     }
