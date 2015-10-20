@@ -14,8 +14,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import ch.epfl.sweng.calamar.SimpleTextItem;
-
 //TODO : Support other item types
 
 public class ChatAdapter extends BaseAdapter {
