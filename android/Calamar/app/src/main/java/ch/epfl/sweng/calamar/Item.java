@@ -62,6 +62,11 @@ public abstract class Item {
         return item;
     }
 
+    public int getID(){
+        return ID;
+    }
+
+
     protected static class Builder {
         protected int ID;
         protected User from;
