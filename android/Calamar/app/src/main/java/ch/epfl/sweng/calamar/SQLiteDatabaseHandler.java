@@ -327,6 +327,14 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     /**
      *
+     * Deletes all users
+     */
+    public void deleteAllUsers(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(USERS_TABLE,USERS_KEY_ID +" = ?",null);
+    }
+    /**
+     *
      * Returns a user corresponding to an id.
      * @param id the id of the user
      * @return the user
