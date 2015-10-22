@@ -4,6 +4,9 @@ import android.app.Application;
 
 public class CalamarApplication extends Application {
 
+    //TODO There is debate on using a Singleton or not
+    //TODO We could use SharedPreferences to store an hashed userID and userName
+
     private static CalamarApplication application;
     private SQLiteDatabaseHandler db;
 

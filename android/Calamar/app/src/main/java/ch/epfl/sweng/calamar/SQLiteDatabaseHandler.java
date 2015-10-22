@@ -15,16 +15,18 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     //TODO add support for other items (now assuming only SimpleTextItem)
 
+    private final Context context;
+
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "CalamarDB";
 
-    private static final String MESSAGES_TABLE = "tb_Items";
-    private static final String MESSAGES_KEY_ID = "id";
-    private static final String MESSAGES_KEY_TEXT = "text";
-    private static final String MESSAGES_KEY_FROM = "from";
-    private static final String MESSAGES_KEY_TO = "to";
-    private static final String MESSAGES_KEY_TIME = "time";
-    private static final String[] MESSAGES_COLUMNS = {MESSAGES_KEY_ID, MESSAGES_KEY_TEXT, MESSAGES_KEY_FROM, MESSAGES_KEY_TO, MESSAGES_KEY_TIME};
+    private static final String ITEMS_TABLE = "tb_Items";
+    private static final String ITEMS_KEY_ID = "id";
+    private static final String ITEMS_KEY_TEXT = "text";
+    private static final String ITEMS_KEY_FROM = "from";
+    private static final String ITEMS_KEY_TO = "to";
+    private static final String ITEMS_KEY_TIME = "time";
+    private static final String[] ITEMS_COLUMNS = {ITEMS_KEY_ID, ITEMS_KEY_TEXT, ITEMS_KEY_FROM, ITEMS_KEY_TO, ITEMS_KEY_TIME};
 
     private static final String USERS_TABLE = "tb_Users";
     private static final String USERS_KEY_ID = "id";
@@ -37,12 +39,13 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public SQLiteDatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context=context;
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        final String createMessagesTable = "CREATE TABLE " + MESSAGES_TABLE + " ( "
-                + MESSAGES_KEY_ID + " INTEGER PRIMARY, " + MESSAGES_KEY_TEXT + " TEXT, " + MESSAGES_KEY_FROM + " INTEGER, " + MESSAGES_KEY_TO + " INTEGER, " + MESSAGES_KEY_TIME + " INTEGER )";
+        final String createMessagesTable = "CREATE TABLE " + ITEMS_TABLE + " ( "
+                + ITEMS_KEY_ID + " INTEGER PRIMARY, " + ITEMS_KEY_TEXT + " TEXT, " + ITEMS_KEY_FROM + " INTEGER, " + ITEMS_KEY_TO + " INTEGER, " + ITEMS_KEY_TIME + " INTEGER )";
         db.execSQL(createMessagesTable);
         final String createUsersTable = "CREATE TABLE " + USERS_TABLE + " ( " + USERS_KEY_ID + " INTEGER PRIMARY, " + USERS_KEY_NAME + " TEXT )";
         db.execSQL(createUsersTable);
@@ -54,12 +57,30 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     /**
-     * Basically deletes the database
+     * Deletes the database
      */
-    public void drop(){
+    public void deleteDatabase(){
         SQLiteDatabase db = this.getWritableDatabase();
-        db.rawQuery("DROP TABLE IF EXISTS " + MESSAGES_TABLE, null);
+        db.rawQuery("DROP TABLE IF EXISTS " + ITEMS_TABLE, null);
         db.rawQuery("DROP TABLE IF EXISTS " + USERS_TABLE, null);
+        this.close();
+        context.deleteDatabase(DATABASE_NAME);
+    }
+
+    /**
+     * Drops the User table
+     */
+    public void dropUserTable(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.rawQuery("DROP TABLE IF EXISTS " + USERS_TABLE, null);
+    }
+
+    /**
+     * Drops the Item table
+     */
+    public void dropItemTable(){
+        SQLiteDatabase db =this.getWritableDatabase();
+        db.rawQuery("DROP TABLE IF EXISTS "+ITEMS_TABLE,null);
     }
 
     /**
@@ -67,7 +88,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void deleteAllMessages() {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(MESSAGES_TABLE, MESSAGES_KEY_ID + " =  ?", null);
+        db.delete(ITEMS_TABLE, null, null);
     }
 
     /**
@@ -77,7 +98,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void deleteMessage(Item message) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(MESSAGES_TABLE, MESSAGES_KEY_ID + " = " + message.getID(), null);
+        db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = " + message.getID(), null);
     }
 
     /**
@@ -87,7 +108,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void deleteMessage(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(MESSAGES_TABLE, MESSAGES_KEY_ID + " = " + id, null);
+        db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = " + id, null);
     }
 
     /**
@@ -98,7 +119,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public void deleteMessages(List<Integer> ids) {
         SQLiteDatabase db = this.getWritableDatabase();
         for (Integer id : ids) {
-            db.delete(MESSAGES_TABLE, MESSAGES_KEY_ID + " = " + id, null);
+            db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = " + id, null);
         }
     }
 
@@ -114,7 +135,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         values.put("text", ((SimpleTextItem) message).getMessage());
         values.put("from", message.getFrom().getID());
         values.put("to", message.getTo().getID());
-        db.replace(MESSAGES_TABLE, null, values);
+        db.replace(ITEMS_TABLE, null, values);
     }
 
     /**
@@ -130,7 +151,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             values.put("text", ((SimpleTextItem) message).getMessage());
             values.put("from", message.getFrom().getID());
             values.put("to", message.getTo().getID());
-            db.replace(MESSAGES_TABLE, null, values);
+            db.replace(ITEMS_TABLE, null, values);
         }
     }
 
@@ -146,7 +167,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         values.put("text", ((SimpleTextItem) message).getMessage());
         values.put("from", message.getFrom().getID());
         values.put("to", message.getTo().getID());
-        db.update(MESSAGES_TABLE, values, MESSAGES_KEY_ID + " = " + message.getID(), null);
+        db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = " + message.getID(), null);
     }
 
     /**
@@ -162,7 +183,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             values.put("text", ((SimpleTextItem) message).getMessage());
             values.put("from", message.getFrom().getID());
             values.put("to", message.getTo().getID());
-            db.update(MESSAGES_TABLE, values, MESSAGES_KEY_ID + " = " + message.getID(), null);
+            db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = " + message.getID(), null);
         }
     }
 
@@ -174,7 +195,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public Item getMessage(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(MESSAGES_TABLE, MESSAGES_COLUMNS, MESSAGES_KEY_ID + " = " + id, null, null, null, null, null);
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = " + id, null, null, null, null, null);
         if (cursor != null && cursor.moveToFirst()) {
 
             String text = cursor.getString(1);
@@ -197,7 +218,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Item> messages = new ArrayList<>();
         for (Integer id : ids){
-        Cursor cursor = db.query(MESSAGES_TABLE, MESSAGES_COLUMNS, MESSAGES_KEY_ID + " = " + id, null, null, null, null, null);
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = " + id, null, null, null, null, null);
         if (cursor != null && cursor.moveToFirst()) {
 
             String text = cursor.getString(1);
@@ -218,7 +239,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public List<Item> getAllMessages() {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + MESSAGES_TABLE, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + ITEMS_TABLE, null);
         boolean hasNext = true;
         List<Item> messages = new ArrayList<>();
         if (cursor != null) {
@@ -331,7 +352,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void deleteAllUsers(){
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(USERS_TABLE,USERS_KEY_ID +" = ?",null);
+        db.delete(USERS_TABLE, null ,null);
     }
     /**
      *
