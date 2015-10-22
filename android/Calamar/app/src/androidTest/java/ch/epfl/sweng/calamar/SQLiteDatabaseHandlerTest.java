@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.*;
-
 
 public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplication> {
 
@@ -31,66 +29,66 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Before
     public void testEmptyDatabase(){
-        assertTrue(dbHandler.getAllMessages().isEmpty());
-        assertTrue(dbHandler.getAllUsers().isEmpty());
+        assertTrue(dbHandler.getAllItems().isEmpty());
+        assertTrue(dbHandler.getAllRecipients().isEmpty());
     }
     @Test
     public void testAddAndDeleteUser(){
-        dbHandler.addUser(testUser);
-        User u = dbHandler.getUser(0);
+        dbHandler.addRecipient(testUser);
+        User u = (User) dbHandler.getRecipient(0);
         //TODO could use only one assertEquals if equals is redefined for User and Item
         assertEquals(u.getID(),testUser.getID());
         assertEquals(u.getName(),testUser.getName());
-        dbHandler.deleteUser(testUser.getID());
-        u = dbHandler.getUser(testUser.getID());
+        dbHandler.deleteRecipient(testUser.getID());
+        u = (User) dbHandler.getRecipient(testUser.getID());
         assertEquals(u, null);
     }
 
     @Test
     public void testUpdateUser(){
-        dbHandler.addUser(testUser);
+        dbHandler.addRecipient(testUser);
         User u = new User(testUser.getID(),"NotMe");
-        dbHandler.updateUser(u);
-        u=dbHandler.getUser(testUser.getID());
+        dbHandler.updateRecipient(u);
+        u= (User) dbHandler.getRecipient(testUser.getID());
         assertEquals(u.getID(), testUser.getID());
         assertEquals(u.getName(),"NotMe");
-        dbHandler.deleteUser(testUser.getID());
+        dbHandler.deleteRecipient(testUser.getID());
     }
 
     @Test
     public void testAddAndDeleteMessage(){
-        dbHandler.addMessage(testItem);
-        SimpleTextItem i = (SimpleTextItem) dbHandler.getMessage(testItem.getID());
+        dbHandler.addItem(testItem);
+        SimpleTextItem i = (SimpleTextItem) dbHandler.getItem(testItem.getID());
         assertEquals(i.getID(),testItem.getID());
         assertEquals(i.getMessage(),testItem.getMessage());
         assertEquals(i.getFrom(), testItem.getFrom());
         assertEquals(i.getTo(), testItem.getTo());
         assertEquals(i.getDate(),testItem.getDate());
-        dbHandler.deleteMessage(0);
-        i=(SimpleTextItem) dbHandler.getMessage(0);
+        dbHandler.deleteItem(0);
+        i=(SimpleTextItem) dbHandler.getItem(0);
         assertEquals(i, null);
     }
 
     @Test
     public void addThreeUsersAndGetAllUsersAndDeleteAllUsers(){
-        List<User> users = new ArrayList<>();
+        List<Recipient> users = new ArrayList<>();
         users.add(testUser);
         users.add(testUser2);
         users.add(testUser3);
-        dbHandler.addUsers(users);
-        List<User> usersGot = dbHandler.getAllUsers();
+        dbHandler.addRecipients(users);
+        List<Recipient> usersGot = dbHandler.getAllRecipients();
         assertEquals(usersGot.size(),3);
-        User userGot = usersGot.get(0);
+        User userGot = (User) usersGot.get(0);
         assertEquals(userGot.getID(),testUser.getID());
         assertEquals(userGot.getName(),testUser.getName());
-        userGot=usersGot.get(1);
+        userGot= (User) usersGot.get(1);
         assertEquals(userGot.getID(),testUser2.getID());
         assertEquals(userGot.getName(),testUser2.getName());
-        userGot=usersGot.get(2);
+        userGot= (User) usersGot.get(2);
         assertEquals(userGot.getID(),testUser3.getID());
         assertEquals(userGot.getName(),testUser3.getName());
-        dbHandler.deleteAllUsers();
-        usersGot=dbHandler.getAllUsers();
+        dbHandler.deleteAllRecipients();
+        usersGot=dbHandler.getAllRecipients();
         assertTrue(usersGot.isEmpty());
     }
 }

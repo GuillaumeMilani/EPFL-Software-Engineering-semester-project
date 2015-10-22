@@ -13,8 +13,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import ch.epfl.sweng.calamar.SimpleTextItem;
-
 //TODO Support other item types
 
 /**
@@ -118,7 +116,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 //TODO : Determine id of the message ?
 
                 itemClients[0].send(textMessage);
-                databaseHandler.addMessage((SimpleTextItem) textMessage);
+                databaseHandler.addItem((SimpleTextItem) textMessage);
                 return null;
                 //return itemClients[0].send(textMessage);
             } catch (ItemClientException e) {
@@ -145,11 +143,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected List<Item> doInBackground(ItemClient... itemClients) {
             if (offline) {
-                return databaseHandler.getAllMessages();
+                return databaseHandler.getAllItems();
             } else {
                 try {
                     List<Item> items = itemClients[0].getAllItems(recipient, lastRefresh);
-                    databaseHandler.addMessages(items);
+                    databaseHandler.addItems(items);
                     return itemClients[0].getAllItems(recipient, lastRefresh);
                 } catch (ItemClientException e) {
                     //TODO : TOAST

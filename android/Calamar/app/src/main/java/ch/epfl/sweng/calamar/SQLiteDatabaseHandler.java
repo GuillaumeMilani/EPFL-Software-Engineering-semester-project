@@ -28,10 +28,10 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static final String ITEMS_KEY_TIME = "time";
     private static final String[] ITEMS_COLUMNS = {ITEMS_KEY_ID, ITEMS_KEY_TEXT, ITEMS_KEY_FROM, ITEMS_KEY_TO, ITEMS_KEY_TIME};
 
-    private static final String USERS_TABLE = "tb_Users";
-    private static final String USERS_KEY_ID = "id";
-    private static final String USERS_KEY_NAME = "name";
-    private static final String[] USERS_COLUMNS = {USERS_KEY_ID, USERS_KEY_NAME};
+    private static final String RECIPIENTS_TABLE = "tb_Recipients";
+    private static final String RECIPIENTS_KEY_ID = "id";
+    private static final String RECIPIENTS_KEY_NAME = "name";
+    private static final String[] RECIPIENTS_COLUMN = {RECIPIENTS_KEY_ID, RECIPIENTS_KEY_NAME};
 
     /**
      * Create a databasehandler for managing stored informations on the user phone.
@@ -47,8 +47,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         final String createMessagesTable = "CREATE TABLE " + ITEMS_TABLE + " ( "
                 + ITEMS_KEY_ID + " INTEGER PRIMARY, " + ITEMS_KEY_TEXT + " TEXT, " + ITEMS_KEY_FROM + " INTEGER, " + ITEMS_KEY_TO + " INTEGER, " + ITEMS_KEY_TIME + " INTEGER )";
         db.execSQL(createMessagesTable);
-        final String createUsersTable = "CREATE TABLE " + USERS_TABLE + " ( " + USERS_KEY_ID + " INTEGER PRIMARY, " + USERS_KEY_NAME + " TEXT )";
-        db.execSQL(createUsersTable);
+        final String createRecipientsTable = "CREATE TABLE " + RECIPIENTS_TABLE + " ( " + RECIPIENTS_KEY_ID + " INTEGER PRIMARY, " + RECIPIENTS_KEY_NAME + " TEXT )";
+        db.execSQL(createRecipientsTable);
     }
 
     @Override
@@ -62,17 +62,17 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public void deleteDatabase(){
         SQLiteDatabase db = this.getWritableDatabase();
         db.rawQuery("DROP TABLE IF EXISTS " + ITEMS_TABLE, null);
-        db.rawQuery("DROP TABLE IF EXISTS " + USERS_TABLE, null);
+        db.rawQuery("DROP TABLE IF EXISTS " + RECIPIENTS_TABLE, null);
         this.close();
         context.deleteDatabase(DATABASE_NAME);
     }
 
     /**
-     * Drops the User table
+     * Drops the Recipient table
      */
-    public void dropUserTable(){
+    public void dropRecipientTable(){
         SQLiteDatabase db = this.getWritableDatabase();
-        db.rawQuery("DROP TABLE IF EXISTS " + USERS_TABLE, null);
+        db.rawQuery("DROP TABLE IF EXISTS " + RECIPIENTS_TABLE, null);
     }
 
     /**
@@ -84,39 +84,39 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     /**
-     * Deletes all messages in the database
+     * Deletes all items in the database
      */
-    public void deleteAllMessages() {
+    public void deleteAllItems() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(ITEMS_TABLE, null, null);
     }
 
     /**
      *
-     * Deletes a message given itself
+     * Deletes a item given itself
      * @param message the item to delete
      */
-    public void deleteMessage(Item message) {
+    public void deleteItem(Item message) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = " + message.getID(), null);
     }
 
     /**
      *
-     * Deletes a message given an id
-     * @param id the id of the message
+     * Deletes an item given an id
+     * @param id the id of the item
      */
-    public void deleteMessage(int id) {
+    public void deleteItem(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = " + id, null);
     }
 
     /**
      *
-     * Deletes several messages
-     * @param ids the ids of the messages to delete
+     * Deletes several items
+     * @param ids the ids of the items to delete
      */
-    public void deleteMessages(List<Integer> ids) {
+    public void deleteItems(List<Integer> ids) {
         SQLiteDatabase db = this.getWritableDatabase();
         for (Integer id : ids) {
             db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = " + id, null);
@@ -125,82 +125,82 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     /**
      *
-     * Adds a message
-     * @param message the message to add
+     * Adds an item
+     * @param item the item to add
      */
-    public void addMessage(Item message) {
+    public void addItem(Item item) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put("id", message.getID());
-        values.put("text", ((SimpleTextItem) message).getMessage());
-        values.put("from", message.getFrom().getID());
-        values.put("to", message.getTo().getID());
+        values.put("id", item.getID());
+        values.put("text", ((SimpleTextItem) item).getMessage());
+        values.put("from", item.getFrom().getID());
+        values.put("to", item.getTo().getID());
         db.replace(ITEMS_TABLE, null, values);
     }
 
     /**
      *
-     * Adds all messages given a list
-     * @param messages the list of items to add
+     * Adds all items given a list
+     * @param items the list of items to add
      */
-    public void addMessages(List<Item> messages) {
+    public void addItems(List<Item> items) {
         SQLiteDatabase db = this.getWritableDatabase();
-        for (Item message : messages) {
+        for (Item item : items) {
             ContentValues values = new ContentValues();
-            values.put("id", message.getID());
-            values.put("text", ((SimpleTextItem) message).getMessage());
-            values.put("from", message.getFrom().getID());
-            values.put("to", message.getTo().getID());
+            values.put("id", item.getID());
+            values.put("text", ((SimpleTextItem) item).getMessage());
+            values.put("from", item.getFrom().getID());
+            values.put("to", item.getTo().getID());
             db.replace(ITEMS_TABLE, null, values);
         }
     }
 
 
     /**
-     * Updates a message
-     * @param message the message to update
+     * Updates an item
+     * @param item the item to update
      */
-    public void updateMessage(Item message) {
+    public void updateItem(Item item) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put("id", message.getID());
-        values.put("text", ((SimpleTextItem) message).getMessage());
-        values.put("from", message.getFrom().getID());
-        values.put("to", message.getTo().getID());
-        db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = " + message.getID(), null);
+        values.put("id", item.getID());
+        values.put("text", ((SimpleTextItem) item).getMessage());
+        values.put("from", item.getFrom().getID());
+        values.put("to", item.getTo().getID());
+        db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = " + item.getID(), null);
     }
 
     /**
      *
-     * Updates several messages given a list
-     * @param messages the list of items to update
+     * Updates several items given a list
+     * @param items the list of items to update
      */
-    public void updateMessages(List<Item> messages) {
+    public void updateItems(List<Item> items) {
         SQLiteDatabase db = this.getWritableDatabase();
-        for (Item message : messages) {
+        for (Item item : items) {
             ContentValues values = new ContentValues();
-            values.put("id", message.getID());
-            values.put("text", ((SimpleTextItem) message).getMessage());
-            values.put("from", message.getFrom().getID());
-            values.put("to", message.getTo().getID());
-            db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = " + message.getID(), null);
+            values.put("id", item.getID());
+            values.put("text", ((SimpleTextItem) item).getMessage());
+            values.put("from", item.getFrom().getID());
+            values.put("to", item.getTo().getID());
+            db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = " + item.getID(), null);
         }
     }
 
     /**
      *
-     * Returns a message given an id
-     * @param id the id of the message to retrieve
-     * @return the message
+     * Returns an item given an id
+     * @param id the id of the item to retrieve
+     * @return the item, or null
      */
-    public Item getMessage(int id) {
+    public Item getItem(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = " + id, null, null, null, null, null);
         if (cursor != null && cursor.moveToFirst()) {
 
             String text = cursor.getString(1);
-            User from = getUser(cursor.getInt(2));
-            Recipient to = getUser(cursor.getInt(3));
+            User from = (User) getRecipient(cursor.getInt(2));
+            Recipient to = getRecipient(cursor.getInt(3));
             Date time = new Date(cursor.getInt(4));
             cursor.close();
             return new SimpleTextItem(id, from, to, time, text);
@@ -210,163 +210,164 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     /**
      *
-     * Returns a list of messages given a list of ids
-     * @param ids the ids corresponding to the messages
-     * @return the messages
+     * Returns a list of items given a list of ids
+     * @param ids the ids corresponding to the items
+     * @return the items
      */
     public List<Item> getMessages(List<Integer> ids){
         SQLiteDatabase db = this.getReadableDatabase();
-        List<Item> messages = new ArrayList<>();
+        List<Item> items = new ArrayList<>();
         for (Integer id : ids){
         Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = " + id, null, null, null, null, null);
         if (cursor != null && cursor.moveToFirst()) {
 
             String text = cursor.getString(1);
-            User from = getUser(cursor.getInt(2));
-            Recipient to = getUser(cursor.getInt(3));
+            User from = (User) getRecipient(cursor.getInt(2));
+            Recipient to = getRecipient(cursor.getInt(3));
             Date time = new Date(cursor.getInt(4));
             cursor.close();
-            messages.add(new SimpleTextItem(id, from, to, time, text));
+            items.add(new SimpleTextItem(id, from, to, time, text));
         }
         }
-        return messages;
+        return items;
     }
 
     /**
      *
-     * Returns all messages
+     * Returns all items
      * @return the list of Item
      */
-    public List<Item> getAllMessages() {
+    public List<Item> getAllItems() {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + ITEMS_TABLE, null);
         boolean hasNext = true;
-        List<Item> messages = new ArrayList<>();
+        List<Item> items = new ArrayList<>();
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
                 int id = cursor.getInt(0);
                 String text = cursor.getString(1);
-                User from = getUser(cursor.getInt(2));
-                Recipient to = getUser(cursor.getInt(3));
+                User from = (User) getRecipient(cursor.getInt(2));
+                Recipient to = getRecipient(cursor.getInt(3));
                 Date time = new Date(cursor.getInt(4));
-                messages.add(new SimpleTextItem(id, from, to, time, text));
+                items.add(new SimpleTextItem(id, from, to, time, text));
                 hasNext = cursor.moveToNext();
             }
             cursor.close();
         }
-        return messages;
+        return items;
     }
 
     /**
      *
-     * Adds an user to the database
-     * @param user the user to add
+     * Adds a Recipient to the database
+     * @param recipient the recipient to add
      */
-    public void addUser(User user) {
+    public void addRecipient(Recipient recipient) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(USERS_KEY_ID, user.getID());
-        values.put(USERS_KEY_NAME, user.getName());
-        db.replace(USERS_TABLE, null, values);
+        values.put(RECIPIENTS_KEY_ID, recipient.getID());
+        values.put(RECIPIENTS_KEY_NAME, recipient.getName());
+        db.replace(RECIPIENTS_TABLE, null, values);
     }
 
     /**
      *
-     * Adds several users
-     * @param users the list of users to add.
+     * Adds several recipients
+     * @param recipients the list of recipients to add.
      */
-    public void addUsers(List<User> users){
+    public void addRecipients(List<Recipient> recipients){
         SQLiteDatabase db = this.getWritableDatabase();
-        for (User user : users){
+        for (Recipient recipient : recipients){
             ContentValues values = new ContentValues();
-            values.put(USERS_KEY_ID, user.getID());
-            values.put(USERS_KEY_NAME, user.getName());
-            db.replace(USERS_TABLE, null, values);
+            values.put(RECIPIENTS_KEY_ID, recipient.getID());
+            values.put(RECIPIENTS_KEY_NAME, recipient.getName());
+            db.replace(RECIPIENTS_TABLE, null, values);
         }
     }
 
     /**
      *
-     * Updates an user
-     * @param user the user to update
+     * Updates a recipient
+     * @param recipient the recipient to update
      */
-    public void updateUser(User user) {
+    public void updateRecipient(Recipient recipient) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(USERS_KEY_ID, user.getID());
-        values.put(USERS_KEY_NAME, user.getName());
-        db.update(USERS_TABLE, values, USERS_KEY_ID + " = " + user.getID(), null);
+        values.put(RECIPIENTS_KEY_ID, recipient.getID());
+        values.put(RECIPIENTS_KEY_NAME, recipient.getName());
+        db.update(RECIPIENTS_TABLE, values, RECIPIENTS_KEY_ID + " = " + recipient.getID(), null);
     }
 
     /**
      *
-     * Updates all users given in the list
-     * @param users the list of users to update
+     * Updates all recipients given in the list
+     * @param recipients the list of recipients to update
      */
-    public void updateUsers(List<User> users){
+    public void updateRecipients(List<Recipient> recipients){
         SQLiteDatabase db = this.getWritableDatabase();
-        for (User user : users){
+        for (Recipient recipient : recipients){
             ContentValues values = new ContentValues();
-            values.put(USERS_KEY_ID, user.getID());
-            values.put(USERS_KEY_NAME, user.getName());
-            db.update(USERS_TABLE, values, USERS_KEY_ID + " = " + user.getID(), null);
+            values.put(RECIPIENTS_KEY_ID, recipient.getID());
+            values.put(RECIPIENTS_KEY_NAME, recipient.getName());
+            db.update(RECIPIENTS_TABLE, values, RECIPIENTS_KEY_ID + " = " + recipient.getID(), null);
         }
     }
 
     /**
      *
-     * Deletes the user given in argument
-     * @param user the user to delete
+     * Deletes the recipient given in argument
+     * @param recipient the recipient to delete
      */
-    public void deleteUser(User user) {
+    public void deleteRecipient(Recipient recipient) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(USERS_TABLE, USERS_KEY_ID + " = " + user.getID(), null);
+        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = " + recipient.getID(), null);
     }
 
     /**
      *
-     * Deletes the user corresponding to an id
+     * Deletes the recipient corresponding to an id
      * @param id the id
      */
-    public void deleteUser(int id) {
+    public void deleteRecipient(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(USERS_TABLE, USERS_KEY_ID + " = " + id, null);
+        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = " + id, null);
     }
 
     /**
      *
-     * Deletes all users given as argument.
-     * @param users a list of users to delete.
+     * Deletes all recipients given as argument.
+     * @param recipients a list of recipients to delete.
      */
-    public void deleteUsers(List<User> users){
+    public void deleteRecipients(List<Recipient> recipients){
         SQLiteDatabase db = this.getWritableDatabase();
-        for (User user : users){
-            db.delete(USERS_TABLE, USERS_KEY_ID + " = " + user.getID(), null);
+        for (Recipient recipient : recipients){
+            db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = " + recipient.getID(), null);
         }
     }
 
     /**
      *
-     * Deletes all users
+     * Deletes all recipients
      */
-    public void deleteAllUsers(){
+    public void deleteAllRecipients(){
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(USERS_TABLE, null ,null);
+        db.delete(RECIPIENTS_TABLE, null ,null);
     }
     /**
      *
-     * Returns a user corresponding to an id.
-     * @param id the id of the user
-     * @return the user
+     * Returns a recipient corresponding to an id.
+     * @param id the id of the recipient
+     * @return the recipient
      */
-    public User getUser(int id) {
+    public Recipient getRecipient(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(USERS_TABLE, USERS_COLUMNS, USERS_KEY_ID + " = " + id, null, null, null, null, null);
+        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = " + id, null, null, null, null, null);
         if (cursor != null && cursor.moveToFirst()) {
 
             String name = cursor.getString(1);
             cursor.close();
+            //TODO returns only user now
             return new User(id, name);
         }
         return null;
@@ -374,45 +375,45 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     /**
      *
-     * Returns the users corresponding to the ids
+     * Returns the recipients corresponding to the ids
      * @param ids a list of Integers
-     * @return a list of Users
+     * @return a list of Recipients
      */
-    public List<User> getUsers(List<Integer> ids){
+    public List<Recipient> getRecipients(List<Integer> ids){
         SQLiteDatabase db = this.getReadableDatabase();
-        List<User> users = new ArrayList<>();
+        List<Recipient> recipients = new ArrayList<>();
         for (Integer id: ids){
-            Cursor cursor = db.query(USERS_TABLE, USERS_COLUMNS, USERS_KEY_ID + " = " + id, null, null, null, null, null);
+            Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = " + id, null, null, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
 
                 String name = cursor.getString(1);
                 cursor.close();
-                users.add(new User(id, name));
+                recipients.add(new User(id, name));
             }
         }
-        return users;
+        return recipients;
     }
 
     /**
      *
-     * Returns all users.
-     * @return all users as a List
+     * Returns all recipients.
+     * @return all recipients as a List
      */
-    public List<User> getAllUsers() {
+    public List<Recipient> getAllRecipients() {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + USERS_TABLE, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + RECIPIENTS_TABLE, null);
         boolean hasNext = true;
-        List<User> users = new ArrayList<>();
+        List<Recipient> recipients = new ArrayList<>();
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
                 int id = cursor.getInt(0);
                 String name = cursor.getString(1);
-                users.add(new User(id, name));
+                recipients.add(new User(id, name));
                 hasNext = cursor.moveToNext();
             }
             cursor.close();
         }
-        return users;
+        return recipients;
     }
 }
