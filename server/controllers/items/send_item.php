@@ -8,6 +8,7 @@ $data = json_decode($content, true);
 //check if there is an error
 if($data == null)
 {
+	http_response_code(400);
 	echo "Error : json data not found";
 }
 else
@@ -22,10 +23,11 @@ else
 	// add the data into the db
 	if(add_items($from['ID'],$to['ID'],$date,$type,$item))
 	{
-		echo "Ack";
+		http_response_code(201);
 	}
 	else
 	{
+		http_response_code(500);
 		echo "Error : database";
 	}
 }
