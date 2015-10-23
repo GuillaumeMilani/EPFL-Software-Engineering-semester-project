@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
     private ListView contactsView;
     private List<User> contacts;
     private ChatUsersListAdapter adapter;
+    private TextView actualUserTextView;
 
     public static User actualUser = new User(1,"Alice");
 
@@ -29,6 +31,9 @@ public class ChatUsersListActivity extends AppCompatActivity {
 
         contacts = new ArrayList<>();
         getContacts();
+
+        actualUserTextView = (TextView) findViewById(R.id.actualUserName);
+        actualUserTextView.setText("Actual user : " + actualUser.getName());
 
         contactsView = (ListView) findViewById(R.id.contactsList);
         adapter = new ChatUsersListAdapter(this,contacts);

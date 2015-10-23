@@ -17,8 +17,16 @@
         android:transcriptMode="alwaysScroll"
         android:divider="@null"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/actualUserName" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Connected as :"
+        android:id="@+id/actualUserName"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
