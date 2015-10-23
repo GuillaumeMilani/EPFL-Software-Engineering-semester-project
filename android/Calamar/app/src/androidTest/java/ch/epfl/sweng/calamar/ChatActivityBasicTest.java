@@ -26,7 +26,7 @@ import static org.hamcrest.Matchers.allOf;
 import static junit.framework.Assert.assertEquals;
 
 /**
- * Created by Quentin Jaquier, sciper 235825 on 23.10.2015.
+ * Test for the chat activity
  */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -36,41 +36,69 @@ public class ChatActivityBasicTest {
     public ActivityTestRule<ChatActivity> mActivityRule = new ActivityTestRule<>(
             ChatActivity.class);
 
-
     @Before
     public void setUp() throws Exception {
-        ItemClientLocator.setQuizClient(new ConstantItemClient());
+        ItemClientLocator.setItemClient(new ConstantItemClient());
     }
 
+
+    /**
+     * Test that we have a send button.
+     */
     @Test
     public void testSendButtonName() {
         onView(withId(R.id.chatSendButton))
                 .check(matches(withText("Send")));
     }
 
+    /**
+     * Test that we have a refresh button
+     */
     @Test
     public void testRefreshButtonName() {
         onView(withId(R.id.refreshButton))
                 .check(matches(withText("Refresh")));
     }
 
+    /**
+     * Test that we can write on the message edit field.
+     */
     @Test
       public void testCanWriteInMessageEdit() {
         onView(withId(R.id.messageEdit)).perform(typeText("Hello Alice !"));
         onView(allOf(withId(R.id.messageEdit), withText("Hello Alice !")));
     }
 
+    /**
+     * Test that the message retrieve from the itemClient are displayed.
+     */
     @Test
     public void testTwoMessageAreDisplayed() {
-        onView(withId(R.id.refreshButton)).perform(click());
         ListView list = (ListView)mActivityRule.getActivity().findViewById(R.id.messagesContainer);
-        assertEquals(list.getCount(), 2);
+        int before = list.getCount();
+        onView(withId(R.id.refreshButton)).perform(click());
+        assertEquals(list.getCount(), before+ 2);
     }
 
+    /**
+     * Test that the message edit field is empty when we send a message.
+     */
     @Test
     public void testMessageEditIsEmptyWhenSend() {
         onView(withId(R.id.messageEdit)).perform(typeText("Hello Alice !"));
         onView(withId(R.id.chatSendButton)).perform(click());
         onView(allOf(withId(R.id.messageEdit), withText("")));
+    }
+
+    /**
+     * Test that the message is displayed when we send a new one.
+     */
+    @Test
+    public void testMessageIsDisplayedWhenSend() {
+        ListView list = (ListView)mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+        int before = list.getCount();
+        onView(withId(R.id.messageEdit)).perform(typeText("Hello Alice !"));
+        onView(withId(R.id.chatSendButton)).perform(click());
+        assertEquals(list.getCount(), before + 1);
     }
 }
