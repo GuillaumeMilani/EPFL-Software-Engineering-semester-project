@@ -14,7 +14,7 @@ public class ConstantItemClient implements ItemClient{
 
     private Item itemFrom = new SimpleTextItem(1,alice,bob,new Date(1445198510),"Hello Bob, it's Alice !");
     private Item itemTo = new SimpleTextItem(1,bob,alice,new Date(1445198510),"Hello Alice, it's Bob !");
-    
+
     @Override
     public List<Item> getAllItems(Recipient recipient, Date from) throws ItemClientException {
         List<Item> items = new ArrayList();
@@ -33,6 +33,6 @@ public class ConstantItemClient implements ItemClient{
 
     @Override
     public void send(Item item) throws ItemClientException {
-
+        //Do nothing
     }
 }
