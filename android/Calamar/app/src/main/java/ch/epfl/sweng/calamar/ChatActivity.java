@@ -43,7 +43,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         correspondent = new User(2,"Bob");
         lastRefresh = new Date(0);
 
-        client = new NetworkItemClient("http://calamar.japan-impact.ch",new DefaultNetworkProvider());
+        client = ItemClientLocator.getQuizClient();
 
         editText = (EditText) findViewById(R.id.messageEdit);
         sendButton = (Button) findViewById(R.id.chatSendButton);
