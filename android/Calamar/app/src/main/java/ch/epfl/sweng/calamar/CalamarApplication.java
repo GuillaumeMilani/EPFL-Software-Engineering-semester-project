@@ -37,7 +37,7 @@ public class CalamarApplication extends Application {
         //TODO remove once users are automated
         db.addRecipient(new User(1,"Alice"));
         db.addRecipient(new User(2,"Bob"));
-        //TODO remove once database is thoroughly tested
+        //TODO remove once database is thoroughly tested (tests delete all entries)
         setLastItemsRefresh(new Date(0));
         setLastUsersRefresh(new Date(0));
     }
