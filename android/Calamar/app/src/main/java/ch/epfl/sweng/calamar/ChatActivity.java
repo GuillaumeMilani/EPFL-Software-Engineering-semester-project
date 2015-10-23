@@ -116,7 +116,9 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 //TODO : Determine id of the message ?
 
                 itemClients[0].send(textMessage);
-                databaseHandler.addItem((SimpleTextItem) textMessage);
+                //TODO need id to put into database
+                databaseHandler.addItem(textMessage);
+                List<Item> allItems = databaseHandler.getAllItems();
                 return null;
                 //return itemClients[0].send(textMessage);
             } catch (ItemClientException e) {

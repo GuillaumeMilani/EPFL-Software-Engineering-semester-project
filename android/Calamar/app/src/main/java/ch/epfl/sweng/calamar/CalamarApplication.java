@@ -34,6 +34,12 @@ public class CalamarApplication extends Application {
         db=new SQLiteDatabaseHandler(this);
         sp =getSharedPreferences(CALAMAR_PREFERENCES, Context.MODE_PRIVATE);
         editor=sp.edit();
+        //TODO remove once users are automated
+        db.addRecipient(new User(1,"Alice"));
+        db.addRecipient(new User(2,"Bob"));
+        //TODO remove once database is thoroughly tested
+        setLastItemsRefresh(new Date(0));
+        setLastUsersRefresh(new Date(0));
     }
 
     /**
