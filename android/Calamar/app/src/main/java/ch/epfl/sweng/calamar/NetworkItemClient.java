@@ -40,7 +40,7 @@ public class NetworkItemClient implements ItemClient {
     public List<Item> getAllItems(Recipient recipient, Date from) throws ItemClientException {
         HttpURLConnection connection = null;
         try {
-            URL url = new URL(serverUrl + "/retrieve.php");
+            URL url = new URL(serverUrl + "/items.php?action=retrieve");
             /*String jsonParameter = URLEncoder.encode(
                     "{ " +
                             "\"recipient\": " + recipient.toJSON().toString() +
@@ -70,7 +70,7 @@ public class NetworkItemClient implements ItemClient {
     public void send(Item item) throws ItemClientException {
         HttpURLConnection connection = null;
         try {
-            URL url = new URL(serverUrl + "/send.php");
+            URL url = new URL(serverUrl + "/items.php?action=send");
             String jsonParameter = item.toJSON().toString();
             connection = NetworkItemClient.createConnection(networkProvider, url);
             String response = NetworkItemClient.post(connection, jsonParameter);
