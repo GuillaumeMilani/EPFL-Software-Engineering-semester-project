@@ -31,7 +31,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     public static User actualUser = new User(1, "Alice");
     private User correspondent;
 
-    private Date lastRefresh;
+    private CalamarApplication app;
 
     private SQLiteDatabaseHandler databaseHandler;
 
@@ -39,9 +39,9 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        app= (CalamarApplication) getApplication();
 
         correspondent = new User(2, "Bob");
-        lastRefresh = new Date(0);
 
         client = new NetworkItemClient("http://calamar.japan-impact.ch", new DefaultNetworkProvider());
 
@@ -146,9 +146,9 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 return databaseHandler.getAllItems();
             } else {
                 try {
-                    List<Item> items = itemClients[0].getAllItems(recipient, lastRefresh);
+                    List<Item> items = itemClients[0].getAllItems(recipient, new Date(app.getLastItemsRefresh()));
                     databaseHandler.addItems(items);
-                    return itemClients[0].getAllItems(recipient, lastRefresh);
+                    return itemClients[0].getAllItems(recipient, new Date(app.getLastItemsRefresh()));
                 } catch (ItemClientException e) {
                     //TODO : TOAST
                     e.printStackTrace();
@@ -164,7 +164,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 if (!offline) {
-                    lastRefresh = new Date();
+                    app.setLastItemsRefresh(new Date());
                 }
             }
         }
