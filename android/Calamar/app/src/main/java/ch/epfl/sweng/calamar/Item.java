@@ -35,7 +35,7 @@ public abstract class Item {
         return new Date(this.date);
     }
 
-    //TODO: hashcode equals
+    //TODO: hashcode
 
     protected void compose(JSONObject o) throws JSONException {
         o.accumulate("ID", ID);
@@ -60,6 +60,19 @@ public abstract class Item {
                 throw new IllegalArgumentException("Unexpected Item type (" + type + ")");
         }
         return item;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if ( this == o ) return true;
+        if ( !(o instanceof Item) ) return false;
+        Item that = (Item)o;
+        return that.ID == ID && that.from.equals(from) && that.to.equals(to) && that.date == date;
+    }
+
+    @Override
+    public int hashCode() {
+        return ID+from.hashCode()*89+to.hashCode()*197+((int)date)*479;
     }
 
     protected static class Builder {

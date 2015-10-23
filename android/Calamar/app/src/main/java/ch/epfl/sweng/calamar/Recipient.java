@@ -99,7 +99,20 @@ public abstract class Recipient {
         return ret;
     }
 
-    //TODO: hashcode + equals
+    @Override
+    public boolean equals(Object o) {
+        if ( this == o ) return true;
+        if ( !(o instanceof Recipient) ) return false;
+        Recipient that = (Recipient)o;
+        return that.name.equals(name) && that.ID == ID;
+    }
+
+    @Override
+    public int hashCode() {
+        return ID+name.hashCode()*89;
+    }
+
+    //TODO: hashcode
 
     /**
      * A Builder for {@link Recipient}, has no build() method since Recipient isn't instantiable,

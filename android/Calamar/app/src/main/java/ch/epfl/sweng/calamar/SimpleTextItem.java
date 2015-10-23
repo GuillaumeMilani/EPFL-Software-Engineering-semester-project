@@ -38,6 +38,19 @@ public final class SimpleTextItem extends Item {
         return ret;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if ( this == o ) return true;
+        if ( !(o instanceof SimpleTextItem) ) return false;
+        SimpleTextItem that = (SimpleTextItem)o;
+        return super.equals(that) && that.message == message;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode()*73+message != null ? message.hashCode() : 0;
+    }
+
     public static class Builder extends Item.Builder {
         private String message = "default message";
 

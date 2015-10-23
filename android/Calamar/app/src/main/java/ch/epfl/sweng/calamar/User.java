@@ -27,6 +27,19 @@ public final class User extends Recipient {
         return json;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if ( this == o ) return true;
+        if ( !(o instanceof User) ) return false;
+        User that = (User)o;
+        return super.equals(that);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
     private static class Builder extends Recipient.Builder {
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
