@@ -24,6 +24,19 @@ public final class Group extends Recipient {
         return null;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if ( this == o ) return true;
+        if ( !(o instanceof Group) ) return false;
+        Group that = (Group)o;
+        return super.equals(that) && that.users.equals(users);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode()*73+users.hashCode();
+    }
+
     public Group(int ID, String name, List<User> users) {
         super(ID, name);
         if(null == users) {

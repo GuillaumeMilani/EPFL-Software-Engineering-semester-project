@@ -23,6 +23,10 @@ public abstract class Item {
     }
 
     //TODO: maybe better field names in java...
+    public int getID() {
+        return ID;
+    }
+
     public User getFrom() {
         return from;
     }

@@ -112,8 +112,6 @@ public abstract class Recipient {
         return ID+name.hashCode()*89;
     }
 
-    //TODO: hashcode
-
     /**
      * A Builder for {@link Recipient}, has no build() method since Recipient isn't instantiable,
      * is used by the child builders (in {@link User} or {@link Group} or..) to build the "Recipient
