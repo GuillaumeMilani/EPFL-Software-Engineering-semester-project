@@ -14,6 +14,7 @@ import java.util.List;
 public class ChatUsersListAdapter extends BaseAdapter {
     private final ArrayList<User> users;
     private final Activity context;
+    private final float TEXT_SIZE=20;
 
     public ChatUsersListAdapter(Activity context, List<User> users){
         this.users=new ArrayList<>(users);
@@ -48,6 +49,7 @@ public class ChatUsersListAdapter extends BaseAdapter {
         }
 
         holder.userName.setText(user.getName());
+        holder.userName.setTextSize(TEXT_SIZE);
         return convertView;
     }
 

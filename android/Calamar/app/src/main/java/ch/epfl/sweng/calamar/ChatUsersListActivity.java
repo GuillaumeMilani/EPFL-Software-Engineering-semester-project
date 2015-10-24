@@ -6,25 +6,38 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ChatUsersListActivity extends AppCompatActivity {
 
+    public final static String EXTRA_CORRESPONDENT_NAME = "ch.epfl.sweng.calamar.CORRESPONDENT_NAME";
+    public final static String EXTRA_CORRESPONDENT_ID = "ch.epfl.sweng.calamar.CORRESPONDENT_ID";
+
     private ListView contactsView;
-    private ArrayList<User> contacts;
+    private List<User> contacts;
     private ChatUsersListAdapter adapter;
+    private TextView actualUserTextView;
+
+    public static User actualUser = new User(1,"Alice");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_users_list);
 
-        //TODO store contacts locally?
-        contacts=new ArrayList<>(provider.getContacts(ChatActivity.actualUser));
+        contacts = new ArrayList<>();
+        getContacts();
+
+        //TODO I don't think it is necessary to remind the user who he is (okay for development)
+        actualUserTextView = (TextView) findViewById(R.id.actualUserName);
+        actualUserTextView.setText("Actual user : " + actualUser.getName());
 
         contactsView = (ListView) findViewById(R.id.contactsList);
-        adapter=new ChatUsersListAdapter(this,contacts);
+        contactsView.setSelector(R.drawable.list_selector);
+        adapter = new ChatUsersListAdapter(this,contacts);
         contactsView.setAdapter(adapter);
         contactsView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -32,11 +45,20 @@ public class ChatUsersListActivity extends AppCompatActivity {
                 Intent conversation = new Intent(ChatUsersListActivity.this, ChatActivity.class);
                 //Assuming in same order
                 User user = contacts.get(position);
-                conversation.putExtra("userName",user.getName());
-                conversation.putExtra("userID",user.getID());
+                conversation.putExtra(EXTRA_CORRESPONDENT_NAME,user.getName());
+                conversation.putExtra(EXTRA_CORRESPONDENT_ID, user.getID());
+                startActivity(conversation);
             }
         });
         contactsView.setSelection(0);
+    }
+
+    private void getContacts(){
+        //TODO : Store contact ? -- Easy once persist_data is merged
+        contacts.add(new User(2,"Bob"));
+        contacts.add(new User(3,"Carol"));
+        contacts.add(new User(4,"Denis"));
+        contacts.add(new User(5,"Eve"));
     }
 
 }

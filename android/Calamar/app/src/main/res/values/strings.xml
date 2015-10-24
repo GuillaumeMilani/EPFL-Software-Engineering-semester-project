@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Clamar</string>
+    <string name="app_name">Calamar</string>
     <string name="title_activity_chat">chat</string>
     <string name="message_edit_hint">Type your message.</string>
     <string name="recipient">Her/Him</string>

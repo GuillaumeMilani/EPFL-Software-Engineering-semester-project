@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -30,7 +31,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     private ItemClient client;
 
-    public static User actualUser = new User(1,"Alice");
     private User correspondent;
 
     private Date lastRefresh;
@@ -40,7 +40,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        correspondent = new User(2,"Bob");
+        Intent intent = getIntent();
+        String correspondentName = intent.getStringExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME);
+        int correspondentID = intent.getIntExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID,-1); // -1 = default value
+
+        correspondent = new User(correspondentID,correspondentName);
+
         lastRefresh = new Date(0);
 
         client = new NetworkItemClient("http://calamar.japan-impact.ch",new DefaultNetworkProvider());
@@ -55,8 +60,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         messagesContainer.setAdapter(adapter);
 
         TextView recipient = (TextView) findViewById(R.id.recipientLabel);
-        //TODO Change Recipient depending on User ID
-        recipient.setText("Someone");
+        recipient.setText(correspondent.getName());
 
         refreshButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
@@ -68,7 +72,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      * Gets all messages and display them
      */
     private void refresh() {
-         new refreshTask(actualUser).execute(client);
+        //TODO : Display only the message from correspondent ( Should be fixed with the issue #27-Persist data )
+        new refreshTask(ChatUsersListActivity.actualUser).execute(client);
     }
 
     /**
@@ -76,7 +81,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void send() {
         String message = editText.getText().toString();
-        Item textMessage = new SimpleTextItem(1,actualUser,correspondent,new Date(),message);
+        Item textMessage = new SimpleTextItem(1,ChatUsersListActivity.actualUser,correspondent,new Date(),message);
         adapter.add(textMessage);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
