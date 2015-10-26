@@ -76,7 +76,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     }
 
     @Test
-    public void addThreeUsersAndGetAllUsersAndDeleteAllUsers(){
+    public void testAddThreeUsersAndGetAllUsersAndDeleteAllUsers(){
         List<Recipient> users = new ArrayList<>();
         users.add(testUser);
         users.add(testUser2);
