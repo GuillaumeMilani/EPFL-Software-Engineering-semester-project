@@ -1,8 +1,12 @@
 package ch.epfl.sweng.calamar;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -26,9 +30,9 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private ListView messagesContainer;
     private ChatAdapter adapter;
 
-    private ItemClient client;
+    private NetworkDatabaseClient client;
 
-    public static User actualUser = new User(1,"Alice");
+    public static User actualUser;
     private User correspondent;
 
     private Date lastRefresh;
@@ -37,6 +41,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        actualUser = getActualUser();
 
         correspondent = new User(2,"Bob");
         lastRefresh = new Date(0);
@@ -60,6 +66,36 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         sendButton.setOnClickListener(this);
 
         //refresh();
+    }
+
+
+    /**
+     * Return the actual user of the app.
+     */
+    private User getActualUser(){
+        int id = -1;
+        String email = "No Email";
+        // if 0, create a new user !
+       if(lastRefresh.getTime() == 0){
+           //Get the device id.
+           TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+           //Get google account email
+           AccountManager manager = AccountManager.get(this);
+           Account[] list = manager.getAccountsByType("com.google");
+           if(list.length > 1){
+               email = list[0].name;
+           }
+           try {
+               id = client.newUser(email,telephonyManager.getDeviceId());
+           } catch (ItemClientException e) {
+               //TODO : Retry ? What to do ?
+               e.printStackTrace();
+           }
+           //TODO : Add in the bdd the current user.
+       } else {
+           //TODO : Go in the bdd get the user.
+       }
+        return new User(id,email);
     }
 
     /**
