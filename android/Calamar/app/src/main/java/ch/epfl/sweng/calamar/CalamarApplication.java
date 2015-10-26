@@ -18,6 +18,8 @@ public class CalamarApplication extends Application {
     private final String CALAMAR_PREFERENCES = "ch.epfl.sweng.calamar";
     private final String LAST_USERS_REFRESH = "lastUsersRefresh";
     private final String LAST_ITEMS_REFRESH = "lastItemsRefresh";
+    private final String CURRENT_USER_ID = "currentUserID";
+    private final String CURRENT_USER_NAME = "currentUserName";
 
     /**
      * Returns the current instance of the application.
@@ -77,5 +79,37 @@ public class CalamarApplication extends Application {
      */
     public long getLastItemsRefresh(){
        return sp.getLong(LAST_ITEMS_REFRESH,0);
+    }
+
+    /**
+     * Sets the current user id.
+     * @param id the id the current user will have
+     */
+    public void setCurrentUserID(int id){
+        editor.putInt(CURRENT_USER_ID,id).apply();
+    }
+
+    /**
+     * Returns the ID of the current user
+     * @return the id, or -1 if it is not defined.
+     */
+    public int getCurrentUserID(){
+        return sp.getInt(CURRENT_USER_ID,-1);
+    }
+
+    /**
+     * Sets the name of the current user
+     * @param name The new name of the user
+     */
+    public void setCurrentUserName(String name){
+        editor.putString(CURRENT_USER_NAME,name).apply();
+    }
+
+    /**
+     * Returns the name of the current user
+     * @return the name of the user
+     */
+    public String getCurrentUserName(){
+        return sp.getString(CURRENT_USER_NAME,"");
     }
 }

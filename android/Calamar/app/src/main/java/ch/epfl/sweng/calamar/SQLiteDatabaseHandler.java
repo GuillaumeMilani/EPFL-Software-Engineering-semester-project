@@ -1,7 +1,6 @@
 package ch.epfl.sweng.calamar;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -15,7 +14,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     //TODO add support for other items (now assuming only SimpleTextItem)
 
-    private final Context context;
+    private final CalamarApplication app;
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "CalamarDB";
@@ -36,11 +35,11 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     /**
      * Create a databasehandler for managing stored informations on the user phone.
      *
-     * @param context The context of the application
+     * @param app The application
      */
-    public SQLiteDatabaseHandler(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        this.context = context;
+    public SQLiteDatabaseHandler(CalamarApplication app) {
+        super(app, DATABASE_NAME, null, DATABASE_VERSION);
+        this.app=app;
     }
 
     @Override
@@ -67,7 +66,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         db.rawQuery("DROP TABLE IF EXISTS " + ITEMS_TABLE, null);
         db.rawQuery("DROP TABLE IF EXISTS " + RECIPIENTS_TABLE, null);
         this.close();
-        context.deleteDatabase(DATABASE_NAME);
+        app.deleteDatabase(DATABASE_NAME);
     }
 
     /**
@@ -95,7 +94,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     /**
-     * Deletes a item given itself
+     * Deletes an item given itself
      *
      * @param message the item to delete
      */
@@ -133,7 +132,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void addItem(Item item) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = createItemValues(item,db);
+        ContentValues values = createItemValues(item, db);
         db.replace(ITEMS_TABLE, null, values);
     }
 
@@ -216,6 +215,54 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     /**
+     * Returns the list of messages (items) exchanged between the current user and a recipient.
+     * @param recipient The contact
+     * @return a list of items
+     */
+    public List<Item> getMessagesForContact(Recipient recipient){
+        SQLiteDatabase db = this.getReadableDatabase();
+        List<Item> items = new ArrayList<>();
+        int currentUserID= app.getCurrentUserID();
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = " + currentUserID + " AND " + ITEMS_KEY_TO + " = " + recipient.getID() + " ) OR ( "
+                + ITEMS_KEY_FROM + " = " + recipient.getID() + " AND " + ITEMS_KEY_TO + " = " + currentUserID + " )", null, null, null, null);
+        boolean hasNext=false;
+        if (cursor != null) {
+            hasNext = cursor.moveToFirst();
+            while (hasNext) {
+                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
+                items.add(item);
+                hasNext = cursor.moveToNext();
+            }
+            cursor.close();
+        }
+        return items;
+    }
+
+    /**
+     * Returns the list of messages (items) exchanged between the current user and a recipient.
+     * @param contactID The contact
+     * @return a list of items
+     */
+    public List<Item> getMessagesForContact(int contactID){
+        SQLiteDatabase db = this.getReadableDatabase();
+        List<Item> items = new ArrayList<>();
+        int currentUserID= app.getCurrentUserID();
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = " + currentUserID + " AND " + ITEMS_KEY_TO + " = " + contactID + " ) OR ( "
+                + ITEMS_KEY_FROM + " = " + contactID + " AND " + ITEMS_KEY_TO + " = " + currentUserID + " )", null, null, null, null);
+        boolean hasNext=false;
+        if (cursor != null) {
+            hasNext = cursor.moveToFirst();
+            while (hasNext) {
+                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
+                items.add(item);
+                hasNext = cursor.moveToNext();
+            }
+            cursor.close();
+        }
+        return items;
+    }
+
+    /**
      * Returns all items
      *
      * @return the list of Item
@@ -223,7 +270,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public List<Item> getAllItems() {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + ITEMS_TABLE, null);
-        boolean hasNext = true;
+        boolean hasNext = false;
         List<Item> items = new ArrayList<>();
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
@@ -373,7 +420,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public List<Recipient> getAllRecipients() {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + RECIPIENTS_TABLE, null);
-        boolean hasNext = true;
+        boolean hasNext = false;
         List<Recipient> recipients = new ArrayList<>();
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
