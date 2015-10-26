@@ -16,6 +16,7 @@ CREATE UNIQUE INDEX `idx_un_name_recipient` ON `tb_recipient` (`name` ASC)  ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_recipient_user` (
   `ID` INT NOT NULL,
+  'device_id' VARCHAR(16),
   PRIMARY KEY (`ID`) ,
   CONSTRAINT `ct_id_recipient_user`
     FOREIGN KEY (`ID`)
