@@ -103,14 +103,11 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         List<Item> contactItems = dbHandler.getMessagesForContact(testUser2);
         assertEquals(contactItems.size(), 3);
         SimpleTextItem item = (SimpleTextItem) contactItems.get(0);
-        assertEquals(item.getMessage(),testItem2.getMessage());
-        assertEquals(item.getID(),testItem2.getID());
+        assertEquals(item,testItem2);
         item = (SimpleTextItem) contactItems.get(1);
-        assertEquals(item.getMessage(),testItem3.getMessage());
-        assertEquals(item.getID(),testItem3.getID());
+        assertEquals(item,testItem3);
         item=(SimpleTextItem) contactItems.get(2);
-        assertEquals(item.getMessage(),testItem4.getMessage());
-        assertEquals(item.getID(),testItem4.getID());
+        assertEquals(item,testItem4);
         getApplication().setCurrentUserID(-1);
         clearDB();
     }
