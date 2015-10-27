@@ -15,13 +15,12 @@ public class CalamarApplication extends Application {
     private SQLiteDatabaseHandler db;
     private SharedPreferences sp;
     private SharedPreferences.Editor editor;
-    private final String CALAMAR_PREFERENCES = "ch.epfl.sweng.calamar";
-    private final String LAST_USERS_REFRESH_SP = "lastUsersRefresh";
-    private final String LAST_ITEMS_REFRESH_SP = "lastItemsRefresh";
-    private final String CURRENT_USER_ID_SP = "currentUserID";
-    private final String CURRENT_USER_NAME_SP = "currentUserName";
+    private static final String CALAMAR_PREFERENCES = "ch.epfl.sweng.calamar";
+    private static final String LAST_USERS_REFRESH_SP = "lastUsersRefresh";
+    private static final String LAST_ITEMS_REFRESH_SP = "lastItemsRefresh";
+    private static final String CURRENT_USER_ID_SP = "currentUserID";
+    private static final String CURRENT_USER_NAME_SP = "currentUserName";
 
-    private CalamarApplication(){};
     /**
      * Returns the current instance of the application.
      * @return A singleton

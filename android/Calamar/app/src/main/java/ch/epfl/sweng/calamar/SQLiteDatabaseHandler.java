@@ -39,7 +39,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public SQLiteDatabaseHandler(CalamarApplication app) {
         super(app.getInstance(), DATABASE_NAME, null, DATABASE_VERSION);
-        this.app=app.getInstance();
+        this.app = app.getInstance();
     }
 
     @Override
@@ -100,7 +100,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void deleteItem(Item message) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = " + message.getID(), null);
+        String[] args = {Integer.toString(message.getID())};
+        db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = ?", args);
     }
 
     /**
@@ -110,7 +111,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void deleteItem(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = " + id, null);
+        String[] args = {Integer.toString(id)};
+        db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = ?", args);
     }
 
     /**
@@ -120,9 +122,11 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void deleteItems(List<Integer> ids) {
         SQLiteDatabase db = this.getWritableDatabase();
-        for (Integer id : ids) {
-            db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = " + id, null);
+        String[] args = new String[ids.size()];
+        for (int i = 0; i<ids.size();++i){
+            args[i]=Integer.toString(ids.get(i));
         }
+        db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = ?", args);
     }
 
     /**
@@ -144,7 +148,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public void addItems(List<Item> items) {
         SQLiteDatabase db = this.getWritableDatabase();
         for (Item item : items) {
-            ContentValues values = createItemValues(item,db);
+            ContentValues values = createItemValues(item, db);
             db.replace(ITEMS_TABLE, null, values);
         }
     }
@@ -157,8 +161,9 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void updateItem(Item item) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = createItemValues(item,db);
-        db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = " + item.getID(), null);
+        ContentValues values = createItemValues(item, db);
+        String[] args = {Integer.toString(item.getID())};
+        db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = ?", args);
     }
 
     /**
@@ -169,8 +174,9 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public void updateItems(List<Item> items) {
         SQLiteDatabase db = this.getWritableDatabase();
         for (Item item : items) {
-            ContentValues values = createItemValues(item,db);
-            db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = " + item.getID(), null);
+            ContentValues values = createItemValues(item, db);
+            String[] args = {Integer.toString(item.getID())};
+            db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = ?", args);
         }
     }
 
@@ -182,9 +188,9 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public Item getItem(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = " + id, null, null, null, null, null);
+        String[] args = {Integer.toString(id)};
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = ?", args, null, null, null, null);
         if (cursor != null && cursor.moveToFirst()) {
-
             SimpleTextItem item = (SimpleTextItem) createItem(cursor);
             cursor.close();
             return item;
@@ -201,31 +207,35 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public List<Item> getMessages(List<Integer> ids) {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Item> items = new ArrayList<>();
-        for (Integer id : ids) {
-            Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = " + id, null, null, null, null, null);
-            if (cursor != null && cursor.moveToFirst()) {
-
+        String[] args = new String[ids.size()];
+        for (int i = 0; i<ids.size();++i){
+            args[i]=Integer.toString(ids.get(i));
+        }
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = ?", args, null, null, null, null);
+        if (cursor!=null){
+            boolean hasNext=cursor.moveToFirst();
+            while (hasNext){
                 SimpleTextItem item = (SimpleTextItem) createItem(cursor);
-                cursor.close();
                 items.add(item);
             }
+            cursor.close();
         }
-
         return items;
     }
 
     /**
      * Returns the list of messages (items) exchanged between the current user and a recipient.
+     *
      * @param recipient The contact
      * @return a list of items
      */
-    public List<Item> getMessagesForContact(Recipient recipient){
+    public List<Item> getMessagesForContact(Recipient recipient) {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Item> items = new ArrayList<>();
-        int currentUserID= app.getCurrentUserID();
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = " + currentUserID + " AND " + ITEMS_KEY_TO + " = " + recipient.getID() + " ) OR ( "
-                + ITEMS_KEY_FROM + " = " + recipient.getID() + " AND " + ITEMS_KEY_TO + " = " + currentUserID + " )", null, null, null, null);
-        boolean hasNext=false;
+        int currentUserID = app.getCurrentUserID();
+        String[] args = {Integer.toString(currentUserID), Integer.toString(recipient.getID())};
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? )", args, null, null, null);
+        boolean hasNext = false;
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
@@ -240,16 +250,17 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     /**
      * Returns the list of messages (items) exchanged between the current user and a recipient.
+     *
      * @param contactID The contact
      * @return a list of items
      */
-    public List<Item> getMessagesForContact(int contactID){
+    public List<Item> getMessagesForContact(int contactID) {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Item> items = new ArrayList<>();
-        int currentUserID= app.getCurrentUserID();
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = " + currentUserID + " AND " + ITEMS_KEY_TO + " = " + contactID + " ) OR ( "
-                + ITEMS_KEY_FROM + " = " + contactID + " AND " + ITEMS_KEY_TO + " = " + currentUserID + " )", null, null, null, null);
-        boolean hasNext=false;
+        int currentUserID = app.getCurrentUserID();
+        String[] args = {Integer.toString(currentUserID), Integer.toString(contactID)};
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? )", args, null, null, null);
+        boolean hasNext = false;
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
@@ -316,7 +327,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public void updateRecipient(Recipient recipient) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = createRecipientValues(recipient);
-        db.update(RECIPIENTS_TABLE, values, RECIPIENTS_KEY_ID + " = " + recipient.getID(), null);
+        String[] args = {Integer.toString(recipient.getID())};
+        db.update(RECIPIENTS_TABLE, values, RECIPIENTS_KEY_ID + " = ?", args);
     }
 
     /**
@@ -328,7 +340,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         for (Recipient recipient : recipients) {
             ContentValues values = createRecipientValues(recipient);
-            db.update(RECIPIENTS_TABLE, values, RECIPIENTS_KEY_ID + " = " + recipient.getID(), null);
+            String[] args = {Integer.toString(recipient.getID())};
+            db.update(RECIPIENTS_TABLE, values, RECIPIENTS_KEY_ID + " = ?", args);
         }
     }
 
@@ -339,7 +352,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void deleteRecipient(Recipient recipient) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = " + recipient.getID(), null);
+        String[] args = {Integer.toString(recipient.getID())};
+        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = ?", args);
     }
 
     /**
@@ -349,7 +363,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void deleteRecipient(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = " + id, null);
+        String[] args = {Integer.toString(id)};
+        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = ?", args);
     }
 
     /**
@@ -359,9 +374,12 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void deleteRecipients(List<Recipient> recipients) {
         SQLiteDatabase db = this.getWritableDatabase();
-        for (Recipient recipient : recipients) {
-            db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = " + recipient.getID(), null);
+        String[] args = new String[recipients.size()];
+        for (int i=0; i<recipients.size();++i){
+            args[i]=Integer.toString(recipients.get(i).getID());
         }
+
+        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = ?", args);
     }
 
     /**
@@ -380,7 +398,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public Recipient getRecipient(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = " + id, null, null, null, null, null);
+        String[] args = {Integer.toString(id)};
+        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = ?", args, null, null, null, null);
         if (cursor != null && cursor.moveToFirst()) {
 
             String name = cursor.getString(1);
@@ -400,14 +419,16 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public List<Recipient> getRecipients(List<Integer> ids) {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Recipient> recipients = new ArrayList<>();
-        for (Integer id : ids) {
-            Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = " + id, null, null, null, null, null);
-            if (cursor != null && cursor.moveToFirst()) {
-
-                String name = cursor.getString(1);
-                cursor.close();
-                recipients.add(new User(id, name));
+        String[] args = (String[]) ids.toArray(new String[ids.size()]);
+        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = ?", args, null, null, null, null);
+        boolean hasNext = false;
+        if (cursor != null) {
+            hasNext = cursor.moveToFirst();
+            while (hasNext) {
+                recipients.add(createUser(cursor));
+                hasNext = cursor.moveToNext();
             }
+            cursor.close();
         }
         return recipients;
     }
@@ -425,9 +446,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
-                int id = cursor.getInt(0);
-                String name = cursor.getString(1);
-                recipients.add(new User(id, name));
+                recipients.add(createUser(cursor));
                 hasNext = cursor.moveToNext();
             }
             cursor.close();
@@ -455,14 +474,20 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         return new SimpleTextItem(id, from, to, time, text);
     }
 
-    private ContentValues createRecipientValues(Recipient recipient){
+    private ContentValues createRecipientValues(Recipient recipient) {
         ContentValues values = new ContentValues();
         values.put(RECIPIENTS_KEY_ID, recipient.getID());
         values.put(RECIPIENTS_KEY_NAME, recipient.getName());
         return values;
     }
 
-    private void updateUsersWithItem(Recipient from, Recipient to, SQLiteDatabase db){
+    private User createUser(Cursor cursor){
+        int id = cursor.getInt(0);
+        String name = cursor.getString(1);
+        return new User(id,name);
+    }
+
+    private void updateUsersWithItem(Recipient from, Recipient to, SQLiteDatabase db) {
         ContentValues valuesFrom = createRecipientValues(from);
         ContentValues valuesTo = createRecipientValues(to);
         db.replace(RECIPIENTS_TABLE, null, valuesFrom);
