@@ -122,4 +122,26 @@ public class CalamarApplication extends Application {
     public String getCurrentUserName() {
         return sp.getString(CURRENT_USER_NAME_SP, "");
     }
+
+    public void resetUsername(){
+        setCurrentUserName("");
+    }
+
+    public void resetUserID(){
+        setCurrentUserID(-1);
+    }
+
+    public void resetLastItemsRefresh(){
+        setLastItemsRefresh(new Date(0));
+    }
+    public void resetLastUsersRefresh(){
+        setLastUsersRefresh(new Date(0));
+    }
+
+    public void resetPreferences(){
+        resetUserID();
+        resetUsername();
+        resetLastItemsRefresh();
+        resetLastUsersRefresh();
+    }
 }
