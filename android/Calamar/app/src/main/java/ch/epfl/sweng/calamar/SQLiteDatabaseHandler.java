@@ -247,8 +247,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Item> items = new ArrayList<>();
         int currentUserID = app.getCurrentUserID();
-        String[] args = {Integer.toString(currentUserID), Integer.toString(recipient.getID())};
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? )", args, null, null, ITEMS_KEY_ID+" ASC");
+        String[] args = {Integer.toString(currentUserID), Integer.toString(recipient.getID()),Integer.toString(currentUserID), Integer.toString(recipient.getID())};
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? ) OR ( "+ITEMS_KEY_TO+ " = ? AND "+ ITEMS_KEY_FROM+" = ? ) ", args, null, null, ITEMS_KEY_ID+" ASC");
         boolean hasNext = false;
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
@@ -273,22 +273,12 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Item> items = new ArrayList<>();
         int currentUserID = app.getCurrentUserID();
-        String[] args = {Integer.toString(currentUserID), Integer.toString(contactID)};
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? ) ", args, null,null,ITEMS_KEY_ID+" ASC");
+        String[] args = {Integer.toString(currentUserID), Integer.toString(contactID),Integer.toString(currentUserID), Integer.toString(contactID)};
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? ) OR ( "+ITEMS_KEY_TO+ " = ? AND "+ ITEMS_KEY_FROM+" = ? ) ", args, null, null, ITEMS_KEY_ID+" ASC");
         boolean hasNext = false;
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
-                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
-                items.add(item);
-                hasNext = cursor.moveToNext();
-                cursor.close();
-            }
-        }
-        cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_TO + " = ? AND " + ITEMS_KEY_FROM + " = ? ) ", args, null,null,ITEMS_KEY_ID+" ASC");
-        if (cursor!=null){
-            hasNext=cursor.moveToFirst();
-            while(hasNext) {
                 SimpleTextItem item = (SimpleTextItem) createItem(cursor);
                 items.add(item);
                 hasNext = cursor.moveToNext();

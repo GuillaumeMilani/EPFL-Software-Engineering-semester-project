@@ -66,6 +66,15 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     }
 
     @Test
+    public void testUpdateItem(){
+        dbHandler.addItem(testItem);
+        SimpleTextItem item = new SimpleTextItem(testItem.getID(),testUser,testUser3,new Date(3),"-1");
+        dbHandler.updateItem(item);
+        assertEquals(dbHandler.getItem(testItem.getID()),item);
+        clearDB();
+    }
+
+    @Test
     public void testAddAndDeleteMessage(){
         dbHandler.addItem(testItem);
         SimpleTextItem i = (SimpleTextItem) dbHandler.getItem(testItem.getID());
@@ -102,15 +111,25 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         initDB();
         getApplication().setCurrentUserID(testUser.getID());
         List<Item> contactItems = dbHandler.getItemsForContact(testUser2);
-        System.out.println("Contact items :"+contactItems.get(0).getID() +" AND "+contactItems.get(1).getID());
         assertEquals(contactItems.size(), 3);
         SimpleTextItem item = (SimpleTextItem) contactItems.get(0);
-        assertEquals(item.getID(),testItem2.getID());
+        assertEquals(item,testItem2);
         item = (SimpleTextItem) contactItems.get(1);
-        assertEquals(item.getID(),testItem3.getID());
+        assertEquals(item,testItem3);
         item=(SimpleTextItem) contactItems.get(2);
-        assertEquals(item.getID(),testItem4.getID());
+        assertEquals(item,testItem4);
         getApplication().setCurrentUserID(-1);
+        clearDB();
+    }
+
+    public void testDeleteEverything(){
+        initDB();
+        assertFalse(dbHandler.getAllItems().isEmpty());
+        dbHandler.deleteAllItems();
+        assertTrue(dbHandler.getAllItems().isEmpty());
+        assertFalse(dbHandler.getAllRecipients().isEmpty());
+        dbHandler.deleteAllRecipients();
+        assertTrue(dbHandler.getAllRecipients().isEmpty());
         clearDB();
     }
 
