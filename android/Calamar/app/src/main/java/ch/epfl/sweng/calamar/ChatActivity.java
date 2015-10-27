@@ -39,7 +39,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        app= (CalamarApplication) getApplication();
+        app = (CalamarApplication) getApplication();
 
         correspondent = new User(2, "Bob");
 
@@ -63,7 +63,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         databaseHandler = ((CalamarApplication) getApplication()).getDB();
 
-        boolean offline=true;
+        boolean offline = true;
         refresh(offline);
     }
 
@@ -71,7 +71,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      * Gets all messages and display them
      */
     private void refresh(boolean offline) {
-        new refreshTask(actualUser,offline).execute(client);
+        new refreshTask(actualUser, offline).execute(client);
     }
 
     /**

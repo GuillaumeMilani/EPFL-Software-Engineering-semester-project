@@ -23,19 +23,20 @@ public class CalamarApplication extends Application {
 
     /**
      * Returns the current instance of the application.
+     *
      * @return A singleton
      */
-    public CalamarApplication getInstance(){
+    public CalamarApplication getInstance() {
         return application;
     }
 
     @Override
-    public void onCreate(){
+    public void onCreate() {
         super.onCreate();
-        application=this;
-        db=new SQLiteDatabaseHandler(this);
-        sp =getSharedPreferences(CALAMAR_PREFERENCES, Context.MODE_PRIVATE);
-        editor=sp.edit();
+        application = this;
+        db = new SQLiteDatabaseHandler(this);
+        sp = getSharedPreferences(CALAMAR_PREFERENCES, Context.MODE_PRIVATE);
+        editor = sp.edit();
         //TODO remove once database is thoroughly tested (tests delete all entries)
         //setLastItemsRefresh(new Date(0));
         //setLastUsersRefresh(new Date(0));
@@ -43,73 +44,82 @@ public class CalamarApplication extends Application {
 
     /**
      * Get the database containing the recipients and the items.
+     *
      * @return the database
      */
-    public SQLiteDatabaseHandler getDB(){
+    public SQLiteDatabaseHandler getDB() {
         return db;
     }
 
     /**
      * Set the last time the application refreshed the users.
+     *
      * @param lastDate The date.
      */
-    public void setLastUsersRefresh(Date lastDate){
-        editor.putLong(LAST_USERS_REFRESH_SP,lastDate.getTime()).apply();
+    public void setLastUsersRefresh(Date lastDate) {
+        editor.putLong(LAST_USERS_REFRESH_SP, lastDate.getTime()).apply();
     }
 
     /**
      * Get the last time the application refreshed the users.
+     *
      * @return the long corresponding to the date.
      */
-    public long getLastUsersRefresh(){
-        return sp.getLong(LAST_USERS_REFRESH_SP,0);
+    public long getLastUsersRefresh() {
+        return sp.getLong(LAST_USERS_REFRESH_SP, 0);
     }
 
     /**
      * Set the time the application last refreshed the items.
+     *
      * @param lastDate The date.
      */
-    public void setLastItemsRefresh(Date lastDate){
-        editor.putLong(LAST_ITEMS_REFRESH_SP,lastDate.getTime()).apply();
+    public void setLastItemsRefresh(Date lastDate) {
+        editor.putLong(LAST_ITEMS_REFRESH_SP, lastDate.getTime()).apply();
     }
 
     /**
      * Returns the long corresponding to the last time the application refreshed the items.
+     *
      * @return the date as a long
      */
-    public long getLastItemsRefresh(){
-       return sp.getLong(LAST_ITEMS_REFRESH_SP,0);
+    public long getLastItemsRefresh() {
+        return sp.getLong(LAST_ITEMS_REFRESH_SP, 0);
     }
 
     /**
      * Sets the current user id.
+     *
      * @param id the id the current user will have
      */
-    public void setCurrentUserID(int id){
-        editor.putInt(CURRENT_USER_ID_SP,id).apply();
+    public void setCurrentUserID(int id) {
+        editor.putInt(CURRENT_USER_ID_SP, id).apply();
     }
 
     /**
      * Returns the ID of the current user
+     *
      * @return the id, or -1 if it is not defined.
      */
-    public int getCurrentUserID(){
-        return sp.getInt(CURRENT_USER_ID_SP,-1);
+    public int getCurrentUserID() {
+        return sp.getInt(CURRENT_USER_ID_SP, -1);
     }
 
     /**
      * Sets the name of the current user
+     *
      * @param name The new name of the user
      */
-    public void setCurrentUserName(String name){
-        editor.putString(CURRENT_USER_NAME_SP,name).apply();
+    public void setCurrentUserName(String name) {
+        editor.putString(CURRENT_USER_NAME_SP, name).apply();
     }
 
     /**
      * Returns the name of the current user
+     *
      * @return the name of the user
      */
-    public String getCurrentUserName(){
-        return sp.getString(CURRENT_USER_NAME_SP,"");
+    public String getCurrentUserName() {
+        return sp.getString(CURRENT_USER_NAME_SP, "");
     }
 }

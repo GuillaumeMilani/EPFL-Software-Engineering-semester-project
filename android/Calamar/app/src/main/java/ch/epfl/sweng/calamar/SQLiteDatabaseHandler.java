@@ -129,8 +129,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public void deleteItems(List<Integer> ids) {
         SQLiteDatabase db = this.getWritableDatabase();
         String[] args = new String[ids.size()];
-        for (int i = 0; i<ids.size();++i){
-            args[i]=Integer.toString(ids.get(i));
+        for (int i = 0; i < ids.size(); ++i) {
+            args[i] = Integer.toString(ids.get(i));
         }
         db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = ?", args);
         db.close();
@@ -221,13 +221,13 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Item> items = new ArrayList<>();
         String[] args = new String[ids.size()];
-        for (int i = 0; i<ids.size();++i){
-            args[i]=Integer.toString(ids.get(i));
+        for (int i = 0; i < ids.size(); ++i) {
+            args[i] = Integer.toString(ids.get(i));
         }
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = ?", args, null, null,  ITEMS_KEY_ID+" ASC");
-        if (cursor!=null){
-            boolean hasNext=cursor.moveToFirst();
-            while (hasNext){
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = ?", args, null, null, ITEMS_KEY_ID + " ASC");
+        if (cursor != null) {
+            boolean hasNext = cursor.moveToFirst();
+            while (hasNext) {
                 SimpleTextItem item = (SimpleTextItem) createItem(cursor);
                 items.add(item);
             }
@@ -247,9 +247,9 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Item> items = new ArrayList<>();
         int currentUserID = app.getCurrentUserID();
-        String[] args = {Integer.toString(currentUserID), Integer.toString(recipient.getID()),Integer.toString(currentUserID), Integer.toString(recipient.getID())};
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? ) OR ( "+ITEMS_KEY_TO+ " = ? AND "+ ITEMS_KEY_FROM+" = ? ) ", args, null, null, ITEMS_KEY_ID+" ASC");
-        boolean hasNext = false;
+        String[] args = {Integer.toString(currentUserID), Integer.toString(recipient.getID()), Integer.toString(currentUserID), Integer.toString(recipient.getID())};
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? ) OR ( " + ITEMS_KEY_TO + " = ? AND " + ITEMS_KEY_FROM + " = ? ) ", args, null, null, ITEMS_KEY_ID + " ASC");
+        boolean hasNext;
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
@@ -273,9 +273,9 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Item> items = new ArrayList<>();
         int currentUserID = app.getCurrentUserID();
-        String[] args = {Integer.toString(currentUserID), Integer.toString(contactID),Integer.toString(currentUserID), Integer.toString(contactID)};
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? ) OR ( "+ITEMS_KEY_TO+ " = ? AND "+ ITEMS_KEY_FROM+" = ? ) ", args, null, null, ITEMS_KEY_ID+" ASC");
-        boolean hasNext = false;
+        String[] args = {Integer.toString(currentUserID), Integer.toString(contactID), Integer.toString(currentUserID), Integer.toString(contactID)};
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? ) OR ( " + ITEMS_KEY_TO + " = ? AND " + ITEMS_KEY_FROM + " = ? ) ", args, null, null, ITEMS_KEY_ID + " ASC");
+        boolean hasNext;
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
@@ -296,8 +296,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public List<Item> getAllItems() {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + ITEMS_TABLE +" ORDER BY "+ITEMS_KEY_ID+" ASC", null);
-        boolean hasNext = false;
+        Cursor cursor = db.rawQuery("SELECT * FROM " + ITEMS_TABLE + " ORDER BY " + ITEMS_KEY_ID + " ASC", null);
+        boolean hasNext;
         List<Item> items = new ArrayList<>();
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
@@ -393,13 +393,13 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     /**
      * Deletes all recipients given as argument.
      *
-     * @param recipients a list of recipients to delete.
+     * @param ids a list of ids of recipients to delete.
      */
-    public void deleteRecipients(List<Recipient> recipients) {
+    public void deleteRecipients(List<Integer> ids) {
         SQLiteDatabase db = this.getWritableDatabase();
-        String[] args = new String[recipients.size()];
-        for (int i=0; i<recipients.size();++i){
-            args[i]=Integer.toString(recipients.get(i).getID());
+        String[] args = new String[ids.size()];
+        for (int i = 0; i < ids.size(); ++i) {
+            args[i] = Integer.toString(ids.get(i));
         }
 
         db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = ?", args);
@@ -446,9 +446,12 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public List<Recipient> getRecipients(List<Integer> ids) {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Recipient> recipients = new ArrayList<>();
-        String[] args = (String[]) ids.toArray(new String[ids.size()]);
-        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = ?", args, null, null,  RECIPIENTS_KEY_ID+" ASC",null);
-        boolean hasNext = false;
+        String[] args = new String[ids.size()];
+        for (int i = 0; i < args.length; ++i) {
+            args[i] = Integer.toString(ids.get(i));
+        }
+        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = ?", args, null, null, RECIPIENTS_KEY_ID + " ASC", null);
+        boolean hasNext;
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
@@ -468,8 +471,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public List<Recipient> getAllRecipients() {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + RECIPIENTS_TABLE+" ORDER BY "+RECIPIENTS_KEY_ID+" ASC", null);
-        boolean hasNext = false;
+        Cursor cursor = db.rawQuery("SELECT * FROM " + RECIPIENTS_TABLE + " ORDER BY " + RECIPIENTS_KEY_ID + " ASC", null);
+        boolean hasNext;
         List<Recipient> recipients = new ArrayList<>();
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
@@ -510,10 +513,10 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         return values;
     }
 
-    private User createUser(Cursor cursor){
+    private User createUser(Cursor cursor) {
         int id = cursor.getInt(0);
         String name = cursor.getString(1);
-        return new User(id,name);
+        return new User(id, name);
     }
 
     private void updateUsersWithItem(Recipient from, Recipient to, SQLiteDatabase db) {
