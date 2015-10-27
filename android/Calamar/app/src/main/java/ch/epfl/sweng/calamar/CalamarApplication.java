@@ -16,10 +16,15 @@ public class CalamarApplication extends Application {
     private SharedPreferences sp;
     private SharedPreferences.Editor editor;
     private final String CALAMAR_PREFERENCES = "ch.epfl.sweng.calamar";
-    private final String LAST_USERS_REFRESH = "lastUsersRefresh";
-    private final String LAST_ITEMS_REFRESH = "lastItemsRefresh";
-    private final String CURRENT_USER_ID = "currentUserID";
-    private final String CURRENT_USER_NAME = "currentUserName";
+    private final String LAST_USERS_REFRESH_SP = "lastUsersRefresh";
+    private final String LAST_ITEMS_REFRESH_SP = "lastItemsRefresh";
+    private final String CURRENT_USER_ID_SP = "currentUserID";
+    private final String CURRENT_USER_NAME_SP = "currentUserName";
+
+    private String currentUserName;
+    private int currentUserID;
+    private long lastUsersRefresh;
+    private long lastItemsRefresh;
 
     /**
      * Returns the current instance of the application.
@@ -39,6 +44,10 @@ public class CalamarApplication extends Application {
         //TODO remove once database is thoroughly tested (tests delete all entries)
         setLastItemsRefresh(new Date(0));
         setLastUsersRefresh(new Date(0));
+        currentUserName=sp.getString(CURRENT_USER_NAME_SP,"");
+        currentUserID=sp.getInt(CURRENT_USER_ID_SP,-1);
+        lastUsersRefresh=sp.getLong(LAST_USERS_REFRESH_SP,0);
+        lastItemsRefresh=sp.getLong(LAST_ITEMS_REFRESH_SP,0);
     }
 
     /**
@@ -54,7 +63,8 @@ public class CalamarApplication extends Application {
      * @param lastDate The date.
      */
     public void setLastUsersRefresh(Date lastDate){
-        editor.putLong(LAST_USERS_REFRESH,lastDate.getTime()).apply();
+        editor.putLong(LAST_USERS_REFRESH_SP,lastDate.getTime()).apply();
+        lastUsersRefresh=lastDate.getTime();
     }
 
     /**
@@ -62,7 +72,7 @@ public class CalamarApplication extends Application {
      * @return the long corresponding to the date.
      */
     public long getLastUsersRefresh(){
-        return sp.getLong(LAST_USERS_REFRESH,0);
+        return lastUsersRefresh;
     }
 
     /**
@@ -70,7 +80,8 @@ public class CalamarApplication extends Application {
      * @param lastDate The date.
      */
     public void setLastItemsRefresh(Date lastDate){
-        editor.putLong(LAST_ITEMS_REFRESH,lastDate.getTime()).apply();
+        editor.putLong(LAST_ITEMS_REFRESH_SP,lastDate.getTime()).apply();
+        lastItemsRefresh=lastDate.getTime();
     }
 
     /**
@@ -78,7 +89,7 @@ public class CalamarApplication extends Application {
      * @return the date as a long
      */
     public long getLastItemsRefresh(){
-       return sp.getLong(LAST_ITEMS_REFRESH,0);
+       return lastItemsRefresh;
     }
 
     /**
@@ -86,7 +97,8 @@ public class CalamarApplication extends Application {
      * @param id the id the current user will have
      */
     public void setCurrentUserID(int id){
-        editor.putInt(CURRENT_USER_ID,id).apply();
+        editor.putInt(CURRENT_USER_ID_SP,id).apply();
+        currentUserID=id;
     }
 
     /**
@@ -94,7 +106,7 @@ public class CalamarApplication extends Application {
      * @return the id, or -1 if it is not defined.
      */
     public int getCurrentUserID(){
-        return sp.getInt(CURRENT_USER_ID,-1);
+        return currentUserID;
     }
 
     /**
@@ -102,7 +114,8 @@ public class CalamarApplication extends Application {
      * @param name The new name of the user
      */
     public void setCurrentUserName(String name){
-        editor.putString(CURRENT_USER_NAME,name).apply();
+        editor.putString(CURRENT_USER_NAME_SP,name).apply();
+        currentUserName=name;
     }
 
     /**
@@ -110,6 +123,6 @@ public class CalamarApplication extends Application {
      * @return the name of the user
      */
     public String getCurrentUserName(){
-        return sp.getString(CURRENT_USER_NAME,"");
+        return currentUserName;
     }
 }
