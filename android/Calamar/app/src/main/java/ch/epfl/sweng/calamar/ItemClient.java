@@ -8,7 +8,7 @@ import java.util.List;
  */
 public interface ItemClient {
     /**
-     * gets from the server all items that have <i>recipient</i> into their recipent field
+     * gets from a database all items that have <i>recipient</i> into their recipient field
      * AND whose date is greater than <i>from</i>
      *
      * @param recipient the items we want must have recipient in their destination field
@@ -19,7 +19,7 @@ public interface ItemClient {
     public abstract List<Item> getAllItems(Recipient recipient) throws ItemClientException;
 
     /**
-     * send an item to the server
+     * send an item to a database
      * @param item
      */
     public abstract void send(Item item) throws ItemClientException;
