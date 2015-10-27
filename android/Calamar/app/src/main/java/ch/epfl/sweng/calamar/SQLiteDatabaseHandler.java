@@ -38,8 +38,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param app The application
      */
     public SQLiteDatabaseHandler(CalamarApplication app) {
-        super(app, DATABASE_NAME, null, DATABASE_VERSION);
-        this.app=app;
+        super(app.getInstance(), DATABASE_NAME, null, DATABASE_VERSION);
+        this.app=app.getInstance();
     }
 
     @Override
