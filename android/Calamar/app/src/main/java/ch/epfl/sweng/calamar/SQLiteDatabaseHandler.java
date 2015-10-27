@@ -66,6 +66,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         db.rawQuery("DROP TABLE IF EXISTS " + ITEMS_TABLE, null);
         db.rawQuery("DROP TABLE IF EXISTS " + RECIPIENTS_TABLE, null);
         this.close();
+        db.close();
         app.deleteDatabase(DATABASE_NAME);
     }
 
@@ -75,6 +76,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public void dropRecipientTable() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.rawQuery("DROP TABLE IF EXISTS " + RECIPIENTS_TABLE, null);
+        db.close();
     }
 
     /**
@@ -83,6 +85,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public void dropItemTable() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.rawQuery("DROP TABLE IF EXISTS " + ITEMS_TABLE, null);
+        db.close();
     }
 
     /**
@@ -91,6 +94,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public void deleteAllItems() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(ITEMS_TABLE, null, null);
+        db.close();
     }
 
     /**
@@ -102,6 +106,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         String[] args = {Integer.toString(message.getID())};
         db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = ?", args);
+        db.close();
     }
 
     /**
@@ -113,6 +118,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         String[] args = {Integer.toString(id)};
         db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = ?", args);
+        db.close();
     }
 
     /**
@@ -127,6 +133,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             args[i]=Integer.toString(ids.get(i));
         }
         db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = ?", args);
+        db.close();
     }
 
     /**
@@ -138,6 +145,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = createItemValues(item, db);
         db.replace(ITEMS_TABLE, null, values);
+        db.close();
     }
 
     /**
@@ -151,6 +159,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             ContentValues values = createItemValues(item, db);
             db.replace(ITEMS_TABLE, null, values);
         }
+        db.close();
     }
 
 
@@ -164,6 +173,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         ContentValues values = createItemValues(item, db);
         String[] args = {Integer.toString(item.getID())};
         db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = ?", args);
+        db.close();
     }
 
     /**
@@ -178,6 +188,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             String[] args = {Integer.toString(item.getID())};
             db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = ?", args);
         }
+        db.close();
     }
 
     /**
@@ -193,8 +204,10 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         if (cursor != null && cursor.moveToFirst()) {
             SimpleTextItem item = (SimpleTextItem) createItem(cursor);
             cursor.close();
+            db.close();
             return item;
         }
+        db.close();
         return null;
     }
 
@@ -204,14 +217,14 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param ids the ids corresponding to the items
      * @return the items
      */
-    public List<Item> getMessages(List<Integer> ids) {
+    public List<Item> getItems(List<Integer> ids) {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Item> items = new ArrayList<>();
         String[] args = new String[ids.size()];
         for (int i = 0; i<ids.size();++i){
             args[i]=Integer.toString(ids.get(i));
         }
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = ?", args, null, null, null, null);
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = ?", args, null, null,  ITEMS_KEY_ID+" ASC");
         if (cursor!=null){
             boolean hasNext=cursor.moveToFirst();
             while (hasNext){
@@ -220,6 +233,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             cursor.close();
         }
+        db.close();
         return items;
     }
 
@@ -229,12 +243,12 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param recipient The contact
      * @return a list of items
      */
-    public List<Item> getMessagesForContact(Recipient recipient) {
+    public List<Item> getItemsForContact(Recipient recipient) {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Item> items = new ArrayList<>();
         int currentUserID = app.getCurrentUserID();
         String[] args = {Integer.toString(currentUserID), Integer.toString(recipient.getID())};
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? )", args, null, null, null);
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? )", args, null, null, ITEMS_KEY_ID+" ASC");
         boolean hasNext = false;
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
@@ -245,6 +259,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             cursor.close();
         }
+        db.close();
         return items;
     }
 
@@ -254,12 +269,12 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param contactID The contact
      * @return a list of items
      */
-    public List<Item> getMessagesForContact(int contactID) {
+    public List<Item> getItemsForContact(int contactID) {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Item> items = new ArrayList<>();
         int currentUserID = app.getCurrentUserID();
         String[] args = {Integer.toString(currentUserID), Integer.toString(contactID)};
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? )", args, null, null, null);
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? ) ", args, null,null,ITEMS_KEY_ID+" ASC");
         boolean hasNext = false;
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
@@ -267,9 +282,20 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 SimpleTextItem item = (SimpleTextItem) createItem(cursor);
                 items.add(item);
                 hasNext = cursor.moveToNext();
+                cursor.close();
+            }
+        }
+        cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_TO + " = ? AND " + ITEMS_KEY_FROM + " = ? ) ", args, null,null,ITEMS_KEY_ID+" ASC");
+        if (cursor!=null){
+            hasNext=cursor.moveToFirst();
+            while(hasNext) {
+                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
+                items.add(item);
+                hasNext = cursor.moveToNext();
             }
             cursor.close();
         }
+        db.close();
         return items;
     }
 
@@ -280,7 +306,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public List<Item> getAllItems() {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + ITEMS_TABLE, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + ITEMS_TABLE +" ORDER BY "+ITEMS_KEY_ID+" ASC", null);
         boolean hasNext = false;
         List<Item> items = new ArrayList<>();
         if (cursor != null) {
@@ -292,6 +318,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             cursor.close();
         }
+        db.close();
         return items;
     }
 
@@ -304,6 +331,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = createRecipientValues(recipient);
         db.replace(RECIPIENTS_TABLE, null, values);
+        db.close();
     }
 
     /**
@@ -317,6 +345,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             ContentValues values = createRecipientValues(recipient);
             db.replace(RECIPIENTS_TABLE, null, values);
         }
+        db.close();
     }
 
     /**
@@ -329,6 +358,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         ContentValues values = createRecipientValues(recipient);
         String[] args = {Integer.toString(recipient.getID())};
         db.update(RECIPIENTS_TABLE, values, RECIPIENTS_KEY_ID + " = ?", args);
+        db.close();
     }
 
     /**
@@ -343,6 +373,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             String[] args = {Integer.toString(recipient.getID())};
             db.update(RECIPIENTS_TABLE, values, RECIPIENTS_KEY_ID + " = ?", args);
         }
+        db.close();
     }
 
     /**
@@ -354,6 +385,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         String[] args = {Integer.toString(recipient.getID())};
         db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = ?", args);
+        db.close();
     }
 
     /**
@@ -365,6 +397,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         String[] args = {Integer.toString(id)};
         db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = ?", args);
+        db.close();
     }
 
     /**
@@ -380,6 +413,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         }
 
         db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = ?", args);
+        db.close();
     }
 
     /**
@@ -388,6 +422,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public void deleteAllRecipients() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(RECIPIENTS_TABLE, null, null);
+        db.close();
     }
 
     /**
@@ -404,9 +439,11 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
             String name = cursor.getString(1);
             cursor.close();
+            db.close();
             //TODO returns only user now
             return new User(id, name);
         }
+        db.close();
         return null;
     }
 
@@ -420,7 +457,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Recipient> recipients = new ArrayList<>();
         String[] args = (String[]) ids.toArray(new String[ids.size()]);
-        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = ?", args, null, null, null, null);
+        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = ?", args, null, null,  RECIPIENTS_KEY_ID+" ASC",null);
         boolean hasNext = false;
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
@@ -430,6 +467,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             cursor.close();
         }
+        db.close();
         return recipients;
     }
 
@@ -440,7 +478,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public List<Recipient> getAllRecipients() {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + RECIPIENTS_TABLE, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + RECIPIENTS_TABLE+" ORDER BY "+RECIPIENTS_KEY_ID+" ASC", null);
         boolean hasNext = false;
         List<Recipient> recipients = new ArrayList<>();
         if (cursor != null) {
@@ -451,6 +489,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             cursor.close();
         }
+        db.close();
         return recipients;
     }
 

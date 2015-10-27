@@ -5,13 +5,14 @@ import android.test.ApplicationTestCase;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-
+@RunWith(JUnit4.class)
 public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplication> {
 
     private SQLiteDatabaseHandler dbHandler;
@@ -99,15 +100,16 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     @Test
     public void testGetMessagesBetweenTwoUsers(){
         initDB();
-        getApplication().setCurrentUserID(0);
-        List<Item> contactItems = dbHandler.getMessagesForContact(testUser2);
+        getApplication().setCurrentUserID(testUser.getID());
+        List<Item> contactItems = dbHandler.getItemsForContact(testUser2);
+        System.out.println("Contact items :"+contactItems.get(0).getID() +" AND "+contactItems.get(1).getID());
         assertEquals(contactItems.size(), 3);
         SimpleTextItem item = (SimpleTextItem) contactItems.get(0);
-        assertEquals(item,testItem2);
+        assertEquals(item.getID(),testItem2.getID());
         item = (SimpleTextItem) contactItems.get(1);
-        assertEquals(item,testItem3);
+        assertEquals(item.getID(),testItem3.getID());
         item=(SimpleTextItem) contactItems.get(2);
-        assertEquals(item,testItem4);
+        assertEquals(item.getID(),testItem4.getID());
         getApplication().setCurrentUserID(-1);
         clearDB();
     }
