@@ -9,7 +9,6 @@ import java.util.Date;
 public class CalamarApplication extends Application {
 
     //TODO There is debate on using a Singleton or not
-    //TODO We could use SharedPreferences to store an hashed userID and userName
 
     private static CalamarApplication application;
     private SQLiteDatabaseHandler db;
@@ -123,21 +122,37 @@ public class CalamarApplication extends Application {
         return sp.getString(CURRENT_USER_NAME_SP, "");
     }
 
+    /**
+     * Resets the Username to an empty String.
+     */
     public void resetUsername(){
         setCurrentUserName("");
     }
 
+    /**
+     * Resets the user ID to -1
+     */
     public void resetUserID(){
         setCurrentUserID(-1);
     }
 
+    /**
+     * Resets the lastItemsRefresh to 0
+     */
     public void resetLastItemsRefresh(){
         setLastItemsRefresh(new Date(0));
     }
+
+    /**
+     * Resets the lastUsersRefresh to 0
+     */
     public void resetLastUsersRefresh(){
         setLastUsersRefresh(new Date(0));
     }
 
+    /**
+     * Resets everything to its default value {@see resetUserID}{@see resetUsername}{@see resetLastItemsRefresh}{@see resetLastUsersRefresh}
+     */
     public void resetPreferences(){
         resetUserID();
         resetUsername();
