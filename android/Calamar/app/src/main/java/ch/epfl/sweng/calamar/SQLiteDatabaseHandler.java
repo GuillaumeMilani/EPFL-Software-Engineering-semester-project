@@ -59,36 +59,6 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     /**
-     * Deletes the database
-     */
-    public void deleteDatabase() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.rawQuery("DROP TABLE IF EXISTS " + ITEMS_TABLE, null);
-        db.rawQuery("DROP TABLE IF EXISTS " + RECIPIENTS_TABLE, null);
-        this.close();
-        db.close();
-        app.deleteDatabase(DATABASE_NAME);
-    }
-
-    /**
-     * Drops the Recipient table
-     */
-    public void dropRecipientTable() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.rawQuery("DROP TABLE IF EXISTS " + RECIPIENTS_TABLE, null);
-        db.close();
-    }
-
-    /**
-     * Drops the Item table
-     */
-    public void dropItemTable() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.rawQuery("DROP TABLE IF EXISTS " + ITEMS_TABLE, null);
-        db.close();
-    }
-
-    /**
      * Deletes all items in the database
      */
     public void deleteAllItems() {
