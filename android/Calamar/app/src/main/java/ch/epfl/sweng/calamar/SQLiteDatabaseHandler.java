@@ -33,7 +33,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static final String[] RECIPIENTS_COLUMN = {RECIPIENTS_KEY_ID, RECIPIENTS_KEY_NAME};
 
     /**
-     * Create a databasehandler for managing stored informations on the user phone.
+     * Creates a databasehandler for managing stored informations on the user phone.
      *
      * @param app The application
      */
@@ -45,11 +45,11 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         final String createMessagesTable = "CREATE TABLE " + ITEMS_TABLE + " ("
-                + ITEMS_KEY_ID + " INTEGER PRIMARY KEY," + ITEMS_KEY_TEXT + " TEXT,"
-                + ITEMS_KEY_FROM + " INTEGER," + ITEMS_KEY_TO + " INTEGER," + ITEMS_KEY_TIME + " INTEGER)";
+                + ITEMS_KEY_ID + " INTEGER PRIMARY KEY NOT NULL," + ITEMS_KEY_TEXT + " TEXT,"
+                + ITEMS_KEY_FROM + " INTEGER NOT NULL," + ITEMS_KEY_TO + " INTEGER NOT NULL," + ITEMS_KEY_TIME + " INTEGER NOT NULL)";
         db.execSQL(createMessagesTable);
-        final String createRecipientsTable = "CREATE TABLE " + RECIPIENTS_TABLE + " (" + RECIPIENTS_KEY_ID + " INTEGER PRIMARY KEY,"
-                + RECIPIENTS_KEY_NAME + " TEXT)";
+        final String createRecipientsTable = "CREATE TABLE " + RECIPIENTS_TABLE + " (" + RECIPIENTS_KEY_ID + " INTEGER PRIMARY KEY NOT NULL,"
+                + RECIPIENTS_KEY_NAME + " TEXT NOT NULL)";
         db.execSQL(createRecipientsTable);
     }
 
@@ -137,26 +137,26 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     /**
-     * Adds an item
+     * Adds an item and updates recipients informations related to it
      *
      * @param item the item to add
      */
     public void addItem(Item item) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = createItemValues(item, db);
+        ContentValues values = createItemValuesAndUpdateRecipientsInformations(item, db);
         db.replace(ITEMS_TABLE, null, values);
         db.close();
     }
 
     /**
-     * Adds all items given a list
+     * Adds all items given a list, and updates recipients informations related to them
      *
      * @param items the list of items to add
      */
     public void addItems(List<Item> items) {
         SQLiteDatabase db = this.getWritableDatabase();
         for (Item item : items) {
-            ContentValues values = createItemValues(item, db);
+            ContentValues values = createItemValuesAndUpdateRecipientsInformations(item, db);
             db.replace(ITEMS_TABLE, null, values);
         }
         db.close();
@@ -164,27 +164,27 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
 
     /**
-     * Updates an item
+     * Updates an item and the recipients related to it
      *
      * @param item the item to update
      */
     public void updateItem(Item item) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = createItemValues(item, db);
+        ContentValues values = createItemValuesAndUpdateRecipientsInformations(item, db);
         String[] args = {Integer.toString(item.getID())};
         db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = ?", args);
         db.close();
     }
 
     /**
-     * Updates several items given a list
+     * Updates several items given a list, as well as the recipients related to them
      *
      * @param items the list of items to update
      */
     public void updateItems(List<Item> items) {
         SQLiteDatabase db = this.getWritableDatabase();
         for (Item item : items) {
-            ContentValues values = createItemValues(item, db);
+            ContentValues values = createItemValuesAndUpdateRecipientsInformations(item, db);
             String[] args = {Integer.toString(item.getID())};
             db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = ?", args);
         }
@@ -486,7 +486,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         return recipients;
     }
 
-    private ContentValues createItemValues(Item item, SQLiteDatabase db) {
+    private ContentValues createItemValuesAndUpdateRecipientsInformations(Item item, SQLiteDatabase db) {
         ContentValues values = new ContentValues();
         values.put(ITEMS_KEY_ID, item.getID());
         values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());

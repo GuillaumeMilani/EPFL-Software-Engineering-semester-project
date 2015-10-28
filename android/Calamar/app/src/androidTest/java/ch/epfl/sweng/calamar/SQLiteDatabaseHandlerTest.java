@@ -123,8 +123,9 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         toGet.add(testUser.getID());
         toGet.add(testUser2.getID());
         List<Recipient> recipientsGot = dbHandler.getRecipients(toGet);
-        assertEquals(recipientsGot.get(0), testUser);
-        assertEquals(recipientsGot.get(1), testUser2);
+        assertEquals(recipientsGot.size(),2);
+        assertEquals(recipientsGot.get(0).getID(), testUser.getID());
+        assertEquals(recipientsGot.get(1).getID(), testUser2.getID());
         clearDB();
     }
 
