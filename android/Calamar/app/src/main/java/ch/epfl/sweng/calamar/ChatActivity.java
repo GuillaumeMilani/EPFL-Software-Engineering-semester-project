@@ -42,10 +42,10 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        lastRefresh = new Date(0);
         setActualUser();
 
         correspondent = new User(2,"Bob");
-        lastRefresh = new Date(0);
 
         client = new NetworkDatabaseClient("http://calamar.japan-impact.ch",new DefaultNetworkProvider());
 

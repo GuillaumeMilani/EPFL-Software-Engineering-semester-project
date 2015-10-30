@@ -27,7 +27,7 @@ public class NetworkDatabaseClient implements ItemClient,UserClient {
     private final static int HTTP_SUCCESS_END = 299;
     private final static String SEND_PATH = "/items.php?action=send";
     private final static String RETRIEVE_PATH = "/items.php?action=retrieve";
-    private final static String NEW_USWER_PATH = "???";
+    private final static String NEW_USER_PATH = "/users.php?action=add";
 
     public NetworkDatabaseClient(String serverUrl, NetworkProvider networkProvider)  {
         if(null == serverUrl || null == networkProvider) {
@@ -90,15 +90,14 @@ public class NetworkDatabaseClient implements ItemClient,UserClient {
     public int newUser(String email, String deviceId) throws ItemClientException {
         HttpURLConnection connection = null;
         try {
-            URL url = new URL(serverUrl + NetworkDatabaseClient.NEW_USWER_PATH);
+            URL url = new URL(serverUrl + NetworkDatabaseClient.NEW_USER_PATH);
 
             String jsonParameter = "{ " +
-                    "\"DeviceID\": " + deviceId +
-                    ",\"Email\": " + email +
+                    "\"DeviceID\": \"" + deviceId+"\"" +
+                    ",\"name\": \"" + email+"\"" +
                     " }";
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter);
-
             return idFromJson(response);
         } catch (IOException | JSONException e) {
             throw new ItemClientException(e);
@@ -157,7 +156,7 @@ public class NetworkDatabaseClient implements ItemClient,UserClient {
 
         int responseCode = connection.getResponseCode();
         if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
-            throw new ItemClientException("Invalid HTTP response code");
+            throw new ItemClientException("Invalid HTTP response code (" + responseCode + " )" );
         }
 
         //get result
