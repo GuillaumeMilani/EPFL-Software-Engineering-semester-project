@@ -32,7 +32,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     private NetworkDatabaseClient client;
 
-    public static User actualUser;
+    public static User actualUser = new User(-1,"Unknown");
     private User correspondent;
 
     private Date lastRefresh;
@@ -42,7 +42,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        actualUser = getActualUser();
+        setActualUser();
 
         correspondent = new User(2,"Bob");
         lastRefresh = new Date(0);
@@ -72,30 +72,21 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * Return the actual user of the app.
      */
-    private User getActualUser(){
-        int id = -1;
-        String email = "No Email";
+    private void setActualUser(){
         // if 0, create a new user !
-       if(lastRefresh.getTime() == 0){
-           //Get the device id.
-           TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-           //Get google account email
-           AccountManager manager = AccountManager.get(this);
-           Account[] list = manager.getAccountsByType("com.google");
-           if(list.length > 1){
-               email = list[0].name;
-           }
-           try {
-               id = client.newUser(email,telephonyManager.getDeviceId());
-           } catch (ItemClientException e) {
-               //TODO : Retry ? What to do ?
-               e.printStackTrace();
-           }
-           //TODO : Add in the bdd the current user.
+        if(lastRefresh.getTime() == 0){
+            String name = "No Email";
+            //Get google account email
+            AccountManager manager = AccountManager.get(this);
+            Account[] list = manager.getAccountsByType("com.google");
+            if(list.length > 0){
+                name = list[0].name;
+            }
+            new createNewUserTask(name).execute(client);
        } else {
            //TODO : Go in the bdd get the user.
+           // actualUser = ...
        }
-        return new User(id,email);
     }
 
     /**
@@ -191,5 +182,41 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
+    }
+
+    /**
+     * Async task for sending a message.
+     *
+     */
+    private class createNewUserTask extends AsyncTask<ItemClient, Void, Integer> {
+
+        private String name = "No name";
+
+        public createNewUserTask(String name){
+            this.name = name;
+        }
+
+        @Override
+        protected Integer doInBackground(ItemClient... itemClients) {
+            try {
+                //Get the device id.
+                TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+                return client.newUser(name,telephonyManager.getDeviceId());
+            } catch (ItemClientException e) {
+                //TODO : TOAST
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Integer id) {
+            if(id != null) {
+                actualUser = new User(id,name);
+                //TODO : Store in ddb
+            } else {
+                //TODO : TOAST
+            }
+        }
     }
 }
