@@ -113,7 +113,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void addItem(Item item) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = createItemValues(item, db);
+        ContentValues values = createItemValues(item);
         db.replace(ITEMS_TABLE, null, values);
         updateRecipientsWithItem(item, db);
         db.close();
@@ -127,7 +127,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public void addItems(List<Item> items) {
         SQLiteDatabase db = this.getWritableDatabase();
         for (Item item : items) {
-            ContentValues values = createItemValues(item, db);
+            ContentValues values = createItemValues(item);
             db.replace(ITEMS_TABLE, null, values);
             updateRecipientsWithItem(item, db);
         }
@@ -142,7 +142,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void updateItem(Item item) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = createItemValues(item, db);
+        ContentValues values = createItemValues(item);
         String[] args = {Integer.toString(item.getID())};
         db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = ?", args);
         updateRecipientsWithItem(item, db);
@@ -157,7 +157,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public void updateItems(List<Item> items) {
         SQLiteDatabase db = this.getWritableDatabase();
         for (Item item : items) {
-            ContentValues values = createItemValues(item, db);
+            ContentValues values = createItemValues(item);
             String[] args = {Integer.toString(item.getID())};
             db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = ?", args);
             updateRecipientsWithItem(item, db);
@@ -195,15 +195,15 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Item> items = new ArrayList<>();
         String[] args = new String[ids.size()];
-        for (int i = 0; i < ids.size(); ++i) {
-            args[i] = Integer.toString(ids.get(i));
+        for (int i=0;i<ids.size();++i){
+            args[i]=Integer.toString(ids.get(i));
         }
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = ?", args, null, null, ITEMS_KEY_ID + " ASC");
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " IN ("+createPlaceholders(ids.size())+")", args, null, null, ITEMS_KEY_ID + " ASC");
         if (cursor != null) {
             boolean hasNext = cursor.moveToFirst();
             while (hasNext) {
-                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
-                items.add(item);
+                items.add(createItem(cursor));
+                hasNext=cursor.moveToNext();
             }
             cursor.close();
         }
@@ -421,10 +421,10 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Recipient> recipients = new ArrayList<>();
         String[] args = new String[ids.size()];
-        for (int i = 0; i < args.length; ++i) {
-            args[i] = Integer.toString(ids.get(i));
+        for (int i=0;i<ids.size();++i){
+            args[i]=Integer.toString(ids.get(i));
         }
-        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = ?", args, null, null, RECIPIENTS_KEY_ID + " ASC", null);
+        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " IN ("+createPlaceholders(ids.size())+")", args, null, null, RECIPIENTS_KEY_ID + " ASC", null);
         boolean hasNext;
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
@@ -460,7 +460,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         return recipients;
     }
 
-    private ContentValues createItemValues(Item item, SQLiteDatabase db) {
+    private ContentValues createItemValues(Item item) {
         ContentValues values = new ContentValues();
         values.put(ITEMS_KEY_ID, item.getID());
         values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());
@@ -497,5 +497,19 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         ContentValues valuesTo = createRecipientValues(item.getTo());
         db.replace(RECIPIENTS_TABLE, null, valuesFrom);
         db.replace(RECIPIENTS_TABLE, null, valuesTo);
+    }
+
+    private String createPlaceholders(int length){
+        if (length<1){
+            throw new RuntimeException("No placeholders");
+        }
+        else{
+            StringBuilder builder = new StringBuilder(length*2-1);
+            builder.append('?');
+            for (int i =1 ; i<length;++i){
+                builder.append(",?");
+            }
+            return builder.toString();
+        }
     }
 }

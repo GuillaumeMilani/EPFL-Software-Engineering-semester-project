@@ -40,16 +40,23 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
 
     @Before
-    public void testEmptyDatabase() {
+    public void testDatabaseIsEmpty() {
         assertTrue(dbHandler.getAllItems().isEmpty());
         assertTrue(dbHandler.getAllRecipients().isEmpty());
+    }
+
+    @Test
+    public void testDeleteOnEmptyDatabase(){
+        dbHandler.deleteItem(0);
+        dbHandler.deleteRecipient(0);
+        assertEquals(dbHandler.getAllItems().size(), 0);
+        assertEquals(dbHandler.getAllRecipients().size(), 0);
     }
 
     @Test
     public void testAddAndDeleteRecipient() {
         dbHandler.addRecipient(testUser);
         User u = (User) dbHandler.getRecipient(0);
-        //TODO could use only one assertEquals if equals is redefined for User and Item
         assertEquals(u, testUser);
         dbHandler.deleteRecipient(testUser.getID());
         u = (User) dbHandler.getRecipient(testUser.getID());
@@ -124,8 +131,8 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         toGet.add(testUser2.getID());
         List<Recipient> recipientsGot = dbHandler.getRecipients(toGet);
         assertEquals(recipientsGot.size(),2);
-        assertEquals(recipientsGot.get(0).getID(), testUser.getID());
-        assertEquals(recipientsGot.get(1).getID(), testUser2.getID());
+        assertEquals(recipientsGot.get(0), testUser);
+        assertEquals(recipientsGot.get(1), testUser2);
         clearDB();
     }
 
