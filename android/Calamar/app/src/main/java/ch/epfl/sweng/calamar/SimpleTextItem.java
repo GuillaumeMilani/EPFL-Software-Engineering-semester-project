@@ -43,12 +43,12 @@ public final class SimpleTextItem extends Item {
         if ( this == o ) return true;
         if ( !(o instanceof SimpleTextItem) ) return false;
         SimpleTextItem that = (SimpleTextItem)o;
-        return super.equals(that) && that.message == message;
+        return super.equals(that) && that.message.equals(message);
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode()*73+message != null ? message.hashCode() : 0;
+        return super.hashCode()*73+(message != null ? message.hashCode() : 0);
     }
 
     public static class Builder extends Item.Builder {

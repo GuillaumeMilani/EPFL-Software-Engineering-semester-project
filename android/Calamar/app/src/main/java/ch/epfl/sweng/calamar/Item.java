@@ -38,9 +38,7 @@ public abstract class Item {
     public Date getDate() {
         return new Date(this.date);
     }
-
-    //TODO: hashcode
-
+    
     protected void compose(JSONObject o) throws JSONException {
         o.accumulate("ID", ID);
         o.accumulate("from", from.toJSON());
@@ -71,7 +69,7 @@ public abstract class Item {
         if ( this == o ) return true;
         if ( !(o instanceof Item) ) return false;
         Item that = (Item)o;
-        return that.ID == ID && that.from.equals(from) && that.to.equals(to) && that.date == date;
+        return super.equals(o) && that.ID == ID && that.from.equals(from) && that.to.equals(to) && that.date == date;
     }
 
     @Override
