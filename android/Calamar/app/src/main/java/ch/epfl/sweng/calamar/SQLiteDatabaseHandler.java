@@ -113,8 +113,9 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void addItem(Item item) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = createItemValuesAndUpdateRecipientsInformations(item, db);
+        ContentValues values = createItemValues(item, db);
         db.replace(ITEMS_TABLE, null, values);
+        updateRecipientsWithItem(item, db);
         db.close();
     }
 
@@ -126,8 +127,9 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public void addItems(List<Item> items) {
         SQLiteDatabase db = this.getWritableDatabase();
         for (Item item : items) {
-            ContentValues values = createItemValuesAndUpdateRecipientsInformations(item, db);
+            ContentValues values = createItemValues(item, db);
             db.replace(ITEMS_TABLE, null, values);
+            updateRecipientsWithItem(item, db);
         }
         db.close();
     }
@@ -140,9 +142,10 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public void updateItem(Item item) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = createItemValuesAndUpdateRecipientsInformations(item, db);
+        ContentValues values = createItemValues(item, db);
         String[] args = {Integer.toString(item.getID())};
         db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = ?", args);
+        updateRecipientsWithItem(item, db);
         db.close();
     }
 
@@ -154,9 +157,10 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public void updateItems(List<Item> items) {
         SQLiteDatabase db = this.getWritableDatabase();
         for (Item item : items) {
-            ContentValues values = createItemValuesAndUpdateRecipientsInformations(item, db);
+            ContentValues values = createItemValues(item, db);
             String[] args = {Integer.toString(item.getID())};
             db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = ?", args);
+            updateRecipientsWithItem(item, db);
         }
         db.close();
     }
@@ -456,14 +460,13 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         return recipients;
     }
 
-    private ContentValues createItemValuesAndUpdateRecipientsInformations(Item item, SQLiteDatabase db) {
+    private ContentValues createItemValues(Item item, SQLiteDatabase db) {
         ContentValues values = new ContentValues();
         values.put(ITEMS_KEY_ID, item.getID());
         values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());
         values.put(ITEMS_KEY_FROM, item.getFrom().getID());
         values.put(ITEMS_KEY_TO, item.getTo().getID());
         values.put(ITEMS_KEY_TIME, item.getDate().getTime());
-        updateUsersWithItem(item.getFrom(), item.getTo(), db);
         return values;
     }
 
@@ -489,9 +492,9 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         return new User(id, name);
     }
 
-    private void updateUsersWithItem(Recipient from, Recipient to, SQLiteDatabase db) {
-        ContentValues valuesFrom = createRecipientValues(from);
-        ContentValues valuesTo = createRecipientValues(to);
+    private void updateRecipientsWithItem(Item item, SQLiteDatabase db) {
+        ContentValues valuesFrom = createRecipientValues(item.getFrom());
+        ContentValues valuesTo = createRecipientValues(item.getTo());
         db.replace(RECIPIENTS_TABLE, null, valuesFrom);
         db.replace(RECIPIENTS_TABLE, null, valuesTo);
     }
