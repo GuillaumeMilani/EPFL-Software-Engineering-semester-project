@@ -160,7 +160,6 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         initDB();
         List<Integer> toDelete = new ArrayList<>();
         toDelete.add(testItem.getID());
-        toDelete.add(testItem.getID());
         toDelete.add(testItem3.getID());
         dbHandler.deleteItems(toDelete);
         List<Item> itemsGot = dbHandler.getAllItems();
@@ -174,7 +173,6 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     public void testDeleteMultipleUsers() {
         initDB();
         List<Integer> toDelete = new ArrayList<>();
-        toDelete.add(testUser.getID());
         toDelete.add(testUser.getID());
         toDelete.add(testUser3.getID());
         dbHandler.deleteRecipients(toDelete);

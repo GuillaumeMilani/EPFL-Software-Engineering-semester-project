@@ -102,7 +102,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         for (int i = 0; i < ids.size(); ++i) {
             args[i] = Integer.toString(ids.get(i));
         }
-        db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = ?", args);
+        db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " IN ("+createPlaceholders(ids.size())+")", args);
         db.close();
     }
 
@@ -376,7 +376,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             args[i] = Integer.toString(ids.get(i));
         }
 
-        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = ?", args);
+        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " IN ("+createPlaceholders(ids.size())+")", args);
         db.close();
     }
 
