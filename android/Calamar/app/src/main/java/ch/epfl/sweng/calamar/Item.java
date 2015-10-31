@@ -38,7 +38,7 @@ public abstract class Item {
     public Date getDate() {
         return new Date(this.date);
     }
-    
+
     protected void compose(JSONObject o) throws JSONException {
         o.accumulate("ID", ID);
         o.accumulate("from", from.toJSON());
