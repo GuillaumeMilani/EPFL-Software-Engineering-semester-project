@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -28,8 +29,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     private ItemClient client;
 
-    public static User actualUser = new User(1, "Alice");
-    private User correspondent;
+    private Recipient correspondent;
 
     private CalamarApplication app;
 
@@ -39,9 +39,13 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        app = (CalamarApplication) getApplication();
+        app = ((CalamarApplication) getApplication()).getInstance();
 
-        correspondent = new User(2, "Bob");
+        Intent intent = getIntent();
+        String correspondentName = intent.getStringExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME);
+        int correspondentID = intent.getIntExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID,-1); // -1 = default value
+
+        correspondent = new User(correspondentID,correspondentName);
 
         client = new NetworkItemClient("http://calamar.japan-impact.ch", new DefaultNetworkProvider());
 
@@ -55,13 +59,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         messagesContainer.setAdapter(adapter);
 
         TextView recipient = (TextView) findViewById(R.id.recipientLabel);
-        //TODO Change Recipient depending on User ID
-        recipient.setText("Someone");
+        recipient.setText(correspondent.getName());
 
         refreshButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
 
-        databaseHandler = ((CalamarApplication) getApplication()).getDB();
+        databaseHandler = app.getDB();
 
         boolean offline = true;
         refresh(offline);
@@ -71,7 +74,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      * Gets all messages and display them
      */
     private void refresh(boolean offline) {
-        new refreshTask(actualUser, offline).execute(client);
+        new refreshTask(app.getCurrentUser(), offline).execute(client);
     }
 
     /**
@@ -79,7 +82,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void send() {
         String message = editText.getText().toString();
-        Item textMessage = new SimpleTextItem(1, actualUser, correspondent, new Date(), message);
+        Item textMessage = new SimpleTextItem(1,app.getCurrentUser(),correspondent,new Date(),message);
         adapter.add(textMessage);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
@@ -118,7 +121,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 itemClients[0].send(textMessage);
                 //TODO need id to put into database
                 databaseHandler.addItem(textMessage);
-                List<Item> allItems = databaseHandler.getAllItems();
                 return null;
                 //return itemClients[0].send(textMessage);
             } catch (ItemClientException e) {
@@ -145,7 +147,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected List<Item> doInBackground(ItemClient... itemClients) {
             if (offline) {
-                return databaseHandler.getAllItems();
+                return databaseHandler.getItemsForContact(correspondent);
             } else {
                 try {
                     List<Item> items = itemClients[0].getAllItems(recipient, new Date(app.getLastItemsRefresh()));

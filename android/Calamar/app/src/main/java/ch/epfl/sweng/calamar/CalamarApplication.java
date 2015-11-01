@@ -123,6 +123,14 @@ public class CalamarApplication extends Application {
     }
 
     /**
+     * Returns the current User
+     * @return the user
+     */
+    public User getCurrentUser(){
+        return new User(getCurrentUserID(),getCurrentUserName());
+    }
+
+    /**
      * Resets the Username to an empty String.
      */
     public void resetUsername(){

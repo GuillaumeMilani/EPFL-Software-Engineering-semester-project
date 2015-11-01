@@ -14,8 +14,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import ch.epfl.sweng.calamar.SimpleTextItem;
-
 //TODO : Support other item types
 
 public class ChatAdapter extends BaseAdapter {
@@ -62,8 +60,8 @@ public class ChatAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        //TODO uses (define) equals on Recipient/User
-        boolean ingoing = !(item.getFrom().getID() == ChatActivity.actualUser.getID());
+
+        boolean ingoing = !(item.getFrom().getID() == ChatUsersListActivity.actualUser.getID());
         setAlignment(holder, ingoing);
         holder.textMessage.setText(item.getMessage());
         holder.textTime.setText(item.getDate().toString());
