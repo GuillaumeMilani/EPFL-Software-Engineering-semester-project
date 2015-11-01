@@ -3,7 +3,6 @@
 /**
 * Add an item into the database
 * TODO : Better management of the type
-* TODO : integrate this method into a MVC structures
 */
 function add_items($from,$to,$date,$type,$type_data)
 {
@@ -34,7 +33,7 @@ function add_items_text($ID,$text)
 {
 	global $pdo;
 	
-	$id = (int) $id;
+	$id = (int) $ID;
 	
 	$query = $pdo->prepare('INSERT INTO `tb_item_text` (`ID`, `text`) VALUES (:id, :text)');
 	$query->bindParam(':id',$ID,PDO::PARAM_INT);
