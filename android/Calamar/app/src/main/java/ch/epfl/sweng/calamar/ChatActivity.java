@@ -107,7 +107,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      */
     private class sendItemTask extends AsyncTask<ItemClient, Void, Void> {
 
-        private Item textMessage;
+        private final Item textMessage;
 
         public sendItemTask(Item textMessage) {
             this.textMessage = textMessage;

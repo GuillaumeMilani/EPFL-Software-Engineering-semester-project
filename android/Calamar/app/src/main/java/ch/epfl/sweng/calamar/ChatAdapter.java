@@ -61,7 +61,7 @@ public class ChatAdapter extends BaseAdapter {
         }
 
 
-        boolean ingoing = !(item.getFrom().getID() == ChatUsersListActivity.actualUser.getID());
+        boolean ingoing = !(item.getFrom().getID() == ((CalamarApplication) context.getApplication()).getInstance().getCurrentUserID());
         setAlignment(holder, ingoing);
         holder.textMessage.setText(item.getMessage());
         holder.textTime.setText(item.getDate().toString());
@@ -102,38 +102,42 @@ public class ChatAdapter extends BaseAdapter {
         if (outgoing) {
             holder.contentWithBG.setBackgroundResource(R.drawable.out_message_bg);
             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) holder.contentWithBG.getLayoutParams();
-            layoutParams.gravity = Gravity.LEFT;
+            layoutParams.gravity = Gravity.START;
             holder.contentWithBG.setLayoutParams(layoutParams);
 
             RelativeLayout.LayoutParams rLayoutParams = (RelativeLayout.LayoutParams) holder.content.getLayoutParams();
             rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END, 0);
             rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
+            rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT,0);
+            rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
             holder.content.setLayoutParams(rLayoutParams);
             layoutParams = (LinearLayout.LayoutParams) holder.textMessage.getLayoutParams();
-            layoutParams.gravity = Gravity.LEFT;
+            layoutParams.gravity = Gravity.START;
             holder.textMessage.setLayoutParams(layoutParams);
 
             layoutParams = (LinearLayout.LayoutParams) holder.textTime.getLayoutParams();
-            layoutParams.gravity = Gravity.LEFT;
+            layoutParams.gravity = Gravity.START;
             holder.textTime.setLayoutParams(layoutParams);
         } else {
             holder.contentWithBG.setBackgroundResource(R.drawable.in_message_bg);
             LinearLayout.LayoutParams layoutParams =
                     (LinearLayout.LayoutParams) holder.contentWithBG.getLayoutParams();
-            layoutParams.gravity = Gravity.RIGHT;
+            layoutParams.gravity = Gravity.END;
             holder.contentWithBG.setLayoutParams(layoutParams);
 
             RelativeLayout.LayoutParams rLayoutParams =
                     (RelativeLayout.LayoutParams) holder.content.getLayoutParams();
             rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
             rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START,0);
+            rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
             holder.content.setLayoutParams(rLayoutParams);
             layoutParams = (LinearLayout.LayoutParams) holder.textMessage.getLayoutParams();
-            layoutParams.gravity = Gravity.RIGHT;
+            layoutParams.gravity = Gravity.END;
             holder.textMessage.setLayoutParams(layoutParams);
 
             layoutParams = (LinearLayout.LayoutParams) holder.textTime.getLayoutParams();
-            layoutParams.gravity = Gravity.RIGHT;
+            layoutParams.gravity = Gravity.END;
             holder.textTime.setLayoutParams(layoutParams);
         }
     }

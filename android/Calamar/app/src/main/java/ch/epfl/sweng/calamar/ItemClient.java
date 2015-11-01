@@ -20,7 +20,7 @@ public interface ItemClient {
 
     /**
      * send an item to a database
-     * @param item
+     * @param item the item to send
      */
     public abstract void send(Item item) throws ItemClientException;
 }
