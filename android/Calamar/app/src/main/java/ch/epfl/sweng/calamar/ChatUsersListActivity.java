@@ -1,17 +1,20 @@
 package ch.epfl.sweng.calamar;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatUsersListActivity extends AppCompatActivity {
+public class ChatUsersListActivity extends AppCompatActivity implements View.OnClickListener {
 
     public final static String EXTRA_CORRESPONDENT_NAME = "ch.epfl.sweng.calamar.CORRESPONDENT_NAME";
     public final static String EXTRA_CORRESPONDENT_ID = "ch.epfl.sweng.calamar.CORRESPONDENT_ID";
@@ -51,6 +54,41 @@ public class ChatUsersListActivity extends AppCompatActivity {
             }
         });
         contactsView.setSelection(0);
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.newContact) {
+            addNewContact();
+        } else {
+            throw new IllegalArgumentException("Got an unexpected view Id in Onclick");
+        }
+    }
+
+    private void addNewContact(){
+        AlertDialog.Builder newContact = new AlertDialog.Builder(this);
+
+        newContact.setTitle("Add a new contact");
+        newContact.setMessage("Enter the mail of the new contact");
+
+        final EditText input = new EditText(this);
+        newContact.setView(input);
+
+        newContact.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                contacts.add(new User(10,input.getText().toString()));
+                //TODO : Add in memory
+                //TODO : refresh
+            }
+        });
+
+        newContact.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // Canceled.
+            }
+        });
+
+        newContact.show();
     }
 
     private void getContacts(){
