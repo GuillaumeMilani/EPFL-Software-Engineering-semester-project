@@ -69,7 +69,7 @@ public abstract class Item {
         if ( this == o ) return true;
         if ( !(o instanceof Item) ) return false;
         Item that = (Item)o;
-        return super.equals(o) && that.ID == ID && that.from.equals(from) && that.to.equals(to) && that.date == date;
+        return that.ID == ID && that.from.equals(from) && that.to.equals(to) && that.date == date;
     }
 
     @Override
