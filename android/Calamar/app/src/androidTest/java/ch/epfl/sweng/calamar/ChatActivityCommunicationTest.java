@@ -4,6 +4,8 @@ import android.support.test.InstrumentationRegistry;
 import android.test.ActivityInstrumentationTestCase2;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -19,6 +21,7 @@ import static org.mockito.Mockito.verify;
 /**
  * Test the communication of the chat activity with the itemClient.
  */
+@RunWith(JUnit4.class)
 public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCase2<ChatActivity> {
 
     private User alice = new User(1,"Alice");

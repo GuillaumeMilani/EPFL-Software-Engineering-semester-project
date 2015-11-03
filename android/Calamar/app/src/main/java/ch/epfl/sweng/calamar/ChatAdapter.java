@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Build;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,7 +28,7 @@ public class ChatAdapter extends BaseAdapter {
         this.messages = new ArrayList<>();
 
         //Add the items
-        for(Item i : messages){
+        for (Item i : messages) {
             addItem(i);
         }
     }
@@ -61,7 +62,7 @@ public class ChatAdapter extends BaseAdapter {
         }
 
 
-        boolean ingoing = !(item.getFrom().getID() == ChatUsersListActivity.actualUser.getID());
+        boolean ingoing = item.getTo().getID() == ((CalamarApplication) context.getApplication()).getInstance().getCurrentUserID();
         setAlignment(holder, ingoing);
         holder.textMessage.setText(item.getMessage());
         holder.textTime.setText(item.getDate().toString());
@@ -70,6 +71,7 @@ public class ChatAdapter extends BaseAdapter {
 
     /**
      * Add a message to the adapter
+     *
      * @param message the message to be added
      */
     public void add(Item message) {
@@ -78,62 +80,74 @@ public class ChatAdapter extends BaseAdapter {
 
     /**
      * Add a list of messages to the adapter
+     *
      * @param messages the list of messages
      */
     public void add(List<Item> messages) {
-        for(Item i : messages) {
+        for (Item i : messages) {
             addItem(i);
         }
     }
 
-    private void addItem(Item i){
+    private void addItem(Item i) {
         //TODO : Identify type (with an enum in item ? )
-        if(i.getClass() == SimpleTextItem.class){
-            this.messages.add((SimpleTextItem)i);
+        if (i.getClass() == SimpleTextItem.class) {
+            this.messages.add((SimpleTextItem) i);
         }
     }
 
     /**
      * Set the alignment of the messages, depending on if the message is outgoing or ingoing.
-     * @param holder The ViewHolder containing the necessary attributes
-     * @param outgoing True if the message is sent by the user, false if it is received.
+     *
+     * @param holder  The ViewHolder containing the necessary attributes
+     * @param ingoing True if the message is received by the user, false if it is sent.
      */
-    private void setAlignment(ViewHolder holder, boolean outgoing) {
-        if (outgoing) {
-            holder.contentWithBG.setBackgroundResource(R.drawable.out_message_bg);
+    private void setAlignment(ViewHolder holder, boolean ingoing) {
+        if (ingoing) {
+            holder.contentWithBG.setBackgroundResource(R.drawable.in_message_bg);
             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) holder.contentWithBG.getLayoutParams();
-            layoutParams.gravity = Gravity.LEFT;
+            layoutParams.gravity = Gravity.START;
             holder.contentWithBG.setLayoutParams(layoutParams);
 
             RelativeLayout.LayoutParams rLayoutParams = (RelativeLayout.LayoutParams) holder.content.getLayoutParams();
-            rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END, 0);
-            rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
+            if (Build.VERSION.SDK_INT < 17) {
+                rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, 0);
+            } else {
+                rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
+                rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END, 0);
+            }
             holder.content.setLayoutParams(rLayoutParams);
             layoutParams = (LinearLayout.LayoutParams) holder.textMessage.getLayoutParams();
-            layoutParams.gravity = Gravity.LEFT;
+            layoutParams.gravity = Gravity.START;
             holder.textMessage.setLayoutParams(layoutParams);
 
             layoutParams = (LinearLayout.LayoutParams) holder.textTime.getLayoutParams();
-            layoutParams.gravity = Gravity.LEFT;
+            layoutParams.gravity = Gravity.START;
             holder.textTime.setLayoutParams(layoutParams);
         } else {
-            holder.contentWithBG.setBackgroundResource(R.drawable.in_message_bg);
+            holder.contentWithBG.setBackgroundResource(R.drawable.out_message_bg);
             LinearLayout.LayoutParams layoutParams =
                     (LinearLayout.LayoutParams) holder.contentWithBG.getLayoutParams();
-            layoutParams.gravity = Gravity.RIGHT;
+            layoutParams.gravity = Gravity.END;
             holder.contentWithBG.setLayoutParams(layoutParams);
 
             RelativeLayout.LayoutParams rLayoutParams =
                     (RelativeLayout.LayoutParams) holder.content.getLayoutParams();
-            rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
-            rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            if (Build.VERSION.SDK_INT < 17) {
+                rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
+                rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            } else {
+                rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START, 0);
+                rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
+            }
             holder.content.setLayoutParams(rLayoutParams);
             layoutParams = (LinearLayout.LayoutParams) holder.textMessage.getLayoutParams();
-            layoutParams.gravity = Gravity.RIGHT;
+            layoutParams.gravity = Gravity.END;
             holder.textMessage.setLayoutParams(layoutParams);
 
             layoutParams = (LinearLayout.LayoutParams) holder.textTime.getLayoutParams();
-            layoutParams.gravity = Gravity.RIGHT;
+            layoutParams.gravity = Gravity.END;
             holder.textTime.setLayoutParams(layoutParams);
         }
     }
@@ -141,6 +155,7 @@ public class ChatAdapter extends BaseAdapter {
     /**
      * Creates a ViewHolder containing the text of the message, the time, and two LinearLayout
      * (one for the whole message, and one for the text, contained in a "bubble")
+     *
      * @param v The view holding those values
      * @return The newly created ViewHolder
      */
