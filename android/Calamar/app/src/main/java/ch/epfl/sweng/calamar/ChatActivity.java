@@ -66,8 +66,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         databaseHandler = app.getDB();
 
-        adapter.add(new SimpleTextItem(5,new User(0,"Bob"),app.getCurrentUser(),new Date(),"Yop"));
-
         boolean offline = true;
         refresh(offline);
     }
