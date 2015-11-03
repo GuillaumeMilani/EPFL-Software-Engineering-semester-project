@@ -9,16 +9,21 @@ $data = json_decode($content, true);
 if($data == null)
 {
 	http_response_code(400);
-	echo "Error : json data not found";
+	die("Error : json data not found");
 }
 else
 {
 	// extract decoded data
-	$item = $data['message'];
-	$type = $data['type'];
-	$from = $data['from'];
-	$to = $data['to'];
-	$date = $data['date'];
+	if (isset($data['message']) && isset($data['type']) && isset($data['from']) && isset($data['to'])) {
+			$item = $data['message'];
+			$type = $data['type'];
+			$from = $data['from'];
+			$to = $data['to'];
+			$date = $data['date'];
+	} else {
+		http_response_code(400);
+		die("Error : json malformed");
+	}
 
 	// add the data into the db
 	if(add_items($from['ID'],$to['ID'],$date,$type,$item))
@@ -28,6 +33,6 @@ else
 	else
 	{
 		http_response_code(500);
-		echo "Error : database";
+		die("Error : database");
 	}
 }

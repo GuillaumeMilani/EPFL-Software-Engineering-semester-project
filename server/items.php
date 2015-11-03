@@ -8,6 +8,6 @@ if ($action == 'retrieve') {
 } else if ($action == 'send') {
 	include_once('controllers/items/send_item.php');
 } else {
-//	http_response_code(404);
+	http_response_code(404);
 	die("Page not found. Specify a correct action to perform");
 }
