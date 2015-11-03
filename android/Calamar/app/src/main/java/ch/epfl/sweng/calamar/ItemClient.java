@@ -15,12 +15,12 @@ public interface ItemClient {
      * @param from the items have been sent after from
      * @return a list of {@link Item items}
      */
-    public abstract List<Item> getAllItems(Recipient recipient, Date from) throws ItemClientException;
-    public abstract List<Item> getAllItems(Recipient recipient) throws ItemClientException;
+    List<Item> getAllItems(Recipient recipient, Date from) throws ItemClientException;
+    List<Item> getAllItems(Recipient recipient) throws ItemClientException;
 
     /**
      * send an item to a database
      * @param item the item to send
      */
-    public abstract void send(Item item) throws ItemClientException;
+    void send(Item item) throws ItemClientException;
 }

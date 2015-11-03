@@ -47,7 +47,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         correspondent = new User(correspondentID,correspondentName);
 
-        client = new NetworkItemClient("http://calamar.japan-impact.ch", new DefaultNetworkProvider());
+        client = ItemClientLocator.getItemClient();
 
         editText = (EditText) findViewById(R.id.messageEdit);
         sendButton = (Button) findViewById(R.id.chatSendButton);
@@ -65,6 +65,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         sendButton.setOnClickListener(this);
 
         databaseHandler = app.getDB();
+
+        adapter.add(new SimpleTextItem(5,new User(0,"Bob"),app.getCurrentUser(),new Date(),"Yop"));
 
         boolean offline = true;
         refresh(offline);
