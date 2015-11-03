@@ -76,9 +76,11 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
 
         newContact.setPositiveButton("Add", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                contacts.add(new User(10,input.getText().toString()));
+                User newUser = new User(10,input.getText().toString());
+                adapter.add(newUser);
+                contacts.add(newUser);
+                adapter.notifyDataSetChanged();
                 //TODO : Add in memory
-                //TODO : refresh
             }
         });
 

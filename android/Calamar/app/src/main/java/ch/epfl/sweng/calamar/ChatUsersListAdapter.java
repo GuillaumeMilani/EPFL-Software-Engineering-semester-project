@@ -51,6 +51,10 @@ public class ChatUsersListAdapter extends BaseAdapter {
         return convertView;
     }
 
+    public void add(User user){
+        users.add(user);
+    }
+
     /**
      * Creates a ViewHolder containing the name of the user, and one LinearLayout containing it.
      * @param v The view holding those values
