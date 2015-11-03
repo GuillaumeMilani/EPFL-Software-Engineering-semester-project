@@ -76,10 +76,7 @@ public class NetworkItemClient implements ItemClient {
             String jsonParameter = item.toJSON().toString();
             connection = NetworkItemClient.createConnection(networkProvider, url);
             String response = NetworkItemClient.post(connection, jsonParameter);
-
-            if (!response.contains("Ack")) {
-                throw new ItemClientException("error: server couldn't retrieve the item");
-            }
+            
         } catch (IOException | JSONException e) {
             throw new ItemClientException(e);
         } finally {
