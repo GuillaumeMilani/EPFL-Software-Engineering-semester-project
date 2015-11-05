@@ -20,14 +20,18 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
     public final static String EXTRA_CORRESPONDENT_ID = "ch.epfl.sweng.calamar.CORRESPONDENT_ID";
 
     private ListView contactsView;
-    private List<User> contacts;
+    private List<Recipient> contacts;
     private ChatUsersListAdapter adapter;
     private TextView actualUserTextView;
+
+    private CalamarApplication app;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_users_list);
+
+        app = ((CalamarApplication) getApplication()).getInstance();
 
         contacts = new ArrayList<>();
         getContacts();
@@ -45,7 +49,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent conversation = new Intent(ChatUsersListActivity.this, ChatActivity.class);
                 //Assuming in same order
-                User user = contacts.get(position);
+                Recipient user = contacts.get(position);
                 conversation.putExtra(EXTRA_CORRESPONDENT_NAME,user.getName());
                 conversation.putExtra(EXTRA_CORRESPONDENT_ID, user.getID());
                 startActivity(conversation);
@@ -74,7 +78,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
 
         newContact.setPositiveButton("Add", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                User newUser = new User(10,input.getText().toString());
+                User newUser = new User(10, input.getText().toString());
                 adapter.add(newUser);
                 contacts.add(newUser);
                 adapter.notifyDataSetChanged();
