@@ -13,7 +13,7 @@ public class PositionCondition extends Condition {
     private final static String CONDITION_TYPE = "position";
 
     private Location location;
-    private float radius;
+    private double radius;
 
     /**
      * make a Location from its latitude and longitude
@@ -34,7 +34,7 @@ public class PositionCondition extends Condition {
      * @param location
      * @param radius
      */
-    PositionCondition(Location location, float radius)
+    PositionCondition(Location location, double radius)
     {
         this.location = location;
         this.radius = radius;
@@ -46,7 +46,7 @@ public class PositionCondition extends Condition {
      * @param longitude
      * @param radius
      */
-    PositionCondition(double latitude, double longitude, float radius)
+    PositionCondition(double latitude, double longitude, double radius)
     {
         location = makeLocation(latitude, longitude);
         this.radius = radius;
@@ -69,6 +69,9 @@ public class PositionCondition extends Condition {
     @Override
     protected void compose(JSONObject json) throws JSONException {
         json.accumulate("type", CONDITION_TYPE);
+        json.accumulate("latitude", location.getLatitude());
+        json.accumulate("longitude", location.getLongitude());
+        json.accumulate("radius", radius);
     }
 
     /**
@@ -88,17 +91,23 @@ public class PositionCondition extends Condition {
      */
     public static class Builder extends Condition.Builder {
 
+        private double latitude, longitude;
+        private double radius;
+
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString("type");
             if(!type.equals(PositionCondition.CONDITION_TYPE)) {
                 throw new IllegalArgumentException("expected "+ PositionCondition.CONDITION_TYPE +" was : "+type);
             }
+            latitude = json.getDouble("latitude");
+            longitude = json.getDouble("longitude");
+            radius = json.getDouble("radius");
             return this;
         }
 
         public PositionCondition build() {
-            return new PositionCondition();
+            return new PositionCondition(latitude, longitude, radius);
         }
     }
 }
