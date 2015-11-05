@@ -1,5 +1,7 @@
 package ch.epfl.sweng.calamar;
 
+import android.location.Location;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -8,9 +10,47 @@ import org.json.JSONObject;
  */
 public class PositionCondition extends Condition {
 
-    private final static String CONDITION_TYPE = "poisition";
+    private final static String CONDITION_TYPE = "position";
 
-    //position + radius
+    private Location location;
+    private float radius;
+
+    /**
+     * make a Location from its latitude and longitude
+     * @param latitude
+     * @param longitude
+     * @return Location in this place
+     */
+    private Location makeLocation(double latitude, double longitude)
+    {
+        Location loc = new Location("calamarTeam");
+        loc.setLatitude(latitude);
+        loc.setLongitude(longitude);
+        return loc;
+    }
+
+    /**
+     * construct a PositionCondition from a location and a radius
+     * @param location
+     * @param radius
+     */
+    PositionCondition(Location location, float radius)
+    {
+        this.location = location;
+        this.radius = radius;
+    }
+
+    /**
+     * construct a PositionCondition from a latitude, a longitude and a radius
+     * @param latitude
+     * @param longitude
+     * @param radius
+     */
+    PositionCondition(double latitude, double longitude, float radius)
+    {
+        location = makeLocation(latitude, longitude);
+        this.radius = radius;
+    }
 
     /**
      * test if parameters obj satisfy condition
@@ -28,7 +68,7 @@ public class PositionCondition extends Condition {
      */
     @Override
     protected void compose(JSONObject json) throws JSONException {
-
+        json.accumulate("type", CONDITION_TYPE);
     }
 
     /**
