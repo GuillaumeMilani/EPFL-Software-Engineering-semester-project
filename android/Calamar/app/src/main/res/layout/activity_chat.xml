@@ -15,6 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_toLeftOf="@+id/chatSendButton"
+        android:layout_toStartOf="@+id/chatSendButton"
         android:autoText="true"
         android:hint="@string/message_edit_hint" />
 
@@ -24,23 +25,28 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:background="@color/background_floating_material_dark"
         android:text="@string/send_message"
         android:textColor="@color/background_material_light"
         android:layout_alignTop="@+id/messageEdit"
-        android:layout_alignStart="@+id/refreshButton" />
+        android:layout_alignStart="@+id/refreshButton"
+        android:layout_alignLeft="@+id/refreshButton"
+        />
 
     <ListView
         android:id="@+id/messagesContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentLeft="false"
+        android:layout_alignParentStart="false"
         android:layout_marginBottom="20dp"
         android:layout_above="@+id/messageEdit"
         android:listSelector="@android:color/transparent"
         android:transcriptMode="alwaysScroll"
         android:divider="@null"
         android:layout_alignParentRight="false"
+        android:layout_alignParentEnd="false"
         android:layout_below="@+id/refreshButton" />
 
     <TextView
@@ -50,7 +56,8 @@
         android:text="@string/recipient"
         android:textSize="20sp"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true" />
 
     <Button
         android:layout_width="wrap_content"
@@ -59,6 +66,7 @@
         android:id="@+id/refreshButton"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         android:nestedScrollingEnabled="false" />
 
 </RelativeLayout>

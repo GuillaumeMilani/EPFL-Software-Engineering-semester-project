@@ -30,10 +30,6 @@ public abstract class Item {
         this.date = date;
     }
 
-    public int getID() {
-        return ID;
-    }
-
     /**
      * @return the 'from' field of the Item (sender)
      */
@@ -55,7 +51,9 @@ public abstract class Item {
         return new Date(this.date);
     }
 
-
+    public int getID(){
+        return ID;
+    }
 
     /**
      * Appends the fields of {@link Item} to a {@link JSONObject} representing the Item.<br>
