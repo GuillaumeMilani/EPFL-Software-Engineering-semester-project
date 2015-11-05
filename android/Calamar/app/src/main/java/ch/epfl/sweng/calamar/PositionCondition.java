@@ -58,7 +58,7 @@ public class PositionCondition extends Condition {
      */
     @Override
     public boolean matches() {
-        return false;
+        return location.distanceTo(GPSProvider.getInstance().getLocation()) < radius;
     }
 
     /**
