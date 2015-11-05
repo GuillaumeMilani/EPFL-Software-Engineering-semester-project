@@ -56,9 +56,9 @@ public abstract class Recipient {
      * Appends the fields of {@link Recipient} to a {@link JSONObject} representing the Recipient.<br>
      *     is called by the {@link #compose(JSONObject)} method of the child classes in
      *     a chain where each compose method append the field of its class to the objects.<br>
-     *         The chain begins by a call to {@link #toJSON()} in an instantiable child class.<br>
+     *         The chain begins by a call to {@link #toJSON()} in an instantiable child class.<br><br>
      * Should <b>NOT</b> be used alone.
-     * @param json the json to which we append data
+     * @param json the json to which we append (using {@link JSONObject#accumulate(String, Object)} ) data
      * @throws JSONException
      */
     protected void compose(JSONObject json) throws JSONException {
