@@ -26,13 +26,6 @@ public final class Group extends Recipient {
         this(ID, name, new ArrayList<User>());
     }
 
-<<<<<<< HEAD
-    @Override
-    public JSONObject toJSON() throws JSONException {
-        //TODO
-        return null;
-    }
-
     @Override
     public boolean equals(Object o) {
         if ( this == o ) return true;
@@ -46,14 +39,12 @@ public final class Group extends Recipient {
         return super.hashCode()*73+users.hashCode();
     }
 
-=======
     /**
      * Instantiates a new {@link Group group} with the given parameters
      * @param ID the ID of the group
      * @param name the name of the group
      * @param users the list of all the {@link User users} in the group (not null..)
      */
->>>>>>> master
     public Group(int ID, String name, List<User> users) {
         super(ID, name);
         if(null == users) {
