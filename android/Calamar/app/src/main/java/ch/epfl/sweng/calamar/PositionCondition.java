@@ -12,20 +12,40 @@ public class PositionCondition extends Condition {
 
     //position + radius
 
+    /**
+     * test if parameters obj satisfy condition
+     * @return if obj match condition or not
+     */
     @Override
     public boolean matches() {
         return false;
     }
 
+    /**
+     * compose this Condition in the json object
+     * @param json jsonObject to put this in
+     * @throws JSONException
+     */
     @Override
     protected void compose(JSONObject json) throws JSONException {
 
     }
 
+    /**
+     * create a Condition from a JSONObject
+     * @param json Object in JSON format
+     * @return the desired condition Condition
+     * @throws JSONException
+     * @throws IllegalArgumentException
+     */
     public static Condition fromJSON(JSONObject json) throws JSONException {
         return new PositionCondition.Builder().parse(json).build();
     }
 
+    /**
+     * A Builder for {@link PositionCondition}, currently only used to parse JSON
+     * @see ch.epfl.sweng.calamar.Condition.Builder
+     */
     public static class Builder extends Condition.Builder {
 
         public Builder parse(JSONObject json) throws JSONException {
