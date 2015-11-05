@@ -115,7 +115,7 @@ public class NetworkDatabaseClient implements ItemClient,UserClient {
                     conn.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
-                out.append(line + "\n");
+                out.append(line).append("\n");
             }
 
             String result = out.toString();

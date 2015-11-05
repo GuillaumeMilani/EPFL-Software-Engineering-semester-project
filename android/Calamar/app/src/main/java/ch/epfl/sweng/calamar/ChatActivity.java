@@ -1,12 +1,10 @@
 package ch.epfl.sweng.calamar;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.content.Context;
+import android.content.Intent;
+
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,24 +28,27 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private ListView messagesContainer;
     private ChatAdapter adapter;
 
-    private NetworkDatabaseClient client;
+    private ItemClient client;
 
-    public static User actualUser = new User(-1,"Unknown");
-    private User correspondent;
+    private Recipient correspondent;
 
-    private Date lastRefresh;
+    private CalamarApplication app;
+
+    private SQLiteDatabaseHandler databaseHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        app = ((CalamarApplication) getApplication()).getInstance();
 
-        lastRefresh = new Date(0);
-        setActualUser();
+        Intent intent = getIntent();
+        String correspondentName = intent.getStringExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME);
+        int correspondentID = intent.getIntExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID,-1); // -1 = default value
 
-        correspondent = new User(2,"Bob");
+        correspondent = new User(correspondentID,correspondentName);
 
-        client = new NetworkDatabaseClient("http://calamar.japan-impact.ch",new DefaultNetworkProvider());
+        client = ItemClientLocator.getItemClient();
 
         editText = (EditText) findViewById(R.id.messageEdit);
         sendButton = (Button) findViewById(R.id.chatSendButton);
@@ -59,41 +60,23 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         messagesContainer.setAdapter(adapter);
 
         TextView recipient = (TextView) findViewById(R.id.recipientLabel);
-        //TODO Change Recipient depending on User ID
-        recipient.setText("Someone");
+        recipient.setText(correspondent.getName());
 
         refreshButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
 
-        //refresh();
+        databaseHandler = app.getDB();
+
+        boolean offline = true;
+        refresh(offline);
     }
 
-
-    /**
-     * Return the actual user of the app.
-     */
-    private void setActualUser(){
-        // if 0, create a new user !
-        if(lastRefresh.getTime() == 0){
-            String name = "No Email";
-            //Get google account email
-            AccountManager manager = AccountManager.get(this);
-            Account[] list = manager.getAccountsByType("com.google");
-            if(list.length > 0){
-                name = list[0].name;
-            }
-            new createNewUserTask(name).execute(client);
-       } else {
-           //TODO : Go in the bdd get the user.
-           // actualUser = ...
-       }
-    }
 
     /**
      * Gets all messages and display them
      */
-    private void refresh() {
-         new refreshTask(actualUser).execute(client);
+    private void refresh(boolean offline) {
+        new refreshTask(app.getCurrentUser(), offline).execute(client);
     }
 
     /**
@@ -101,7 +84,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void send() {
         String message = editText.getText().toString();
-        Item textMessage = new SimpleTextItem(1,actualUser,correspondent,new Date(),message);
+        Item textMessage = new SimpleTextItem(1,app.getCurrentUser(),correspondent,new Date(),message);
         adapter.add(textMessage);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
@@ -114,22 +97,21 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         if (v.getId() == R.id.chatSendButton) {
             send();
         } else if (v.getId() == R.id.refreshButton) {
-            refresh();
+            refresh(false);
         } else {
             throw new IllegalArgumentException("Got an unexpected view Id in Onclick");
         }
     }
 
 
-
     /**
      * Async task for sending a message.
-     *
      */
     private class sendItemTask extends AsyncTask<ItemClient, Void, Void> {
 
-        private Item textMessage;
-        public sendItemTask(Item textMessage){
+        private final Item textMessage;
+
+        public sendItemTask(Item textMessage) {
             this.textMessage = textMessage;
         }
 
@@ -139,6 +121,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 //TODO : Determine id of the message ?
 
                 itemClients[0].send(textMessage);
+                //TODO need id to put into database
+                databaseHandler.addItem(textMessage);
                 return null;
                 //return itemClients[0].send(textMessage);
             } catch (ItemClientException e) {
@@ -150,73 +134,46 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * Async task for sending a message.
-     *
+     * Async task for refreshing / getting new messages.
      */
     private class refreshTask extends AsyncTask<ItemClient, Void, List<Item>> {
 
-        private Recipient recipient;
+        private final Recipient recipient;
+        private final boolean offline;
 
-        public refreshTask(Recipient recipient){
+        public refreshTask(Recipient recipient, boolean offline) {
             this.recipient = recipient;
+            this.offline = offline;
         }
 
         @Override
         protected List<Item> doInBackground(ItemClient... itemClients) {
-            try {
-                return itemClients[0].getAllItems(recipient,lastRefresh);
-            } catch (ItemClientException e) {
-                //TODO : TOAST
-                e.printStackTrace();
-                return null;
+            if (offline) {
+                return databaseHandler.getItemsForContact(correspondent);
+            } else {
+                try {
+                    List<Item> items = itemClients[0].getAllItems(recipient, new Date(app.getLastItemsRefresh()));
+                    databaseHandler.addItems(items);
+                    return itemClients[0].getAllItems(recipient, new Date(app.getLastItemsRefresh()));
+                } catch (ItemClientException e) {
+                    //TODO : TOAST
+                    e.printStackTrace();
+                    return null;
+                }
             }
         }
 
         @Override
         protected void onPostExecute(List<Item> items) {
-            if(items != null) {
+            if (items != null) {
                 adapter.add(items);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                lastRefresh = new Date();
+                if (!offline) {
+                    app.setLastItemsRefresh(new Date());
+                }
             }
         }
 
-    }
-
-    /**
-     * Async task for sending a message.
-     *
-     */
-    private class createNewUserTask extends AsyncTask<ItemClient, Void, Integer> {
-
-        private String name = "No name";
-
-        public createNewUserTask(String name){
-            this.name = name;
-        }
-
-        @Override
-        protected Integer doInBackground(ItemClient... itemClients) {
-            try {
-                //Get the device id.
-                TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-                return client.newUser(name,telephonyManager.getDeviceId());
-            } catch (ItemClientException e) {
-                //TODO : TOAST
-                e.printStackTrace();
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Integer id) {
-            if(id != null) {
-                actualUser = new User(id,name);
-                //TODO : Store in ddb
-            } else {
-                //TODO : TOAST
-            }
-        }
     }
 }
