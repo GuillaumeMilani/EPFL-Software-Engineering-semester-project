@@ -18,9 +18,10 @@ public abstract class Item {
     private final User from;
     private final Recipient to;
     private final long date; //posix date
+    private final Condition condition;
     //TODO date d'expiration ?
 
-    protected Item(int ID, User from, Recipient to, long date) {
+    protected Item(int ID, User from, Recipient to, long date, Condition condition) {
         if(null == from || null == to) {
             throw new IllegalArgumentException("field 'from' and/or 'to' cannot be null");
         }
@@ -28,9 +29,15 @@ public abstract class Item {
         this.from = from; //User is immutable
         this.to = to;     //Recipient is immutable
         this.date = date;
+        this.condition = condition;
     }
 
     //TODO: maybe better field names in java...
+
+    /**
+     * @return the 'condition' field of the Item
+     */
+    public Condition getCondition() { return condition; }
 
     /**
      * @return the 'from' field of the Item (sender)
@@ -71,6 +78,7 @@ public abstract class Item {
         json.accumulate("from", from.toJSON());
         json.accumulate("to", to.toJSON());
         json.accumulate("date", date);
+        json.accumulate("condition", condition.toJSON());
     }
 
     /**
@@ -115,12 +123,14 @@ public abstract class Item {
         protected User from;
         protected Recipient to;
         protected long date;
+        protected Condition condition;
 
         public Builder parse(JSONObject o) throws JSONException {
             ID = o.getInt("ID");
             from = User.fromJSON(o.getJSONObject("from"));
             to = Recipient.fromJSON(o.getJSONObject("to"));
             date = o.getLong("date");
+            condition = Condition.fromJSON(o.getJSONObject("condition"));
             return this;
         }
     }

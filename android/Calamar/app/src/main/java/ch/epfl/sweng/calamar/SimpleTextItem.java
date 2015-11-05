@@ -19,10 +19,11 @@ public final class SimpleTextItem extends Item {
      * @param to the 'to' field of the Item (recipient)
      * @param date the creation/posting date of the Item
      * @param message the content (text message)
-     * @see Item#Item(int, User, Recipient, long)
+     * @param condition the condition
+     * @see Item#Item(int, User, Recipient, long, Condition)
      */
-    public SimpleTextItem(int ID, User from, Recipient to, Date date, String message) {
-        super(ID, from, to, date.getTime());
+    public SimpleTextItem(int ID, User from, Recipient to, Date date, Condition condition, String message) {
+        super(ID, from, to, date.getTime(), condition);
         if(null == message) {
             throw new IllegalArgumentException("field 'message' cannot be null");
         }
@@ -89,7 +90,7 @@ public final class SimpleTextItem extends Item {
         }
 
         public SimpleTextItem build() {
-            return new SimpleTextItem(super.ID, super.from, super.to, new Date(super.date), message);
+            return new SimpleTextItem(super.ID, super.from, super.to, new Date(super.date), super.condition, message);
         }
     }
 }

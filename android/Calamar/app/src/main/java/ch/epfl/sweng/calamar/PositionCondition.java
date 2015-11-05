@@ -12,8 +12,8 @@ public class PositionCondition extends Condition {
 
     private final static String CONDITION_TYPE = "position";
 
-    private Location location;
-    private double radius;
+    private final Location location;
+    private final double radius;
 
     /**
      * make a Location from its latitude and longitude
