@@ -5,9 +5,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -74,15 +76,25 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         newContact.setMessage("Enter the mail of the new contact");
 
         final EditText input = new EditText(this);
-        newContact.setView(input);
+        input.setHint("Mail");
+        final EditText idEdit = new EditText(this);
+        idEdit.setHint("id");
+        final LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.addView(input);
+        layout.addView(idEdit);
+        idEdit.setInputType(InputType.TYPE_CLASS_NUMBER);
+        newContact.setView(layout);
 
         newContact.setPositiveButton("Add", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                User newUser = new User(10, input.getText().toString());
+                //TODO : set the good id
+                User newUser = new User(Integer.parseInt(idEdit.getText().toString()), input.getText().toString());
                 adapter.add(newUser);
                 contacts.add(newUser);
                 adapter.notifyDataSetChanged();
-                //TODO : Add in memory
+                //Add in memory
+                app.getDB().addRecipient(newUser);
             }
         });
 
@@ -96,11 +108,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
     }
 
     private void getContacts(){
-        //TODO : Store contact ? -- Easy once persist_data is merged
-        contacts.add(new User(2,"Bob"));
-        contacts.add(new User(3,"Carol"));
-        contacts.add(new User(4,"Denis"));
-        contacts.add(new User(5,"Eve"));
+        contacts.addAll(app.getDB().getAllRecipients());
     }
 
 }
