@@ -8,7 +8,7 @@ public class ItemClientLocator {
 
     private static final String SERVER_BASE_URL = "http://calamar.japan-impact.ch";
 
-    private static ItemClient itemClient = new NetworkItemClient(SERVER_BASE_URL,new DefaultNetworkProvider());
+    private static ItemClient itemClient = new NetworkDatabaseClient(SERVER_BASE_URL,new DefaultNetworkProvider());
 
     public static ItemClient getItemClient() {
         return ItemClientLocator.itemClient;
@@ -19,7 +19,7 @@ public class ItemClientLocator {
     }
 
     public static void resetItemClient() {
-        ItemClientLocator.itemClient = new NetworkItemClient(SERVER_BASE_URL,new DefaultNetworkProvider());
+        ItemClientLocator.itemClient = new NetworkDatabaseClient(SERVER_BASE_URL,new DefaultNetworkProvider());
     }
 
 }
