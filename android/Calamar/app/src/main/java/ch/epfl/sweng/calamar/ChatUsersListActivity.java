@@ -2,12 +2,15 @@ package ch.epfl.sweng.calamar;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -71,14 +74,14 @@ public class ChatUsersListActivity extends AppCompatActivity {
     private void setActualUser(){
         // if 0, create a new user !
         if(app.getCurrentUserID() == -1){
-            String name = "No Email";
+            String name = "No name";
             //Get google account email
             AccountManager manager = AccountManager.get(this);
             Account[] list = manager.getAccountsByType("com.google");
             if(list.length > 0){
                 name = list[0].name;
             }
-            new createNewUserTask(name).execute(client);
+            new createNewUserTask(name,this).execute(client);
         }
         actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
     }
@@ -98,9 +101,11 @@ public class ChatUsersListActivity extends AppCompatActivity {
     private class createNewUserTask extends AsyncTask<UserClient, Void, Integer> {
 
         private String name = "No name";
+        private Context context;
 
-        public createNewUserTask(String name){
+        public createNewUserTask(String name,Context context){
             this.name = name;
+            this.context = context;
         }
 
         @Override
@@ -108,7 +113,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
             try {
                 //Get the device id.
                 TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-                return client.newUser(name,telephonyManager.getDeviceId());
+                return client.newUser(name,telephonyManager.getDeviceId());//"aaaaaaaaaaaaaaaa"
             } catch (ItemClientException e) {
                 //TODO : TOAST
                 e.printStackTrace();
@@ -122,8 +127,23 @@ public class ChatUsersListActivity extends AppCompatActivity {
                 app.setCurrentUserID(id);
                 app.setCurrentUserName(name);
                 actualUserTextView.setText("Actual user : " + name);
+                AlertDialog.Builder newUser = new AlertDialog.Builder(context);
+                newUser.setTitle("Account correctly created : User : " + name + ", id : " + id);
+                newUser.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+
+                    }
+                });
+                newUser.show();
             } else {
-                //TODO : Feedback
+                AlertDialog.Builder newUser = new AlertDialog.Builder(context);
+                newUser.setTitle("Your account creation has fail, check your interet connection.");
+                newUser.setPositiveButton("Retry", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        new createNewUserTask(name, context).execute(client);
+                    }
+                });
+                newUser.show();
             }
         }
     }
