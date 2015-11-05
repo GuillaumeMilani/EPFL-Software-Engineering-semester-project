@@ -14,8 +14,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import ch.epfl.sweng.calamar.SimpleTextItem;
-
 //TODO Support other item types
 
 /**
@@ -31,14 +29,17 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     private ItemClient client;
 
-    private User correspondent;
+    private Recipient correspondent;
 
-    private Date lastRefresh;
+    private CalamarApplication app;
+
+    private SQLiteDatabaseHandler databaseHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        app = ((CalamarApplication) getApplication()).getInstance();
 
         Intent intent = getIntent();
         String correspondentName = intent.getStringExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME);
@@ -46,9 +47,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         correspondent = new User(correspondentID,correspondentName);
 
-        lastRefresh = new Date(0);
-
-        client = new NetworkItemClient("http://calamar.japan-impact.ch",new DefaultNetworkProvider());
+        client = ItemClientLocator.getItemClient();
 
         editText = (EditText) findViewById(R.id.messageEdit);
         sendButton = (Button) findViewById(R.id.chatSendButton);
@@ -65,15 +64,17 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         refreshButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
 
-        //refresh();
+        databaseHandler = app.getDB();
+
+        boolean offline = true;
+        refresh(offline);
     }
 
     /**
      * Gets all messages and display them
      */
-    private void refresh() {
-        //TODO : Display only the message from correspondent ( Should be fixed with the issue #27-Persist data )
-        new refreshTask(ChatUsersListActivity.actualUser).execute(client);
+    private void refresh(boolean offline) {
+        new refreshTask(app.getCurrentUser(), offline).execute(client);
     }
 
     /**
@@ -81,7 +82,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void send() {
         String message = editText.getText().toString();
-        Item textMessage = new SimpleTextItem(1,ChatUsersListActivity.actualUser,correspondent,new Date(),message);
+        Item textMessage = new SimpleTextItem(1,app.getCurrentUser(),correspondent,new Date(),message);
         adapter.add(textMessage);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
@@ -94,22 +95,21 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         if (v.getId() == R.id.chatSendButton) {
             send();
         } else if (v.getId() == R.id.refreshButton) {
-            refresh();
+            refresh(false);
         } else {
             throw new IllegalArgumentException("Got an unexpected view Id in Onclick");
         }
     }
 
 
-
     /**
      * Async task for sending a message.
-     *
      */
     private class sendItemTask extends AsyncTask<ItemClient, Void, Void> {
 
-        private Item textMessage;
-        public sendItemTask(Item textMessage){
+        private final Item textMessage;
+
+        public sendItemTask(Item textMessage) {
             this.textMessage = textMessage;
         }
 
@@ -119,6 +119,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 //TODO : Determine id of the message ?
 
                 itemClients[0].send(textMessage);
+                //TODO need id to put into database
+                databaseHandler.addItem(textMessage);
                 return null;
                 //return itemClients[0].send(textMessage);
             } catch (ItemClientException e) {
@@ -130,35 +132,44 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * Async task for sending a message.
-     *
+     * Async task for refreshing / getting new messages.
      */
     private class refreshTask extends AsyncTask<ItemClient, Void, List<Item>> {
 
-        private Recipient recipient;
+        private final Recipient recipient;
+        private final boolean offline;
 
-        public refreshTask(Recipient recipient){
+        public refreshTask(Recipient recipient, boolean offline) {
             this.recipient = recipient;
+            this.offline = offline;
         }
 
         @Override
         protected List<Item> doInBackground(ItemClient... itemClients) {
-            try {
-                return itemClients[0].getAllItems(recipient,lastRefresh);
-            } catch (ItemClientException e) {
-                //TODO : TOAST
-                e.printStackTrace();
-                return null;
+            if (offline) {
+                return databaseHandler.getItemsForContact(correspondent);
+            } else {
+                try {
+                    List<Item> items = itemClients[0].getAllItems(recipient, new Date(app.getLastItemsRefresh()));
+                    databaseHandler.addItems(items);
+                    return itemClients[0].getAllItems(recipient, new Date(app.getLastItemsRefresh()));
+                } catch (ItemClientException e) {
+                    //TODO : TOAST
+                    e.printStackTrace();
+                    return null;
+                }
             }
         }
 
         @Override
         protected void onPostExecute(List<Item> items) {
-            if(items != null) {
+            if (items != null) {
                 adapter.add(items);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                lastRefresh = new Date();
+                if (!offline) {
+                    app.setLastItemsRefresh(new Date());
+                }
             }
         }
 

@@ -53,8 +53,9 @@ public abstract class Item {
         return new Date(this.date);
     }
 
-    //TODO: hashcode equals
-
+    public int getID(){
+        return ID;
+    }
 
     /**
      * Appends the fields of {@link Item} to a {@link JSONObject} representing the Item.<br>
@@ -102,6 +103,7 @@ public abstract class Item {
         }
         return item;
     }
+
 
     /**
      * A Builder for {@link Item}, has no build() method since Item isn't instantiable,

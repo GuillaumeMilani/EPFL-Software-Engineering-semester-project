@@ -24,8 +24,6 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
     private ChatUsersListAdapter adapter;
     private TextView actualUserTextView;
 
-    public static User actualUser = new User(1,"Alice");
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,7 +34,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
 
         //TODO I don't think it is necessary to remind the user who he is (okay for development)
         actualUserTextView = (TextView) findViewById(R.id.actualUserName);
-        actualUserTextView.setText("Actual user : " + actualUser.getName());
+        actualUserTextView.setText("Actual user : " + ((CalamarApplication) getApplication()).getInstance().getCurrentUserName());
 
         contactsView = (ListView) findViewById(R.id.contactsList);
         contactsView.setSelector(R.drawable.list_selector);
