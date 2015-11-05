@@ -54,6 +54,11 @@ public final class User extends Recipient {
         return json;
     }
 
+    /**
+     * java equals
+     * @param o other Object to compare this with
+     * @return true if o is equal in value to this
+     */
     @Override
     public boolean equals(Object o) {
         if ( this == o ) return true;
@@ -62,6 +67,10 @@ public final class User extends Recipient {
         return super.equals(that);
     }
 
+    /**
+     * java hash function
+     * @return hash of the Object
+     */
     @Override
     public int hashCode() {
         return super.hashCode();

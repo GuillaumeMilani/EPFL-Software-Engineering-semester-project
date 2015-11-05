@@ -26,6 +26,11 @@ public final class Group extends Recipient {
         this(ID, name, new ArrayList<User>());
     }
 
+    /**
+     * java equals
+     * @param o other Object to compare this with
+     * @return true if o is equal in value to this
+     */
     @Override
     public boolean equals(Object o) {
         if ( this == o ) return true;
@@ -34,6 +39,10 @@ public final class Group extends Recipient {
         return super.equals(that) && that.users.equals(users);
     }
 
+    /**
+     * java hash function
+     * @return hash of the Object
+     */
     @Override
     public int hashCode() {
         return super.hashCode()*73+users.hashCode();
@@ -53,6 +62,10 @@ public final class Group extends Recipient {
         this.users = new ArrayList<>(users);//User is immutable
     }
 
+    /**
+     * @return a JSONObject representing a {@link Group}
+     * @throws JSONException
+     */
     @Override
     public JSONObject toJSON() throws JSONException {
         JSONObject json = new JSONObject();
