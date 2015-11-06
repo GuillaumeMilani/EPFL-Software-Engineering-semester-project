@@ -3,25 +3,24 @@ package ch.epfl.sweng.calamar;
 import android.app.Activity;
 import android.content.IntentSender;
 import android.location.Location;
+import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.maps.OnMapReadyCallback;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Observable;
 import java.util.Set;
 
@@ -30,10 +29,9 @@ import java.util.Set;
  * Created by LPI on 06.11.2015.
  */
 public enum GPSProvider implements GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, OnMapReadyCallback, LocationListener {
+        GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     INSTANCE();
-
 
     // LogCat tag
     private static final String TAG = GPSProvider.class.getSimpleName();
@@ -43,12 +41,14 @@ public enum GPSProvider implements GoogleApiClient.ConnectionCallbacks,
     private static final int ERROR_RESOLUTION_REQUEST = 1001;
     private static final int CHECK_SETTINGS_REQUEST = 1002;
 
-    private Location mLastLocation;
-    private LocationRequest mLocationRequest;
+    private Location lastLocation;
+    private LocationRequest locationRequest;
 
 
     // Google client to interact with Google API
-    private GoogleApiClient mGoogleApiClient;
+    private GoogleApiClient googleApiClient;
+    private boolean resolvingError = false;
+
 
     // caller activity
     private Activity parentActivity;
@@ -62,7 +62,7 @@ public enum GPSProvider implements GoogleApiClient.ConnectionCallbacks,
             buildGoogleApiClient();
             //creates the location request
             createLocationRequest();
-            mGoogleApiClient.connect();
+            googleApiClient.connect();
             //todo where do we start stop location updates ?
             //checkLocationSettings()
         }
@@ -97,11 +97,11 @@ public enum GPSProvider implements GoogleApiClient.ConnectionCallbacks,
     private void checkLocationSettings() {
 
         LocationSettingsRequest request = new LocationSettingsRequest.Builder()
-                .addLocationRequest(mLocationRequest)
+                .addLocationRequest(locationRequest)
                 .build();
 
         PendingResult<LocationSettingsResult> result =
-                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, request);
+                LocationServices.SettingsApi.checkLocationSettings(googleApiClient, request);
 
         result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
             @Override
@@ -152,7 +152,7 @@ public enum GPSProvider implements GoogleApiClient.ConnectionCallbacks,
      *      FusedLocationProviderAPI</a>
      * */
     private synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(parentActivity)
+        googleApiClient = new GoogleApiClient.Builder(parentActivity)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this).build();
@@ -163,11 +163,11 @@ public enum GPSProvider implements GoogleApiClient.ConnectionCallbacks,
      * */
     private void createLocationRequest() {
         //TODO tweak constants
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(50);
-        mLocationRequest.setFastestInterval(10);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setSmallestDisplacement(5); // 5 meters
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(50);
+        locationRequest.setFastestInterval(10);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setSmallestDisplacement(5); // 5 meters
     }
 
     /**
@@ -175,7 +175,7 @@ public enum GPSProvider implements GoogleApiClient.ConnectionCallbacks,
      * */
     private void startLocationUpdates() {
         LocationServices.FusedLocationApi.requestLocationUpdates(
-                mGoogleApiClient, mLocationRequest, this);
+                googleApiClient, locationRequest, this);
     }
 
     /**
@@ -183,7 +183,7 @@ public enum GPSProvider implements GoogleApiClient.ConnectionCallbacks,
      */
     private void stopLocationUpdates() {
         LocationServices.FusedLocationApi.removeLocationUpdates(
-                mGoogleApiClient, this);
+                googleApiClient, this);
     }
 
     private void notifyObservers(Location location) {
@@ -192,9 +192,43 @@ public enum GPSProvider implements GoogleApiClient.ConnectionCallbacks,
         }
     }
 
+    /**
+     * Google api callback methods
+     */
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        //TODO think what to do if error..
+        if (resolvingError) {
+            // Already attempting to resolve an error.
+            return;
+        } else if (connectionResult.hasResolution()) {
+            try {
+                resolvingError = true;
+                connectionResult.startResolutionForResult(parentActivity, ERROR_RESOLUTION_REQUEST);
+            } catch (IntentSender.SendIntentException e) {
+                // There was an error with the resolution intent. Try again.
+                googleApiClient.connect();
+            }
+        } else {
+            resolvingError = true;
+            Toast.makeText(parentActivity,
+                    "google API client failed to connect: no automatic resolution, error = "
+                            + connectionResult.getErrorCode(), Toast.LENGTH_LONG)
+                    .show();
+            Log.i(TAG, "google API client failed to connect: no automatic resolution, error = "
+                    + connectionResult.getErrorCode());
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle arg0) {
+        Toast.makeText(parentActivity, "google API client connected", Toast.LENGTH_SHORT).show();
+        //TODO to remove
+    }
+
     @Override
     public void onConnectionSuspended(int arg0) {
-        mGoogleApiClient.connect();
+        googleApiClient.connect();
     }
 
     @Override
@@ -202,7 +236,7 @@ public enum GPSProvider implements GoogleApiClient.ConnectionCallbacks,
         // Assign the new location
         //stopLocationUpdates();
         //TODO when do we start/stop location requests
-        mLastLocation = location;
+        lastLocation = location;
         notifyObservers(location);
     }
 
