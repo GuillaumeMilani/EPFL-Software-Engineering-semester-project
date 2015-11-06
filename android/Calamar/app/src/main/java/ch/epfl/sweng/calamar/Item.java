@@ -32,8 +32,6 @@ public abstract class Item {
         this.condition = condition;
     }
 
-    //TODO: maybe better field names in java...
-
     /**
      * @return the 'condition' field of the Item
      */
@@ -112,6 +110,28 @@ public abstract class Item {
         return item;
     }
 
+    /**
+     * java equals
+     * @param o other Object to compare this with
+     * @return true if o is equal in value to this
+     */
+    @Override
+    public boolean equals(Object o) {
+        if ( this == o ) return true;
+	if ( o == null ) return false;
+        if ( !(o instanceof Item) ) return false;
+        Item that = (Item)o;
+        return that.ID == ID && that.from.equals(from) && that.to.equals(to) && that.date == date;
+    }
+
+    /**
+     * java hash function
+     * @return hash of the Object
+     */
+    @Override
+    public int hashCode() {
+        return ID+from.hashCode()*89+to.hashCode()*197+((int)date)*479;
+    }
 
     /**
      * A Builder for {@link Item}, has no build() method since Item isn't instantiable,
