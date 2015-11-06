@@ -1,8 +1,12 @@
 package ch.epfl.sweng.calamar;
 
 import android.app.Application;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import java.util.Date;
 
@@ -167,4 +171,5 @@ public class CalamarApplication extends Application {
         resetLastItemsRefresh();
         resetLastUsersRefresh();
     }
+
 }
