@@ -3,15 +3,16 @@ package ch.epfl.sweng.calamar;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Created by pierre on 10/27/15.
  */
 public abstract class Condition {
-    /**
-     * test if parameters obj satisfy condition
-     * @return if obj match condition or not
-     */
-    public abstract boolean matches();
+
+    private Boolean value = null;
+    private Set<Observer> observers = new HashSet<>();
 
     /**
      * compose this Condition in the json object
@@ -30,6 +31,23 @@ public abstract class Condition {
         this.compose(ret);
         return ret;
     }
+
+    /**
+     * set a value for this condition. If newValue differs from old, notify observers
+     * @param newValue
+     */
+    public void setValue(boolean newValue)
+    {
+        if(value != newValue) {
+            value = newValue;
+            for(Observer o : observers)
+            {
+                o.update();
+            }
+        }
+    }
+
+    public boolean getValue() {return value;}
 
     /**
      * create a Condition from a JSONObject
@@ -74,10 +92,8 @@ public abstract class Condition {
     public static Condition trueCondition()
     {
         return new Condition() {
-
-            @Override
-            public boolean matches() {
-                return true;
+            {
+                setValue(true);
             }
 
             @Override
@@ -94,10 +110,8 @@ public abstract class Condition {
     public static Condition falseCondition()
     {
         return new Condition() {
-
-            @Override
-            public boolean matches() {
-                return false;
+            {
+                setValue(false);
             }
 
             @Override
@@ -116,10 +130,21 @@ public abstract class Condition {
     public static Condition and(final Condition c1, final Condition c2)
     {
         return new Condition() {
-            @Override
-            public boolean matches() {
-                return c1.matches() && c2.matches();
+            //constructor
+            {
+                setValue(c1.value && c2.value);
+                Condition.Observer o = new Observer() {
+
+                    @Override
+                    public void update() {
+                        setValue(c1.value && c2.value);
+                    }
+                };
+                c1.addObserver(o);
+                c2.addObserver(o);
             }
+
+
 
             @Override
             protected void compose(JSONObject json) throws JSONException {
@@ -139,9 +164,18 @@ public abstract class Condition {
     public static Condition or(final Condition c1, final Condition c2)
     {
         return new Condition() {
-            @Override
-            public boolean matches() {
-                return c1.matches() || c2.matches();
+            //constructor
+            {
+                setValue(c1.value || c2.value);
+                Condition.Observer o = new Observer() {
+
+                    @Override
+                    public void update() {
+                        setValue(c1.value || c2.value);
+                    }
+                };
+                c1.addObserver(o);
+                c2.addObserver(o);
             }
 
             @Override
@@ -161,9 +195,17 @@ public abstract class Condition {
     public static Condition not(final Condition c)
     {
         return new Condition() {
-            @Override
-            public boolean matches() {
-                return !c.matches();
+            //constructor
+            {
+                setValue(!c.value);
+                Condition.Observer o = new Observer() {
+
+                    @Override
+                    public void update() {
+                        setValue(!c.value);
+                    }
+                };
+                c.addObserver(o);
             }
 
             @Override
@@ -184,5 +226,17 @@ public abstract class Condition {
         public Builder parse(JSONObject o) throws JSONException {
             return this;
         }
+    }
+
+    public void addObserver(Condition.Observer observer) {
+        this.observers.add(observer);
+    }
+
+    public boolean removeObserver(Condition.Observer observer) {
+        return this.observers.remove(observer);
+    }
+
+    abstract class Observer {
+        abstract public void update();
     }
 }
