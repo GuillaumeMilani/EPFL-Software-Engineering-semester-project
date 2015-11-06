@@ -93,7 +93,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
 
         newContact.setPositiveButton("Add", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                new retrieveUserTask(input.getText().toString(),ChatUsersListActivity.this).execute(client);
+                new retrieveUserTask(input.getText().toString(), ChatUsersListActivity.this).execute(client);
             }
         });
 
@@ -108,17 +108,6 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
 
     private void getContacts(){
         contacts.addAll(app.getDB().getAllRecipients());
-    }
-
-    private void displaySimpleDialogAlert(Context context,String message){
-        AlertDialog.Builder newUser = new AlertDialog.Builder(context);
-        newUser.setTitle(message);
-        newUser.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                //OK
-            }
-        });
-        newUser.show();
     }
 
     /**
@@ -137,10 +126,8 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         @Override
         protected User doInBackground(ItemClient... itemClients) {
                 try {
-                    Log.v("DoInBack","rea");
                     return itemClients[0].retrieveUserFromName(name);
                 } catch (ItemClientException e) {
-                    noUserFound(e.getMessage());
                     e.printStackTrace();
                     return null;
                 }
@@ -155,16 +142,18 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
                 adapter.notifyDataSetChanged();
                 //Add in memory
                 app.getDB().addRecipient(newUser);
-                //displaySimpleDialogAlert(context,"User correctly added");
+
             } else {
-                noUserFound("User is null");
+                AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
+                newUserAlert.setTitle("Impossible to add the contact");
+                newUserAlert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        //OK
+                    }
+                });
+                newUserAlert.show();
             }
         }
-
-        private void noUserFound(String errorMessage){
-            //displaySimpleDialogAlert(context, "Impossible to add the contact\n Error message : " + errorMessage);
-        }
-
     }
 
 }
