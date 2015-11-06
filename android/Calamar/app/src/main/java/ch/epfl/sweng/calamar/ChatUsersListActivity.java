@@ -61,7 +61,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
                 Intent conversation = new Intent(ChatUsersListActivity.this, ChatActivity.class);
                 //Assuming in same order
                 User user = contacts.get(position);
-                conversation.putExtra(EXTRA_CORRESPONDENT_NAME,user.getName());
+                conversation.putExtra(EXTRA_CORRESPONDENT_NAME, user.getName());
                 conversation.putExtra(EXTRA_CORRESPONDENT_ID, user.getID());
                 startActivity(conversation);
             }
@@ -90,9 +90,9 @@ public class ChatUsersListActivity extends AppCompatActivity {
     private void getContacts(){
         //TODO : Store contact ? -- Easy once persist_data is merged
         contacts.add(new User(2,"Bob"));
-        contacts.add(new User(3,"Carol"));
-        contacts.add(new User(4,"Denis"));
-        contacts.add(new User(5,"Eve"));
+        contacts.add(new User(3, "Carol"));
+        contacts.add(new User(4, "Denis"));
+        contacts.add(new User(5, "Eve"));
     }
 
     /**
@@ -113,9 +113,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
         protected Integer doInBackground(DatabaseClient... itemClients) {
             try {
                 //Get the device id.
-                TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-                //Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID)
-                return client.newUser(name,telephonyManager.getDeviceId() + "0");//"aaaaaaaaaaaaaaaa",354436053190805
+                return client.newUser(name,Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
             } catch (ItemClientException e) {
                 //TODO : TOAST
                 e.printStackTrace();
