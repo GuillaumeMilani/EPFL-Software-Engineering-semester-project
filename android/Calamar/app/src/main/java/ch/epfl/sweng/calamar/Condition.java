@@ -236,7 +236,7 @@ public abstract class Condition {
         return this.observers.remove(observer);
     }
 
-    abstract class Observer {
+    abstract static class Observer {
         abstract public void update();
     }
 }

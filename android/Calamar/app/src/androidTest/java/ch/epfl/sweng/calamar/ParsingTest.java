@@ -28,6 +28,6 @@ public class ParsingTest {
 
     @Test
     void testSimpleTextItemParsing() throws JSONException {
-        testItemParsing(new SimpleTextItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), new Date(2012, 12, 21), "hey, How are you ?"));
+        testItemParsing(new SimpleTextItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), new Date(2012, 12, 21), Condition.trueCondition(), "hey, How are you ?"));
     }
 }

@@ -41,7 +41,7 @@ public class EqualsAndHashcodeTest {
 
     @Test
     public void testSimpleTextItem() {
-        testVerifyEqualsAndHashcode(new SimpleTextItem(12, new User(13, "bob"), new User(14, "sponge"), new Date(1000), "Heeeeyyyyy"),
-                new SimpleTextItem(12, new User(13, "bob"), new User(14, "sponge"), new Date(1000), "Heeeeyyyyy"));
+        testVerifyEqualsAndHashcode(new SimpleTextItem(12, new User(13, "bob"), new User(14, "sponge"), new Date(1000), Condition.trueCondition(), "Heeeeyyyyy"),
+                new SimpleTextItem(12, new User(13, "bob"), new User(14, "sponge"), new Date(1000), Condition.trueCondition(), "Heeeeyyyyy"));
     }
 }

@@ -15,13 +15,15 @@ public class PositionCondition extends Condition {
     private final Location location;
     private final double radius;
 
+    private final PositionCondition This = this;
+
     /**
      * make a Location from its latitude and longitude
      * @param latitude
      * @param longitude
      * @return Location in this place
      */
-    private Location makeLocation(double latitude, double longitude)
+    static private Location makeLocation(double latitude, double longitude)
     {
         Location loc = new Location("calamarTeam");
         loc.setLatitude(latitude);
@@ -38,6 +40,13 @@ public class PositionCondition extends Condition {
     {
         this.location = location;
         this.radius = radius;
+        GPSProvider.INTANCE().addObservers(new GPSProvider.Observer() {
+
+            @Override
+            public void update(Location newLocation) {
+                setValue(newLocation.distanceTo(This.location) < This.radius);
+            }
+        });
     }
 
     /**
@@ -48,17 +57,7 @@ public class PositionCondition extends Condition {
      */
     PositionCondition(double latitude, double longitude, double radius)
     {
-        location = makeLocation(latitude, longitude);
-        this.radius = radius;
-    }
-
-    /**
-     * test if parameters obj satisfy condition
-     * @return if obj match condition or not
-     */
-    @Override
-    public boolean matches() {
-        return location.distanceTo(GPSProvider.getInstance().getLocation()) < radius;
+        this(makeLocation(latitude, longitude), radius);
     }
 
     /**
