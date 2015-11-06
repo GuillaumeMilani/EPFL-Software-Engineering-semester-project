@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -29,7 +30,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
     private ChatUsersListAdapter adapter;
     private TextView actualUserTextView;
 
-    private UserClient client;
+    private DatabaseClient client;
 
     private CalamarApplication app;
 
@@ -42,7 +43,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
 
         app = ((CalamarApplication) getApplication()).getInstance();
 
-        client = new NetworkDatabaseClient(SERVER_BASE_URL,new DefaultNetworkProvider());
+        client = DatabaseClientLocator.getDatabaseClient();
 
         contacts = new ArrayList<>();
         getContacts();
@@ -98,7 +99,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
      * Async task for sending a message.
      *
      */
-    private class createNewUserTask extends AsyncTask<UserClient, Void, Integer> {
+    private class createNewUserTask extends AsyncTask<DatabaseClient, Void, Integer> {
 
         private String name = "No name";
         private Context context;
@@ -109,11 +110,12 @@ public class ChatUsersListActivity extends AppCompatActivity {
         }
 
         @Override
-        protected Integer doInBackground(UserClient... itemClients) {
+        protected Integer doInBackground(DatabaseClient... itemClients) {
             try {
                 //Get the device id.
                 TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-                return client.newUser(name,telephonyManager.getDeviceId());//"aaaaaaaaaaaaaaaa"
+                //Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID)
+                return client.newUser(name,telephonyManager.getDeviceId() + "0");//"aaaaaaaaaaaaaaaa",354436053190805
             } catch (ItemClientException e) {
                 //TODO : TOAST
                 e.printStackTrace();

@@ -28,7 +28,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private ListView messagesContainer;
     private ChatAdapter adapter;
 
-    private ItemClient client;
+    private DatabaseClient client;
 
     private Recipient correspondent;
 
@@ -48,7 +48,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         correspondent = new User(correspondentID,correspondentName);
 
-        client = ItemClientLocator.getItemClient();
+        client = DatabaseClientLocator.getDatabaseClient();
 
         editText = (EditText) findViewById(R.id.messageEdit);
         sendButton = (Button) findViewById(R.id.chatSendButton);
@@ -107,7 +107,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * Async task for sending a message.
      */
-    private class sendItemTask extends AsyncTask<ItemClient, Void, Void> {
+    private class sendItemTask extends AsyncTask<DatabaseClient, Void, Void> {
 
         private final Item textMessage;
 
@@ -116,7 +116,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        protected Void doInBackground(ItemClient... itemClients) {
+        protected Void doInBackground(DatabaseClient... itemClients) {
             try {
                 //TODO : Determine id of the message ?
 
@@ -136,7 +136,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * Async task for refreshing / getting new messages.
      */
-    private class refreshTask extends AsyncTask<ItemClient, Void, List<Item>> {
+    private class refreshTask extends AsyncTask<DatabaseClient, Void, List<Item>> {
 
         private final Recipient recipient;
         private final boolean offline;
@@ -147,7 +147,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        protected List<Item> doInBackground(ItemClient... itemClients) {
+        protected List<Item> doInBackground(DatabaseClient... itemClients) {
             if (offline) {
                 return databaseHandler.getItemsForContact(correspondent);
             } else {

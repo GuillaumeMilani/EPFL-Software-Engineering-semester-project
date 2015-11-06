@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Created by LPI on 19.10.2015.
  */
-public class NetworkDatabaseClient implements ItemClient,UserClient {
+public class NetworkDatabaseClient implements DatabaseClient {
 
     private final String serverUrl;
     private final NetworkProvider networkProvider;
@@ -188,6 +188,7 @@ public class NetworkDatabaseClient implements ItemClient,UserClient {
     }
 
     private int idFromJson(String response) throws JSONException {
+        Log.v("response : ", response);
         JSONObject object = new JSONObject(response);
         return object.getInt("ID");
     }

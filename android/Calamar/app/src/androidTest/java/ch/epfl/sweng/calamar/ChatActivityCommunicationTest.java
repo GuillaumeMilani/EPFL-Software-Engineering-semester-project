@@ -44,8 +44,8 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
      */
     @Test
     public void testSendButtonSendCorrectInformation() throws ItemClientException {
-        ItemClient client = Mockito.mock(ConstantItemClient.class);
-        ItemClientLocator.setItemClient(client);
+        DatabaseClient client = Mockito.mock(ConstantItemClient.class);
+        DatabaseClientLocator.setDatabaseClient(client);
         getActivity();
 
         //The argument captor capture the argument that the activity give to the send method.
@@ -69,8 +69,8 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
      */
     @Test
     public void testRefreshButtonGiveCorrectUser() throws ItemClientException {
-        ItemClient client = Mockito.mock(ConstantItemClient.class);
-        ItemClientLocator.setItemClient(client);
+        DatabaseClient client = Mockito.mock(ConstantItemClient.class);
+        DatabaseClientLocator.setDatabaseClient(client);
         getActivity();
 
         ArgumentCaptor<Recipient> argument = ArgumentCaptor.forClass(Recipient.class);
