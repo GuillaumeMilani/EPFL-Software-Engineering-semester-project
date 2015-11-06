@@ -21,17 +21,15 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import java.util.HashSet;
-import java.util.Observable;
 import java.util.Set;
 
 
 /**
  * Created by LPI on 06.11.2015.
  */
-public enum GPSProvider implements GoogleApiClient.ConnectionCallbacks,
+public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
-
-    INSTANCE();
+    private static volatile GPSProvider instance = null;
 
     // LogCat tag
     private static final String TAG = GPSProvider.class.getSimpleName();
@@ -51,11 +49,13 @@ public enum GPSProvider implements GoogleApiClient.ConnectionCallbacks,
 
 
     // caller activity
-    private Activity parentActivity;
+    private static Activity parentActivity;
+    //TODO check if sufficent...maybe set it to mainactivity at startup and basta
 
     private Set<Observer> observers = new HashSet<>();
 
-    GPSProvider() {
+    private GPSProvider() {
+        //todo i suggest
         // check availability of play services
         if (checkPlayServices()) {
             // Builds the GoogleApi client
@@ -240,13 +240,6 @@ public enum GPSProvider implements GoogleApiClient.ConnectionCallbacks,
         notifyObservers(location);
     }
 
-    public void setParentActivity(Activity parentActivity) {
-        if(null == parentActivity) {
-            throw new IllegalArgumentException("parentActivity cannot be null !");
-        }
-        this.parentActivity = parentActivity;
-    }
-
     public void addObserver(GPSProvider.Observer observer) {
         this.observers.add(observer);
     }
@@ -255,7 +248,28 @@ public enum GPSProvider implements GoogleApiClient.ConnectionCallbacks,
         return this.observers.remove(observer);
     }
 
-    abstract class Observer extends Observable {
+    public final static GPSProvider getInstance(Activity parentActivity) {
+        //avoid call to synchronized if already instantiated
+        if (GPSProvider.instance == null) {
+            //avoid multiple instantiations by different threads
+            synchronized(GPSProvider.class) {
+                if (GPSProvider.instance == null) {
+                    GPSProvider.instance = new GPSProvider();
+                }
+            }
+        }
+        GPSProvider.setParentActivity(parentActivity);
+        return GPSProvider.instance;
+    }
+
+    private static void setParentActivity(Activity parentActivity) {
+        if(null == parentActivity) {
+            throw new IllegalArgumentException("parentActivity cannot be null !");
+        }
+        GPSProvider.parentActivity = parentActivity;
+    }
+
+    abstract static class Observer {
         abstract public void update(Location  newLocation);
     }
 }
