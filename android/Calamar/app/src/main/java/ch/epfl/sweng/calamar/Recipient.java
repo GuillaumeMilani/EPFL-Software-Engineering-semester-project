@@ -107,6 +107,7 @@ public abstract class Recipient {
     @Override
     public boolean equals(Object o) {
         if ( this == o ) return true;
+	if ( o == null ) return false;
         if ( !(o instanceof Recipient) ) return false;
         Recipient that = (Recipient)o;
         return that.name.equals(name) && that.ID == ID;
