@@ -4,6 +4,7 @@ import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -26,6 +27,7 @@ public class NetworkItemClient implements ItemClient {
     private final static int HTTP_SUCCESS_END = 299;
     private final static String SEND_PATH = "/items.php?action=send";
     private final static String RETRIEVE_PATH = "/items.php?action=retrieve";
+    private final static String RETRIEVE_USER_PATH = "/users.php?action=retrieve";
 
     public NetworkItemClient(String serverUrl, NetworkProvider networkProvider)  {
         if(null == serverUrl || null == networkProvider) {
@@ -77,6 +79,25 @@ public class NetworkItemClient implements ItemClient {
             if (!response.contains("Ack")) {
                 throw new ItemClientException("error: server couldn't retrieve the item");
             }
+        } catch (IOException | JSONException e) {
+            throw new ItemClientException(e);
+        } finally {
+            NetworkItemClient.close(connection);
+        }
+    }
+
+    @Override
+    public User retrieveUserFromName(String name) throws ItemClientException{
+        HttpURLConnection connection = null;
+        try {
+            URL url = new URL(serverUrl + NetworkItemClient.RETRIEVE_USER_PATH);
+            String jsonParameter = "{ " +
+                    "\"name\": " + "\"" + name +"\""+
+                    " }";
+            connection = NetworkItemClient.createConnection(networkProvider, url);
+            String response = NetworkItemClient.post(connection, jsonParameter);
+            JSONObject resp = new JSONObject(response);
+            return User.fromJSON(resp.getJSONObject("user"));
         } catch (IOException | JSONException e) {
             throw new ItemClientException(e);
         } finally {

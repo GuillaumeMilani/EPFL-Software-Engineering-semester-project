@@ -35,4 +35,9 @@ public class ConstantItemClient implements ItemClient{
     public void send(Item item) throws ItemClientException {
         //Do nothing
     }
+
+    @Override
+    public User retrieveUserFromName(String name) throws ItemClientException {
+        return null;
+    }
 }

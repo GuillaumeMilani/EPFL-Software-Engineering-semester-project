@@ -23,4 +23,13 @@ public interface ItemClient {
      * @param item the item to send
      */
     void send(Item item) throws ItemClientException;
+
+
+    /**
+     * //TODO : Put it on DatabaseClient
+     * Retrieve an user from the server from his name.
+     *
+     * @param name
+     */
+    User retrieveUserFromName(String name) throws ItemClientException;
 }
