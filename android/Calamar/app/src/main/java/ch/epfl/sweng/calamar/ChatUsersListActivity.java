@@ -73,7 +73,10 @@ public class ChatUsersListActivity extends AppCompatActivity {
      * Return the actual user of the app.
      */
     private void setActualUser(){
-        // if 0, create a new user !
+        //TODO : Remove when you use a real device.
+        app.setCurrentUserID(11);
+        app.setCurrentUserName("calamaremulator@gmail.com");
+        /*
         if(app.getCurrentUserID() == -1){
             String name = "No name";
             //Get google account email
@@ -83,7 +86,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
                 name = list[0].name;
             }
             new createNewUserTask(name,this).execute(client);
-        }
+        }*/
         actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
     }
 
