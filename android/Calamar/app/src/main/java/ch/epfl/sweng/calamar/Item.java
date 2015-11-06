@@ -110,6 +110,7 @@ public abstract class Item {
     @Override
     public boolean equals(Object o) {
         if ( this == o ) return true;
+	if ( o == null ) return false;
         if ( !(o instanceof Item) ) return false;
         Item that = (Item)o;
         return that.ID == ID && that.from.equals(from) && that.to.equals(to) && that.date == date;
