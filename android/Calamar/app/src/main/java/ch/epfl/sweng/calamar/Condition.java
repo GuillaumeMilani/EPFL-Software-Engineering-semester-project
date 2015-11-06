@@ -34,7 +34,7 @@ public abstract class Condition {
 
     /**
      * set a value for this condition. If newValue differs from old, notify observers
-     * @param newValue
+     * @param newValue new value to set
      */
     public void setValue(boolean newValue)
     {
@@ -77,8 +77,10 @@ public abstract class Condition {
                 break;
             case "true":
                 cond = trueCondition();
+                break;
             case "false":
                 cond = falseCondition();
+                break;
             default:
                 throw new IllegalArgumentException("Unexpected Item type (" + type + ")");
         }
