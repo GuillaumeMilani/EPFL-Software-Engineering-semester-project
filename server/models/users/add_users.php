@@ -7,6 +7,7 @@
 function add_recipient($email,$deviceID)
 {
 	global $pdo;
+	$email = strtolower($email);
 	
 	if(checkEmail($email) == false)
 	{

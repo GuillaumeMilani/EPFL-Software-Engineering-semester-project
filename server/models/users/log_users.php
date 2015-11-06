@@ -7,6 +7,7 @@
 function log_user($email,$deviceID)
 {
 	global $pdo;
+	$email = strtolower($email);
 	
 	if(!checkEmail($email))
 	{
