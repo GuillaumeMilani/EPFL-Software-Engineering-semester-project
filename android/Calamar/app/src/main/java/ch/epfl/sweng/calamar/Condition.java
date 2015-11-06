@@ -36,7 +36,7 @@ public abstract class Condition {
      * set a value for this condition. If newValue differs from old, notify observers
      * @param newValue new value to set
      */
-    public void setValue(boolean newValue)
+    protected void setValue(boolean newValue)
     {
         if(value != newValue) {
             value = newValue;
