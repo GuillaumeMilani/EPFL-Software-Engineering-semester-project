@@ -72,6 +72,28 @@ public final class SimpleTextItem extends Item {
     }
 
     /**
+     * test if this is equals to other Object, true when object is a SimpleTextItem and content truly equals
+     * @param o Obect to compare this with
+     * @return true if two SimpleTextItems are equal
+     */
+    @Override
+    public boolean equals(Object o) {
+        if ( this == o ) return true;
+        if ( !(o instanceof SimpleTextItem) ) return false;
+        SimpleTextItem that = (SimpleTextItem)o;
+        return super.equals(that) && that.message.equals(message);
+    }
+
+    /**
+     * hash the SimpleTextItem
+     * @return hash of the SimpleTextItem
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode()*73+(message != null ? message.hashCode() : 0);
+    }
+
+    /**
      * A Builder for {@link SimpleTextItem}, currently only used to parse JSON (little overkill..but ..)
      * @see ch.epfl.sweng.calamar.Item.Builder
      */
