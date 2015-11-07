@@ -49,7 +49,7 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
     // Google client to interact with Google API
     private GoogleApiClient googleApiClient;
     private boolean resolvingError = false;
-    private GoogleApiAvailability apiAvailabilitySingleton = GoogleApiAvailability.getInstance();
+    private GoogleApiAvailability apiAvailabilitySingleton;
 
 
 
@@ -63,6 +63,7 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
     //errors should be handled in main activity at app startup
     private GPSProvider() {
         // check availability of play services
+        apiAvailabilitySingleton = GoogleApiAvailability.getInstance();
         if (checkPlayServices()) {
             // Builds the GoogleApi client
             buildGoogleApiClient();
