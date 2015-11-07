@@ -33,12 +33,15 @@ public class CalamarApplication extends Application {
     public void onCreate() {
         super.onCreate();
         application = this;
-        db = new SQLiteDatabaseHandler(this);
         sp = getSharedPreferences(CALAMAR_PREFERENCES, Context.MODE_PRIVATE);
         editor = sp.edit();
+        setCurrentUserID(1);
+        setCurrentUserName("Bob");
+        db = new SQLiteDatabaseHandler(this);
+
         //TODO remove once database is thoroughly tested (tests delete all entries)
-        setLastItemsRefresh(new Date(0));
-        setLastUsersRefresh(new Date(0));
+        //setLastItemsRefresh(new Date(0));
+        //setLastUsersRefresh(new Date(0));
     }
 
     /**
