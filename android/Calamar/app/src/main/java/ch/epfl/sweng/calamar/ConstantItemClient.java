@@ -16,7 +16,7 @@ public class ConstantItemClient implements DatabaseClient {
     private final Item itemTo = new SimpleTextItem(1,bob,alice,new Date(1445198510),"Hello Alice, it's Bob !");
 
     @Override
-    public List<Item> getAllItems(Recipient recipient, Date from) throws ItemClientException {
+    public List<Item> getAllItems(Recipient recipient, Date from) throws DatabaseClientException {
         List<Item> items = new ArrayList<>();
         items.add(itemFrom);
         items.add(itemTo);
@@ -24,7 +24,7 @@ public class ConstantItemClient implements DatabaseClient {
     }
 
     @Override
-    public List<Item> getAllItems(Recipient recipient) throws ItemClientException {
+    public List<Item> getAllItems(Recipient recipient) throws DatabaseClientException {
         List<Item> items = new ArrayList<>();
         items.add(itemFrom);
         items.add(itemTo);
@@ -32,12 +32,12 @@ public class ConstantItemClient implements DatabaseClient {
     }
 
     @Override
-    public void send(Item item) throws ItemClientException {
+    public void send(Item item) throws DatabaseClientException {
         //Do nothing
     }
 
     @Override
-    public int newUser(String email, String deviceId) throws ItemClientException {
+    public int newUser(String email, String deviceId) throws DatabaseClientException {
         return 0;
     }
 }

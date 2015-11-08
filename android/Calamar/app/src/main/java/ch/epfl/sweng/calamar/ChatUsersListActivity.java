@@ -1,7 +1,5 @@
 package ch.epfl.sweng.calamar;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,8 +8,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
-import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -117,7 +113,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
             try {
                 //Get the device id.
                 return client.newUser(name,Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
-            } catch (ItemClientException e) {
+            } catch (DatabaseClientException e) {
                 //TODO : TOAST
                 e.printStackTrace();
                 return null;

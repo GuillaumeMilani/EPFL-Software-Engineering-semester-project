@@ -129,7 +129,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 databaseHandler.addItem(textMessage);
                 return null;
                 //return itemClients[0].send(textMessage);
-            } catch (ItemClientException e) {
+            } catch (DatabaseClientException e) {
                 //TODO : TOAST
                 e.printStackTrace();
                 return null;
@@ -159,7 +159,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                     List<Item> items = itemClients[0].getAllItems(recipient, new Date(app.getLastItemsRefresh()));
                     databaseHandler.addItems(items);
                     return itemClients[0].getAllItems(recipient, new Date(app.getLastItemsRefresh()));
-                } catch (ItemClientException e) {
+                } catch (DatabaseClientException e) {
                     //TODO : TOAST
                     e.printStackTrace();
                     return null;

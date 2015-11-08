@@ -38,7 +38,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
     }
 
     @Override
-    public List<Item> getAllItems(Recipient recipient, Date from) throws ItemClientException {
+    public List<Item> getAllItems(Recipient recipient, Date from) throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_PATH);
@@ -56,19 +56,19 @@ public class NetworkDatabaseClient implements DatabaseClient {
 
             return NetworkDatabaseClient.itemsFromJSON(response);
         } catch (IOException | JSONException e) {
-            throw new ItemClientException(e);
+            throw new DatabaseClientException(e);
         } finally {
             NetworkDatabaseClient.close(connection);
         }
     }
 
     @Override
-    public List<Item> getAllItems(Recipient recipient) throws ItemClientException {
+    public List<Item> getAllItems(Recipient recipient) throws DatabaseClientException {
         return getAllItems(recipient, new Date());
     }
 
     @Override
-    public void send(Item item) throws ItemClientException {
+    public void send(Item item) throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.SEND_PATH);
@@ -77,17 +77,17 @@ public class NetworkDatabaseClient implements DatabaseClient {
             String response = NetworkDatabaseClient.post(connection, jsonParameter);
 
             if (!response.contains("Ack")) {
-                throw new ItemClientException("error: server couldn't retrieve the item");
+                throw new DatabaseClientException("error: server couldn't retrieve the item");
             }
         } catch (IOException | JSONException e) {
-            throw new ItemClientException(e);
+            throw new DatabaseClientException(e);
         } finally {
             NetworkDatabaseClient.close(connection);
         }
     }
 
     @Override
-    public int newUser(String email, String deviceId) throws ItemClientException {
+    public int newUser(String email, String deviceId) throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.NEW_USER_PATH);
@@ -100,7 +100,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
             String response = NetworkDatabaseClient.post(connection, jsonParameter);
             return idFromJson(response);
         } catch (IOException | JSONException e) {
-            throw new ItemClientException(e);
+            throw new DatabaseClientException(e);
         } finally {
             NetworkDatabaseClient.close(connection);
         }
@@ -135,10 +135,10 @@ public class NetworkDatabaseClient implements DatabaseClient {
      * @param jsonParameter the data posted
      * @return the result of the request
      * @throws IOException
-     * @throws ItemClientException
+     * @throws DatabaseClientException
      */
     private static String post(HttpURLConnection connection, String jsonParameter)
-            throws IOException, ItemClientException
+            throws IOException, DatabaseClientException
     {
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type",
@@ -156,7 +156,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
 
         int responseCode = connection.getResponseCode();
         if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
-            throw new ItemClientException("Invalid HTTP response code (" + responseCode + " )" );
+            throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )" );
         }
 
         //get result

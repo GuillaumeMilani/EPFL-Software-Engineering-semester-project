@@ -39,10 +39,10 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
 
     /**
      * Test that when we click on the send button, a correct item is created.
-     * @throws ItemClientException
+     * @throws DatabaseClientException
      */
     @Test
-    public void testSendButtonSendCorrectInformation() throws ItemClientException {
+    public void testSendButtonSendCorrectInformation() throws DatabaseClientException {
         DatabaseClient client = Mockito.mock(ConstantItemClient.class);
         DatabaseClientLocator.setDatabaseClient(client);
         Intent conversation = new Intent();
