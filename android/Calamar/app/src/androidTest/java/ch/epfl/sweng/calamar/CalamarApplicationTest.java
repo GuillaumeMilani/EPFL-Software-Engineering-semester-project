@@ -1,6 +1,11 @@
 package ch.epfl.sweng.calamar;
 
+import android.content.Context;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
 import android.test.ApplicationTestCase;
+import android.test.RenamingDelegatingContext;
+import android.util.Log;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,50 +32,59 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
     private CalamarApplication app;
 
     @Before
-    public void setUp() {
-        createApplication();
-        app=getApplication().getInstance();
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        app = (CalamarApplication)InstrumentationRegistry.getTargetContext().getApplicationContext();
+        getApplication();
     }
 
     public CalamarApplicationTest() {
         super(CalamarApplication.class);
     }
 
+
     @Test
     public void testDefaultValues(){
         app.resetPreferences();
+        Log.v("Def ", app.getCurrentUserID() + "");
         assertEquals(defaultID, app.getCurrentUserID());
         assertEquals(defaultUsername, app.getCurrentUserName());
         assertEquals(defaultLastRefresh, app.getLastItemsRefresh());
         assertEquals(defaultLastRefresh, app.getLastUsersRefresh());
+        app.resetPreferences();
     }
 
     @Test
     public void testSetUsername(){
         app.resetPreferences();
         app.setCurrentUserName(testUsername);
-        assertEquals(testUsername,app.getCurrentUserName());
+        assertEquals(testUsername, app.getCurrentUserName());
+        app.resetPreferences();
     }
 
     @Test
     public void testSetUserID(){
         app.resetPreferences();
         app.setCurrentUserID(testID);
-        assertEquals(testID,app.getCurrentUserID());
+        assertEquals(testID, app.getCurrentUserID());
+        app.resetPreferences();
     }
 
     @Test
     public void testSetLastItemsRefresh(){
         app.resetPreferences();
         app.setLastItemsRefresh(testDate);
-        assertEquals(testDate.getTime(),app.getLastItemsRefresh());
+        assertEquals(testDate.getTime(), app.getLastItemsRefresh());
+        app.resetPreferences();
     }
 
     @Test
     public void testSetLastUsersRefresh(){
         app.resetPreferences();
         app.setLastUsersRefresh(testDate);
-        assertEquals(testDate.getTime(),app.getLastUsersRefresh());
+        assertEquals(testDate.getTime(), app.getLastUsersRefresh());
+        app.resetPreferences();
     }
 
     @Test
@@ -81,17 +95,18 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
         assertEquals(defaultLastRefresh, app.getLastUsersRefresh());
         app.setLastItemsRefresh(testDate);
         app.resetLastItemsRefresh();
-        assertEquals(defaultLastRefresh,app.getLastItemsRefresh());
+        assertEquals(defaultLastRefresh, app.getLastItemsRefresh());
         app.setCurrentUserName(testUsername);
         app.resetUsername();
         assertEquals(defaultUsername, app.getCurrentUserName());
         app.setCurrentUserID(defaultID);
         app.resetUserID();
-        assertEquals(defaultID,app.getCurrentUserID());
+        assertEquals(defaultID, app.getCurrentUserID());
+        app.resetPreferences();
     }
 
     @After
     public void tearDown(){
-        app.resetPreferences();
+        //app.resetPreferences();
     }
 }
