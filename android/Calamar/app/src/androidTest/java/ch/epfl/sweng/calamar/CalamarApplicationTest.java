@@ -31,12 +31,10 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
 
     private CalamarApplication app;
 
+    @Before
     @Override
     public void setUp() throws Exception {
         super.setUp();
-    }
-
-    private void mySetup() {
         app = (CalamarApplication)InstrumentationRegistry.getTargetContext().getApplicationContext();
         getApplication();
     }
@@ -48,7 +46,6 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
 
     @Test
     public void testDefaultValues(){
-        mySetup();
         app.resetPreferences();
         Log.v("Def ", app.getCurrentUserID() + "");
         assertEquals(defaultID, app.getCurrentUserID());
@@ -60,34 +57,30 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
 
     @Test
     public void testSetUsername(){
-        mySetup();
         app.resetPreferences();
         app.setCurrentUserName(testUsername);
-        assertEquals(testUsername,app.getCurrentUserName());
+        assertEquals(testUsername, app.getCurrentUserName());
         app.resetPreferences();
     }
 
     @Test
     public void testSetUserID(){
-        mySetup();
         app.resetPreferences();
         app.setCurrentUserID(testID);
-        assertEquals(testID,app.getCurrentUserID());
+        assertEquals(testID, app.getCurrentUserID());
         app.resetPreferences();
     }
 
     @Test
     public void testSetLastItemsRefresh(){
-        mySetup();
         app.resetPreferences();
         app.setLastItemsRefresh(testDate);
-        assertEquals(testDate.getTime(),app.getLastItemsRefresh());
+        assertEquals(testDate.getTime(), app.getLastItemsRefresh());
         app.resetPreferences();
     }
 
     @Test
     public void testSetLastUsersRefresh(){
-        mySetup();
         app.resetPreferences();
         app.setLastUsersRefresh(testDate);
         assertEquals(testDate.getTime(), app.getLastUsersRefresh());
@@ -96,20 +89,19 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
 
     @Test
     public void testResets(){
-        mySetup();
         app.resetPreferences();
         app.setLastUsersRefresh(testDate);
         app.resetLastUsersRefresh();
         assertEquals(defaultLastRefresh, app.getLastUsersRefresh());
         app.setLastItemsRefresh(testDate);
         app.resetLastItemsRefresh();
-        assertEquals(defaultLastRefresh,app.getLastItemsRefresh());
+        assertEquals(defaultLastRefresh, app.getLastItemsRefresh());
         app.setCurrentUserName(testUsername);
         app.resetUsername();
         assertEquals(defaultUsername, app.getCurrentUserName());
         app.setCurrentUserID(defaultID);
         app.resetUserID();
-        assertEquals(defaultID,app.getCurrentUserID());
+        assertEquals(defaultID, app.getCurrentUserID());
         app.resetPreferences();
     }
 
