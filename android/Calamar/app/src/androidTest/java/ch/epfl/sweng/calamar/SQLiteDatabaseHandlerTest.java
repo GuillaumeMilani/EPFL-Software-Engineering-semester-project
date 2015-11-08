@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar;
 
+import android.support.test.InstrumentationRegistry;
 import android.test.ApplicationTestCase;
 
 import org.junit.Before;
@@ -17,6 +18,8 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     private SQLiteDatabaseHandler dbHandler;
 
+    private CalamarApplication app;
+
     private final User testUser = new User(0, "Me");
     private final User testUser2 = new User(1, "You");
     private final User testUser3 = new User(2, "Him");
@@ -27,9 +30,15 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     private final SimpleTextItem testItem4 = new SimpleTextItem(3, testUser, testUser2, new Date(3), "3");
 
     @Before
-    public void setUp() {
-        createApplication();
-        dbHandler = getApplication().getInstance().getDB();
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+    }
+
+    private void mySetup() {
+        app = ((CalamarApplication) InstrumentationRegistry.getTargetContext().getApplicationContext());
+        dbHandler = app.getDB();
+        getApplication();
         dbHandler.deleteAllItems();
         dbHandler.deleteAllRecipients();
     }
@@ -41,12 +50,14 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Before
     public void testDatabaseIsEmpty() {
+        mySetup();
         assertTrue(dbHandler.getAllItems().isEmpty());
         assertTrue(dbHandler.getAllRecipients().isEmpty());
     }
 
     @Test
     public void testDeleteOnEmptyDatabase(){
+        mySetup();
         dbHandler.deleteItem(0);
         dbHandler.deleteRecipient(0);
         assertEquals(dbHandler.getAllItems().size(), 0);
@@ -55,6 +66,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testAddAndDeleteRecipient() {
+        mySetup();
         dbHandler.addRecipient(testUser);
         User u = (User) dbHandler.getRecipient(0);
         assertEquals(u, testUser);
@@ -66,6 +78,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testUpdateRecipient() {
+        mySetup();
         dbHandler.addRecipient(testUser);
         User u = new User(testUser.getID(), "NotMe");
         dbHandler.updateRecipient(u);
@@ -76,6 +89,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testUpdateItem() {
+        mySetup();
         dbHandler.addItem(testItem);
         SimpleTextItem item = new SimpleTextItem(testItem.getID(), testUser, testUser3, new Date(3), "-1");
         dbHandler.updateItem(item);
@@ -85,6 +99,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testUpdateMultipleRecipients() {
+        mySetup();
         initDB();
         List<Recipient> toUpdate = new ArrayList<>();
         toUpdate.add(new User(testUser.getID(), "User1"));
@@ -99,6 +114,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testUpdateMultipleItems() {
+        mySetup();
         initDB();
         List<Item> toUpdate = new ArrayList<>();
         toUpdate.add(new SimpleTextItem(testItem.getID(), testUser3, testUser, new Date(100), "message1"));
@@ -113,6 +129,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testGetMultipleItems() {
+        mySetup();
         initDB();
         List<Integer> toGet = new ArrayList<>();
         toGet.add(testItem.getID());
@@ -125,6 +142,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testGetMultipleRecipients() {
+        mySetup();
         initDB();
         List<Integer> toGet = new ArrayList<>();
         toGet.add(testUser.getID());
@@ -138,6 +156,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testAddAndDeleteItem() {
+        mySetup();
         dbHandler.addItem(testItem);
         SimpleTextItem i = (SimpleTextItem) dbHandler.getItem(testItem.getID());
         assertEquals(i, testItem);
@@ -149,6 +168,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testAddAndDeleteItemSecondMethod() {
+        mySetup();
         dbHandler.addItem(testItem);
         dbHandler.deleteItem(testItem);
         assertEquals(dbHandler.getItem(testItem.getID()), null);
@@ -157,6 +177,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testDeleteMultipleItems() {
+        mySetup();
         initDB();
         List<Integer> toDelete = new ArrayList<>();
         toDelete.add(testItem.getID());
@@ -171,6 +192,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testDeleteMultipleUsers() {
+        mySetup();
         initDB();
         List<Integer> toDelete = new ArrayList<>();
         toDelete.add(testUser.getID());
@@ -185,6 +207,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testAddAndDeleteRecipientSecondMethod() {
+        mySetup();
         dbHandler.addRecipient(testUser);
         dbHandler.deleteRecipient(testUser);
         assertEquals(dbHandler.getRecipient(testUser.getID()), null);
@@ -193,6 +216,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testAddThreeRecipientsAndGetAllOfThemAndDeleteAllRecipients() {
+        mySetup();
         List<Recipient> users = new ArrayList<>();
         users.add(testUser);
         users.add(testUser2);
@@ -214,8 +238,9 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testGetItemsBetweenTwoRecipients() {
+        mySetup();
         initDB();
-        getApplication().setCurrentUserID(testUser.getID());
+        app.setCurrentUserID(testUser.getID());
         List<Item> contactItems = dbHandler.getItemsForContact(testUser2);
         assertEquals(contactItems.size(), 3);
         SimpleTextItem item = (SimpleTextItem) contactItems.get(0);
@@ -224,14 +249,15 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         assertEquals(item, testItem3);
         item = (SimpleTextItem) contactItems.get(2);
         assertEquals(item, testItem4);
-        getApplication().setCurrentUserID(-1);
+        app.setCurrentUserID(-1);
         clearDB();
     }
 
     @Test
     public void testGetItemsBetweenTwoRecipientsSecondMethod() {
+        mySetup();
         initDB();
-        getApplication().setCurrentUserID(testUser.getID());
+        app.setCurrentUserID(testUser.getID());
         List<Item> contactItems = dbHandler.getItemsForContact(testUser2.getID());
         assertEquals(contactItems.size(), 3);
         SimpleTextItem item = (SimpleTextItem) contactItems.get(0);
@@ -240,11 +266,12 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         assertEquals(item, testItem3);
         item = (SimpleTextItem) contactItems.get(2);
         assertEquals(item, testItem4);
-        getApplication().setCurrentUserID(-1);
+        app.setCurrentUserID(-1);
         clearDB();
     }
 
     public void testDeleteEverything() {
+        mySetup();
         initDB();
         assertFalse(dbHandler.getAllItems().isEmpty());
         dbHandler.deleteAllItems();
