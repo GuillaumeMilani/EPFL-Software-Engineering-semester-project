@@ -7,18 +7,14 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputType;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class ChatUsersListActivity extends AppCompatActivity implements View.OnClickListener {
@@ -74,30 +70,30 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         if (v.getId() == R.id.newContact) {
             addNewContact();
         } else {
-            throw new IllegalArgumentException("Got an unexpected view Id in Onclick");
+            throw new IllegalArgumentException(getString(R.string.on_click_error));
         }
     }
 
     private void addNewContact(){
         AlertDialog.Builder newContact = new AlertDialog.Builder(this);
 
-        newContact.setTitle("Add a new contact");
-        newContact.setMessage("Enter the mail of the new contact");
+        newContact.setTitle(getString(R.string.add_new_contact_title));
+        newContact.setMessage(getString(R.string.add_new_contact_message));
 
         final EditText input = new EditText(this);
-        input.setHint("Mail");
+        input.setHint(getString(R.string.add_new_contact_hint));
         final LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.addView(input);
         newContact.setView(layout);
 
-        newContact.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+        newContact.setPositiveButton(getString(R.string.add_new_contact_positive_button), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 new retrieveUserTask(input.getText().toString(), ChatUsersListActivity.this).execute(client);
             }
         });
 
-        newContact.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        newContact.setNegativeButton(getString(R.string.add_new_contact_negative_button), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 // Canceled.
             }
@@ -145,8 +141,8 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
 
             } else {
                 AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
-                newUserAlert.setTitle("Impossible to add the contact");
-                newUserAlert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                newUserAlert.setTitle(getString(R.string.error_add_contact));
+                newUserAlert.setPositiveButton(getString(R.string.alert_dialog_default_positive_button), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         //OK
                     }

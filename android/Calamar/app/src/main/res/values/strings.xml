@@ -5,5 +5,13 @@
     <string name="recipient">Her/Him</string>
     <string name="send_message">Send</string>
     <string name="refresh_button">Refresh</string>
+    <string name="error_add_contact">Impossible to add the contact</string>
+    <string name="add_new_contact_title">Add a new contact</string>
+    <string name="add_new_contact_message">Enter the mail of the new contact</string>
+    <string name="add_new_contact_hint">Mail</string>
+    <string name="add_new_contact_positive_button">Add</string>
+    <string name="add_new_contact_negative_button">Cancel</string>
+    <string name="alert_dialog_default_positive_button">Ok</string>
     <string name="title_activity_chat_users_list">ChatUsersListActivity</string>
+    <string name="on_click_error">Got an unexpected view Id in Onclick</string>
 </resources>
