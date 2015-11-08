@@ -46,6 +46,10 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         String correspondentName = intent.getStringExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME);
         int correspondentID = intent.getIntExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID,-1); // -1 = default value
 
+        if(correspondentName == null){
+            correspondentName = "";
+        }
+
         correspondent = new User(correspondentID,correspondentName);
 
         client = DatabaseClientLocator.getDatabaseClient();
