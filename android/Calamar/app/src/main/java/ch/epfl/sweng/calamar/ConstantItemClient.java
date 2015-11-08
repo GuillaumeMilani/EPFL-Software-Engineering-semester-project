@@ -32,7 +32,8 @@ public class ConstantItemClient implements ItemClient{
     }
 
     @Override
-    public void send(Item item) throws ItemClientException {
+    public int send(Item item) throws ItemClientException {
+        return 0;
         //Do nothing
     }
 }

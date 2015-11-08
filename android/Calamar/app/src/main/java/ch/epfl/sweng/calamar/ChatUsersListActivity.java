@@ -52,11 +52,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
     }
 
     private void getContacts(){
-        //TODO : Store contact ? -- Easy once persist_data is merged
-        contacts.add(new User(2,"Bob"));
-        contacts.add(new User(3,"Carol"));
-        contacts.add(new User(4,"Denis"));
-        contacts.add(new User(5,"Eve"));
+        contacts.add(new User(7,"Calamar@gmail.com"));
     }
 
 }

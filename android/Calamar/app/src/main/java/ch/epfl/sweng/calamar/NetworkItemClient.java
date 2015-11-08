@@ -4,6 +4,7 @@ import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -66,7 +67,7 @@ public class NetworkItemClient implements ItemClient {
     }
 
     @Override
-    public void send(Item item) throws ItemClientException {
+    public int send(Item item) throws ItemClientException {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkItemClient.SEND_PATH);
@@ -74,9 +75,7 @@ public class NetworkItemClient implements ItemClient {
             connection = NetworkItemClient.createConnection(networkProvider, url);
             String response = NetworkItemClient.post(connection, jsonParameter);
 
-            if (!response.contains("Ack")) {
-                throw new ItemClientException("error: server couldn't retrieve the item");
-            }
+            return idFromJson(response);
         } catch (IOException | JSONException e) {
             throw new ItemClientException(e);
         } finally {
@@ -163,5 +162,10 @@ public class NetworkItemClient implements ItemClient {
             }
         }
         return result;
+    }
+
+    private int idFromJson(String response) throws JSONException {
+        JSONObject object = new JSONObject(response);
+        return object.getInt("ID");
     }
 }
