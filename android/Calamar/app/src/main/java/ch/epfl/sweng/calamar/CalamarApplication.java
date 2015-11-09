@@ -25,7 +25,7 @@ public class CalamarApplication extends Application {
      *
      * @return A singleton
      */
-    public CalamarApplication getInstance() {
+    public static CalamarApplication getInstance() {
         return application;
     }
 

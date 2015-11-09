@@ -49,7 +49,7 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
     // Google client to interact with Google API
     private GoogleApiClient googleApiClient;
     private boolean resolvingError = false;
-    private GoogleApiAvailability apiAvailabilitySingleton = GoogleApiAvailability.getInstance();
+    private GoogleApiAvailability apiAvailabilitySingleton;
 
 
 
@@ -63,6 +63,7 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
     //errors should be handled in main activity at app startup
     private GPSProvider() {
         // check availability of play services
+        apiAvailabilitySingleton = GoogleApiAvailability.getInstance();
         if (checkPlayServices()) {
             // Builds the GoogleApi client
             buildGoogleApiClient();
@@ -75,7 +76,7 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
      * Verifies google play services availability on the device
      * */
     private boolean checkPlayServices() {
-        int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(parentActivity);
+        int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(CalamarApplication.getInstance());
         if (resultCode != ConnectionResult.SUCCESS) {
             if (apiAvailabilitySingleton.isUserResolvableError(resultCode)) {
                 this.apiAvailabilitySingleton.getErrorDialog(parentActivity, resultCode,
@@ -99,6 +100,7 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
      * is called by startLocationUpdates()
      * */
     private void checkLocationSettings() {
+        googleApiClient.connect();//if already connected does nothing
 
         //build location settings status requests
         LocationSettingsRequest request = new LocationSettingsRequest.Builder()
@@ -158,7 +160,7 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
      *      FusedLocationProviderAPI</a>
      * */
     private synchronized void buildGoogleApiClient() {
-        googleApiClient = new GoogleApiClient.Builder(parentActivity)
+        googleApiClient = new GoogleApiClient.Builder(CalamarApplication.getInstance())
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this).build();
