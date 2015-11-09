@@ -5,6 +5,8 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.securepreferences.SecurePreferences;
+
 import java.util.Date;
 
 public class CalamarApplication extends Application {
@@ -35,16 +37,18 @@ public class CalamarApplication extends Application {
 
     @SuppressLint("CommitPrefEdits")
     @Override
+    //TODO Clean method once things are decided
     public void onCreate() {
         super.onCreate();
+        User test = new User(1, "Bob");
         application = this;
-        sp = getSharedPreferences(CALAMAR_PREFERENCES, Context.MODE_PRIVATE);
+        //TODO Need to find a better passphrase (User password for example)
+        sp = new SecurePreferences(this,Integer.toString(new User(1,"Bob").hashCode()),"user_pref.xml");
         editor = sp.edit();
         setCurrentUserID(1);
         setCurrentUserName("Bob");
         db = SQLiteDatabaseHandler.getInstance();
 
-        //TODO remove once database is thoroughly tested (tests delete all entries)
         setLastItemsRefresh(new Date(0));
         setLastUsersRefresh(new Date(0));
     }
