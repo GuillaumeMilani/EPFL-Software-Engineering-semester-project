@@ -33,7 +33,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        app = ((CalamarApplication) InstrumentationRegistry.getTargetContext().getApplicationContext());
+        app = (((CalamarApplication) InstrumentationRegistry.getTargetContext().getApplicationContext()).getInstance());
         dbHandler = app.getDB();
         getApplication();
         dbHandler.deleteAllItems();
@@ -250,6 +250,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         clearDB();
     }
 
+    @Test
     public void testDeleteEverything() {
         initDB();
         assertFalse(dbHandler.getAllItems().isEmpty());

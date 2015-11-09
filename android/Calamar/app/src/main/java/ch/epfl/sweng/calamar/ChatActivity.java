@@ -39,7 +39,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        app = ((CalamarApplication) getApplication()).getInstance();
+        app = CalamarApplication.getInstance();
 
         Intent intent = getIntent();
         String correspondentName = intent.getStringExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME);

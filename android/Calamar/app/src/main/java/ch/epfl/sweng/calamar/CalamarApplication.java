@@ -25,7 +25,10 @@ public class CalamarApplication extends Application {
      *
      * @return A singleton
      */
-    public CalamarApplication getInstance() {
+    public static CalamarApplication getInstance() {
+        if (application==null){
+            application=new CalamarApplication();
+        }
         return application;
     }
 
@@ -37,7 +40,7 @@ public class CalamarApplication extends Application {
         editor = sp.edit();
         setCurrentUserID(1);
         setCurrentUserName("Bob");
-        db = new SQLiteDatabaseHandler(this);
+        db = SQLiteDatabaseHandler.getInstance();
 
         //TODO remove once database is thoroughly tested (tests delete all entries)
         //setLastItemsRefresh(new Date(0));

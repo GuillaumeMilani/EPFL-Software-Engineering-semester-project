@@ -31,7 +31,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
 
         //TODO I don't think it is necessary to remind the user who he is (okay for development)
         actualUserTextView = (TextView) findViewById(R.id.actualUserName);
-        actualUserTextView.setText("Actual user : " + ((CalamarApplication) getApplication()).getInstance().getCurrentUserName());
+        actualUserTextView.setText("Actual user : " + CalamarApplication.getInstance().getCurrentUserName());
 
         contactsView = (ListView) findViewById(R.id.contactsList);
         contactsView.setSelector(R.drawable.list_selector);

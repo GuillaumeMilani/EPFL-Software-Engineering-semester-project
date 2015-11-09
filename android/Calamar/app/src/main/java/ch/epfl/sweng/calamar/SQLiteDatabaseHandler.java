@@ -1,6 +1,7 @@
 package ch.epfl.sweng.calamar;
 
 import android.content.ContentValues;
+
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteOpenHelper;
 import net.sqlcipher.database.SQLiteDatabase;
@@ -14,7 +15,9 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     //TODO add support for other items (now assuming only SimpleTextItem)
 
-    private final CalamarApplication app;
+    private static final CalamarApplication app = CalamarApplication.getInstance();
+
+    private static SQLiteDatabaseHandler instance;
 
     private static final int DATABASE_VERSION = 2;
     private static final String DATABASE_NAME = "CalamarDB";
@@ -34,21 +37,24 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     private final String userHash;
 
+    public static SQLiteDatabaseHandler getInstance(){
+        if (instance==null){
+            SQLiteDatabase.loadLibs(app);
+            instance=new SQLiteDatabaseHandler();
+        }
+        return instance;
+    }
+
     /**
      * Creates a databasehandler for managing stored informations on the user phone.
-     *
-     * @param app The application
      */
-    public SQLiteDatabaseHandler(CalamarApplication app) {
-        super(app.getInstance(), DATABASE_NAME, null, DATABASE_VERSION);
-        this.app = app.getInstance();
-        userHash=Integer.toString(app.getCurrentUser().hashCode());
+    private SQLiteDatabaseHandler() {
+        super(app, DATABASE_NAME, null, DATABASE_VERSION);
+        userHash = Integer.toString(app.getCurrentUser().hashCode());
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        System.out.println("BLBLBLBLBLBBL");
-        SQLiteDatabase.loadLibs(app);
         final String createMessagesTable = "CREATE TABLE " + ITEMS_TABLE + " ("
                 + ITEMS_KEY_ID + " INTEGER PRIMARY KEY NOT NULL," + ITEMS_KEY_TEXT + " TEXT,"
                 + ITEMS_KEY_FROM + " INTEGER NOT NULL," + ITEMS_KEY_TO + " INTEGER NOT NULL," + ITEMS_KEY_TIME + " INTEGER NOT NULL)";
@@ -108,7 +114,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         for (int i = 0; i < ids.size(); ++i) {
             args[i] = Integer.toString(ids.get(i));
         }
-        db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " IN ("+createPlaceholders(ids.size())+")", args);
+        db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " IN (" + createPlaceholders(ids.size()) + ")", args);
         db.close();
     }
 
@@ -181,11 +187,16 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase(userHash);
         String[] args = {Integer.toString(id)};
         Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = ?", args, null, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            SimpleTextItem item = (SimpleTextItem) createItem(cursor);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
+                cursor.close();
+                db.close();
+                return item;
+            }
             cursor.close();
             db.close();
-            return item;
+            return null;
         }
         db.close();
         return null;
@@ -201,15 +212,15 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase(userHash);
         List<Item> items = new ArrayList<>();
         String[] args = new String[ids.size()];
-        for (int i=0;i<ids.size();++i){
-            args[i]=Integer.toString(ids.get(i));
+        for (int i = 0; i < ids.size(); ++i) {
+            args[i] = Integer.toString(ids.get(i));
         }
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " IN ("+createPlaceholders(ids.size())+")", args, null, null, ITEMS_KEY_ID + " ASC");
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " IN (" + createPlaceholders(ids.size()) + ")", args, null, null, ITEMS_KEY_ID + " ASC");
         if (cursor != null) {
             boolean hasNext = cursor.moveToFirst();
             while (hasNext) {
                 items.add(createItem(cursor));
-                hasNext=cursor.moveToNext();
+                hasNext = cursor.moveToNext();
             }
             cursor.close();
         }
@@ -382,7 +393,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             args[i] = Integer.toString(ids.get(i));
         }
 
-        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " IN ("+createPlaceholders(ids.size())+")", args);
+        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(ids.size()) + ")", args);
         db.close();
     }
 
@@ -427,10 +438,10 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase(userHash);
         List<Recipient> recipients = new ArrayList<>();
         String[] args = new String[ids.size()];
-        for (int i=0;i<ids.size();++i){
-            args[i]=Integer.toString(ids.get(i));
+        for (int i = 0; i < ids.size(); ++i) {
+            args[i] = Integer.toString(ids.get(i));
         }
-        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " IN ("+createPlaceholders(ids.size())+")", args, null, null, RECIPIENTS_KEY_ID + " ASC", null);
+        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(ids.size()) + ")", args, null, null, RECIPIENTS_KEY_ID + " ASC", null);
         boolean hasNext;
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
@@ -505,14 +516,13 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         db.replace(RECIPIENTS_TABLE, null, valuesTo);
     }
 
-    private String createPlaceholders(int length){
-        if (length<1){
+    private String createPlaceholders(int length) {
+        if (length < 1) {
             throw new RuntimeException("No placeholders");
-        }
-        else{
-            StringBuilder builder = new StringBuilder(length*2-1);
+        } else {
+            StringBuilder builder = new StringBuilder(length * 2 - 1);
             builder.append('?');
-            for (int i =1 ; i<length;++i){
+            for (int i = 1; i < length; ++i) {
                 builder.append(",?");
             }
             return builder.toString();
