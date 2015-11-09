@@ -76,7 +76,7 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
      * Verifies google play services availability on the device
      * */
     private boolean checkPlayServices() {
-        int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(parentActivity);
+        int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(CalamarApplication.getInstance());
         if (resultCode != ConnectionResult.SUCCESS) {
             if (apiAvailabilitySingleton.isUserResolvableError(resultCode)) {
                 this.apiAvailabilitySingleton.getErrorDialog(parentActivity, resultCode,
@@ -159,7 +159,7 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
      *      FusedLocationProviderAPI</a>
      * */
     private synchronized void buildGoogleApiClient() {
-        googleApiClient = new GoogleApiClient.Builder(parentActivity)
+        googleApiClient = new GoogleApiClient.Builder(CalamarApplication.getInstance())
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this).build();
