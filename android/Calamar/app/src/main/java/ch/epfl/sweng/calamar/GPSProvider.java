@@ -100,6 +100,7 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
      * is called by startLocationUpdates()
      * */
     private void checkLocationSettings() {
+        googleApiClient.connect();//if already connected does nothing
 
         //build location settings status requests
         LocationSettingsRequest request = new LocationSettingsRequest.Builder()

@@ -1,7 +1,8 @@
 package ch.epfl.sweng.calamar;
 
-import android.support.v4.app.FragmentActivity;
+import android.location.Location;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -13,7 +14,28 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+    //TODO hence ideally check for play services must be done at app startup !
+    //but maps fragment will do all the necessary if gplay services apk not present
+    //see comment on setupMapIfNeeded
+    //....maybe delegate all the work to the map fragment, I think google has correctly done the job...
+
+    //now maybe one could instantiate GPSProvider at app startup and let it do all the verifications
+    //but don't know if very clean....nor if I've done all that can be done
+
     private GPSProvider gpsProvider;
+    private GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
+        @Override
+        public void update(Location newLocation) {
+            assert mMap != null :
+                    "map should be initialized and ready before accessed by location updater";
+
+            double latitude = newLocation.getLatitude();
+            double longitude = newLocation.getLongitude();
+            LatLng myLoc = new LatLng(latitude, longitude);
+            mMap.addMarker(new MarkerOptions().position(myLoc));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(myLoc));
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,26 +75,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     /**
-     * This is where we can add markers or lines, add listeners or move the camera. In this case, we
-     * just add a marker near Africa.
+     * This is where we can add markers or lines, add listeners or move the camera.
      * <p>
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+        gpsProvider = GPSProvider.getInstance(this);
+        gpsProvider.addObserver(gpsObserver);
+        gpsProvider.startLocationUpdates();
     }
 
     @Override
     public void onMapReady(GoogleMap map) {
         mMap = map;
-        // Add a marker in Sydney, Australia, and move the camera.
-
         setUpMap();
-        gpsProvider = GPSProvider.getInstance(this); //check play services availability
-
-
-        LatLng sydney = new LatLng(-34, 151);
-        map.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        map.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 }
