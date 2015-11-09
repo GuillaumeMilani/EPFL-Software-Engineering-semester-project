@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -32,6 +33,7 @@ public class CalamarApplication extends Application {
         return application;
     }
 
+    @SuppressLint("CommitPrefEdits")
     @Override
     public void onCreate() {
         super.onCreate();
@@ -43,8 +45,8 @@ public class CalamarApplication extends Application {
         db = SQLiteDatabaseHandler.getInstance();
 
         //TODO remove once database is thoroughly tested (tests delete all entries)
-        //setLastItemsRefresh(new Date(0));
-        //setLastUsersRefresh(new Date(0));
+        setLastItemsRefresh(new Date(0));
+        setLastUsersRefresh(new Date(0));
     }
 
     /**

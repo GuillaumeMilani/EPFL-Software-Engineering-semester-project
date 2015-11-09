@@ -1,10 +1,7 @@
 package ch.epfl.sweng.calamar;
 
-import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
 import android.test.ApplicationTestCase;
-import android.test.RenamingDelegatingContext;
 import android.util.Log;
 
 import org.junit.After;

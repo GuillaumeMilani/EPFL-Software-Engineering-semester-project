@@ -1,21 +1,14 @@
 package ch.epfl.sweng.calamar;
 
-import android.content.Intent;
-import android.os.SystemClock;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.ActivityInstrumentationTestCase2;
-import android.test.suitebuilder.annotation.LargeTest;
-import android.view.View;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -25,8 +18,6 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 
-import static junit.framework.Assert.assertEquals;
-
 /**
  * Test for the chat activity
  */
@@ -34,7 +25,7 @@ import static junit.framework.Assert.assertEquals;
 public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<ChatActivity> {
 
     @Rule
-    public ActivityTestRule<ChatActivity> mActivityRule = new ActivityTestRule<>(
+    public final ActivityTestRule<ChatActivity> mActivityRule = new ActivityTestRule<>(
             ChatActivity.class);
 
     public ChatActivityBasicTest() {

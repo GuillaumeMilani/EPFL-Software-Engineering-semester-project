@@ -37,10 +37,10 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     private final String userHash;
 
-    public static SQLiteDatabaseHandler getInstance(){
-        if (instance==null){
+    public static SQLiteDatabaseHandler getInstance() {
+        if (instance == null) {
             SQLiteDatabase.loadLibs(app);
-            instance=new SQLiteDatabaseHandler();
+            instance = new SQLiteDatabaseHandler();
         }
         return instance;
     }
@@ -50,6 +50,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     private SQLiteDatabaseHandler() {
         super(app, DATABASE_NAME, null, DATABASE_VERSION);
+        //TODO Hope the user doesn't change his name ! (Need to find another way to encode passphrase)
         userHash = Integer.toString(app.getCurrentUser().hashCode());
     }
 
@@ -185,21 +186,17 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public Item getItem(int id) {
         SQLiteDatabase db = this.getReadableDatabase(userHash);
+        Item toReturn = null;
         String[] args = {Integer.toString(id)};
         Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = ?", args, null, null, null, null);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
-                cursor.close();
-                db.close();
-                return item;
+                toReturn = createItem(cursor);
             }
             cursor.close();
-            db.close();
-            return null;
         }
         db.close();
-        return null;
+        return toReturn;
     }
 
     /**
@@ -414,18 +411,19 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public Recipient getRecipient(int id) {
         SQLiteDatabase db = this.getReadableDatabase(userHash);
+        User toReturn = null;
         String[] args = {Integer.toString(id)};
         Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = ?", args, null, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-
-            String name = cursor.getString(1);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                String name = cursor.getString(1);
+                //TODO returns only user now
+                toReturn = new User(id, name);
+            }
             cursor.close();
-            db.close();
-            //TODO returns only user now
-            return new User(id, name);
         }
         db.close();
-        return null;
+        return toReturn;
     }
 
     /**
