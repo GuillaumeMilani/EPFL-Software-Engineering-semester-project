@@ -17,13 +17,6 @@ import static org.junit.Assert.assertEquals;
 public class EqualsAndHashcodeTest {
 
     @Test
-    public void testVerifyEqualsAndHashcode(Object a, Object b) {
-        assertEquals(a,b);
-        assertEquals(b,a);
-        assertEquals(a.hashCode(), b.hashCode());
-    }
-
-    @Test
     public void testUser() {
         testVerifyEqualsAndHashcode(new User(13, "bob"), new User(13, "bob"));
     }
@@ -43,5 +36,11 @@ public class EqualsAndHashcodeTest {
     public void testSimpleTextItem() {
         testVerifyEqualsAndHashcode(new SimpleTextItem(12, new User(13, "bob"), new User(14, "sponge"), new Date(1000), Condition.trueCondition(), "Heeeeyyyyy"),
                 new SimpleTextItem(12, new User(13, "bob"), new User(14, "sponge"), new Date(1000), Condition.trueCondition(), "Heeeeyyyyy"));
+    }
+
+    private void testVerifyEqualsAndHashcode(Object a, Object b) {
+        assertEquals(a,b);
+        assertEquals(b,a);
+        assertEquals(a.hashCode(), b.hashCode());
     }
 }

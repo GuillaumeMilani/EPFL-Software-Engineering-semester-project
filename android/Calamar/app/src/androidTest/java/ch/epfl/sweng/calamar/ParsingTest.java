@@ -12,20 +12,13 @@ import dalvik.annotation.TestTargetClass;
  * Created by pierre on 10/20/15.
  */
 public class ParsingTest {
-    void testItemParsing(Item i) throws JSONException {
-        assert(i.equals(Item.fromJSON(i.toJSON())));
-    }
-
-    void testRecipientParsing(Recipient r) throws JSONException {
-        assert(r.equals(Recipient.fromJSON(r.toJSON())));
-    }
 
     void testCondition(Condition c) throws JSONException {
         assert(c.equals(Condition.fromJSON(c.toJSON())));
     }
 
     @Test
-    void testUserParsing() throws JSONException {
+    public void testUserParsing() throws JSONException {
         testRecipientParsing(new User(69, "Jean Luc"));
         testRecipientParsing(new User(666, "Albert Danton"));
     }
@@ -48,5 +41,13 @@ public class ParsingTest {
     @Test
     void testPositionConditionParsing() throws JSONException {
         testCondition(new PositionCondition(10., 20., 15.));
+    }
+
+    private void testItemParsing(Item i) throws JSONException {
+        assert(i.equals(Item.fromJSON(i.toJSON())));
+    }
+
+    private void testRecipientParsing(Recipient r) throws JSONException {
+        assert(r.equals(Recipient.fromJSON(r.toJSON())));
     }
 }
