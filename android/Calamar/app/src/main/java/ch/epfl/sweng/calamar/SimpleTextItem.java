@@ -45,7 +45,7 @@ public final class SimpleTextItem extends Item {
     @Override
     public void compose(JSONObject json) throws JSONException {
         super.compose(json);
-        json.accumulate("message", message);
+        json.accumulate("text", message);
         json.accumulate("type", ITEM_TYPE);
     }
 
@@ -106,7 +106,7 @@ public final class SimpleTextItem extends Item {
             if(!type.equals(SimpleTextItem.ITEM_TYPE)) {
                 throw new IllegalArgumentException("expected "+ SimpleTextItem.ITEM_TYPE +" was : "+type);
             }
-            message = json.getString("message");
+            message = json.getString("text");
             return this;
         }
 
