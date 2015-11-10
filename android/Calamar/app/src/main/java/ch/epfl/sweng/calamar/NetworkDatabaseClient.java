@@ -29,8 +29,8 @@ public class NetworkDatabaseClient implements DatabaseClient {
     private final static String RETRIEVE_PATH = "/items.php?action=retrieve";
     private final static String NEW_USER_PATH = "/users.php?action=add";
 
-    public NetworkDatabaseClient(String serverUrl, NetworkProvider networkProvider)  {
-        if(null == serverUrl || null == networkProvider) {
+    public NetworkDatabaseClient(String serverUrl, NetworkProvider networkProvider) {
+        if (null == serverUrl || null == networkProvider) {
             throw new IllegalArgumentException("'serverUrl' or 'networkProvider' is null");
         }
         this.serverUrl = serverUrl;
@@ -88,8 +88,8 @@ public class NetworkDatabaseClient implements DatabaseClient {
             URL url = new URL(serverUrl + NetworkDatabaseClient.NEW_USER_PATH);
 
             String jsonParameter = "{ " +
-                    "\"DeviceID\": \"" + deviceId+"\"" +
-                    ",\"name\": \"" + email+"\"" +
+                    "\"DeviceID\": \"" + deviceId + "\"" +
+                    ",\"name\": \"" + email + "\"" +
                     " }";
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter);
@@ -127,15 +127,15 @@ public class NetworkDatabaseClient implements DatabaseClient {
 
     /**
      * used to post data on connection
-     * @param connection the connection used to post data
+     *
+     * @param connection    the connection used to post data
      * @param jsonParameter the data posted
      * @return the result of the request
      * @throws IOException
      * @throws DatabaseClientException
      */
     private static String post(HttpURLConnection connection, String jsonParameter)
-            throws IOException, DatabaseClientException
-    {
+            throws IOException, DatabaseClientException {
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type",
                 "application/json");//TODO clarify
@@ -152,7 +152,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
 
         int responseCode = connection.getResponseCode();
         if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
-            throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )" );
+            throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )");
         }
 
         //get result
@@ -166,17 +166,16 @@ public class NetworkDatabaseClient implements DatabaseClient {
     }
 
     private static HttpURLConnection createConnection(NetworkProvider networkProvider, URL url)
-            throws IOException
-    {
+            throws IOException {
         return networkProvider.getConnection(url);
     }
 
     private static List<Item> itemsFromJSON(String response) throws JSONException {
         List<Item> result = new ArrayList<>();
-        if(!response.contains("No records found in the database")){
+        if (!response.contains("No records found in the database")) {
             //No new message !
             JSONArray array = new JSONArray(response);
-            for(int i = 0; i < array.length(); ++i) {
+            for (int i = 0; i < array.length(); ++i) {
                 result.add(Item.fromJSON(array.getJSONObject(i)));
             }
         }

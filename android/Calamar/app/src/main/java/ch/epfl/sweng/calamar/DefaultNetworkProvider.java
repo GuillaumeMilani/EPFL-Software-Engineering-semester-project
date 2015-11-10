@@ -10,6 +10,6 @@ import java.net.URL;
 public class DefaultNetworkProvider implements NetworkProvider {
     @Override
     public HttpURLConnection getConnection(URL url) throws IOException {
-        return (HttpURLConnection)url.openConnection();
+        return (HttpURLConnection) url.openConnection();
     }
 }

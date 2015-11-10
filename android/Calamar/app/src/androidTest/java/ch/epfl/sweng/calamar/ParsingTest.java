@@ -5,7 +5,6 @@ import org.junit.Test;
 
 import java.util.Date;
 
-
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -29,6 +28,6 @@ public class ParsingTest {
     }
 
     private void testRecipientParsing(Recipient r) throws JSONException {
-        assertEquals(r,Recipient.fromJSON(r.toJSON()));
+        assertEquals(r, Recipient.fromJSON(r.toJSON()));
     }
 }

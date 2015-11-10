@@ -47,7 +47,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
 
         contactsView = (ListView) findViewById(R.id.contactsList);
         contactsView.setSelector(R.drawable.list_selector);
-        adapter = new ChatUsersListAdapter(this,contacts);
+        adapter = new ChatUsersListAdapter(this, contacts);
         contactsView.setAdapter(adapter);
         contactsView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -66,27 +66,27 @@ public class ChatUsersListActivity extends AppCompatActivity {
     /**
      * Return the actual user of the app.
      */
-    private void setActualUser(){
+    private void setActualUser() {
         //TODO : Remove when you use a real device.
         app.setCurrentUserID(11);
         app.setCurrentUserName("calamaremulator@gmail.com");
 
-        if(app.getCurrentUserID() == -1){
+        if (app.getCurrentUserID() == -1) {
             String name = null;
             //Get google account email
             AccountManager manager = AccountManager.get(this);
             Account[] list = manager.getAccountsByType("com.google");
-            if(list.length > 0){
+            if (list.length > 0) {
                 name = list[0].name;
             }
-            new createNewUserTask(name,this).execute();
+            new createNewUserTask(name, this).execute();
         }
         actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
     }
 
-    private void getContacts(){
+    private void getContacts() {
         //TODO : Store contact ? -- Easy once persist_data is merged
-        contacts.add(new User(2,"Bob"));
+        contacts.add(new User(2, "Bob"));
         contacts.add(new User(3, "Carol"));
         contacts.add(new User(4, "Denis"));
         contacts.add(new User(5, "Eve"));
@@ -94,14 +94,13 @@ public class ChatUsersListActivity extends AppCompatActivity {
 
     /**
      * Async task for sending a message.
-     *
      */
     private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
 
         private String name = null;
         private Context context;
 
-        public createNewUserTask(String name,Context context){
+        public createNewUserTask(String name, Context context) {
             this.name = name;
             this.context = context;
         }
@@ -120,7 +119,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Integer id) {
-            if(id != null) {
+            if (id != null) {
                 app.setCurrentUserID(id);
                 app.setCurrentUserName(name);
                 actualUserTextView.setText("Actual user : " + name);

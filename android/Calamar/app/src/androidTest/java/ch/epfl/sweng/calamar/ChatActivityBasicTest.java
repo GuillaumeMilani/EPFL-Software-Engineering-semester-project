@@ -3,7 +3,6 @@ package ch.epfl.sweng.calamar;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.ActivityInstrumentationTestCase2;
-import android.util.Log;
 import android.widget.ListView;
 
 import org.junit.Before;
@@ -39,7 +38,6 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
         super.setUp();
         DatabaseClientLocator.setDatabaseClient(new ConstantItemClient());
         CalamarApplication.getInstance().getDB().deleteAllItems();
-        CalamarApplication.getInstance().getDB().deleteAllRecipients();
     }
 
 
@@ -65,7 +63,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
      * Test that we can write on the message edit field.
      */
     @Test
-      public void testCanWriteInMessageEdit() {
+    public void testCanWriteInMessageEdit() {
         onView(withId(R.id.messageEdit)).perform(typeText("Hello Alice !"));
         onView(allOf(withId(R.id.messageEdit), withText("Hello Alice !")));
     }
@@ -75,7 +73,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
      */
     @Test
     public void testTwoMessageAreDisplayed() {
-        ListView list = (ListView)mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+        ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
         int before = list.getCount();
         onView(withId(R.id.refreshButton)).perform(click());
         assertEquals(list.getCount(), before + 2);
@@ -96,7 +94,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
      */
     @Test
     public void testMessageIsDisplayedWhenSend() {
-        ListView list = (ListView)mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+        ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
         int before = list.getCount();
         onView(withId(R.id.messageEdit)).perform(typeText("Hello Alice !"));
         onView(withId(R.id.chatSendButton)).perform(click());

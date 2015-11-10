@@ -2,7 +2,6 @@ package ch.epfl.sweng.calamar;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
-import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.securepreferences.SecurePreferences;
@@ -17,7 +16,6 @@ public class CalamarApplication extends Application {
     private SQLiteDatabaseHandler db;
     private SharedPreferences sp;
     private SharedPreferences.Editor editor;
-    private static final String CALAMAR_PREFERENCES = "ch.epfl.sweng.calamar";
     private static final String LAST_USERS_REFRESH_SP = "lastUsersRefresh";
     private static final String LAST_ITEMS_REFRESH_SP = "lastItemsRefresh";
     private static final String CURRENT_USER_ID_SP = "currentUserID";

@@ -1,11 +1,9 @@
 package ch.epfl.sweng.calamar;
 
 import android.content.Intent;
-
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +11,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -31,25 +30,25 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     private Recipient correspondent;
 
-    private CalamarApplication app;
-
     private SQLiteDatabaseHandler databaseHandler;
+
+    private CalamarApplication app;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        app = CalamarApplication.getInstance();
 
         Intent intent = getIntent();
         String correspondentName = intent.getStringExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME);
-        int correspondentID = intent.getIntExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID,-1); // -1 = default value
+        int correspondentID = intent.getIntExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID, -1); // -1 = default value
 
-        if(correspondentName == null){
+        if (correspondentName == null) {
             correspondentName = "";
         }
 
-        correspondent = new User(correspondentID,correspondentName);
+        app = CalamarApplication.getInstance();
+        correspondent = new User(correspondentID, correspondentName);
 
         editText = (EditText) findViewById(R.id.messageEdit);
         sendButton = (Button) findViewById(R.id.chatSendButton);
@@ -77,7 +76,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      * Gets all messages and display them
      */
     private void refresh(boolean offline) {
-        new refreshTask(app.getCurrentUser(), offline).execute();
+        new RefreshTask(app.getCurrentUser(), offline).execute();
     }
 
     /**
@@ -85,12 +84,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void send() {
         String message = editText.getText().toString();
-        Item textMessage = new SimpleTextItem(1,app.getCurrentUser(),correspondent,new Date(),message);
+        Item textMessage = new SimpleTextItem(1, app.getCurrentUser(), correspondent, new Date(), message);
         adapter.add(textMessage);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
         editText.setText("");
-        new sendItemTask(textMessage).execute();
+        new SendItemTask(textMessage).execute();
     }
 
     @Override
@@ -108,11 +107,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * Async task for sending a message.
      */
-    private class sendItemTask extends AsyncTask<Void, Void, Void> {
+    private class SendItemTask extends AsyncTask<Void, Void, Void> {
 
         private final Item textMessage;
 
-        public sendItemTask(Item textMessage) {
+        public SendItemTask(Item textMessage) {
             this.textMessage = textMessage;
         }
 
@@ -122,7 +121,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 //TODO : Determine id of the message ?
                 DatabaseClientLocator.getDatabaseClient().send(textMessage);
                 //TODO need id to put into database
-                databaseHandler.addItem(textMessage);
+                databaseHandler.lock();
+                try {
+                    databaseHandler.addItem(textMessage);
+                } finally {
+                    databaseHandler.unlock();
+                }
                 return null;
                 //return itemClients[0].send(textMessage);
             } catch (DatabaseClientException e) {
@@ -136,12 +140,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * Async task for refreshing / getting new messages.
      */
-    private class refreshTask extends AsyncTask<Void, Void, List<Item>> {
+    private class RefreshTask extends AsyncTask<Void, Void, List<Item>> {
 
         private final Recipient recipient;
         private final boolean offline;
 
-        public refreshTask(Recipient recipient, boolean offline) {
+        public RefreshTask(Recipient recipient, boolean offline) {
             this.recipient = recipient;
             this.offline = offline;
         }
@@ -149,12 +153,17 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected List<Item> doInBackground(Void... v) {
             if (offline) {
-                return databaseHandler.getItemsForContact(correspondent);
+                List<Item> itemsForContact = new ArrayList<>();
+                databaseHandler.lock();
+                try {
+                    itemsForContact = databaseHandler.getItemsForContact(correspondent);
+                } finally {
+                    databaseHandler.unlock();
+                }
+                return itemsForContact;
             } else {
                 try {
-                    List<Item> items = DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, new Date(app.getLastItemsRefresh()));
-                    databaseHandler.addItems(items);
-                    return items;
+                    return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, new Date(app.getLastItemsRefresh()));
                 } catch (DatabaseClientException e) {
                     e.printStackTrace();
                     return null;
@@ -165,6 +174,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected void onPostExecute(List<Item> items) {
             if (items != null) {
+                Item[] toAdd = new Item[items.size()];
+                for (int i = 0; i < items.size(); ++i) {
+                    toAdd[i] = items.get(i);
+                }
+                new AddToDatabaseTask().execute(toAdd);
                 adapter.add(items);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
@@ -174,5 +188,20 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
+    }
+
+    private class AddToDatabaseTask extends AsyncTask<Item, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Item... items) {
+            List<Item> toAdd = Arrays.asList(items);
+            databaseHandler.lock();
+            try {
+                databaseHandler.addItems(toAdd);
+            } finally {
+                databaseHandler.unlock();
+            }
+            return null;
+        }
     }
 }

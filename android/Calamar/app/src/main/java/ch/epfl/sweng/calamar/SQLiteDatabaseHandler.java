@@ -3,12 +3,14 @@ package ch.epfl.sweng.calamar;
 import android.content.ContentValues;
 
 import net.sqlcipher.Cursor;
-import net.sqlcipher.database.SQLiteOpenHelper;
 import net.sqlcipher.database.SQLiteDatabase;
+import net.sqlcipher.database.SQLiteOpenHelper;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
@@ -36,6 +38,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static final String[] RECIPIENTS_COLUMN = {RECIPIENTS_KEY_ID, RECIPIENTS_KEY_NAME};
 
     private final String userHash;
+
+    private final Lock lock = new ReentrantLock();
 
     public static SQLiteDatabaseHandler getInstance() {
         if (instance == null) {
@@ -75,9 +79,11 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * Deletes all items in the database
      */
     public void deleteAllItems() {
+        lock.lock();
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         db.delete(ITEMS_TABLE, null, null);
         db.close();
+        lock.unlock();
     }
 
     /**
@@ -465,6 +471,20 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         return recipients;
     }
 
+    /**
+     * Locks the database
+     */
+    public void lock() {
+        lock.lock();
+    }
+
+    /**
+     * Unlocks the database
+     */
+    public void unlock() {
+        lock.unlock();
+    }
+
     private ContentValues createItemValues(Item item) {
         ContentValues values = new ContentValues();
         values.put(ITEMS_KEY_ID, item.getID());
@@ -484,7 +504,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         return new SimpleTextItem(id, from, to, time, text);
     }
 
-    private Recipient getRecipientWithoutClosing(int id){
+    private Recipient getRecipientWithoutClosing(int id) {
         SQLiteDatabase db = getReadableDatabase(userHash);
         User toReturn = null;
         String[] args = {Integer.toString(id)};

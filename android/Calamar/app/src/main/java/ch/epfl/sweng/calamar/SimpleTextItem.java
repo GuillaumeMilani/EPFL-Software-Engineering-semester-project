@@ -2,11 +2,12 @@ package ch.epfl.sweng.calamar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.Date;
 
 /**
  * Models a simple text {@link Item}, (no special properties, just a text message).<br><br>
- *     SimpleTextItem is immutable
+ * SimpleTextItem is immutable
  */
 public final class SimpleTextItem extends Item {
     private final String message;
@@ -14,16 +15,17 @@ public final class SimpleTextItem extends Item {
 
     /**
      * Instantiates a new SimpleTextItem with the following parameters
-     * @param ID the ID
-     * @param from the 'from' field of the Item (sender)
-     * @param to the 'to' field of the Item (recipient)
-     * @param date the creation/posting date of the Item
+     *
+     * @param ID      the ID
+     * @param from    the 'from' field of the Item (sender)
+     * @param to      the 'to' field of the Item (recipient)
+     * @param date    the creation/posting date of the Item
      * @param message the content (text message)
      * @see Item#Item(int, User, Recipient, long)
      */
     public SimpleTextItem(int ID, User from, Recipient to, Date date, String message) {
         super(ID, from, to, date.getTime());
-        if(null == message) {
+        if (null == message) {
             throw new IllegalArgumentException("field 'message' cannot be null");
         }
         this.message = message;
@@ -38,7 +40,8 @@ public final class SimpleTextItem extends Item {
 
     /**
      * Appends the fields of SimpleTextItem to the given JSONObject. <br><br>
-     *     Should <b>NOT</b> be used alone
+     * Should <b>NOT</b> be used alone
+     *
      * @param json the json to which we append data
      * @throws JSONException
      */
@@ -51,6 +54,7 @@ public final class SimpleTextItem extends Item {
 
     /**
      * Parses a SimpleTextItem from a JSONObject.<br>
+     *
      * @param json the well formed {@link JSONObject json} representing the {@link SimpleTextItem item}
      * @return a {@link SimpleTextItem} parsed from the JSONObject
      * @throws JSONException
@@ -73,28 +77,31 @@ public final class SimpleTextItem extends Item {
 
     /**
      * test if this is equals to other Object, true when object is a SimpleTextItem and content truly equals
+     *
      * @param o Obect to compare this with
      * @return true if two SimpleTextItems are equal
      */
     @Override
     public boolean equals(Object o) {
-        if ( this == o ) return true;
-        if ( !(o instanceof SimpleTextItem) ) return false;
-        SimpleTextItem that = (SimpleTextItem)o;
+        if (this == o) return true;
+        if (!(o instanceof SimpleTextItem)) return false;
+        SimpleTextItem that = (SimpleTextItem) o;
         return super.equals(that) && that.message.equals(message);
     }
 
     /**
      * hash the SimpleTextItem
+     *
      * @return hash of the SimpleTextItem
      */
     @Override
     public int hashCode() {
-        return super.hashCode()*73+(message != null ? message.hashCode() : 0);
+        return super.hashCode() * 73 + (message != null ? message.hashCode() : 0);
     }
 
     /**
      * A Builder for {@link SimpleTextItem}, currently only used to parse JSON (little overkill..but ..)
+     *
      * @see ch.epfl.sweng.calamar.Item.Builder
      */
     public static class Builder extends Item.Builder {
@@ -103,8 +110,8 @@ public final class SimpleTextItem extends Item {
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString("type");
-            if(!type.equals(SimpleTextItem.ITEM_TYPE)) {
-                throw new IllegalArgumentException("expected "+ SimpleTextItem.ITEM_TYPE +" was : "+type);
+            if (!type.equals(SimpleTextItem.ITEM_TYPE)) {
+                throw new IllegalArgumentException("expected " + SimpleTextItem.ITEM_TYPE + " was : " + type);
             }
             message = json.getString("text");
             return this;
