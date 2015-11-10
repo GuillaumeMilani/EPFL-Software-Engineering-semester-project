@@ -148,9 +148,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected List<Item> doInBackground(Void... v) {
             if (offline) {
-                List<Item> itemsForContact = new ArrayList<>();
-                itemsForContact = databaseHandler.getItemsForContact(correspondent);
-                return itemsForContact;
+                return databaseHandler.getItemsForContact(correspondent);
             } else {
                 try {
                     return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, new Date(app.getLastItemsRefresh()));
@@ -164,11 +162,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected void onPostExecute(List<Item> items) {
             if (items != null) {
-                Item[] toAdd = new Item[items.size()];
-                for (int i = 0; i < items.size(); ++i) {
-                    toAdd[i] = items.get(i);
-                }
-                new AddToDatabaseTask().execute(toAdd);
+                new AddToDatabaseTask().execute(items.toArray(new Item[items.size()]));
                 adapter.add(items);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);

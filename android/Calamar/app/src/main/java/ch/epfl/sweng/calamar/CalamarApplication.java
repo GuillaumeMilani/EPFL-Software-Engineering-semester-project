@@ -3,23 +3,32 @@ package ch.epfl.sweng.calamar;
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.securepreferences.SecurePreferences;
 
 import java.util.Date;
 
-public class CalamarApplication extends Application {
+import com.google.android.gms.common.api.GoogleApiClient;
 
-    //TODO There is debate on using a Singleton or not
 
-    private static CalamarApplication application;
+public final class CalamarApplication extends Application {
+
+    //TODO Why volatile?
+    private static volatile CalamarApplication instance;
     private SQLiteDatabaseHandler db;
     private SharedPreferences sp;
     private SharedPreferences.Editor editor;
+
     private static final String LAST_USERS_REFRESH_SP = "lastUsersRefresh";
     private static final String LAST_ITEMS_REFRESH_SP = "lastItemsRefresh";
     private static final String CURRENT_USER_ID_SP = "currentUserID";
     private static final String CURRENT_USER_NAME_SP = "currentUserName";
+    private static final String TAG = CalamarApplication.class.getSimpleName();
+
+    // Google client to interact with Google API
+    //https://developers.google.com/android/guides/api-client
+    private GoogleApiClient googleApiClient = null;
 
     /**
      * Returns the current instance of the application.
@@ -27,10 +36,10 @@ public class CalamarApplication extends Application {
      * @return A singleton
      */
     public static CalamarApplication getInstance() {
-        if (application==null){
+        if (instance == null) {
             throw new IllegalStateException("Application is null");
         }
-        return application;
+        return instance;
     }
 
     @SuppressLint("CommitPrefEdits")
@@ -39,9 +48,8 @@ public class CalamarApplication extends Application {
     public void onCreate() {
         super.onCreate();
         User test = new User(1, "Bob");
-        application = this;
-        //TODO Need to find a better passphrase (User password for example)
-        sp = new SecurePreferences(this,Integer.toString(test.hashCode()),"user_pref.xml");
+        instance = this;
+        sp = new SecurePreferences(this, test.getPassword(), "user_pref.xml");
         editor = sp.edit();
         setCurrentUserID(test.getID());
         setCurrentUserName(test.getName());
@@ -134,47 +142,69 @@ public class CalamarApplication extends Application {
 
     /**
      * Returns the current User
+     *
      * @return the user
      */
-    public User getCurrentUser(){
-        return new User(getCurrentUserID(),getCurrentUserName());
+    public User getCurrentUser() {
+        return new User(getCurrentUserID(), getCurrentUserName());
     }
 
     /**
      * Resets the Username to an empty String.
      */
-    public void resetUsername(){
+    public void resetUsername() {
         setCurrentUserName("");
     }
 
     /**
      * Resets the user ID to -1
      */
-    public void resetUserID(){
+    public void resetUserID() {
         setCurrentUserID(-1);
     }
 
     /**
      * Resets the lastItemsRefresh to 0
      */
-    public void resetLastItemsRefresh(){
+    public void resetLastItemsRefresh() {
         setLastItemsRefresh(new Date(0));
     }
 
     /**
      * Resets the lastUsersRefresh to 0
      */
-    public void resetLastUsersRefresh(){
+    public void resetLastUsersRefresh() {
         setLastUsersRefresh(new Date(0));
     }
 
     /**
      * Resets everything to its default value {@see resetUserID}{@see resetUsername}{@see resetLastItemsRefresh}{@see resetLastUsersRefresh}
      */
-    public void resetPreferences(){
+    public void resetPreferences() {
         resetUserID();
         resetUsername();
         resetLastItemsRefresh();
         resetLastUsersRefresh();
     }
+
+    public void setGoogleApiClient(GoogleApiClient googleApiClient) {
+        //TODO ask guru, when unresolvable errors cause the main activity to finish (destroy activity)
+        //if user reopen, activity's oncreate is called again but because the app isn't killed,
+        // the following code will cause the app to crash (but we nearly don't care...enfin...)
+        if (this.googleApiClient != null) {
+            Log.e(CalamarApplication.TAG, "setGoogleApiClient : google api client is already created !");
+            throw new IllegalStateException("setGoogleApiClient : google api client is already created !");
+        }
+        this.googleApiClient = googleApiClient;
+    }
+
+    public GoogleApiClient getGoogleApiClient() {
+        if (null == googleApiClient) {
+            Log.e(CalamarApplication.TAG, "getGoogleApiClient : google api client has not been created !");
+            throw new IllegalStateException("getGoogleApiClient : google api client has not been created !");
+        }
+        return googleApiClient;
+    }
+
+
 }

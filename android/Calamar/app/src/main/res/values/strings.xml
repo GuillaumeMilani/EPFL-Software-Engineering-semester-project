@@ -6,4 +6,12 @@
     <string name="send_message">Send</string>
     <string name="refresh_button">Refresh</string>
     <string name="title_activity_chat_users_list">ChatUsersListActivity</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="show_map_button">show map</string>
+    <string name="show_chat_activity_button">show chat</string>
+
+
+    <string name="action_settings">Settings</string>
 </resources>

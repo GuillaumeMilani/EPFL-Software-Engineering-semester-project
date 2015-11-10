@@ -82,6 +82,15 @@ public final class User extends Recipient {
     }
 
     /**
+     * Returns the password of the user to decrypt data on the phone.
+     * @return a constant String "password" for now.
+     */
+    public String getPassword(){
+        //TODO Change this method once a better encoding is found
+        return "password";
+    }
+
+    /**
      * A Builder for {@link User}, currently only used to parse JSON (little overkill..but ..)
      *
      * @see ch.epfl.sweng.calamar.Recipient.Builder
