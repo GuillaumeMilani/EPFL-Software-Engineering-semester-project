@@ -76,7 +76,7 @@ public class NetworkItemClient implements ItemClient {
             String jsonParameter = item.toJSON().toString();
             connection = NetworkItemClient.createConnection(networkProvider, url);
             String response = NetworkItemClient.post(connection, jsonParameter);
-            
+
         } catch (IOException | JSONException e) {
             throw new ItemClientException(e);
         } finally {
@@ -155,7 +155,7 @@ public class NetworkItemClient implements ItemClient {
 
     private static List<Item> itemsFromJSON(String response) throws JSONException {
         List<Item> result = new ArrayList<>();
-        if(!response.contains("No records found in the database")){
+        if(response != "[]"){
             //No new message !
             JSONArray array = new JSONArray(response);
             for(int i = 0; i < array.length(); ++i) {

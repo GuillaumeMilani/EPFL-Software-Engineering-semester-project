@@ -5,9 +5,10 @@ include_once('models/items/get_items.php');
  * TODO: Check params
  */
 $post_content = urldecode(file_get_contents("php://input"));
-if ($post_content == null)
+if ($post_content == null) {
 	http_response_code(400);
 	die("You must precise a user to fetch the messages");
+}
 
 $params_array = json_decode($post_content, true);
 
