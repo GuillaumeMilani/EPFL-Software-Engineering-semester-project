@@ -191,7 +191,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = ?", args, null, null, null, null);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                toReturn = createItem(cursor);
+                toReturn = createItem(db,cursor);
             }
             cursor.close();
         }
@@ -216,7 +216,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         if (cursor != null) {
             boolean hasNext = cursor.moveToFirst();
             while (hasNext) {
-                items.add(createItem(cursor));
+                items.add(createItem(db,cursor));
                 hasNext = cursor.moveToNext();
             }
             cursor.close();
@@ -241,7 +241,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
-                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
+                SimpleTextItem item = (SimpleTextItem) createItem(db,cursor);
                 items.add(item);
                 hasNext = cursor.moveToNext();
             }
@@ -267,7 +267,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
-                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
+                SimpleTextItem item = (SimpleTextItem) createItem(db,cursor);
                 items.add(item);
                 hasNext = cursor.moveToNext();
             }
@@ -290,7 +290,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
-                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
+                SimpleTextItem item = (SimpleTextItem) createItem(db,cursor);
                 items.add(item);
                 hasNext = cursor.moveToNext();
             }
@@ -411,17 +411,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public Recipient getRecipient(int id) {
         SQLiteDatabase db = this.getReadableDatabase(userHash);
-        User toReturn = null;
-        String[] args = {Integer.toString(id)};
-        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = ?", args, null, null, null, null);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                String name = cursor.getString(1);
-                //TODO returns only user now
-                toReturn = new User(id, name);
-            }
-            cursor.close();
-        }
+        Recipient toReturn = getRecipientWithOpenDB(db, id);
         db.close();
         return toReturn;
     }
@@ -485,13 +475,28 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         return values;
     }
 
-    private Item createItem(Cursor cursor) {
+    private Item createItem(SQLiteDatabase db, Cursor cursor) {
         int id = cursor.getInt(0);
         String text = cursor.getString(1);
-        User from = (User) getRecipient(cursor.getInt(2));
-        Recipient to = getRecipient(cursor.getInt(3));
+        User from = (User) getRecipientWithOpenDB(db, cursor.getInt(2));
+        Recipient to = getRecipientWithOpenDB(db, cursor.getInt(3));
         Date time = new Date(cursor.getInt(4));
         return new SimpleTextItem(id, from, to, time, text);
+    }
+
+    private Recipient getRecipientWithOpenDB(SQLiteDatabase db, int id){
+        User toReturn = null;
+        String[] args = {Integer.toString(id)};
+        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = ?", args, null, null, null, null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                String name = cursor.getString(1);
+                //TODO returns only user now
+                toReturn = new User(id, name);
+            }
+            cursor.close();
+        }
+        return toReturn;
     }
 
     private ContentValues createRecipientValues(Recipient recipient) {
