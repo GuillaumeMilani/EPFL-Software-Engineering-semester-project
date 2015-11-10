@@ -3,6 +3,7 @@ package ch.epfl.sweng.calamar;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.ActivityInstrumentationTestCase2;
+import android.util.Log;
 import android.widget.ListView;
 
 import org.junit.Before;
@@ -37,6 +38,8 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
     public void setUp() throws Exception {
         super.setUp();
         DatabaseClientLocator.setDatabaseClient(new ConstantItemClient());
+        CalamarApplication.getInstance().getDB().deleteAllItems();
+        CalamarApplication.getInstance().getDB().deleteAllRecipients();
     }
 
 

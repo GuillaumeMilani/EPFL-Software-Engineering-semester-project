@@ -191,7 +191,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = ?", args, null, null, null, null);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                toReturn = createItem(db,cursor);
+                toReturn = createItem(cursor);
             }
             cursor.close();
         }
@@ -216,7 +216,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         if (cursor != null) {
             boolean hasNext = cursor.moveToFirst();
             while (hasNext) {
-                items.add(createItem(db,cursor));
+                items.add(createItem(cursor));
                 hasNext = cursor.moveToNext();
             }
             cursor.close();
@@ -241,7 +241,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
-                SimpleTextItem item = (SimpleTextItem) createItem(db,cursor);
+                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
                 items.add(item);
                 hasNext = cursor.moveToNext();
             }
@@ -267,7 +267,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
-                SimpleTextItem item = (SimpleTextItem) createItem(db,cursor);
+                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
                 items.add(item);
                 hasNext = cursor.moveToNext();
             }
@@ -290,7 +290,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
-                SimpleTextItem item = (SimpleTextItem) createItem(db,cursor);
+                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
                 items.add(item);
                 hasNext = cursor.moveToNext();
             }
@@ -411,7 +411,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public Recipient getRecipient(int id) {
         SQLiteDatabase db = this.getReadableDatabase(userHash);
-        Recipient toReturn = getRecipientWithOpenDB(db, id);
+        Recipient toReturn = getRecipientWithoutClosing(id);
         db.close();
         return toReturn;
     }
@@ -475,16 +475,17 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         return values;
     }
 
-    private Item createItem(SQLiteDatabase db, Cursor cursor) {
+    private Item createItem(Cursor cursor) {
         int id = cursor.getInt(0);
         String text = cursor.getString(1);
-        User from = (User) getRecipientWithOpenDB(db, cursor.getInt(2));
-        Recipient to = getRecipientWithOpenDB(db, cursor.getInt(3));
+        User from = (User) getRecipientWithoutClosing(cursor.getInt(2));
+        Recipient to = getRecipientWithoutClosing(cursor.getInt(3));
         Date time = new Date(cursor.getInt(4));
         return new SimpleTextItem(id, from, to, time, text);
     }
 
-    private Recipient getRecipientWithOpenDB(SQLiteDatabase db, int id){
+    private Recipient getRecipientWithoutClosing(int id){
+        SQLiteDatabase db = getReadableDatabase(userHash);
         User toReturn = null;
         String[] args = {Integer.toString(id)};
         Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = ?", args, null, null, null, null);
