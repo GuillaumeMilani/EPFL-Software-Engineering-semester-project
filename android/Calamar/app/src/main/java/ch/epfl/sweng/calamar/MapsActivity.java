@@ -23,7 +23,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //....maybe delegate all the work to the map fragment, I think google has correctly done the job...
 
     private GPSProvider gpsProvider;
-    private GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
+    private final GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
         @Override
         public void update(Location newLocation) {
             assert mMap != null :

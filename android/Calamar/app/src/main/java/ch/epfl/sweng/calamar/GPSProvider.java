@@ -25,6 +25,7 @@ import java.util.Set;
 /**
  * Created by LPI on 06.11.2015.
  */
+@SuppressWarnings("FinalStaticMethod")
 public final class GPSProvider implements LocationListener
 {
     private static volatile GPSProvider instance = null;
@@ -37,9 +38,9 @@ public final class GPSProvider implements LocationListener
     private Date lastUpdateTime;
     private LocationRequest locationRequest;
 
-    private GoogleApiClient googleApiClient;
+    private final GoogleApiClient googleApiClient;
 
-    private Set<Observer> observers = new HashSet<>();
+    private final Set<Observer> observers = new HashSet<>();
 
     /**
      * @return the GPSProvider singleton's instance

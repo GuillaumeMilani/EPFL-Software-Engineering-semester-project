@@ -26,10 +26,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
     private static final int ERROR_RESOLUTION_REQUEST = 1001;
 
-    // UI elements
-    private Button showMapBtn = null;
-    private Button showChatBtn = null;
-
     // google api related stuff
     private boolean resolvingError;
 
@@ -42,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         buildGoogleApiClient(); //will connect in onResume(), errors are handled in onConnectionFailed()
 
         //retrieve UI element
-        showChatBtn = (Button)findViewById(R.id.showChatBtn);
+        Button showChatBtn = (Button) findViewById(R.id.showChatBtn);
         showChatBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -51,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
 
         //TODO maybe disable until google api client connects succesfully
-        showMapBtn = (Button)findViewById(R.id.showMapBtn);
+        Button showMapBtn = (Button) findViewById(R.id.showMapBtn);
         showMapBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -78,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     /**
      * Starts a child activity
      */
-    public void startActivity(Class<?> cls) {
+    private void startActivity(Class<?> cls) {
         Intent intent = new Intent(CalamarApplication.getInstance(), cls);
         startActivity(intent);
     }
@@ -150,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * The dialog may simply provide a message explaining the error, but it may also provide an action
      * to launch an activity that can resolve the error
      * (such as when the user needs to install a newer version of Google Play services).
-     * @param errorCode
+     * @param errorCode , the error code returned by onConnectionFailed
      */
     private void showGoogleApiErrorDialog(int errorCode) {
         //retrieve dialog for errorCode, if user cancel finish activity,
