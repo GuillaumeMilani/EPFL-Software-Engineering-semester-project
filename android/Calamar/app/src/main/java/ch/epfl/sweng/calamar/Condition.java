@@ -32,6 +32,10 @@ public abstract class Condition {
         return ret;
     }
 
+    @Override
+    public abstract String toString();
+    
+
     /**
      * set a value for this condition. If newValue differs from old, notify observers
      * @param newValue new value to set
@@ -102,8 +106,15 @@ public abstract class Condition {
             protected void compose(JSONObject json) throws JSONException {
                 json.accumulate("type", "true");
             }
+
+            @Override
+            public String toString() {
+                return "(true)";
+            }
         };
     }
+
+
 
     /**
      * Create an always false condition
@@ -119,6 +130,11 @@ public abstract class Condition {
             @Override
             protected void compose(JSONObject json) throws JSONException {
                 json.accumulate("type", "false");
+            }
+
+            @Override
+            public String toString() {
+                return "(false)";
             }
         };
     }
@@ -154,6 +170,11 @@ public abstract class Condition {
                 json.accumulate("a" , c1.toJSON());
                 json.accumulate("b", c2.toJSON());
             }
+
+            @Override
+            public String toString() {
+                return "("+c1.toString() + " and "+c2.toString()+")";
+            }
         };
     }
 
@@ -186,6 +207,11 @@ public abstract class Condition {
                 json.accumulate("a" , c1.toJSON());
                 json.accumulate("b" , c2.toJSON());
             }
+
+            @Override
+            public String toString() {
+                return "("+c1.toString() + " or "+c2.toString()+")";
+            }
         };
     }
 
@@ -214,6 +240,11 @@ public abstract class Condition {
             protected void compose(JSONObject json) throws JSONException {
                 json.accumulate("type", "not");
                 json.accumulate("val" , c.toJSON());
+            }
+
+            @Override
+            public String toString() {
+                return "(!"+c.toString()+")";
             }
         };
     }
