@@ -26,8 +26,6 @@ public class ChatUsersListActivity extends AppCompatActivity {
     private ChatUsersListAdapter adapter;
     private TextView actualUserTextView;
 
-    private DatabaseClient client;
-
     private CalamarApplication app;
 
     private static final String SERVER_BASE_URL = "http://calamar.japan-impact.ch";
@@ -38,8 +36,6 @@ public class ChatUsersListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat_users_list);
 
         app = ((CalamarApplication) getApplication()).getInstance();
-
-        client = DatabaseClientLocator.getDatabaseClient();
 
         contacts = new ArrayList<>();
         getContacts();
@@ -98,7 +94,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
      * Async task for sending a message.
      *
      */
-    private class createNewUserTask extends AsyncTask<DatabaseClient, Void, Integer> {
+    private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
 
         private String name = "No name";
         private Context context;
@@ -109,10 +105,10 @@ public class ChatUsersListActivity extends AppCompatActivity {
         }
 
         @Override
-        protected Integer doInBackground(DatabaseClient... itemClients) {
+        protected Integer doInBackground(Void... v) {
             try {
                 //Get the device id.
-                return client.newUser(name,Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
+                return DatabaseClientLocator.getDatabaseClient().newUser(name,Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
             } catch (DatabaseClientException e) {
                 //TODO : TOAST
                 e.printStackTrace();
@@ -139,7 +135,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
                 newUser.setTitle("Your account creation has fail, check your interet connection.");
                 newUser.setPositiveButton("Retry", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        new createNewUserTask(name, context).execute(client);
+                        new createNewUserTask(name, context).execute();
                     }
                 });
                 newUser.show();
