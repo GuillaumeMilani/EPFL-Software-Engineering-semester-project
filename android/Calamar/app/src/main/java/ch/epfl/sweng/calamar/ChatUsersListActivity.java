@@ -132,9 +132,9 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
     }
 
     /**
-     +     * Async task for sending a message.
-     +     *
-     +     */
+     * Async task for sending a message.
+     *
+     */
     private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
         private String name = null;
         private Context context;
@@ -162,8 +162,8 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
                 app.setCurrentUserName(name);
                 actualUserTextView.setText("Actual user : " + name);
                 AlertDialog.Builder newUser = new AlertDialog.Builder(context);
-                newUser.setTitle("Account correctly created : User : " + name + ", id : " + id);
-                newUser.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                newUser.setTitle(getString(R.string.new_account_creation_success) + name);
+                newUser.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         //OK
                     }
@@ -171,8 +171,8 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
                 newUser.show();
             } else {
                 AlertDialog.Builder newUser = new AlertDialog.Builder(context);
-                newUser.setTitle("Your account creation has failed, check your internet connection.");
-                newUser.setPositiveButton("Retry", new DialogInterface.OnClickListener() {
+                newUser.setTitle(R.string.new_account_creation_fail);
+                newUser.setPositiveButton(R.string.new_account_creation_retry, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         new createNewUserTask(name, context).execute();
                     }
@@ -216,8 +216,8 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
                 app.getDB().addRecipient(newUser);
             } else {
                 AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
-                newUserAlert.setTitle("Impossible to add the contact");
-                newUserAlert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                newUserAlert.setTitle(R.string.add_new_contact_impossible);
+                newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         //OK
                     }

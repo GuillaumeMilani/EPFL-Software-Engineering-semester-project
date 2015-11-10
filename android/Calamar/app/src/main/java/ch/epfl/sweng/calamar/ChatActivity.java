@@ -172,11 +172,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                     app.setLastItemsRefresh(new Date());
                 }
 
-                Toast.makeText(getApplicationContext(), "Refreshed !",
+                Toast.makeText(getApplicationContext(), R.string.chat_activity_refresh_message,
                         Toast.LENGTH_SHORT).show();
 
             } else {
-                Toast.makeText(getApplicationContext(), "Unable to refresh",
+                Toast.makeText(getApplicationContext(), R.string.chat_activity_unable_to_refresh,
                         Toast.LENGTH_SHORT).show();
             }
         }
