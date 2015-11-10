@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -170,6 +171,13 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 if (!offline) {
                     app.setLastItemsRefresh(new Date());
                 }
+
+                Toast.makeText(getApplicationContext(), "Refreshed !",
+                        Toast.LENGTH_SHORT).show();
+
+            } else {
+                Toast.makeText(getApplicationContext(), "Unable to refresh",
+                        Toast.LENGTH_SHORT).show();
             }
         }
 
