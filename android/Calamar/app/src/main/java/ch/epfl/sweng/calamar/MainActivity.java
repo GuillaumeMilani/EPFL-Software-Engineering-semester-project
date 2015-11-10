@@ -31,16 +31,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
     //TODO check activity lifecycle and pertinent action to make when entering new states
-    //regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
+    // regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
     // etc...
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        buildGoogleApiClient(); //will connect in onResume(), errors are handled in onConnectionFailed()
+        buildGoogleApiClient();  // will connect in onResume(), errors are handled in onConnectionFailed()
 
-        //retrieve UI element
+        // retrieve UI element
         Button showChatBtn = (Button) findViewById(R.id.showChatBtn);
         showChatBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onResume();
         if (!resolvingError) {
             CalamarApplication.getInstance().getGoogleApiClient().connect();
-            //if errors, such as no google play apk, onConnectionFailed will handle the errors
+            // if errors, such as no google play apk, onConnectionFailed will handle the errors
         }
     }
 
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
+        // noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return super.onOptionsItemSelected(item);
     }
 
-    //GOOGLE API CLIENT CALLBACKS METHODS
+    // GOOGLE API CLIENT CALLBACKS METHODS
     @Override
     public void onConnected(Bundle arg0) {
         Log.i(TAG, "google API client connected");
@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.e(TAG, "google API client failed to connect: no automatic resolution, error = "
                     + connectionResult.getErrorCode());
 
-            //show error dialog
+            // show error dialog
             showGoogleApiErrorDialog(connectionResult.getErrorCode());
             resolvingError = true;
         }
@@ -167,8 +167,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * @param errorCode , the error code returned by onConnectionFailed
      */
     private void showGoogleApiErrorDialog(int errorCode) {
-        //retrieve dialog for errorCode, if user cancel finish activity,
-        //we cannot do much more...google play apk must be present
+        // retrieve dialog for errorCode, if user cancel finish activity,
+        // we cannot do much more...google play apk must be present
         Dialog errorDialog = GoogleApiAvailability.getInstance().getErrorDialog(this, errorCode,
                 MainActivity.ERROR_RESOLUTION_REQUEST, new DialogInterface.OnCancelListener() {
                     @Override
@@ -178,14 +178,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         finish();//TODO maybe refine..and create a method to handle this kind of actions
                     }
                 });
-        //reset resolvingError to false when dialog dismissed
+        // reset resolvingError to false when dialog dismissed
         errorDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
                 resolvingError = false;
             }
         });
-        //show dialog
+        // show dialog
         errorDialog.show();
     }
 

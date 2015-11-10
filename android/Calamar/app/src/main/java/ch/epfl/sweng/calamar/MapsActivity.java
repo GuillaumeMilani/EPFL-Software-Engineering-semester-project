@@ -19,12 +19,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //TODO : add two buttons begin checks stop checks
     // that will : checklocation settings + startlocation updates
+    //TODO : manage activity lifecycle : start stop location updates when not needed, plus many potential problems
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
-    //however google play services are checked at app startup...and
+    // however google play services are checked at app startup...and
     // maps fragment will do all the necessary if gplay services apk not present
-    //see comment on setupMapIfNeeded
-    //....maybe delegate all the work to the map fragment, I think google has correctly done the job...
+    // see comment on setupMapIfNeeded
+    // ....maybe delegate all the work to the map fragment, I think google has correctly done the job...
 
     private GPSProvider gpsProvider;
     private final GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
@@ -33,8 +34,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             assert mMap != null :
                     "map should be initialized and ready before accessed by location updater";
 
-            //TODO here place useful stuff, display items and position
-            //ex:
+            // TODO here place useful stuff, display items and position
+            // ex:
             double latitude = newLocation.getLatitude();
             double longitude = newLocation.getLongitude();
             LatLng myLoc = new LatLng(latitude, longitude);
@@ -55,14 +56,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             case GPSProvider.CHECK_SETTINGS_REQUEST:
                 switch (resultCode) {
                     case Activity.RESULT_OK:
-                        //reiterate the process
+                        Log.i(MapsActivity.TAG, "user correctly set location settings");
+
+                        // reiterate the process
                         gpsProvider.startLocationUpdates(this);
+                        //TODO WTF why is the whole process executed twice ?????????????????????????
+                        // (double check....)
+
                         //TODO activate/deactivate UI
                         break;
                     default:
                         Log.e(MapsActivity.TAG, "user declined offer to set location settings");
-                        //finish();//TODO activate/deactivate UI...
-                        //what to do ?
+                        // finish();//TODO activate/deactivate UI...
+                        // what to do ?
                 }
                 break;
             default: throw new IllegalStateException("onActivityResult : unknown request ! ");
@@ -80,6 +86,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onResume() {
         super.onResume();
         setUpMapIfNeeded();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        //TODO
+        // think about when should we start stop locationUpdates
+        // on user demand ? via buttons, adds interaction and "user control"
+        // or on create / stop ??
+        // gpsProvider.stopLocationUpdates();
     }
 
     /**
