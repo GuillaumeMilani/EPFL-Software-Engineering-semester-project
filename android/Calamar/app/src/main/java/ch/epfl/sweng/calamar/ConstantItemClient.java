@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by Quentin Jaquier, sciper 235825 on 23.10.2015.
  */
-public class ConstantItemClient implements ItemClient{
+public class ConstantItemClient implements DatabaseClient {
 
     private final User alice = new User(1,"Alice");
     private final User bob = new User(2,"Bob");
@@ -16,7 +16,7 @@ public class ConstantItemClient implements ItemClient{
     private final Item itemTo = new SimpleTextItem(1,bob,alice,new Date(1445198510),"Hello Alice, it's Bob !");
 
     @Override
-    public List<Item> getAllItems(Recipient recipient, Date from) throws ItemClientException {
+    public List<Item> getAllItems(Recipient recipient, Date from) throws DatabaseClientException {
         List<Item> items = new ArrayList<>();
         items.add(itemFrom);
         items.add(itemTo);
@@ -24,7 +24,7 @@ public class ConstantItemClient implements ItemClient{
     }
 
     @Override
-    public List<Item> getAllItems(Recipient recipient) throws ItemClientException {
+    public List<Item> getAllItems(Recipient recipient) throws DatabaseClientException {
         List<Item> items = new ArrayList<>();
         items.add(itemFrom);
         items.add(itemTo);
@@ -32,12 +32,16 @@ public class ConstantItemClient implements ItemClient{
     }
 
     @Override
-    public void send(Item item) throws ItemClientException {
+    public void send(Item item) throws DatabaseClientException {
         //Do nothing
     }
 
     @Override
-    public User retrieveUserFromName(String name) throws ItemClientException {
+    public User retrieveUserFromName(String name) throws DatabaseClientException {
         return null;
+    }
+    @Override
+    public int newUser(String email, String deviceId) throws DatabaseClientException {
+        return 0;
     }
 }

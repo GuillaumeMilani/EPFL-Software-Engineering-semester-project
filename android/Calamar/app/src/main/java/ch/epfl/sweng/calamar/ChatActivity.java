@@ -1,6 +1,7 @@
 package ch.epfl.sweng.calamar;
 
 import android.content.Intent;
+
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -27,8 +28,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private ListView messagesContainer;
     private ChatAdapter adapter;
 
-    private ItemClient client;
-
     private Recipient correspondent;
 
     private CalamarApplication app;
@@ -45,9 +44,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         String correspondentName = intent.getStringExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME);
         int correspondentID = intent.getIntExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID,-1); // -1 = default value
 
-        correspondent = new User(correspondentID,correspondentName);
+        if(correspondentName == null){
+            correspondentName = "";
+        }
 
-        client = ItemClientLocator.getItemClient();
+        correspondent = new User(correspondentID,correspondentName);
 
         editText = (EditText) findViewById(R.id.messageEdit);
         sendButton = (Button) findViewById(R.id.chatSendButton);
@@ -70,11 +71,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         refresh(offline);
     }
 
+
     /**
      * Gets all messages and display them
      */
     private void refresh(boolean offline) {
-        new refreshTask(app.getCurrentUser(), offline).execute(client);
+        new refreshTask(app.getCurrentUser(), offline).execute();
     }
 
     /**
@@ -87,7 +89,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
         editText.setText("");
-        new sendItemTask(textMessage).execute(client);
+        new sendItemTask(textMessage).execute();
     }
 
     @Override
@@ -105,7 +107,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * Async task for sending a message.
      */
-    private class sendItemTask extends AsyncTask<ItemClient, Void, Void> {
+    private class sendItemTask extends AsyncTask<Void, Void, Void> {
 
         private final Item textMessage;
 
@@ -114,16 +116,15 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        protected Void doInBackground(ItemClient... itemClients) {
+        protected Void doInBackground(Void... v) {
             try {
                 //TODO : Determine id of the message ?
-
-                itemClients[0].send(textMessage);
+                DatabaseClientLocator.getDatabaseClient().send(textMessage);
                 //TODO need id to put into database
                 databaseHandler.addItem(textMessage);
                 return null;
                 //return itemClients[0].send(textMessage);
-            } catch (ItemClientException e) {
+            } catch (DatabaseClientException e) {
                 //TODO : TOAST
                 e.printStackTrace();
                 return null;
@@ -134,7 +135,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * Async task for refreshing / getting new messages.
      */
-    private class refreshTask extends AsyncTask<ItemClient, Void, List<Item>> {
+    private class refreshTask extends AsyncTask<Void, Void, List<Item>> {
 
         private final Recipient recipient;
         private final boolean offline;
@@ -145,16 +146,15 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        protected List<Item> doInBackground(ItemClient... itemClients) {
+        protected List<Item> doInBackground(Void... v) {
             if (offline) {
                 return databaseHandler.getItemsForContact(correspondent);
             } else {
                 try {
-                    List<Item> items = itemClients[0].getAllItems(recipient, new Date(app.getLastItemsRefresh()));
+                    List<Item> items = DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, new Date(app.getLastItemsRefresh()));
                     databaseHandler.addItems(items);
-                    return itemClients[0].getAllItems(recipient, new Date(app.getLastItemsRefresh()));
-                } catch (ItemClientException e) {
-                    //TODO : TOAST
+                    return items;
+                } catch (DatabaseClientException e) {
                     e.printStackTrace();
                     return null;
                 }

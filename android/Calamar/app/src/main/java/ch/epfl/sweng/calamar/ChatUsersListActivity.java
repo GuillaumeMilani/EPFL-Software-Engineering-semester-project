@@ -1,11 +1,14 @@
 package ch.epfl.sweng.calamar;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,9 +30,9 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
     private ChatUsersListAdapter adapter;
     private TextView actualUserTextView;
 
-    private ItemClient client;
-
     private CalamarApplication app;
+
+    private static final String SERVER_BASE_URL = "http://calamar.japan-impact.ch";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,14 +41,11 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
 
         app = ((CalamarApplication) getApplication()).getInstance();
 
-        client = ItemClientLocator.getItemClient();
-
         contacts = new ArrayList<>();
         getContacts();
 
-        //TODO I don't think it is necessary to remind the user who he is (okay for development)
         actualUserTextView = (TextView) findViewById(R.id.actualUserName);
-        actualUserTextView.setText("Actual user : " + ((CalamarApplication) getApplication()).getInstance().getCurrentUserName());
+        setActualUser();
 
         contactsView = (ListView) findViewById(R.id.contactsList);
         contactsView.setSelector(R.drawable.list_selector);
@@ -58,6 +58,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
                 //Assuming in same order
                 Recipient user = contacts.get(position);
                 conversation.putExtra(EXTRA_CORRESPONDENT_NAME,user.getName());
+
                 conversation.putExtra(EXTRA_CORRESPONDENT_ID, user.getID());
                 startActivity(conversation);
             }
@@ -72,6 +73,31 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         } else {
             throw new IllegalArgumentException(getString(R.string.on_click_error));
         }
+    }
+
+    /**
+     * Return the actual user of the app.
+     */
+    private void setActualUser(){
+        //TODO : Remove when you use a real device.
+        app.setCurrentUserID(11);
+        app.setCurrentUserName("calamaremulator@gmail.com");
+
+        if(app.getCurrentUserID() == -1){
+            String name = null;
+            //Get google account email
+            AccountManager manager = AccountManager.get(this);
+            Account[] list = manager.getAccountsByType("com.google");
+            if(list.length > 0){
+                name = list[0].name;
+            }
+            new createNewUserTask(name,this).execute();
+        }
+        actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
+    }
+
+    private void getContacts(){
+        contacts.addAll(app.getDB().getAllRecipients());
     }
 
     private void addNewContact(){
@@ -89,7 +115,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
 
         newContact.setPositiveButton(getString(R.string.add_new_contact_positive_button), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                new retrieveUserTask(input.getText().toString(), ChatUsersListActivity.this).execute(client);
+                new retrieveUserTask(input.getText().toString(), ChatUsersListActivity.this).execute();
             }
         });
 
@@ -102,16 +128,65 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         newContact.show();
     }
 
-    private void getContacts(){
-        contacts.addAll(app.getDB().getAllRecipients());
-    }
 
     /**
-     * Async task for refreshing / getting new messages.
-     */
-    private class retrieveUserTask extends AsyncTask<ItemClient, Void, User> {
+     +     * Async task for sending a message.
+     +     *
+     +     */
+    private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
+        private String name = null;
+        private Context context;
 
-        private String name;
+        public createNewUserTask(String name,Context context){
+            this.name = name;
+            this.context = context;
+        }
+
+        @Override
+        protected Integer doInBackground(Void... v) {
+            try {
+                //Get the device id.
+                return DatabaseClientLocator.getDatabaseClient().newUser(name, Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
+            } catch (DatabaseClientException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Integer id) {
+            if(id != null) {
+                app.setCurrentUserID(id);
+                app.setCurrentUserName(name);
+                actualUserTextView.setText("Actual user : " + name);
+                AlertDialog.Builder newUser = new AlertDialog.Builder(context);
+                newUser.setTitle("Account correctly created : User : " + name + ", id : " + id);
+                newUser.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        //OK
+                    }
+                });
+                newUser.show();
+            } else {
+                AlertDialog.Builder newUser = new AlertDialog.Builder(context);
+                newUser.setTitle("Your account creation has failed, check your internet connection.");
+                newUser.setPositiveButton("Retry", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        new createNewUserTask(name, context).execute();
+                    }
+                });
+                newUser.show();
+            }
+        }
+    }
+
+
+    /**
+     * Async task for retrieving a new user.
+     */
+    private class retrieveUserTask extends AsyncTask<Void, Void, User> {
+
+        private String name = null;
         private Context context;
 
         public retrieveUserTask(String name,Context context) {
@@ -120,13 +195,13 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         }
 
         @Override
-        protected User doInBackground(ItemClient... itemClients) {
-                try {
-                    return itemClients[0].retrieveUserFromName(name);
-                } catch (ItemClientException e) {
-                    e.printStackTrace();
-                    return null;
-                }
+        protected User doInBackground(Void... v) {
+            try {
+                return DatabaseClientLocator.getDatabaseClient().retrieveUserFromName(name);
+            } catch (DatabaseClientException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         @Override
@@ -141,8 +216,8 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
 
             } else {
                 AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
-                newUserAlert.setTitle(getString(R.string.error_add_contact));
-                newUserAlert.setPositiveButton(getString(R.string.alert_dialog_default_positive_button), new DialogInterface.OnClickListener() {
+                newUserAlert.setTitle("Impossible to add the contact");
+                newUserAlert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         //OK
                     }
@@ -151,5 +226,8 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
             }
         }
     }
+
+
+
 
 }
