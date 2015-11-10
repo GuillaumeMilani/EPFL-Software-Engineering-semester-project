@@ -1,24 +1,30 @@
 package ch.epfl.sweng.calamar;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import java.util.Date;
 
-public class CalamarApplication extends Application {
+public final class CalamarApplication extends Application {
 
     //TODO There is debate on using a Singleton or not
 
-    private static CalamarApplication application;
+    private static volatile CalamarApplication instance;
     private SQLiteDatabaseHandler db;
     private SharedPreferences sp;
     private SharedPreferences.Editor editor;
+    private Activity currentActivity = null;
+
     private static final String CALAMAR_PREFERENCES = "ch.epfl.sweng.calamar";
     private static final String LAST_USERS_REFRESH_SP = "lastUsersRefresh";
     private static final String LAST_ITEMS_REFRESH_SP = "lastItemsRefresh";
     private static final String CURRENT_USER_ID_SP = "currentUserID";
     private static final String CURRENT_USER_NAME_SP = "currentUserName";
+    private static final String TAG = CalamarApplication.class.getSimpleName();
 
     /**
      * Returns the current instance of the application.
@@ -26,13 +32,13 @@ public class CalamarApplication extends Application {
      * @return A singleton
      */
     public static CalamarApplication getInstance() {
-        return application;
+        return CalamarApplication.instance;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        application = this;
+        CalamarApplication.instance = this;
         db = new SQLiteDatabaseHandler(this);
         sp = getSharedPreferences(CALAMAR_PREFERENCES, Context.MODE_PRIVATE);
         editor = sp.edit();

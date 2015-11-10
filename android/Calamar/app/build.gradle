@@ -24,13 +24,10 @@ android {
 }
 
 dependencies {
-<<<<<<< HEAD
     compile fileTree(dir: 'libs', include: ['*.jar'])
-=======
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:23.1.0'
     compile 'com.android.support:design:23.1.0'
->>>>>>> master
     androidTestCompile 'com.android.support:support-annotations:23.1.0'
     androidTestCompile 'com.android.support.test:runner:0.4'
     androidTestCompile 'com.android.support.test:rules:0.3'
