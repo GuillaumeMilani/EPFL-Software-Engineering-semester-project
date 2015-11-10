@@ -1,5 +1,7 @@
 package ch.epfl.sweng.calamar;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.support.v7.app.AppCompatActivity;
@@ -11,18 +13,33 @@ import android.view.View;
 import android.widget.Button;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    Button showMapBtn = null;
-    Button showChatBtn = null;
+    // LogCat tag
+    private static final String TAG = MainActivity.class.getSimpleName();
+
+    // activity request codes
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
+    private static final int ERROR_RESOLUTION_REQUEST = 1001;
+
+    // UI elements
+    private Button showMapBtn = null;
+    private Button showChatBtn = null;
+
+    // google api related stuff
+    private boolean resolvingError;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        buildGoogleApiClient(); //will connect in onResume(), errors are handled in onConnectionFailed()
 
         //retrieve UI element
         showChatBtn = (Button)findViewById(R.id.showChatBtn);
@@ -33,22 +50,29 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
+        //TODO maybe disable until google api client connects succesfully
         showMapBtn = (Button)findViewById(R.id.showMapBtn);
         showMapBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mapSettingsAreOk()) {
-                    startActivity(MapsActivity.class);
-                } else {
-                    //TODO deactivate something until resolved ?
-                }
+                startActivity(MapsActivity.class);
             }
         });
     }
 
-    private boolean mapSettingsAreOk() {
-        //TODO
-        return false;
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!resolvingError) {
+            CalamarApplication.getInstance().getGoogleApiClient().connect();
+            //if errors, such as no google play apk, onConnectionFailed will handle the errors
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        CalamarApplication.getInstance().getGoogleApiClient().disconnect();
+        super.onStop();
     }
 
     /**
@@ -85,12 +109,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onConnected(Bundle arg0) {
         Log.i(TAG, "google API client connected");
-        //TODO
     }
 
     @Override
     public void onConnectionSuspended(int arg0) {
-        googleApiClient.connect();
+        CalamarApplication.getInstance().getGoogleApiClient().connect();
     }
 
     @Override
@@ -99,19 +122,57 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             // Already attempting to resolve an error.
             return;
         } else if (connectionResult.hasResolution()) {
+            resolvingError = true;
+            Log.e(TAG, "google API client failed to connect: automatic resolution started, error = "
+                    + connectionResult.getErrorCode());
+
             try {
-                resolvingError = true;
-                connectionResult.startResolutionForResult(parentActivity, ERROR_RESOLUTION_REQUEST);
+                connectionResult.startResolutionForResult(this, ERROR_RESOLUTION_REQUEST);
+                //TODO callback
             } catch (IntentSender.SendIntentException e) {
                 // There was an error with the resolution intent. Try again.
-                googleApiClient.connect();
+                CalamarApplication.getInstance().getGoogleApiClient().connect();
             }
         } else {
             resolvingError = true;
             Log.e(TAG, "google API client failed to connect: no automatic resolution, error = "
                     + connectionResult.getErrorCode());
-            //TODO finish ?
+
+            //show error dialog
+            showGoogleApiErrorDialog(connectionResult.getErrorCode());
+            resolvingError = true;
         }
+    }
+
+
+    /**
+     * This shows a Dialog provided by Google Play services that's appropriate for the given error.
+     * The dialog may simply provide a message explaining the error, but it may also provide an action
+     * to launch an activity that can resolve the error
+     * (such as when the user needs to install a newer version of Google Play services).
+     * @param errorCode
+     */
+    private void showGoogleApiErrorDialog(int errorCode) {
+        //retrieve dialog for errorCode, if user cancel finish activity,
+        //we cannot do much more...google play apk must be present
+        Dialog errorDialog = GoogleApiAvailability.getInstance().getErrorDialog(this, errorCode,
+                MainActivity.PLAY_SERVICES_RESOLUTION_REQUEST, new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        Log.e(MainActivity.TAG, "error dialog cancelled");
+                        //works even if dialog cancelled without clicking any button
+                        finish();//TODO maybe refine..
+                    }
+                });
+        //reset resolvingError to false when dialog dismissed
+        errorDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                resolvingError = false;
+            }
+        });
+        //show dialog
+        errorDialog.show();
     }
 
     /**
@@ -122,9 +183,32 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private synchronized void buildGoogleApiClient() {
         CalamarApplication.getInstance().setGoogleApiClient(
                 new GoogleApiClient.Builder(CalamarApplication.getInstance())
-                .addApi(LocationServices.API)//TODO add service push TONY
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this).build());
+                    .addApi(LocationServices.API)//TODO add service push TONY
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this).build());
     }
 
+//    /**
+//     * Verifies google play services availability on the device
+//     */
+//    //keeped just in case.., not used now, I go the other way by connecting and then eventually
+//    //handle errors in onConnectionFailed
+//    private boolean checkPlayServices() {
+//        GoogleApiAvailability apiAvailabilitySingleton = GoogleApiAvailability.getInstance();
+//        int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(CalamarApplication.getInstance());
+//        if (resultCode != ConnectionResult.SUCCESS) {
+//            if (apiAvailabilitySingleton.isUserResolvableError(resultCode)) {
+//                apiAvailabilitySingleton.getErrorDialog(this, resultCode,
+//                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+//
+//            } else {
+//                Log.e(TAG, "This device is not supported. play services unavailable " +
+//                        "and automatic error resolution failed. error code : " + resultCode);
+//                //show dialog using geterrordialog on singleton
+//                finish();
+//            }
+//            return false;
+//        }
+//        return true;
+//    }
 }

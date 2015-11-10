@@ -13,14 +13,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
+    //TODO : add two buttons begin checks stop checks
+    // that will : checklocation settings + startlocation updates
+
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
-    //TODO hence ideally check for play services must be done at app startup !
-    //but maps fragment will do all the necessary if gplay services apk not present
+    //however google play services are checked at app startup...and
+    // maps fragment will do all the necessary if gplay services apk not present
     //see comment on setupMapIfNeeded
     //....maybe delegate all the work to the map fragment, I think google has correctly done the job...
-
-    //now maybe one could instantiate GPSProvider at app startup and let it do all the verifications
-    //but don't know if very clean....nor if I've done all that can be done
 
     private GPSProvider gpsProvider;
     private GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
@@ -29,6 +29,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             assert mMap != null :
                     "map should be initialized and ready before accessed by location updater";
 
+            //TODO here place useful stuff, display items and position
+            //ex:
             double latitude = newLocation.getLatitude();
             double longitude = newLocation.getLongitude();
             LatLng myLoc = new LatLng(latitude, longitude);
@@ -80,9 +82,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
-        gpsProvider = GPSProvider.getInstance(this);
+        gpsProvider = GPSProvider.getInstance();
         gpsProvider.addObserver(gpsObserver);
-        gpsProvider.startLocationUpdates();
+        gpsProvider.startLocationUpdates(this);
     }
 
     @Override
@@ -90,4 +92,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = map;
         setUpMap();
     }
+
+    //TODO add onactivity result callback !
 }

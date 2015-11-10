@@ -1,17 +1,11 @@
 package ch.epfl.sweng.calamar;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentSender;
 import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.util.Log;
 
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
 
 import java.util.Date;
 
@@ -22,7 +16,6 @@ public final class CalamarApplication extends Application {
     private SQLiteDatabaseHandler db;
     private SharedPreferences sp;
     private SharedPreferences.Editor editor;
-    private Activity currentActivity = null;
 
     private static final String CALAMAR_PREFERENCES = "ch.epfl.sweng.calamar";
     private static final String LAST_USERS_REFRESH_SP = "lastUsersRefresh";
@@ -32,6 +25,7 @@ public final class CalamarApplication extends Application {
     private static final String TAG = CalamarApplication.class.getSimpleName();
 
     // Google client to interact with Google API
+    //https://developers.google.com/android/guides/api-client
     private GoogleApiClient googleApiClient = null;
 
     /**
@@ -183,10 +177,23 @@ public final class CalamarApplication extends Application {
     }
 
     public void setGoogleApiClient(GoogleApiClient googleApiClient) {
-        if(googleApiClient != null) {
+        //TODO ask guru, when unresolvable errors cause the main activity to finish (destroy activity)
+        //if user reopen, activity's oncreate is called again but because the app isn't killed,
+        // the following code will cause the app to crash (but we nearly don't care...enfin...)
+        if(this.googleApiClient != null) {
             Log.e(CalamarApplication.TAG, "setGoogleApiClient : google api client is already created !");
             throw new IllegalStateException("setGoogleApiClient : google api client is already created !");
         }
         this.googleApiClient = googleApiClient;
     }
+
+    public GoogleApiClient getGoogleApiClient() {
+        if(null == googleApiClient) {
+            Log.e(CalamarApplication.TAG, "getGoogleApiClient : google api client has not been created !");
+            throw new IllegalStateException("getGoogleApiClient : google api client has not been created !");
+        }
+        return googleApiClient;
+    }
+
+
 }

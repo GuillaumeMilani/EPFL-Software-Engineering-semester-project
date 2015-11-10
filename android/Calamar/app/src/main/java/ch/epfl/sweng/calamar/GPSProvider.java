@@ -1,13 +1,11 @@
 package ch.epfl.sweng.calamar;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Location;
-import android.os.Bundle;
 import android.util.Log;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -27,70 +25,110 @@ import java.util.Set;
 /**
  * Created by LPI on 06.11.2015.
  */
-public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, LocationListener
+public final class GPSProvider implements LocationListener
 {
     private static volatile GPSProvider instance = null;
-
-    // LogCat tag
     private static final String TAG = GPSProvider.class.getSimpleName();
-
-    // request codes
-    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
-    private static final int ERROR_RESOLUTION_REQUEST = 1001;
     private static final int CHECK_SETTINGS_REQUEST = 1002;
+
 
     // location
     private Location lastLocation;
     private Date lastUpdateTime;
     private LocationRequest locationRequest;
 
-
-
-    private boolean resolvingError = false;
-    private GoogleApiAvailability apiAvailabilitySingleton;
-
-
-
-    // caller activity
-    private static Activity parentActivity;
-    //TODO to remove, ideally current on-screen activity ref. should be accessible
+    private GoogleApiClient googleApiClient;
 
     private Set<Observer> observers = new HashSet<>();
 
-    //TODO see remark below in checkplay services, I think that googleApiclient and play services
-    //errors should be handled in main activity at app startup
-    private GPSProvider() {
-        // check availability of play services
-        apiAvailabilitySingleton = GoogleApiAvailability.getInstance();
-        if (checkPlayServices()) {
-            // Builds the GoogleApi client
-            buildGoogleApiClient();
-            //creates the location request
-            createLocationRequest();
+    /**
+     * @return the GPSProvider singleton's instance
+     */
+    public final static GPSProvider getInstance() {
+        //avoid call to synchronized if already instantiated
+        if (GPSProvider.instance == null) {
+            //avoid multiple instantiations by different threads
+            synchronized(GPSProvider.class) {
+                if (GPSProvider.instance == null) {
+                    GPSProvider.instance = new GPSProvider();
+                }
+            }
         }
+        return GPSProvider.instance;
     }
 
     /**
-     * Verifies google play services availability on the device
-     * */
-    private boolean checkPlayServices() {
-        int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(CalamarApplication.getInstance());
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (apiAvailabilitySingleton.isUserResolvableError(resultCode)) {
-                this.apiAvailabilitySingleton.getErrorDialog(parentActivity, resultCode,
-                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
-                //TODO need to establish communication protocol with activities
-                //or move this check at app startup by mainactivity
-            } else {
-                Log.e(TAG, "This device is not supported. play services unavailable " +
-                        "and automatic error resolution failed. error code : " + resultCode);
-                //parentActivity.finish();
-                //TODO what should we do when play services not available ?
-            }
-            return false;
-        }
-        return true;
+     * Checks location settings and starts the location updates if no issue found. <br>
+     * Registered observers will get new location periodically through their
+     * {@link ch.epfl.sweng.calamar.GPSProvider.Observer#update(Location) update} method. <br><br>
+     *
+     * <b>Warning :</b> if settings are not OK, nothing done, caller <i>parentActivity</i>
+     * should implement {@link Activity#onActivityResult(int, int, Intent)} to react to the user actions.
+     * <br>
+     *     request code : {@link #CHECK_SETTINGS_REQUEST}
+     *     TODO describe result code and actions
+     */
+    public void startLocationUpdates(Activity parentActivity) {
+        checkLocationSettings(parentActivity);
+        //TODO...I don't manage to find a good solution....rethink
+        //here if settings KO and user sets them OK, caller will recall this, and settings will be checked
+        //again .........if I split them apart, in case of settings OK,
+        // need to decide on a way to inform caller that settings ok (callback..)
+    }
+
+    /**
+     * Stops the location updates. <br>
+     *     If you only want to unsubscribe, please call {@link #removeObserver(Observer)}
+     */
+    public void stopLocationUpdates() {
+        LocationServices.FusedLocationApi.removeLocationUpdates(
+                googleApiClient, this);
+    }
+
+    /**
+     * @return the last received location <br>(<b>WARNING</b>, can be null if {@link #startLocationUpdates(Activity)}
+     * hasn't been called, or can be stale if {@link #stopLocationUpdates()} has been called and ...)
+     */
+    public Location getLastLocation() {
+        //TODO mybe check lastupdatetime and return null if too old
+        return lastLocation;
+    }
+
+    /**
+     * FusedLocationApi callback method
+     * @param location the new location
+     */
+    @Override
+    public void onLocationChanged(Location location) {
+        // Assign the new location
+        lastLocation = location;
+        lastUpdateTime = new Date();
+        notifyObservers(location);
+    }
+
+    /**
+     * Register a new observer to observable GPSProvider
+     * @param observer the new observer
+     */
+    public void addObserver(GPSProvider.Observer observer) {
+        this.observers.add(observer);
+    }
+
+    /**
+     * Unsubscribe an observer from GPSProvider observable
+     * @param observer the observer to remove
+     * @return true if observer was present and correctly removed
+     */
+    public boolean removeObserver(GPSProvider.Observer observer) {
+        return this.observers.remove(observer);
+    }
+
+    private GPSProvider() {
+        // get the GoogleApi client,
+        // creation plus play services availability checks are done in MainActivity at app startup
+        googleApiClient = CalamarApplication.getInstance().getGoogleApiClient();
+        // creates the location request
+        createLocationRequest();
     }
 
     /**
@@ -98,7 +136,7 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
      * if KO, attempt to resolve error by showing user a dialog. <br>
      * is called by startLocationUpdates()
      * */
-    private void checkLocationSettings() {
+    private void checkLocationSettings(final Activity parentActivity) {
         googleApiClient.connect();//if already connected does nothing
 
         //build location settings status requests
@@ -111,8 +149,7 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
                 LocationServices.SettingsApi.checkLocationSettings(googleApiClient, request);
 
         //sets the callback for result
-        result.setResultCallback(new ResultCallback<LocationSettingsResult>()
-        {
+        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
             @Override
             public void onResult(LocationSettingsResult result) {
                 final Status status = result.getStatus();
@@ -122,6 +159,7 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
                         // All location settings are satisfied. The client can initialize location
                         // requests.
                         Log.i(GPSProvider.TAG, "Location settings OK");
+
                         //start location requests
                         LocationServices.FusedLocationApi.requestLocationUpdates(
                                 googleApiClient, locationRequest, GPSProvider.instance);
@@ -132,11 +170,12 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
                         try {
                             // Show the dialog and check the result in onActivityResult().
                             Log.e(GPSProvider.TAG, "Location settings not satisfied");
-                            status.startResolutionForResult(parentActivity,
-                                    CHECK_SETTINGS_REQUEST);
+                            status.startResolutionForResult(parentActivity, CHECK_SETTINGS_REQUEST);
+
                             //TODO establish communication protocol with the activities !
                             //onActivityResult() callback in activity will be called with result
                             //of user action
+
                         } catch (IntentSender.SendIntentException e) {
                             // Ignore the error.
                         }
@@ -192,87 +231,6 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
         for(GPSProvider.Observer observer : observers) {
             observer.update(location);
         }
-    }
-
-    /**
-     * Checks location settings and starts the location updates if no issue found. <br>
-     * Registered observers will get new location periodically through their
-     * {@link ch.epfl.sweng.calamar.GPSProvider.Observer#update(Location) update} method
-     * */
-    public void startLocationUpdates() {
-        checkLocationSettings();
-    }
-
-    /**
-     * Stops the location updates. <br>
-     *     If you only want to unsubscribe, please call {@link #removeObserver(Observer)}
-     */
-    public void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                googleApiClient, this);
-    }
-
-    /**
-     * @return the last received location <br>(<b>WARNING</b>, can be null if {@link #startLocationUpdates()}
-     * hasn't been called, or can be stale if {@link #stopLocationUpdates()} has been called and ...)
-     */
-    public Location getLastLocation() {
-        //TODO mybe check lastupdatetime and return null if too old
-        return lastLocation;
-    }
-
-    /**
-     * FusedLocationApi callback method
-     * @param location the new location
-     */
-    @Override
-    public void onLocationChanged(Location location) {
-        // Assign the new location
-        lastLocation = location;
-        lastUpdateTime = new Date();
-        notifyObservers(location);
-    }
-
-    /**
-     * Register a new observer to observable GPSProvider
-     * @param observer the new observer
-     */
-    public void addObserver(GPSProvider.Observer observer) {
-        this.observers.add(observer);
-    }
-
-    /**
-     * Unsubscribe an observer from GPSProvider observable
-     * @param observer the observer to remove
-     * @return true if observer was present and correctly removed
-     */
-    public boolean removeObserver(GPSProvider.Observer observer) {
-        return this.observers.remove(observer);
-    }
-
-    /**
-     * @param parentActivity
-     * @return the GPSProvider singleton's instance
-     */
-    public final static GPSProvider getInstance(Activity parentActivity) {
-        //avoid call to synchronized if already instantiated
-        if (GPSProvider.instance == null) {
-            //avoid multiple instantiations by different threads
-            synchronized(GPSProvider.class) {
-                if (GPSProvider.instance == null) {
-                    GPSProvider.instance = new GPSProvider();
-                }
-            }
-        }
-        GPSProvider.setParentActivity(parentActivity);
-        return GPSProvider.instance;
-    }
-
-    private static void setParentActivity(Activity parentActivity) {
-        if(null == parentActivity) {
-            throw new IllegalArgumentException("parentActivity cannot be null !");
-        }
-        GPSProvider.parentActivity = parentActivity;
     }
 
     /**
