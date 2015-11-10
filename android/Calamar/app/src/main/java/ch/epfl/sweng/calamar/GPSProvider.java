@@ -46,8 +46,7 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
     private LocationRequest locationRequest;
 
 
-    // Google client to interact with Google API
-    private GoogleApiClient googleApiClient;
+
     private boolean resolvingError = false;
     private GoogleApiAvailability apiAvailabilitySingleton;
 
@@ -155,18 +154,6 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
     }
 
     /**
-     * Creates google api client object
-     * @see <a href="https://developers.google.com/android/reference/com/google/android/gms/location/FusedLocationProviderApi.html">
-     *      FusedLocationProviderAPI</a>
-     * */
-    private synchronized void buildGoogleApiClient() {
-        googleApiClient = new GoogleApiClient.Builder(CalamarApplication.getInstance())
-                .addApi(LocationServices.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this).build();
-    }
-
-    /**
      * Creates location request
      * */
     private void createLocationRequest() {
@@ -244,41 +231,6 @@ public final class GPSProvider implements GoogleApiClient.ConnectionCallbacks,
         lastLocation = location;
         lastUpdateTime = new Date();
         notifyObservers(location);
-    }
-
-    /**
-     * Google api callback methods TODO see remark above, I think should be handled by mainActivity at app startup
-     */
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        if (resolvingError) {
-            // Already attempting to resolve an error.
-            return;
-        } else if (connectionResult.hasResolution()) {
-            try {
-                resolvingError = true;
-                connectionResult.startResolutionForResult(parentActivity, ERROR_RESOLUTION_REQUEST);
-            } catch (IntentSender.SendIntentException e) {
-                // There was an error with the resolution intent. Try again.
-                googleApiClient.connect();
-            }
-        } else {
-            resolvingError = true;
-            Log.e(TAG, "google API client failed to connect: no automatic resolution, error = "
-                    + connectionResult.getErrorCode());
-            //TODO finish ?
-        }
-    }
-
-    @Override
-    public void onConnected(Bundle arg0) {
-        Log.i(TAG, "google API client connected");
-        //TODO
-    }
-
-    @Override
-    public void onConnectionSuspended(int arg0) {
-        googleApiClient.connect();
     }
 
     /**

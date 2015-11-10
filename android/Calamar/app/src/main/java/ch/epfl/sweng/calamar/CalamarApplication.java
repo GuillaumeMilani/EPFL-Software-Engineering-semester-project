@@ -4,13 +4,18 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.util.Log;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
 import java.util.Date;
 
 public final class CalamarApplication extends Application {
-
     //TODO There is debate on using a Singleton or not
 
     private static volatile CalamarApplication instance;
@@ -25,6 +30,9 @@ public final class CalamarApplication extends Application {
     private static final String CURRENT_USER_ID_SP = "currentUserID";
     private static final String CURRENT_USER_NAME_SP = "currentUserName";
     private static final String TAG = CalamarApplication.class.getSimpleName();
+
+    // Google client to interact with Google API
+    private GoogleApiClient googleApiClient = null;
 
     /**
      * Returns the current instance of the application.
@@ -172,5 +180,13 @@ public final class CalamarApplication extends Application {
         resetUsername();
         resetLastItemsRefresh();
         resetLastUsersRefresh();
+    }
+
+    public void setGoogleApiClient(GoogleApiClient googleApiClient) {
+        if(googleApiClient != null) {
+            Log.e(CalamarApplication.TAG, "setGoogleApiClient : google api client is already created !");
+            throw new IllegalStateException("setGoogleApiClient : google api client is already created !");
+        }
+        this.googleApiClient = googleApiClient;
     }
 }
