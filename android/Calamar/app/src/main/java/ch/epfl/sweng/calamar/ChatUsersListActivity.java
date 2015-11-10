@@ -32,8 +32,6 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
 
     private CalamarApplication app;
 
-    private static final String SERVER_BASE_URL = "http://calamar.japan-impact.ch";
-
     private AlertDialog lastAlert;
 
     @Override
@@ -75,6 +73,10 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         } else {
             throw new IllegalArgumentException(getString(R.string.on_click_error));
         }
+    }
+
+    public AlertDialog getLastDialog(){
+        return lastAlert;
     }
 
     /**
@@ -207,15 +209,13 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         }
 
         @Override
-        protected void onPostExecute(User user) {
-            if (user != null) {
-                User newUser = new User(user.getID(), user.getName());
+        protected void onPostExecute(User newUser) {
+            if (newUser != null) {
                 adapter.add(newUser);
                 contacts.add(newUser);
                 adapter.notifyDataSetChanged();
                 //Add in memory
                 app.getDB().addRecipient(newUser);
-
             } else {
                 AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
                 newUserAlert.setTitle("Impossible to add the contact");
@@ -228,12 +228,5 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
             }
         }
     }
-
-
-    public AlertDialog getLastDialog(){
-        return lastAlert;
-    }
-
-
 
 }
