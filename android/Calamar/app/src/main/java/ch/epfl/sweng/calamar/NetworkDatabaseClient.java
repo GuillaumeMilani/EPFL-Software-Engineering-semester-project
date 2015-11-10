@@ -4,6 +4,7 @@ import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -18,7 +19,7 @@ import java.util.List;
 /**
  * Created by LPI on 19.10.2015.
  */
-public class NetworkItemClient implements ItemClient {
+public class NetworkDatabaseClient implements DatabaseClient {
 
     private final String serverUrl;
     private final NetworkProvider networkProvider;
@@ -26,8 +27,9 @@ public class NetworkItemClient implements ItemClient {
     private final static int HTTP_SUCCESS_END = 299;
     private final static String SEND_PATH = "/items.php?action=send";
     private final static String RETRIEVE_PATH = "/items.php?action=retrieve";
+    private final static String NEW_USER_PATH = "/users.php?action=add";
 
-    public NetworkItemClient(String serverUrl, NetworkProvider networkProvider)  {
+    public NetworkDatabaseClient(String serverUrl, NetworkProvider networkProvider)  {
         if(null == serverUrl || null == networkProvider) {
             throw new IllegalArgumentException("'serverUrl' or 'networkProvider' is null");
         }
@@ -36,51 +38,67 @@ public class NetworkItemClient implements ItemClient {
     }
 
     @Override
-    public List<Item> getAllItems(Recipient recipient, Date from) throws ItemClientException {
+    public List<Item> getAllItems(Recipient recipient, Date from) throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
-            URL url = new URL(serverUrl + NetworkItemClient.RETRIEVE_PATH);
-            /*String jsonParameter = URLEncoder.encode(
-                    "{ " +
-                            "\"recipient\": " + recipient.toJSON().toString() +
-                            "\",lastRefresh\": " + from.getTime() +
-                            " }", "UTF-8");*/
+            URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_PATH);
             String jsonParameter = "{ " +
                     "\"recipient\": " + recipient.toJSON().toString() +
                     ",\"lastRefresh\": " + from.getTime() +
                     " }";
-            connection = NetworkItemClient.createConnection(networkProvider, url);
-            String response = NetworkItemClient.post(connection, jsonParameter);
+            connection = NetworkDatabaseClient.createConnection(networkProvider, url);
+            String response = NetworkDatabaseClient.post(connection, jsonParameter);
 
-            return NetworkItemClient.itemsFromJSON(response);
+            return NetworkDatabaseClient.itemsFromJSON(response);
         } catch (IOException | JSONException e) {
-            throw new ItemClientException(e);
+            throw new DatabaseClientException(e);
         } finally {
-            NetworkItemClient.close(connection);
+            NetworkDatabaseClient.close(connection);
         }
     }
 
     @Override
-    public List<Item> getAllItems(Recipient recipient) throws ItemClientException {
+    public List<Item> getAllItems(Recipient recipient) throws DatabaseClientException {
         return getAllItems(recipient, new Date());
     }
 
     @Override
-    public void send(Item item) throws ItemClientException {
+    public void send(Item item) throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
-            URL url = new URL(serverUrl + NetworkItemClient.SEND_PATH);
+            URL url = new URL(serverUrl + NetworkDatabaseClient.SEND_PATH);
             String jsonParameter = item.toJSON().toString();
-            connection = NetworkItemClient.createConnection(networkProvider, url);
-            String response = NetworkItemClient.post(connection, jsonParameter);
+            connection = NetworkDatabaseClient.createConnection(networkProvider, url);
+            String response = NetworkDatabaseClient.post(connection, jsonParameter);
 
             if (!response.contains("Ack")) {
-                throw new ItemClientException("error: server couldn't retrieve the item");
+                throw new DatabaseClientException("error: server couldn't retrieve the item");
             }
         } catch (IOException | JSONException e) {
-            throw new ItemClientException(e);
+            throw new DatabaseClientException(e);
         } finally {
-            NetworkItemClient.close(connection);
+            NetworkDatabaseClient.close(connection);
+        }
+    }
+
+    @Override
+    public int newUser(String email, String deviceId) throws DatabaseClientException {
+        HttpURLConnection connection = null;
+        try {
+            URL url = new URL(serverUrl + NetworkDatabaseClient.NEW_USER_PATH);
+
+            String jsonParameter = "{ " +
+                    "\"DeviceID\": \"" + deviceId+"\"" +
+                    ",\"name\": \"" + email+"\"" +
+                    " }";
+            connection = NetworkDatabaseClient.createConnection(networkProvider, url);
+            String response = NetworkDatabaseClient.post(connection, jsonParameter);
+            JSONObject object = new JSONObject(response);
+            return object.getInt("ID");
+        } catch (IOException | JSONException e) {
+            throw new DatabaseClientException(e);
+        } finally {
+            NetworkDatabaseClient.close(connection);
         }
     }
 
@@ -113,10 +131,10 @@ public class NetworkItemClient implements ItemClient {
      * @param jsonParameter the data posted
      * @return the result of the request
      * @throws IOException
-     * @throws ItemClientException
+     * @throws DatabaseClientException
      */
     private static String post(HttpURLConnection connection, String jsonParameter)
-            throws IOException, ItemClientException
+            throws IOException, DatabaseClientException
     {
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type",
@@ -134,11 +152,11 @@ public class NetworkItemClient implements ItemClient {
 
         int responseCode = connection.getResponseCode();
         if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
-            throw new ItemClientException("Invalid HTTP response code");
+            throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )" );
         }
 
         //get result
-        return NetworkItemClient.fetchContent(connection);
+        return NetworkDatabaseClient.fetchContent(connection);
     }
 
     private static void close(HttpURLConnection connection) {

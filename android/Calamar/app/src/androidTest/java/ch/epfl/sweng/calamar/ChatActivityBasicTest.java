@@ -36,7 +36,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        ItemClientLocator.setItemClient(new ConstantItemClient());
+        DatabaseClientLocator.setDatabaseClient(new ConstantItemClient());
     }
 
 
