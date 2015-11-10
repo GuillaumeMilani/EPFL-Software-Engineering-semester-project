@@ -3,6 +3,7 @@ package ch.epfl.sweng.calamar;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -31,6 +33,8 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
     private TextView actualUserTextView;
 
     private CalamarApplication app;
+
+    private Dialog newContactAlertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +78,26 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
     }
 
     /**
+     * Called by create_new_contact layout
+     *
+     * @param v
+     */
+    public void addContact(View v){
+        EditText input = (EditText)newContactAlertDialog.findViewById(R.id.newContactInput);
+        newContactAlertDialog.dismiss();
+        new retrieveUserTask(input.getText().toString(), ChatUsersListActivity.this).execute();
+    }
+
+    /**
+     * Called by create_new_contact layout
+     *
+     * @param v
+     */
+    public void cancelNewContact(View v){
+        newContactAlertDialog.dismiss();
+    }
+
+    /**
      * Return the actual user of the app.
      */
     private void setActualUser(){
@@ -99,33 +123,13 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
     }
 
     private void addNewContact(){
-        AlertDialog.Builder newContact = new AlertDialog.Builder(this);
+        newContactAlertDialog = new Dialog(this);
 
-        newContact.setTitle(getString(R.string.add_new_contact_title));
-        newContact.setMessage(getString(R.string.add_new_contact_message));
+        newContactAlertDialog.setContentView(R.layout.create_new_contact);
+        newContactAlertDialog.setTitle(getString(R.string.add_new_contact_title));
 
-        final EditText input = new EditText(this);
-        input.setHint(getString(R.string.add_new_contact_hint));
-        final LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.addView(input);
-        newContact.setView(layout);
-
-        newContact.setPositiveButton(getString(R.string.add_new_contact_positive_button), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                new retrieveUserTask(input.getText().toString(), ChatUsersListActivity.this).execute();
-            }
-        });
-
-        newContact.setNegativeButton(getString(R.string.add_new_contact_negative_button), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                // Canceled.
-            }
-        });
-
-        newContact.show();
+        newContactAlertDialog.show();
     }
-
 
     /**
      +     * Async task for sending a message.

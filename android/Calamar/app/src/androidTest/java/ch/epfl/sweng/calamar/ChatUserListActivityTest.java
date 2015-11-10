@@ -57,7 +57,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
         onView(withId(R.id.newContact))
                 .check(matches(withText("New")));
     }
-    
+
     /**
      * Test that we display nothing when nothing is in the database
      */
