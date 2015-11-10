@@ -9,8 +9,6 @@ import net.sqlcipher.database.SQLiteOpenHelper;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 
 public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
@@ -39,11 +37,13 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     private final String userHash;
 
-    private final Lock lock = new ReentrantLock();
-
+    /**
+     * Returns the current and only instance of SQLiteDatabaseHandler
+     * @return the DatabaseHandler
+     */
     public static SQLiteDatabaseHandler getInstance() {
         if (instance == null) {
-            app=CalamarApplication.getInstance();
+            app = CalamarApplication.getInstance();
             instance = new SQLiteDatabaseHandler();
             SQLiteDatabase.loadLibs(app);
         }
@@ -79,12 +79,10 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     /**
      * Deletes all items in the database
      */
-    public void deleteAllItems() {
-        lock.lock();
+    public synchronized void deleteAllItems() {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         db.delete(ITEMS_TABLE, null, null);
         db.close();
-        lock.unlock();
     }
 
     /**
@@ -92,7 +90,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @param message the item to delete
      */
-    public void deleteItem(Item message) {
+    public synchronized void deleteItem(Item message) {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         String[] args = {Integer.toString(message.getID())};
         db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = ?", args);
@@ -104,7 +102,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @param id the id of the item
      */
-    public void deleteItem(int id) {
+    public synchronized void deleteItem(int id) {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         String[] args = {Integer.toString(id)};
         db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = ?", args);
@@ -116,7 +114,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @param ids the ids of the items to delete
      */
-    public void deleteItems(List<Integer> ids) {
+    public synchronized void deleteItems(List<Integer> ids) {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         String[] args = new String[ids.size()];
         for (int i = 0; i < ids.size(); ++i) {
@@ -131,7 +129,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @param item the item to add
      */
-    public void addItem(Item item) {
+    public synchronized void addItem(Item item) {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         ContentValues values = createItemValues(item);
         db.replace(ITEMS_TABLE, null, values);
@@ -144,7 +142,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @param items the list of items to add
      */
-    public void addItems(List<Item> items) {
+    public synchronized void addItems(List<Item> items) {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         for (Item item : items) {
             ContentValues values = createItemValues(item);
@@ -160,7 +158,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @param item the item to update
      */
-    public void updateItem(Item item) {
+    public synchronized void updateItem(Item item) {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         ContentValues values = createItemValues(item);
         String[] args = {Integer.toString(item.getID())};
@@ -174,7 +172,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @param items the list of items to update
      */
-    public void updateItems(List<Item> items) {
+    public synchronized void updateItems(List<Item> items) {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         for (Item item : items) {
             ContentValues values = createItemValues(item);
@@ -191,7 +189,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param id the id of the item to retrieve
      * @return the item, or null
      */
-    public Item getItem(int id) {
+    public synchronized Item getItem(int id) {
         SQLiteDatabase db = this.getReadableDatabase(userHash);
         Item toReturn = null;
         String[] args = {Integer.toString(id)};
@@ -212,7 +210,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param ids the ids corresponding to the items
      * @return the items
      */
-    public List<Item> getItems(List<Integer> ids) {
+    public synchronized List<Item> getItems(List<Integer> ids) {
         SQLiteDatabase db = this.getReadableDatabase(userHash);
         List<Item> items = new ArrayList<>();
         String[] args = new String[ids.size()];
@@ -238,7 +236,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param recipient The contact
      * @return a list of items
      */
-    public List<Item> getItemsForContact(Recipient recipient) {
+    public synchronized List<Item> getItemsForContact(Recipient recipient) {
         SQLiteDatabase db = this.getReadableDatabase(userHash);
         List<Item> items = new ArrayList<>();
         int currentUserID = app.getCurrentUserID();
@@ -264,7 +262,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param contactID The contact
      * @return a list of items
      */
-    public List<Item> getItemsForContact(int contactID) {
+    public synchronized List<Item> getItemsForContact(int contactID) {
         SQLiteDatabase db = this.getReadableDatabase(userHash);
         List<Item> items = new ArrayList<>();
         int currentUserID = app.getCurrentUserID();
@@ -289,7 +287,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @return the list of Item
      */
-    public List<Item> getAllItems() {
+    public synchronized List<Item> getAllItems() {
         SQLiteDatabase db = this.getReadableDatabase(userHash);
         Cursor cursor = db.rawQuery("SELECT * FROM " + ITEMS_TABLE + " ORDER BY " + ITEMS_KEY_ID + " ASC", null);
         boolean hasNext;
@@ -312,7 +310,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @param recipient the recipient to add
      */
-    public void addRecipient(Recipient recipient) {
+    public synchronized void addRecipient(Recipient recipient) {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         ContentValues values = createRecipientValues(recipient);
         db.replace(RECIPIENTS_TABLE, null, values);
@@ -324,7 +322,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @param recipients the list of recipients to add.
      */
-    public void addRecipients(List<Recipient> recipients) {
+    public synchronized void addRecipients(List<Recipient> recipients) {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         for (Recipient recipient : recipients) {
             ContentValues values = createRecipientValues(recipient);
@@ -338,7 +336,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @param recipient the recipient to update
      */
-    public void updateRecipient(Recipient recipient) {
+    public synchronized void updateRecipient(Recipient recipient) {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         ContentValues values = createRecipientValues(recipient);
         String[] args = {Integer.toString(recipient.getID())};
@@ -351,7 +349,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @param recipients the list of recipients to update
      */
-    public void updateRecipients(List<Recipient> recipients) {
+    public synchronized void updateRecipients(List<Recipient> recipients) {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         for (Recipient recipient : recipients) {
             ContentValues values = createRecipientValues(recipient);
@@ -366,7 +364,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @param recipient the recipient to delete
      */
-    public void deleteRecipient(Recipient recipient) {
+    public synchronized void deleteRecipient(Recipient recipient) {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         String[] args = {Integer.toString(recipient.getID())};
         db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = ?", args);
@@ -378,7 +376,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @param id the id
      */
-    public void deleteRecipient(int id) {
+    public synchronized void deleteRecipient(int id) {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         String[] args = {Integer.toString(id)};
         db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = ?", args);
@@ -390,7 +388,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @param ids a list of ids of recipients to delete.
      */
-    public void deleteRecipients(List<Integer> ids) {
+    public synchronized void deleteRecipients(List<Integer> ids) {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         String[] args = new String[ids.size()];
         for (int i = 0; i < ids.size(); ++i) {
@@ -404,7 +402,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     /**
      * Deletes all recipients
      */
-    public void deleteAllRecipients() {
+    public synchronized void deleteAllRecipients() {
         SQLiteDatabase db = this.getWritableDatabase(userHash);
         db.delete(RECIPIENTS_TABLE, null, null);
         db.close();
@@ -416,7 +414,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param id the id of the recipient
      * @return the recipient
      */
-    public Recipient getRecipient(int id) {
+    public synchronized Recipient getRecipient(int id) {
         SQLiteDatabase db = this.getReadableDatabase(userHash);
         Recipient toReturn = getRecipientWithoutClosing(id);
         db.close();
@@ -429,7 +427,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param ids a list of Integers
      * @return a list of Recipients
      */
-    public List<Recipient> getRecipients(List<Integer> ids) {
+    public synchronized List<Recipient> getRecipients(List<Integer> ids) {
         SQLiteDatabase db = this.getReadableDatabase(userHash);
         List<Recipient> recipients = new ArrayList<>();
         String[] args = new String[ids.size()];
@@ -455,7 +453,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @return all recipients as a List
      */
-    public List<Recipient> getAllRecipients() {
+    public synchronized List<Recipient> getAllRecipients() {
         SQLiteDatabase db = this.getReadableDatabase(userHash);
         Cursor cursor = db.rawQuery("SELECT * FROM " + RECIPIENTS_TABLE + " ORDER BY " + RECIPIENTS_KEY_ID + " ASC", null);
         boolean hasNext;
@@ -470,20 +468,6 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         }
         db.close();
         return recipients;
-    }
-
-    /**
-     * Locks the database
-     */
-    public void lock() {
-        lock.lock();
-    }
-
-    /**
-     * Unlocks the database
-     */
-    public void unlock() {
-        lock.unlock();
     }
 
     private ContentValues createItemValues(Item item) {
