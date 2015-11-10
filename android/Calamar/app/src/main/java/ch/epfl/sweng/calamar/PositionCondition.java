@@ -73,6 +73,11 @@ public class PositionCondition extends Condition {
         json.accumulate("radius", radius);
     }
 
+    @Override
+    public String toString() {
+        return "position : ("+location.getLatitude()+" , "+location.getLongitude()+" , "+radius+")";
+    }
+
     /**
      * create a Condition from a JSONObject
      * @param json Object in JSON format

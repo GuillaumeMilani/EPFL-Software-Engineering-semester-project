@@ -36,6 +36,10 @@ public abstract class Item {
         this.condition = condition;
     }
 
+    protected Item(int ID, User from, Recipient to, long date){
+        this(ID,from,to,date,Condition.trueCondition());
+    }
+
     public abstract Type getType();
 
     /**

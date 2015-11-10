@@ -39,8 +39,8 @@ public class EqualsAndHashcodeTest {
     }
 
     private void testVerifyEqualsAndHashcode(Object a, Object b) {
-        assertEquals(a,b);
-        assertEquals(b,a);
+        assertEquals(a, b);
+        assertEquals(b, a);
         assertEquals(a.hashCode(), b.hashCode());
     }
 }

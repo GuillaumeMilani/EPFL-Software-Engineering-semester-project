@@ -16,6 +16,7 @@ public abstract class Condition {
 
     /**
      * compose this Condition in the json object
+     *
      * @param json jsonObject to put this in
      * @throws JSONException
      */
@@ -23,6 +24,7 @@ public abstract class Condition {
 
     /**
      * get a JSON description of this
+     *
      * @return JSONObject describing this
      * @throws JSONException
      */
@@ -34,27 +36,29 @@ public abstract class Condition {
 
     @Override
     public abstract String toString();
-    
+
 
     /**
      * set a value for this condition. If newValue differs from old, notify observers
+     *
      * @param newValue new value to set
      */
-    protected void setValue(boolean newValue)
-    {
-        if(value != newValue) {
+    protected void setValue(Boolean newValue) {
+        if (value != newValue) {
             value = newValue;
-            for(Observer o : observers)
-            {
+            for (Observer o : observers) {
                 o.update();
             }
         }
     }
 
-    public boolean getValue() {return value;}
+    public boolean getValue() {
+        return value;
+    }
 
     /**
      * create a Condition from a JSONObject
+     *
      * @param json Object in JSON format
      * @return the desired condition Condition
      * @throws JSONException
@@ -66,7 +70,7 @@ public abstract class Condition {
         }
         Condition cond;
         String type = json.getString("type");
-        switch(type) {
+        switch (type) {
             case "position":
                 cond = PositionCondition.fromJSON(json);
                 break;
@@ -93,13 +97,13 @@ public abstract class Condition {
 
     /**
      * Create an always true condition
+     *
      * @return true condition
      */
-    public static Condition trueCondition()
-    {
+    public static Condition trueCondition() {
         return new Condition() {
             {
-                setValue(true);
+                this.setValue(true);
             }
 
             @Override
@@ -115,13 +119,12 @@ public abstract class Condition {
     }
 
 
-
     /**
      * Create an always false condition
+     *
      * @return false condition
      */
-    public static Condition falseCondition()
-    {
+    public static Condition falseCondition() {
         return new Condition() {
             {
                 setValue(false);
@@ -141,12 +144,12 @@ public abstract class Condition {
 
     /**
      * create a condition that represent the intersection of two conditions
+     *
      * @param c1 first condition
      * @param c2 second condition
      * @return a new condition that is the intersection of c1 and c2
      */
-    public static Condition and(final Condition c1, final Condition c2)
-    {
+    public static Condition and(final Condition c1, final Condition c2) {
         return new Condition() {
             //constructor
             {
@@ -163,29 +166,28 @@ public abstract class Condition {
             }
 
 
-
             @Override
             protected void compose(JSONObject json) throws JSONException {
                 json.accumulate("type", "and");
-                json.accumulate("a" , c1.toJSON());
+                json.accumulate("a", c1.toJSON());
                 json.accumulate("b", c2.toJSON());
             }
 
             @Override
             public String toString() {
-                return "("+c1.toString() + " and "+c2.toString()+")";
+                return "(" + c1.toString() + " && " + c2.toString() + ")";
             }
         };
     }
 
     /**
      * create a condition that represent the union of two conditions
+     *
      * @param c1 first condition
      * @param c2 second condition
      * @return a new condition that is the union of c1 and c2
      */
-    public static Condition or(final Condition c1, final Condition c2)
-    {
+    public static Condition or(final Condition c1, final Condition c2) {
         return new Condition() {
             //constructor
             {
@@ -204,24 +206,24 @@ public abstract class Condition {
             @Override
             protected void compose(JSONObject json) throws JSONException {
                 json.accumulate("type", "or");
-                json.accumulate("a" , c1.toJSON());
-                json.accumulate("b" , c2.toJSON());
+                json.accumulate("a", c1.toJSON());
+                json.accumulate("b", c2.toJSON());
             }
 
             @Override
             public String toString() {
-                return "("+c1.toString() + " or "+c2.toString()+")";
+                return "(" + c1.toString() + " || " + c2.toString() + ")";
             }
         };
     }
 
     /**
      * negats a condition
+     *
      * @param c condition to negate
      * @return a condition that is true when c is false and false when c is true
      */
-    public static Condition not(final Condition c)
-    {
+    public static Condition not(final Condition c) {
         return new Condition() {
             //constructor
             {
@@ -239,12 +241,12 @@ public abstract class Condition {
             @Override
             protected void compose(JSONObject json) throws JSONException {
                 json.accumulate("type", "not");
-                json.accumulate("val" , c.toJSON());
+                json.accumulate("val", c.toJSON());
             }
 
             @Override
             public String toString() {
-                return "(!"+c.toString()+")";
+                return "(!" + c.toString() + ")";
             }
         };
     }

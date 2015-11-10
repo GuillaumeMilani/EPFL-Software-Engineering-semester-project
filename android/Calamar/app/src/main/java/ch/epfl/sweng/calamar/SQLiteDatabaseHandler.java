@@ -5,6 +5,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -36,10 +39,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     /**
      * Creates a databasehandler for managing stored informations on the user phone.
-     *
-     * @param app The application
      */
-    public SQLiteDatabaseHandler(CalamarApplication app) {
+    public SQLiteDatabaseHandler() {
         super(CalamarApplication.getInstance(), DATABASE_NAME, null, DATABASE_VERSION);
         this.app = CalamarApplication.getInstance();
     }
@@ -476,7 +477,12 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         values.put(ITEMS_KEY_FROM, item.getFrom().getID());
         values.put(ITEMS_KEY_TO, item.getTo().getID());
         values.put(ITEMS_KEY_TIME, item.getDate().getTime());
-        values.put(ITEMS_KEY_CONDITION, item.getCondition().toString());
+        try {
+            values.put(ITEMS_KEY_CONDITION, item.getCondition().toJSON().toString());
+        }
+        catch (JSONException e){
+            e.printStackTrace();
+        }
         values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());
         return values;
     }
@@ -487,7 +493,12 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         User from = (User) getRecipient(cursor.getInt(2));
         Recipient to = getRecipient(cursor.getInt(3));
         Date time = new Date(cursor.getInt(4));
-        Condition condition = Condition.fromString(cursor.getString(5));
+        Condition condition = null;
+        try {
+            condition = Condition.fromJSON(new JSONObject(cursor.getString(5)));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         String text = cursor.getString(6);
         if (type.equals(Item.Type.SIMPLETEXTITEM.name())){
             return new SimpleTextItem(id, from, to, time, condition, text);

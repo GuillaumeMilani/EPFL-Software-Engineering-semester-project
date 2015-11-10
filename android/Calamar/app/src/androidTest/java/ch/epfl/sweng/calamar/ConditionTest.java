@@ -3,12 +3,16 @@ package ch.epfl.sweng.calamar;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import static junit.framework.Assert.assertEquals;
 
 /**
  * Created by pierre on 11/6/15.
  */
+
+@RunWith(JUnit4.class)
 public class ConditionTest {
 
     /**
@@ -20,30 +24,25 @@ public class ConditionTest {
         private int triggered = 0;
         private Condition c;
 
-        TO(Condition c)
-        {
+        TO(Condition c) {
             this.c = c;
             this.c.addObserver(this);
         }
 
         @Override
-        public void update()
-        {
+        public void update() {
             triggered++;
         }
 
-        public void assertValue(boolean value)
-        {
+        public void assertValue(boolean value) {
             assertEquals(value, c.getValue());
         }
 
-        public void assertTrigerred(int n)
-        {
+        public void assertTrigerred(int n) {
             assertEquals(triggered, n);
         }
 
-        public void assAll(boolean value, int n)
-        {
+        public void assAll(boolean value, int n) {
             assertValue(value);
             assertTrigerred(n);
         }
@@ -53,28 +52,30 @@ public class ConditionTest {
      * used to make setValue accessible
      * TC for TestingCondition
      */
-    class TC extends Condition
-    {
+    class TC extends Condition {
 
-        TC()
-        {
+        TC() {
             setValue(false);
         }
-        //don't realy care
+
+        //don't really care
         @Override
         protected void compose(JSONObject json) throws JSONException {
 
         }
 
-        void set(boolean value)
-        {
+        @Override
+        public String toString() {
+            return "";
+        }
+
+        void set(boolean value) {
             setValue(value);
         }
     }
 
     @Test
-    void testConditionTrueFalse()
-    {
+    public void testConditionTrueFalse() {
         TO o1 = new TO(Condition.trueCondition());
         o1.assAll(true, 0);
         TO o2 = new TO(Condition.falseCondition());
@@ -82,8 +83,7 @@ public class ConditionTest {
     }
 
     @Test
-    void testConditionAnd()
-    {
+    public void testConditionAnd() {
         TC a = new TC(), b = new TC();
         TO o = new TO(Condition.and(a, b));
         o.assAll(false, 0);
@@ -99,8 +99,8 @@ public class ConditionTest {
         o.assAll(false, 2);
     }
 
-    void testConditionOr()
-    {
+    @Test
+    public void testConditionOr() {
         TC a = new TC(), b = new TC();
         TO o = new TO(Condition.or(a, b));
         o.assAll(false, 0);
@@ -116,8 +116,8 @@ public class ConditionTest {
         o.assAll(false, 2);
     }
 
-    void testConditionNot()
-    {
+    @Test
+    public void testConditionNot() {
         TC a = new TC();
         TO o = new TO(Condition.not(a));
         o.assAll(true, 0);
