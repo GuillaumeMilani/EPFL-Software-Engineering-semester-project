@@ -170,13 +170,12 @@ public class NetworkDatabaseClient implements DatabaseClient {
 
     private static List<Item> itemsFromJSON(String response) throws JSONException {
         List<Item> result = new ArrayList<>();
-        if(response != "[]"){
-            //No new message !
-            JSONArray array = new JSONArray(response);
-            for(int i = 0; i < array.length(); ++i) {
-                result.add(Item.fromJSON(array.getJSONObject(i)));
-            }
+
+        JSONArray array = new JSONArray(response);
+        for(int i = 0; i < array.length(); ++i) {
+            result.add(Item.fromJSON(array.getJSONObject(i)));
         }
+
         return result;
     }
 }
