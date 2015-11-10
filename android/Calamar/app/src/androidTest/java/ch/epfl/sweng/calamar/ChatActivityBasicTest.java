@@ -33,6 +33,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
     }
 
     @Before
+    @Override
     public void setUp() throws Exception {
         super.setUp();
         ItemClientLocator.setItemClient(new ConstantItemClient());

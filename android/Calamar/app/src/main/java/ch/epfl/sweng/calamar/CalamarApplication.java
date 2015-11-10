@@ -43,10 +43,10 @@ public class CalamarApplication extends Application {
         User test = new User(1, "Bob");
         application = this;
         //TODO Need to find a better passphrase (User password for example)
-        sp = new SecurePreferences(this,Integer.toString(new User(1,"Bob").hashCode()),"user_pref.xml");
+        sp = new SecurePreferences(this,Integer.toString(test.hashCode()),"user_pref.xml");
         editor = sp.edit();
-        setCurrentUserID(1);
-        setCurrentUserName("Bob");
+        setCurrentUserID(test.getID());
+        setCurrentUserName(test.getName());
         db = SQLiteDatabaseHandler.getInstance();
 
         setLastItemsRefresh(new Date(0));
