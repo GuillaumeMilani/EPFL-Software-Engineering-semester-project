@@ -144,7 +144,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
 
         onView(withText("Add")).perform(click());
 
-        verify(client).retrieveUserFromName(argument.capture());
+        verify(client).findUserByName(argument.capture());
 
         assertEquals("calamar@gmail.com",argument.getValue());
     }

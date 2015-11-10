@@ -37,7 +37,7 @@ public class ConstantDatabaseClient implements DatabaseClient {
     }
 
     @Override
-    public User retrieveUserFromName(String name) throws DatabaseClientException {
+    public User findUserByName(String name) throws DatabaseClientException {
         return new User(1,"Bob");
     }
 

@@ -101,7 +101,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
     }
 
     @Override
-    public User retrieveUserFromName(String name) throws DatabaseClientException{
+    public User findUserByName(String name) throws DatabaseClientException{
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_USER_PATH);

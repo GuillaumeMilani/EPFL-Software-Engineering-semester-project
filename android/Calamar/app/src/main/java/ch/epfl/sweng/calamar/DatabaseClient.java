@@ -30,7 +30,7 @@ public interface DatabaseClient {
      *
      * @param name
      */
-    User retrieveUserFromName(String name) throws DatabaseClientException;
+    User findUserByName(String name) throws DatabaseClientException;
 
     /**
      * Create a new user on the database

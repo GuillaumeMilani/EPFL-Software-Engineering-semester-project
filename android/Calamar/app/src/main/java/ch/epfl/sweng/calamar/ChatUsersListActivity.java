@@ -199,7 +199,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         @Override
         protected User doInBackground(Void... v) {
             try {
-                return DatabaseClientLocator.getDatabaseClient().retrieveUserFromName(name);
+                return DatabaseClientLocator.getDatabaseClient().findUserByName(name);
             } catch (DatabaseClientException e) {
                 e.printStackTrace();
                 return null;
