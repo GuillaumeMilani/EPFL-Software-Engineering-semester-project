@@ -32,8 +32,6 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
 
     private CalamarApplication app;
 
-    private AlertDialog lastAlert;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,10 +71,6 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         } else {
             throw new IllegalArgumentException(getString(R.string.on_click_error));
         }
-    }
-
-    public AlertDialog getLastDialog(){
-        return lastAlert;
     }
 
     /**
@@ -129,7 +123,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
             }
         });
 
-        lastAlert = newContact.show();
+        newContact.show();
     }
 
 
@@ -170,7 +164,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
                         //OK
                     }
                 });
-                lastAlert = newUser.show();
+                newUser.show();
             } else {
                 AlertDialog.Builder newUser = new AlertDialog.Builder(context);
                 newUser.setTitle("Your account creation has failed, check your internet connection.");
@@ -179,7 +173,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
                         new createNewUserTask(name, context).execute();
                     }
                 });
-                lastAlert = newUser.show();
+                newUser.show();
             }
         }
     }

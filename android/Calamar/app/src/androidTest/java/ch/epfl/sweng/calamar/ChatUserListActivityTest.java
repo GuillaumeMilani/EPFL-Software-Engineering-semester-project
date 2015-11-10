@@ -16,8 +16,11 @@ import org.mockito.Mockito;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.withHint;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withInputType;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 import static org.mockito.Mockito.verify;
@@ -54,15 +57,13 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
         onView(withId(R.id.newContact))
                 .check(matches(withText("New")));
     }
+    
     /**
      * Test that we display nothing when nothing is in the database
      */
     @Test
     public void testDisplayContactIsEmptyWhenNoContact() {
         app.getDB().deleteAllRecipients();
-        //app.getDB().addRecipient(bob);
-        //app.getDB().addRecipient(alice);
-
 
         getActivity();
 
@@ -89,7 +90,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
     }
 
     /**
-     * Test that we can cancel to add a new contact
+     * Test that we can cancel to add a new contact.
      */
     @Test
     public void testCreateContactCanBeCancelled() {
@@ -99,60 +100,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
 
         onView(withId(R.id.newContact)).perform(click());
 
-        AlertDialog dialog = getActivity().getLastDialog();
-
-        if (dialog.isShowing()) {
-            try {
-                onView(withId(dialog.getButton(DialogInterface.BUTTON_NEGATIVE).getId())).perform(click());
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * Test that we display correct button in the alertDialog
-     */
-    @Test
-    public void testCreateContactAlertPositiveButtonText() {
-        app.getDB().deleteAllRecipients();
-
-        getActivity();
-
-        onView(withId(R.id.newContact)).perform(click());
-
-        AlertDialog dialog = getActivity().getLastDialog();
-
-        if (dialog.isShowing()) {
-            try {
-
-                onView(withId(dialog.getButton(DialogInterface.BUTTON_POSITIVE).getId())).check(matches(withText("Add")));;
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * Test that we display correct button in the alertDialog
-     */
-    @Test
-    public void testCreateContactAlertNegativeButtonText() {
-        app.getDB().deleteAllRecipients();
-
-        getActivity();
-
-        onView(withId(R.id.newContact)).perform(click());
-
-        AlertDialog dialog = getActivity().getLastDialog();
-
-        if (dialog.isShowing()) {
-            try {
-                onView(withId(dialog.getButton(DialogInterface.BUTTON_NEGATIVE).getId())).check(matches(withText("Cancel")));;
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
+        onView(withText("Cancel")).perform(click());
     }
 
     /**
@@ -171,15 +119,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
 
         onView(withId(R.id.newContact)).perform(click());
 
-        AlertDialog dialog = getActivity().getLastDialog();
-
-        if (dialog.isShowing()) {
-            try {
-                onView(withId(dialog.getButton(DialogInterface.BUTTON_POSITIVE).getId())).perform(click());
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
+        onView(withText("Add")).perform(click());
 
         assertEquals(before + 1,list.getCount());
     }
@@ -196,26 +136,17 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
 
         getActivity();
 
-        ListView list = (ListView)getActivity().findViewById(R.id.contactsList);
-        final int before = list.getCount();
-
         onView(withId(R.id.newContact)).perform(click());
 
-        AlertDialog dialog = getActivity().getLastDialog();
+        onView(withHint("Mail")).perform(typeText("calamar@gmail.com"));
 
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
 
-        if (dialog.isShowing()) {
-            try {
-                onView(withId(dialog.getButton(DialogInterface.BUTTON_POSITIVE).getId())).perform(click());
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
+        onView(withText("Add")).perform(click());
 
         verify(client).retrieveUserFromName(argument.capture());
 
-        assertEquals("",argument.getValue());
+        assertEquals("calamar@gmail.com",argument.getValue());
     }
 
 }
