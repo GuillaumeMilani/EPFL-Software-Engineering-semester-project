@@ -34,6 +34,8 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
 
     private static final String SERVER_BASE_URL = "http://calamar.japan-impact.ch";
 
+    private AlertDialog lastAlert;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,7 +127,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
             }
         });
 
-        newContact.show();
+        lastAlert = newContact.show();
     }
 
 
@@ -166,7 +168,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
                         //OK
                     }
                 });
-                newUser.show();
+                lastAlert = newUser.show();
             } else {
                 AlertDialog.Builder newUser = new AlertDialog.Builder(context);
                 newUser.setTitle("Your account creation has failed, check your internet connection.");
@@ -175,7 +177,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
                         new createNewUserTask(name, context).execute();
                     }
                 });
-                newUser.show();
+                lastAlert = newUser.show();
             }
         }
     }
@@ -227,6 +229,10 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         }
     }
 
+
+    public AlertDialog getLastDialog(){
+        return lastAlert;
+    }
 
 
 
