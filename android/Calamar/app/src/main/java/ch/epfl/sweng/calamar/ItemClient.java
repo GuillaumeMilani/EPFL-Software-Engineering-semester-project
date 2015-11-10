@@ -22,5 +22,5 @@ public interface ItemClient {
      * send an item to a database
      * @param item the item to send
      */
-    int send(Item item) throws ItemClientException;
+    Item send(Item item) throws ItemClientException;
 }

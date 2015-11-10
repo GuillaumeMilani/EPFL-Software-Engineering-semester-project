@@ -67,7 +67,7 @@ public class NetworkItemClient implements ItemClient {
     }
 
     @Override
-    public int send(Item item) throws ItemClientException {
+    public Item send(Item item) throws ItemClientException {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkItemClient.SEND_PATH);
@@ -75,7 +75,7 @@ public class NetworkItemClient implements ItemClient {
             connection = NetworkItemClient.createConnection(networkProvider, url);
             String response = NetworkItemClient.post(connection, jsonParameter);
 
-            return idFromJson(response);
+            return Item.fromJSON(new JSONObject(response));
         } catch (IOException | JSONException e) {
             throw new ItemClientException(e);
         } finally {

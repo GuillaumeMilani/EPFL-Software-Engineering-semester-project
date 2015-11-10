@@ -103,7 +103,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * Async task for sending a message.
      */
-    private class sendItemTask extends AsyncTask<ItemClient, Void, Integer> {
+    private class sendItemTask extends AsyncTask<ItemClient, Void, Item> {
 
         private final Item item;
 
@@ -112,7 +112,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        protected Integer doInBackground(ItemClient... itemClients) {
+        protected Item doInBackground(ItemClient... itemClients) {
             try {
                 return itemClients[0].send(item);
             } catch (ItemClientException e) {
@@ -122,9 +122,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        protected void onPostExecute(Integer id) {
-            if (id != null) {
-                item.setID(id);
+        protected void onPostExecute(Item item) {
+            if (item != null) {
                 adapter.add(item);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);

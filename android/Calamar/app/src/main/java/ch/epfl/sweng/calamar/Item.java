@@ -14,7 +14,7 @@ import java.util.Date;
  *     Item is immutable
  */
 public abstract class Item {
-    private int ID;
+    private final int ID;
     private final User from;
     private final Recipient to;
     private final long date; //posix date
@@ -53,10 +53,6 @@ public abstract class Item {
 
     public int getID(){
         return ID;
-    }
-
-    public void setID(int ID){
-        this.ID = ID;
     }
 
     /**
