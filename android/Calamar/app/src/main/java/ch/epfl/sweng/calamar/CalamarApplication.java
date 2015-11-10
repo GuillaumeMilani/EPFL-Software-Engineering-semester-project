@@ -3,22 +3,30 @@ package ch.epfl.sweng.calamar;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.Date;
 
-public class CalamarApplication extends Application {
-
+public final class CalamarApplication extends Application {
     //TODO There is debate on using a Singleton or not
 
-    private static CalamarApplication application;
+    private static volatile CalamarApplication instance;
     private SQLiteDatabaseHandler db;
     private SharedPreferences sp;
     private SharedPreferences.Editor editor;
+
     private static final String CALAMAR_PREFERENCES = "ch.epfl.sweng.calamar";
     private static final String LAST_USERS_REFRESH_SP = "lastUsersRefresh";
     private static final String LAST_ITEMS_REFRESH_SP = "lastItemsRefresh";
     private static final String CURRENT_USER_ID_SP = "currentUserID";
     private static final String CURRENT_USER_NAME_SP = "currentUserName";
+    private static final String TAG = CalamarApplication.class.getSimpleName();
+
+    // Google client to interact with Google API
+    //https://developers.google.com/android/guides/api-client
+    private GoogleApiClient googleApiClient = null;
 
     /**
      * Returns the current instance of the application.
@@ -26,14 +34,14 @@ public class CalamarApplication extends Application {
      * @return A singleton
      */
     public static CalamarApplication getInstance() {
-        return application;
+        return CalamarApplication.instance;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        application = this;
-        db = new SQLiteDatabaseHandler();
+        CalamarApplication.instance = this;
+        db = new SQLiteDatabaseHandler(this);
         sp = getSharedPreferences(CALAMAR_PREFERENCES, Context.MODE_PRIVATE);
         editor = sp.edit();
         //TODO remove once database is thoroughly tested (tests delete all entries)
@@ -167,4 +175,25 @@ public class CalamarApplication extends Application {
         resetLastItemsRefresh();
         resetLastUsersRefresh();
     }
+
+    public void setGoogleApiClient(GoogleApiClient googleApiClient) {
+        //TODO ask guru, when unresolvable errors cause the main activity to finish (destroy activity)
+        //if user reopen, activity's oncreate is called again but because the app isn't killed,
+        // the following code will cause the app to crash (but we nearly don't care...enfin...)
+        if(this.googleApiClient != null) {
+            Log.e(CalamarApplication.TAG, "setGoogleApiClient : google api client is already created !");
+            throw new IllegalStateException("setGoogleApiClient : google api client is already created !");
+        }
+        this.googleApiClient = googleApiClient;
+    }
+
+    public GoogleApiClient getGoogleApiClient() {
+        if(null == googleApiClient) {
+            Log.e(CalamarApplication.TAG, "getGoogleApiClient : google api client has not been created !");
+            throw new IllegalStateException("getGoogleApiClient : google api client has not been created !");
+        }
+        return googleApiClient;
+    }
+
+
 }

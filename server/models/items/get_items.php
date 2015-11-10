@@ -13,8 +13,9 @@ function get_user($user_id) {
 	$res->bindParam(':user_id', $user_id, PDO::PARAM_INT);
 	$res->execute();
 
-	if (!($res = $res->fetchAll()))
-		die("No records found in the database");
+	if (!($res = $res->fetchAll())) {
+		die();
+	}
 
 	return $res[0];
 }
