@@ -30,8 +30,6 @@ public abstract class Item {
         this.date = date;
     }
 
-    //TODO: maybe better field names in java...
-
     /**
      * @return the 'from' field of the Item (sender)
      */
@@ -53,8 +51,9 @@ public abstract class Item {
         return new Date(this.date);
     }
 
-    //TODO: hashcode equals
-
+    public int getID(){
+        return ID;
+    }
 
     /**
      * Appends the fields of {@link Item} to a {@link JSONObject} representing the Item.<br>
@@ -101,6 +100,29 @@ public abstract class Item {
                 throw new IllegalArgumentException("Unexpected Item type (" + type + ")");
         }
         return item;
+    }
+
+    /**
+     * java equals
+     * @param o other Object to compare this with
+     * @return true if o is equal in value to this
+     */
+    @Override
+    public boolean equals(Object o) {
+        if ( this == o ) return true;
+	if ( o == null ) return false;
+        if ( !(o instanceof Item) ) return false;
+        Item that = (Item)o;
+        return that.ID == ID && that.from.equals(from) && that.to.equals(to) && that.date == date;
+    }
+
+    /**
+     * java hash function
+     * @return hash of the Object
+     */
+    @Override
+    public int hashCode() {
+        return ID+from.hashCode()*89+to.hashCode()*197+((int)date)*479;
     }
 
     /**
