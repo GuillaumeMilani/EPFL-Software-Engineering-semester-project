@@ -42,11 +42,6 @@ public class NetworkDatabaseClient implements DatabaseClient {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_PATH);
-            /*String jsonParameter = URLEncoder.encode(
-                    "{ " +
-                            "\"recipient\": " + recipient.toJSON().toString() +
-                            "\",lastRefresh\": " + from.getTime() +
-                            " }", "UTF-8");*/
             String jsonParameter = "{ " +
                     "\"recipient\": " + recipient.toJSON().toString() +
                     ",\"lastRefresh\": " + from.getTime() +
@@ -98,7 +93,8 @@ public class NetworkDatabaseClient implements DatabaseClient {
                     " }";
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter);
-            return idFromJson(response);
+            JSONObject object = new JSONObject(response);
+            return object.getInt("ID");
         } catch (IOException | JSONException e) {
             throw new DatabaseClientException(e);
         } finally {
@@ -186,12 +182,4 @@ public class NetworkDatabaseClient implements DatabaseClient {
         }
         return result;
     }
-
-    private int idFromJson(String response) throws JSONException {
-        Log.v("response : ", response);
-        JSONObject object = new JSONObject(response);
-        return object.getInt("ID");
-    }
-
-
 }

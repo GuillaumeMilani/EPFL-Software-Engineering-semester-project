@@ -1,5 +1,7 @@
 package ch.epfl.sweng.calamar;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -68,17 +70,17 @@ public class ChatUsersListActivity extends AppCompatActivity {
         //TODO : Remove when you use a real device.
         app.setCurrentUserID(11);
         app.setCurrentUserName("calamaremulator@gmail.com");
-        /*
+
         if(app.getCurrentUserID() == -1){
-            String name = "No name";
+            String name = null;
             //Get google account email
             AccountManager manager = AccountManager.get(this);
             Account[] list = manager.getAccountsByType("com.google");
             if(list.length > 0){
                 name = list[0].name;
             }
-            new createNewUserTask(name,this).execute(client);
-        }*/
+            new createNewUserTask(name,this).execute();
+        }
         actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
     }
 
@@ -96,7 +98,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
      */
     private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
 
-        private String name = "No name";
+        private String name = null;
         private Context context;
 
         public createNewUserTask(String name,Context context){
@@ -108,7 +110,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
         protected Integer doInBackground(Void... v) {
             try {
                 //Get the device id.
-                return DatabaseClientLocator.getDatabaseClient().newUser(name,Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
+                return DatabaseClientLocator.getDatabaseClient().newUser(name, Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
             } catch (DatabaseClientException e) {
                 //TODO : TOAST
                 e.printStackTrace();
@@ -132,7 +134,7 @@ public class ChatUsersListActivity extends AppCompatActivity {
                 newUser.show();
             } else {
                 AlertDialog.Builder newUser = new AlertDialog.Builder(context);
-                newUser.setTitle("Your account creation has fail, check your interet connection.");
+                newUser.setTitle("Your account creation has failed, check your internet connection.");
                 newUser.setPositiveButton("Retry", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         new createNewUserTask(name, context).execute();
