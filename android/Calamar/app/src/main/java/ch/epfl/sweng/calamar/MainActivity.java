@@ -1,11 +1,12 @@
 package ch.epfl.sweng.calamar;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,13 +24,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final String TAG = MainActivity.class.getSimpleName();
 
     // activity request codes
-    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
     private static final int ERROR_RESOLUTION_REQUEST = 1001;
 
     // google api related stuff
     private boolean resolvingError;
 
 
+    //TODO check activity lifecycle and pertinent action to make when entering new states
+    //regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
+    // etc...
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,14 +72,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onStop() {
         CalamarApplication.getInstance().getGoogleApiClient().disconnect();
         super.onStop();
-    }
-
-    /**
-     * Starts a child activity
-     */
-    private void startActivity(Class<?> cls) {
-        Intent intent = new Intent(CalamarApplication.getInstance(), cls);
-        startActivity(intent);
     }
 
     @Override
@@ -124,7 +119,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             try {
                 connectionResult.startResolutionForResult(this, ERROR_RESOLUTION_REQUEST);
-                //TODO callback
             } catch (IntentSender.SendIntentException e) {
                 // There was an error with the resolution intent. Try again.
                 CalamarApplication.getInstance().getGoogleApiClient().connect();
@@ -140,6 +134,30 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case ERROR_RESOLUTION_REQUEST:
+
+                resolvingError = false;
+                switch (resultCode) {
+                    case Activity.RESULT_OK:
+                        // Make sure the app is not already connected or attempting to connect
+                        GoogleApiClient googleApiClient =
+                                CalamarApplication.getInstance().getGoogleApiClient();
+                        if (!googleApiClient.isConnecting() && !googleApiClient.isConnected()) {
+                            googleApiClient.connect();
+                        }
+                        break;
+                    default:
+                        Log.e(MainActivity.TAG, "google API client definitely can't connect...");
+                        finish();//TODO maybe refine ?
+                }
+                break;
+            default: throw new IllegalStateException("onActivityResult : unknown request ! ");
+        }
+    }
+
 
     /**
      * This shows a Dialog provided by Google Play services that's appropriate for the given error.
@@ -152,12 +170,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         //retrieve dialog for errorCode, if user cancel finish activity,
         //we cannot do much more...google play apk must be present
         Dialog errorDialog = GoogleApiAvailability.getInstance().getErrorDialog(this, errorCode,
-                MainActivity.PLAY_SERVICES_RESOLUTION_REQUEST, new DialogInterface.OnCancelListener() {
+                MainActivity.ERROR_RESOLUTION_REQUEST, new DialogInterface.OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
                         Log.e(MainActivity.TAG, "error dialog cancelled");
                         //works even if dialog cancelled without clicking any button
-                        finish();//TODO maybe refine..
+                        finish();//TODO maybe refine..and create a method to handle this kind of actions
                     }
                 });
         //reset resolvingError to false when dialog dismissed
@@ -179,9 +197,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private synchronized void buildGoogleApiClient() {
         CalamarApplication.getInstance().setGoogleApiClient(
                 new GoogleApiClient.Builder(CalamarApplication.getInstance())
-                    .addApi(LocationServices.API)//TODO add service push TONY
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this).build());
+                        .addApi(LocationServices.API)//TODO add service push TONY
+                        .addConnectionCallbacks(this)
+                        .addOnConnectionFailedListener(this).build());
+    }
+
+    /**
+     * Starts a child activity
+     */
+    private void startActivity(Class<?> cls) {
+        Intent intent = new Intent(CalamarApplication.getInstance(), cls);
+        startActivity(intent);
     }
 
 //    /**

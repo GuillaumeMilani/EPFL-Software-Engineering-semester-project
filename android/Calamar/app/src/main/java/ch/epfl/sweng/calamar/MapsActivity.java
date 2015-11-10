@@ -1,8 +1,11 @@
 package ch.epfl.sweng.calamar;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -12,6 +15,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+    private static final String TAG = MapsActivity.class.getSimpleName();
 
     //TODO : add two buttons begin checks stop checks
     // that will : checklocation settings + startlocation updates
@@ -38,6 +42,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.moveCamera(CameraUpdateFactory.newLatLng(myLoc));
         }
     };
+
+    @Override
+    public void onMapReady(GoogleMap map) {
+        mMap = map;
+        setUpMap();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case GPSProvider.CHECK_SETTINGS_REQUEST:
+                switch (resultCode) {
+                    case Activity.RESULT_OK:
+                        //reiterate the process
+                        gpsProvider.startLocationUpdates(this);
+                        //TODO activate/deactivate UI
+                        break;
+                    default:
+                        Log.e(MapsActivity.TAG, "user declined offer to set location settings");
+                        //finish();//TODO activate/deactivate UI...
+                        //what to do ?
+                }
+                break;
+            default: throw new IllegalStateException("onActivityResult : unknown request ! ");
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,12 +116,4 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         gpsProvider.addObserver(gpsObserver);
         gpsProvider.startLocationUpdates(this);
     }
-
-    @Override
-    public void onMapReady(GoogleMap map) {
-        mMap = map;
-        setUpMap();
-    }
-
-    //TODO add onactivity result callback !
 }

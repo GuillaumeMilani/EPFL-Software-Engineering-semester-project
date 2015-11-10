@@ -30,7 +30,7 @@ public final class GPSProvider implements LocationListener
 {
     private static volatile GPSProvider instance = null;
     private static final String TAG = GPSProvider.class.getSimpleName();
-    private static final int CHECK_SETTINGS_REQUEST = 1002;
+    public static final int CHECK_SETTINGS_REQUEST = 1002;
 
 
     // location
