@@ -17,7 +17,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     //TODO add support for other items (now assuming only SimpleTextItem)
 
-    private static final CalamarApplication app = CalamarApplication.getInstance();
+    private static CalamarApplication app;
 
     private static SQLiteDatabaseHandler instance;
 
@@ -43,8 +43,9 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     public static SQLiteDatabaseHandler getInstance() {
         if (instance == null) {
-            SQLiteDatabase.loadLibs(app);
+            app=CalamarApplication.getInstance();
             instance = new SQLiteDatabaseHandler();
+            SQLiteDatabase.loadLibs(app);
         }
         return instance;
     }

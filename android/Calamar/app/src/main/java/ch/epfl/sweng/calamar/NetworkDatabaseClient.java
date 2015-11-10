@@ -70,10 +70,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
             String jsonParameter = item.toJSON().toString();
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter);
-
-            if (!response.contains("Ack")) {
-                throw new DatabaseClientException("error: server couldn't retrieve the item");
-            }
+            
         } catch (IOException | JSONException e) {
             throw new DatabaseClientException(e);
         } finally {
@@ -172,13 +169,12 @@ public class NetworkDatabaseClient implements DatabaseClient {
 
     private static List<Item> itemsFromJSON(String response) throws JSONException {
         List<Item> result = new ArrayList<>();
-        if (!response.contains("No records found in the database")) {
-            //No new message !
-            JSONArray array = new JSONArray(response);
-            for (int i = 0; i < array.length(); ++i) {
-                result.add(Item.fromJSON(array.getJSONObject(i)));
-            }
+
+        JSONArray array = new JSONArray(response);
+        for(int i = 0; i < array.length(); ++i) {
+            result.add(Item.fromJSON(array.getJSONObject(i)));
         }
+
         return result;
     }
 }

@@ -16,13 +16,18 @@ function add_items($from,$to,$date,$type,$type_data)
 	$query->bindParam(':to',$to,PDO::PARAM_INT);
 	$query->bindParam(':from',$from,PDO::PARAM_INT);
 	$query->bindParam(':date',$date, PDO::PARAM_INT);
-	if($query->execute() == true)
-	{
-		return add_items_text($pdo->lastInsertId(),$type_data);
-	}
-	else
-	{
-		return false;
+	try {
+		if($query->execute() == true)
+		{
+			return add_items_text($pdo->lastInsertId(),$type_data);
+		}
+		else
+		{
+			return false;
+		}
+	} catch (Exception $e) {
+		http_response_code(500);
+		die("Error : database");
 	}
 
 }

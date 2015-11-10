@@ -28,7 +28,7 @@ public class CalamarApplication extends Application {
      */
     public static CalamarApplication getInstance() {
         if (application==null){
-            application=new CalamarApplication();
+            throw new IllegalStateException("Application is null");
         }
         return application;
     }
