@@ -43,7 +43,7 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
      */
     @Test
     public void testSendButtonSendCorrectInformation() throws DatabaseClientException {
-        DatabaseClient client = Mockito.mock(ConstantItemClient.class);
+        DatabaseClient client = Mockito.mock(ConstantDatabaseClient.class);
         DatabaseClientLocator.setDatabaseClient(client);
         Intent conversation = new Intent();
         conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME,"Alice");
