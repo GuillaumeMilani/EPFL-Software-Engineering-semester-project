@@ -39,12 +39,12 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
 
     /**
      * Test that when we click on the send button, a correct item is created.
-     * @throws ItemClientException
+     * @throws DatabaseClientException
      */
     @Test
-    public void testSendButtonSendCorrectInformation() throws ItemClientException {
-        ItemClient client = Mockito.mock(ConstantItemClient.class);
-        ItemClientLocator.setItemClient(client);
+    public void testSendButtonSendCorrectInformation() throws DatabaseClientException {
+        DatabaseClient client = Mockito.mock(ConstantItemClient.class);
+        DatabaseClientLocator.setDatabaseClient(client);
         Intent conversation = new Intent();
         conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME,"Alice");
         conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID, 1);
@@ -78,6 +78,7 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
         conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME,"AliceTest");
         conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID, 1);
         setActivityIntent(conversation);
+
         getActivity();
 
         TextView recipient = (TextView)getActivity().findViewById(R.id.recipientLabel);
