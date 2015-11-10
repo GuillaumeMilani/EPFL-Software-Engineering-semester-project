@@ -121,7 +121,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 //TODO : Determine id of the message ?
                 DatabaseClientLocator.getDatabaseClient().send(textMessage);
                 //TODO need id to put into database
-                    databaseHandler.addItem(textMessage);
+                databaseHandler.addItem(textMessage);
                 return null;
                 //return itemClients[0].send(textMessage);
             } catch (DatabaseClientException e) {
@@ -149,7 +149,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         protected List<Item> doInBackground(Void... v) {
             if (offline) {
                 List<Item> itemsForContact = new ArrayList<>();
-                    itemsForContact = databaseHandler.getItemsForContact(correspondent);
+                itemsForContact = databaseHandler.getItemsForContact(correspondent);
                 return itemsForContact;
             } else {
                 try {
