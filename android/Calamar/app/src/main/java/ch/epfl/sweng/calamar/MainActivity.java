@@ -130,7 +130,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             // show error dialog
             showGoogleApiErrorDialog(connectionResult.getErrorCode());
-            resolvingError = true;
         }
     }
 
