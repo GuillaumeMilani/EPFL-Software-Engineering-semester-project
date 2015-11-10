@@ -4,6 +4,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import static junit.framework.Assert.assertEquals;
+
 /**
  * Created by pierre on 11/6/15.
  */
@@ -32,12 +34,12 @@ public class ConditionTest {
 
         public void assertValue(boolean value)
         {
-            assert(value = c.getValue());
+            assertEquals(value, c.getValue());
         }
 
         public void assertTrigerred(int n)
         {
-            assert(triggered == n);
+            assertEquals(triggered, n);
         }
 
         public void assAll(boolean value, int n)
