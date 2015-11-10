@@ -10,7 +10,7 @@ import java.util.Date;
  */
 public final class SimpleTextItem extends Item {
     private final String message;
-    private final static String ITEM_TYPE = "simpleText";
+    private final static Type ITEM_TYPE=Type.SIMPLETEXTITEM;
 
     /**
      * Instantiates a new SimpleTextItem with the following parameters
@@ -37,6 +37,11 @@ public final class SimpleTextItem extends Item {
         return this.message;
     }
 
+    @Override
+    public Type getType() {
+        return ITEM_TYPE;
+    }
+
     /**
      * Appends the fields of SimpleTextItem to the given JSONObject. <br><br>
      *     Should <b>NOT</b> be used alone
@@ -47,7 +52,7 @@ public final class SimpleTextItem extends Item {
     public void compose(JSONObject json) throws JSONException {
         super.compose(json);
         json.accumulate("message", message);
-        json.accumulate("type", ITEM_TYPE);
+        json.accumulate("type", ITEM_TYPE.name());
     }
 
     /**
@@ -104,8 +109,8 @@ public final class SimpleTextItem extends Item {
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString("type");
-            if(!type.equals(SimpleTextItem.ITEM_TYPE)) {
-                throw new IllegalArgumentException("expected "+ SimpleTextItem.ITEM_TYPE +" was : "+type);
+            if(!type.equals(SimpleTextItem.ITEM_TYPE.name())) {
+                throw new IllegalArgumentException("expected "+ SimpleTextItem.ITEM_TYPE.name() +" was : "+type);
             }
             message = json.getString("text");
             return this;

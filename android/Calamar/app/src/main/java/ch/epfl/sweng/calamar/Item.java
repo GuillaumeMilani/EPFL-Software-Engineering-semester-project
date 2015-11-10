@@ -14,23 +14,29 @@ import java.util.Date;
  *     Item is immutable
  */
 public abstract class Item {
+    private final Type type;
     private final int ID;
     private final User from;
     private final Recipient to;
     private final long date; //posix date
     private final Condition condition;
+
+    protected enum Type {ITEM, SIMPLETEXTITEM}
     //TODO date d'expiration ?
 
     protected Item(int ID, User from, Recipient to, long date, Condition condition) {
         if(null == from || null == to) {
             throw new IllegalArgumentException("field 'from' and/or 'to' cannot be null");
         }
+        this.type=Type.ITEM;
         this.ID = ID;
         this.from = from; //User is immutable
         this.to = to;     //Recipient is immutable
         this.date = date;
         this.condition = condition;
     }
+
+    public abstract Type getType();
 
     /**
      * @return the 'condition' field of the Item
@@ -101,7 +107,7 @@ public abstract class Item {
         Item item;
         String type = json.getString("type");
         switch(type) {
-            case "simpleText":
+            case "SIMPLETEXTITEM" :
                 item = SimpleTextItem.fromJSON(json);
                 break;
             default:

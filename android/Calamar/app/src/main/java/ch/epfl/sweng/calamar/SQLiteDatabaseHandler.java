@@ -471,7 +471,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     private ContentValues createItemValues(Item item) {
         ContentValues values = new ContentValues();
-        values.put(ITEMS_KEY_TYPE,item.getType());
+        values.put(ITEMS_KEY_TYPE,item.getType().name());
         values.put(ITEMS_KEY_ID, item.getID());
         values.put(ITEMS_KEY_FROM, item.getFrom().getID());
         values.put(ITEMS_KEY_TO, item.getTo().getID());
@@ -489,7 +489,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         Date time = new Date(cursor.getInt(4));
         Condition condition = Condition.fromString(cursor.getString(5));
         String text = cursor.getString(6);
-        if (type.equals("SimpleTextItem")){
+        if (type.equals(Item.Type.SIMPLETEXTITEM.name())){
             return new SimpleTextItem(id, from, to, time, condition, text);
         } else {
             throw new UnsupportedOperationException("Only SimpleTextItem for now");
