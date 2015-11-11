@@ -37,6 +37,17 @@ public abstract class Condition {
     @Override
     public abstract String toString();
 
+    @Override
+    public boolean equals(Object o)
+    {
+        if ( this == o ) return true;
+        if ( !(o instanceof Condition) ) return false;
+        Condition that = (Condition)o;
+        return value == that.value && type().equals(that.type());
+    }
+
+    public abstract String type();
+
 
     /**
      * set a value for this condition. If newValue differs from old, notify observers
@@ -115,6 +126,12 @@ public abstract class Condition {
             public String toString() {
                 return "(true)";
             }
+
+            @Override
+            public String type()
+            {
+                return "true";
+            }
         };
     }
 
@@ -138,6 +155,12 @@ public abstract class Condition {
             @Override
             public String toString() {
                 return "(false)";
+            }
+
+            @Override
+            public String type()
+            {
+                return "false";
             }
         };
     }
@@ -177,6 +200,12 @@ public abstract class Condition {
             public String toString() {
                 return "(" + c1.toString() + " && " + c2.toString() + ")";
             }
+
+            @Override
+            public String type()
+            {
+                return "and";
+            }
         };
     }
 
@@ -214,6 +243,12 @@ public abstract class Condition {
             public String toString() {
                 return "(" + c1.toString() + " || " + c2.toString() + ")";
             }
+
+            @Override
+            public String type()
+            {
+                return "or";
+            }
         };
     }
 
@@ -247,6 +282,12 @@ public abstract class Condition {
             @Override
             public String toString() {
                 return "(!" + c.toString() + ")";
+            }
+
+            @Override
+            public String type()
+            {
+                return "not";
             }
         };
     }

@@ -78,6 +78,20 @@ public class PositionCondition extends Condition {
         return "position : ("+location.getLatitude()+" , "+location.getLongitude()+" , "+radius+")";
     }
 
+    @Override
+    public String type()
+    {
+        return "true";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if ( this == o ) return true;
+        if ( !(o instanceof PositionCondition) ) return false;
+        PositionCondition that = (PositionCondition)o;
+        return super.equals(that) && location.equals(that.location) && radius == that.radius;
+    }
+
     /**
      * create a Condition from a JSONObject
      * @param json Object in JSON format

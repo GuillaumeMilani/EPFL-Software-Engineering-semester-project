@@ -44,17 +44,17 @@ public class ParsingTest {
         testConditionParsing(new PositionCondition(10., 20., 15.));
     }
 
-    @Ignore
+    @Test
     private void testItemParsing(Item i) throws JSONException {
         assertEquals(i, Item.fromJSON(i.toJSON()));
     }
 
-    @Ignore
+    @Test
     private void testRecipientParsing(Recipient r) throws JSONException {
         assertEquals(r, Recipient.fromJSON(r.toJSON()));
     }
 
-    @Ignore
+    @Test
     private void testConditionParsing(Condition c) throws JSONException {
         assertEquals(c, Condition.fromJSON(c.toJSON()));
     }
