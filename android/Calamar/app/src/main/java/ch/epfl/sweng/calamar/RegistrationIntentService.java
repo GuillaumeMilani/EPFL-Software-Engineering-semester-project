@@ -56,7 +56,6 @@ public class RegistrationIntentService extends IntentService {
             // [END get_token]
             Log.i(TAG, "GCM Registration Token: " + token);
 
-            // TODO: Implement this method to send any registration to your app's servers.
             sendRegistrationToServer(token);
 
             // Subscribe to topic channels
@@ -88,12 +87,8 @@ public class RegistrationIntentService extends IntentService {
      * @param token The new token.
      */
     private void sendRegistrationToServer(String token) {
-        // Add custom implementation, as needed.
-        // use login parts in the server
-        //TODO : Use the same method as in Network Item Client
-        Log.v("Token", "sendRegistrationToServer token : '" + token +"'");
+        // TODO Send with login parts to the server
 
-        //TODO better encapsulation of the sender
         NetworkRegistrationClient client = new NetworkRegistrationClient("HTTP://calamar.japan-impact.ch",new DefaultNetworkProvider());
         try {
             client.send(token);
