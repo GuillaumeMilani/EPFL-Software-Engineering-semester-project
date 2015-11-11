@@ -2,33 +2,31 @@
 
 /**
 * Retrieve a user from the database
-* TODO better error handling
+* TODO change when we will use the group function
 */
-function retrieve_user($email)
+function retrieve_user($name)
 {
 	global $pdo;
+	$name= strtolower($name);
 	
-	if(checkEmail($email) == false)
+	if(checkEmail($name) == false)
 	{
-		die("Wrong email");
+		throw new Exception('Wrong email');
 	}
 	
 	$query = $pdo->prepare('SELECT `ID`,`email` FROM `tb_recipient_user` WHERE `email` = :email');
-	$query->bindParam(':email',$email,PDO::PARAM_STR);
+	$query->bindParam(':email',$name,PDO::PARAM_STR);
 	
 	if($query->execute() == true && $query->rowCount() == 1) // if the query was correctly execute and we have only one ID returned
 	{
 		$result = $query->fetch(PDO::FETCH_ASSOC);
-		return $result['ID'];
+		return array('name' => $name,
+		 'ID' => $result['ID'],
+		 'type' => 'user');
 	}
 	else
 	{
-		return -1;
+		throw new Exception("Query wasn't executed");
 	}
 
-}
-
-function checkEmail($email)
-{
-	return filter_var($email, FILTER_VALIDATE_EMAIL);
 }

@@ -3,37 +3,38 @@
 /**
 * Add an item into the database
 * better error handling
+* What if there is a database error in the recipient user parts
 */
-function add_recipient($email,$deviceID)
+function add_recipient($name,$deviceID)
 {
 	global $pdo;
-	$email = strtolower($email);
+	$name = strtolower($name);
 	
-	if(checkEmail($email) == false)
+	if(checkEmail($name) == false)
 	{
-		die("Wrong email");
+		 throw new Exception('Wrong name');
 	}
 	
 	if(!checkdeviceID($deviceID))
 	{
-		die("wrong device ID");
+		 throw new Exception('Wrong device ID');
 	}
 	$query = $pdo->prepare('INSERT INTO `tb_recipient` (`name`) VALUES(NULL)');
 	
 	if($query->execute() == true)
 	{
-		return add_recipientUser($pdo->lastInsertId(),$email,$deviceID);
+		return add_recipientUser($pdo->lastInsertId(),$name,$deviceID);
 	}
 	else
 	{
-		return -1;
+		 throw new Exception("Query wasn't executed");
 	}
 
 }
 /**
 *	Add an item of type text into the database
 */
-function add_recipientUser($ID,$email,$devID)
+function add_recipientUser($ID,$name,$devID)
 {
 	global $pdo;
 	
@@ -43,23 +44,13 @@ function add_recipientUser($ID,$email,$devID)
 	
 	$query->bindParam(':id',$id,PDO::PARAM_INT);
 	$query->bindParam(':device',$devID,PDO::PARAM_STR);
-	$query->bindParam(':email',$email,PDO::PARAM_STR);
+	$query->bindParam(':email',$name,PDO::PARAM_STR);
 	if($query->execute() == true)
 	{
-		return $id;
+		return array('ID' => $id);
 	}
 	else
 	{
-		return -1;
+		throw new Exception("Query wasn't executed");
 	}
-}
-
-function checkdeviceID($deviceID)
-{
-	return ctype_xdigit($deviceID) && strlen($deviceID) == 16;
-}
-
-function checkEmail($email)
-{
-	return filter_var($email, FILTER_VALIDATE_EMAIL);
 }

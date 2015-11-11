@@ -10,25 +10,20 @@ $data = json_decode($content, true);
 if($data == null)
 {
 	http_response_code(400);
-	echo "Error : json data not found";
+	echo format_array(array('error' => 'json data not found'));
 }
 else
 {
 	// extract decoded data
-	$deviceID= $data['DeviceID'];
-	$email= $data['name'];
+	$deviceID= $data['deviceID'];
+	$name= $data['name'];
 	
-	$response = add_recipient($email,$deviceID);
-
-	// add the data into the db
-	if($response != -1)
-	{
-		http_response_code(201);
-		echo '{"ID": '.$response.'}';
-	}
-	else
-	{
-		http_response_code(500);
-		echo "Error : database";
+	try {
+	    $response = add_recipient($name,$deviceID);
+	    http_response_code(201);
+	    echo format_array($response);
+	} catch (Exception $e) {
+	    http_response_code(500);
+	    echo format_array(array('error' => e->getMessage()));
 	}
 }

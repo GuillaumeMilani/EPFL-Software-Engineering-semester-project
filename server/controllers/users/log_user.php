@@ -1,5 +1,5 @@
 <?php
-include_once('models/items/log_users.php');
+include_once('models/users/log_users.php');
 
 // Retrieve post data
 $content = urldecode(file_get_contents('php://input'));
@@ -10,23 +10,20 @@ $data = json_decode($content, true);
 if($data == null)
 {
 	http_response_code(400);
-	echo "Error : json data not found";
+	echo format_array(array('error' => 'json data not found'));
 }
 else
 {
 	// extract decoded data
-	$deviceID= $data['DeviceID'];
-	$email= $data['Email'];
-
-	// add the data into the db
-	if(log_user($email,$deviceID))
-	{
-		http_response_code(201);
-		echo "Ack";
-	}
-	else
-	{
-		http_response_code(500);
-		echo "Error : database";
+	$token= $data['token'];
+	$name= $data['name'];
+	
+	try {
+	    $response = log_user_token($name,$token);
+	    http_response_code(201);
+	    echo format_array($response);
+	} catch (Exception $e) {
+	    http_response_code(500);
+	    echo format_array(array('error' => e->getMessage()));
 	}
 }

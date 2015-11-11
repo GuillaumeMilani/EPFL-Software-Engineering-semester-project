@@ -4,37 +4,34 @@
 * Add an item into the database
 * better error handling
 */
-function log_user($email,$deviceID)
+function log_user_token($name,$token)
 {
 	global $pdo;
-	$email = strtolower($email);
+	$name= strtolower($name);
 	
-	if(!checkEmail($email))
+	if(!checkEmail($name))
 	{
-		die("Wrong email");
+		throw new Exception('Wrong email');
 	}
 	
-	if(!checkdeviceID($deviceID))
+	if(!checktoken($token))
 	{
-		die("wrong device ID");
+		throw new Exception('Wrong token');
 	}
 
-	$query = $pdo->prepare('UPDATE `tb_recipient` SET `device_id` = :device WHERE `email` = :email');
+	$query = $pdo->prepare('UPDATE `tb_recipient_user` SET `registrationToken` = :token WHERE `email` = :email');
 	
-	$query->bindParam(':device',$to,PDO::PARAM_STR);
-	$query->bindParam(':email',$from,PDO::PARAM_STR);
+	$query->bindParam(':token',$token,PDO::PARAM_STR);
+	$query->bindParam(':email',$name,PDO::PARAM_STR);
 	
-	$query->execute();
+	//TODO need to know what to do if the email dosn't exist
 	
-
-}
-
-function checkdeviceID($deviceID)
-{
-	return ctype_xdigit($deviceID) && strlen($deviceID) == 16;
-}
-
-function checkEmail($email)
-{
-	return filter_var($email, FILTER_VALIDATE_EMAIL)
+	if($query->execute() && $query->rowCount() == 1)
+	{
+		return array('status' => 'Ack');
+	}
+	else
+	{
+		throw new Exception("Query error");
+	}
 }
