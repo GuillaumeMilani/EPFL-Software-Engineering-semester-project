@@ -25,7 +25,6 @@ public class CalamarInstanceIDListenerService extends InstanceIDListenerService{
         // Fetch updated Instance ID token and notify our app's server of any changes (if applicable).
         Intent intent = new Intent(this, RegistrationIntentService.class);
         startService(intent);
-        //TODO : Understand and modify accordingly to our server, Directly call the method in the registration service ?
     }
     // [END refresh_token]
 

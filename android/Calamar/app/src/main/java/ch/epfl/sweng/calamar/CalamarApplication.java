@@ -3,7 +3,9 @@ package ch.epfl.sweng.calamar;
 import android.app.Application;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -43,6 +45,11 @@ public class CalamarApplication extends Application {
         //TODO remove once database is thoroughly tested (tests delete all entries)
         setLastItemsRefresh(new Date(0));
         setLastUsersRefresh(new Date(0));
+
+        //Create and send the token for the push notification to the server
+        Log.v("CalamarApplication","start of intent");
+        Intent registration = new Intent(this,RegistrationIntentService.class);
+        startService(registration);
     }
 
     /**

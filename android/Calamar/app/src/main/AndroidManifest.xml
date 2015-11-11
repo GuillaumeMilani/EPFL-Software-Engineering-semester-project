@@ -4,9 +4,7 @@
 
     <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="17"/>
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />ndroi
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
     <permission android:name="ch.epfl.sweng.calamar.permission.C2D_MESSAGE"
@@ -44,7 +42,7 @@
             </intent-filter>
         </receiver>
         <service
-            android:name="ch.epfl.sweng.calamar.GcmListenerService"
+            android:name="ch.epfl.sweng.calamar.RegistrationGcmListenerService"
             android:exported="false" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />

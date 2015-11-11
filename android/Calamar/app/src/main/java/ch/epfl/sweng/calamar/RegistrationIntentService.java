@@ -42,6 +42,7 @@ public class RegistrationIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Log.v(TAG,"starting creating the token");
 
         try {
             // [START register_for_gcm]
@@ -55,6 +56,7 @@ public class RegistrationIntentService extends IntentService {
                     GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
             // [END get_token]
             Log.i(TAG, "GCM Registration Token: " + token);
+            Log.v(TAG,"token is " + token);
 
             // TODO: Implement this method to send any registration to your app's servers.
             sendRegistrationToServer(token);
@@ -69,6 +71,7 @@ public class RegistrationIntentService extends IntentService {
             // [END register_for_gcm]
         } catch (Exception e) {
             Log.d(TAG, "Failed to complete token refresh", e);
+            e.printStackTrace();
             // If an exception happens while fetching the new token or updating our registration data
             // on a third-party server, this ensures that we'll attempt the update at a later time.
             sharedPreferences.edit().putBoolean(SENT_TOKEN_TO_SERVER, false).apply();
@@ -90,6 +93,16 @@ public class RegistrationIntentService extends IntentService {
         // Add custom implementation, as needed.
         // use login parts in the server
         //TODO : Use the same method as in Network Item Client
+        Log.v("Token", "sendRegistrationToServer token : '" + token +"'");
+
+        //TODO better encapsulation of the sender
+        NetworkRegistrationClient client = new NetworkRegistrationClient("HTTP://calamar.japan-impact.ch",new DefaultNetworkProvider());
+        try {
+            client.send(token);
+        } catch (RegisterClientException e) {
+            e.printStackTrace();
+            Log.e("Token","couldn't reach the server");
+        }
     }
 
     /**
