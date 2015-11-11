@@ -18,21 +18,19 @@ import ch.epfl.sweng.calamar.recipient.User;
  *     Item is immutable
  */
 public abstract class Item {
-    private final Type type;
     private final int ID;
     private final User from;
     private final Recipient to;
     private final long date; //posix date
     private final Condition condition;
 
-    public enum Type {ITEM, SIMPLETEXTITEM}
+    public enum Type {SIMPLETEXTITEM}
     //TODO date d'expiration ?
 
     protected Item(int ID, User from, Recipient to, long date, Condition condition) {
         if(null == from || null == to) {
             throw new IllegalArgumentException("field 'from' and/or 'to' cannot be null");
         }
-        this.type=Type.ITEM;
         this.ID = ID;
         this.from = from; //User is immutable
         this.to = to;     //Recipient is immutable
