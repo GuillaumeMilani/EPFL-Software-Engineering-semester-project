@@ -1,7 +1,11 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.client;
 
 import java.util.Date;
 import java.util.List;
+
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
+import ch.epfl.sweng.calamar.item.Item;
 
 /**
  * Created by LPI on 19.10.2015.

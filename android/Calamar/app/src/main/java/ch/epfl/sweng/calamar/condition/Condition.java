@@ -1,4 +1,4 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.condition;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,11 +38,10 @@ public abstract class Condition {
     public abstract String toString();
 
     @Override
-    public boolean equals(Object o)
-    {
-        if ( this == o ) return true;
-        if ( !(o instanceof Condition) ) return false;
-        Condition that = (Condition)o;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Condition)) return false;
+        Condition that = (Condition) o;
         return value == that.value && type().equals(that.type());
     }
 
@@ -128,8 +127,7 @@ public abstract class Condition {
             }
 
             @Override
-            public String type()
-            {
+            public String type() {
                 return "true";
             }
         };
@@ -158,8 +156,7 @@ public abstract class Condition {
             }
 
             @Override
-            public String type()
-            {
+            public String type() {
                 return "false";
             }
         };
@@ -202,8 +199,7 @@ public abstract class Condition {
             }
 
             @Override
-            public String type()
-            {
+            public String type() {
                 return "and";
             }
         };
@@ -245,8 +241,7 @@ public abstract class Condition {
             }
 
             @Override
-            public String type()
-            {
+            public String type() {
                 return "or";
             }
         };
@@ -285,8 +280,7 @@ public abstract class Condition {
             }
 
             @Override
-            public String type()
-            {
+            public String type() {
                 return "not";
             }
         };
@@ -297,7 +291,7 @@ public abstract class Condition {
      * is used by the child builders (in {@link PositionCondition} or...) to build the "Condition
      * part of the object". currently only used to parse JSON
      */
-    protected static class Builder {
+    public static class Builder {
 
         public Builder parse(JSONObject o) throws JSONException {
             return this;
@@ -312,7 +306,7 @@ public abstract class Condition {
         return this.observers.remove(observer);
     }
 
-    abstract static class Observer {
-        abstract public void update();
+    public abstract static class Observer {
+        public abstract void update();
     }
 }

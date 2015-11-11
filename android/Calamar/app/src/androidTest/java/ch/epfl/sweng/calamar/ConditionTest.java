@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import ch.epfl.sweng.calamar.condition.Condition;
+
 import static junit.framework.Assert.assertEquals;
 
 /**
@@ -38,13 +40,13 @@ public class ConditionTest {
             assertEquals(value, c.getValue());
         }
 
-        public void assertTrigerred(int n) {
+        public void assertTriggered(int n) {
             assertEquals(triggered, n);
         }
 
-        public void assAll(boolean value, int n) {
+        public void assertAll(boolean value, int n) {
             assertValue(value);
-            assertTrigerred(n);
+            assertTriggered(n);
         }
     }
 
@@ -72,62 +74,67 @@ public class ConditionTest {
         void set(boolean value) {
             setValue(value);
         }
+
+        @Override
+        public String type() {
+            return "test";
+        }
     }
 
     @Test
     public void testConditionTrueFalse() {
         TO o1 = new TO(Condition.trueCondition());
-        o1.assAll(true, 0);
+        o1.assertAll(true, 0);
         TO o2 = new TO(Condition.falseCondition());
-        o2.assAll(false, 0);
+        o2.assertAll(false, 0);
     }
 
     @Test
     public void testConditionAnd() {
         TC a = new TC(), b = new TC();
         TO o = new TO(Condition.and(a, b));
-        o.assAll(false, 0);
+        o.assertAll(false, 0);
         a.set(false);
         b.set(false);
-        o.assAll(false, 0);
+        o.assertAll(false, 0);
         a.set(true);
         b.set(true);
-        o.assAll(true, 1);
+        o.assertAll(true, 1);
         a.set(false);
-        o.assAll(false, 2);
+        o.assertAll(false, 2);
         b.set(false);
-        o.assAll(false, 2);
+        o.assertAll(false, 2);
     }
 
     @Test
     public void testConditionOr() {
         TC a = new TC(), b = new TC();
         TO o = new TO(Condition.or(a, b));
-        o.assAll(false, 0);
+        o.assertAll(false, 0);
         a.set(false);
         b.set(false);
-        o.assAll(false, 0);
+        o.assertAll(false, 0);
         a.set(true);
-        o.assAll(true, 1);
+        o.assertAll(true, 1);
         b.set(true);
-        o.assAll(true, 1);
+        o.assertAll(true, 1);
         a.set(false);
         b.set(false);
-        o.assAll(false, 2);
+        o.assertAll(false, 2);
     }
 
     @Test
     public void testConditionNot() {
         TC a = new TC();
         TO o = new TO(Condition.not(a));
-        o.assAll(true, 0);
+        o.assertAll(true, 0);
         a.set(false);
-        o.assAll(true, 0);
+        o.assertAll(true, 0);
         a.set(true);
-        o.assAll(false, 1);
+        o.assertAll(false, 1);
         a.set(true);
-        o.assAll(false, 1);
+        o.assertAll(false, 1);
         a.set(false);
-        o.assAll(true, 2);
+        o.assertAll(true, 2);
     }
 }

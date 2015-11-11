@@ -1,9 +1,13 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.item;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
+
+import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
 /**
  * Models an Item, superclass of all the possibly many kind of 'item' the app manage. <br><br>
@@ -14,21 +18,19 @@ import java.util.Date;
  *     Item is immutable
  */
 public abstract class Item {
-    private final Type type;
     private final int ID;
     private final User from;
     private final Recipient to;
     private final long date; //posix date
     private final Condition condition;
 
-    protected enum Type {ITEM, SIMPLETEXTITEM}
+    public enum Type {SIMPLETEXTITEM}
     //TODO date d'expiration ?
 
     protected Item(int ID, User from, Recipient to, long date, Condition condition) {
         if(null == from || null == to) {
             throw new IllegalArgumentException("field 'from' and/or 'to' cannot be null");
         }
-        this.type=Type.ITEM;
         this.ID = ID;
         this.from = from; //User is immutable
         this.to = to;     //Recipient is immutable

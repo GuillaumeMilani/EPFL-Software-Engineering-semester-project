@@ -8,6 +8,13 @@ import org.junit.runners.JUnit4;
 
 import java.util.Date;
 
+import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.condition.PositionCondition;
+import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.item.SimpleTextItem;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -26,7 +33,7 @@ public class ParsingTest {
 
     @Test
     public void testSimpleTextItemParsing() throws JSONException {
-        testItemParsing(new SimpleTextItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), new Date(2012, 12, 21), Condition.trueCondition(), "hey, How are you ?"));
+        testItemParsing(new SimpleTextItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), new Date(22313), Condition.trueCondition(), "hey, How are you ?"));
     }
 
     @Test
@@ -39,22 +46,23 @@ public class ParsingTest {
         testConditionParsing(Condition.trueCondition());
     }
 
-    @Test
+    //TODO Enable once ConstantGPSProvider is done
+    @Ignore
     public void testPositionConditionParsing() throws JSONException {
         testConditionParsing(new PositionCondition(10., 20., 15.));
     }
 
-    @Test
+    @Ignore
     private void testItemParsing(Item i) throws JSONException {
         assertEquals(i, Item.fromJSON(i.toJSON()));
     }
 
-    @Test
+    @Ignore
     private void testRecipientParsing(Recipient r) throws JSONException {
         assertEquals(r, Recipient.fromJSON(r.toJSON()));
     }
 
-    @Test
+    @Ignore
     private void testConditionParsing(Condition c) throws JSONException {
         assertEquals(c, Condition.fromJSON(c.toJSON()));
     }

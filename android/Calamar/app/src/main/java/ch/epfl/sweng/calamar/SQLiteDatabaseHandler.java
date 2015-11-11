@@ -12,6 +12,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.item.SimpleTextItem;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
+
 
 public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
@@ -30,7 +36,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static final String ITEMS_KEY_TO = "to_id";
     private static final String ITEMS_KEY_TIME = "time";
     private static final String ITEMS_KEY_CONDITION = "condition";
-    private static final String[] ITEMS_COLUMNS = {ITEMS_KEY_TYPE,ITEMS_KEY_ID, ITEMS_KEY_FROM, ITEMS_KEY_TO, ITEMS_KEY_TIME, ITEMS_KEY_CONDITION, ITEMS_KEY_TEXT};
+    private static final String[] ITEMS_COLUMNS = {ITEMS_KEY_TYPE, ITEMS_KEY_ID, ITEMS_KEY_FROM, ITEMS_KEY_TO, ITEMS_KEY_TIME, ITEMS_KEY_CONDITION, ITEMS_KEY_TEXT};
 
     private static final String RECIPIENTS_TABLE = "tb_Recipients";
     private static final String RECIPIENTS_KEY_ID = "id";
@@ -205,15 +211,15 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Item> items = new ArrayList<>();
         String[] args = new String[ids.size()];
-        for (int i=0;i<ids.size();++i){
-            args[i]=Integer.toString(ids.get(i));
+        for (int i = 0; i < ids.size(); ++i) {
+            args[i] = Integer.toString(ids.get(i));
         }
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " IN ("+createPlaceholders(ids.size())+")", args, null, null, ITEMS_KEY_ID + " ASC");
+        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " IN (" + createPlaceholders(ids.size()) + ")", args, null, null, ITEMS_KEY_ID + " ASC");
         if (cursor != null) {
             boolean hasNext = cursor.moveToFirst();
             while (hasNext) {
                 items.add(createItem(cursor));
-                hasNext=cursor.moveToNext();
+                hasNext = cursor.moveToNext();
             }
             cursor.close();
         }
@@ -386,7 +392,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             args[i] = Integer.toString(ids.get(i));
         }
 
-        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " IN ("+createPlaceholders(ids.size())+")", args);
+        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(ids.size()) + ")", args);
         db.close();
     }
 
@@ -431,10 +437,10 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Recipient> recipients = new ArrayList<>();
         String[] args = new String[ids.size()];
-        for (int i=0;i<ids.size();++i){
-            args[i]=Integer.toString(ids.get(i));
+        for (int i = 0; i < ids.size(); ++i) {
+            args[i] = Integer.toString(ids.get(i));
         }
-        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " IN ("+createPlaceholders(ids.size())+")", args, null, null, RECIPIENTS_KEY_ID + " ASC", null);
+        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(ids.size()) + ")", args, null, null, RECIPIENTS_KEY_ID + " ASC", null);
         boolean hasNext;
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
@@ -472,15 +478,14 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     private ContentValues createItemValues(Item item) {
         ContentValues values = new ContentValues();
-        values.put(ITEMS_KEY_TYPE,item.getType().name());
+        values.put(ITEMS_KEY_TYPE, item.getType().name());
         values.put(ITEMS_KEY_ID, item.getID());
         values.put(ITEMS_KEY_FROM, item.getFrom().getID());
         values.put(ITEMS_KEY_TO, item.getTo().getID());
         values.put(ITEMS_KEY_TIME, item.getDate().getTime());
         try {
             values.put(ITEMS_KEY_CONDITION, item.getCondition().toJSON().toString());
-        }
-        catch (JSONException e){
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());
@@ -500,7 +505,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             e.printStackTrace();
         }
         String text = cursor.getString(6);
-        if (type.equals(Item.Type.SIMPLETEXTITEM.name())){
+        if (type.equals(Item.Type.SIMPLETEXTITEM.name())) {
             return new SimpleTextItem(id, from, to, time, condition, text);
         } else {
             throw new UnsupportedOperationException("Only SimpleTextItem for now");
@@ -527,14 +532,13 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         db.replace(RECIPIENTS_TABLE, null, valuesTo);
     }
 
-    private String createPlaceholders(int length){
-        if (length<1){
+    private String createPlaceholders(int length) {
+        if (length < 1) {
             throw new RuntimeException("No placeholders");
-        }
-        else{
-            StringBuilder builder = new StringBuilder(length*2-1);
+        } else {
+            StringBuilder builder = new StringBuilder(length * 2 - 1);
             builder.append('?');
-            for (int i =1 ; i<length;++i){
+            for (int i = 1; i < length; ++i) {
                 builder.append(",?");
             }
             return builder.toString();
