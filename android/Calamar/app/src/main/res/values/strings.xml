@@ -20,4 +20,12 @@
     <string name="new_account_creation_success">"Account correctly created : User : "</string>
     <string name="chat_activity_refresh_message">Refreshed !</string>
     <string name="chat_activity_unable_to_refresh">Unable to refresh</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="show_map_button">show map</string>
+    <string name="show_chat_activity_button">show chat</string>
+
+
+    <string name="action_settings">Settings</string>
 </resources>
