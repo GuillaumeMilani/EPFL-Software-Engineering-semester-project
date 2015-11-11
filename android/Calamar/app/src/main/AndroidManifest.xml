@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ch.epfl.sweng.calamar" >
 
-<<<<<<< HEAD
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -12,12 +11,6 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-=======
-    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="17"/>
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />ndroi
-    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
->>>>>>> origin/issue19-Push-test
 
     <permission android:name="ch.epfl.sweng.calamar.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
@@ -61,28 +54,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-<<<<<<< HEAD
         <!-- [START gcm_receiver] -->
-=======
->>>>>>> origin/issue19-Push-test
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"
             android:exported="true"
             android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-<<<<<<< HEAD
                 <category android:name="gcm.play.android.samples.com.gcmquickstart" />
             </intent-filter>
         </receiver>
-        <!-- [END gcm_receiver] -->
-
-        <!-- [START gcm_listener] -->
-=======
-                <category android:name="com.example.gcm" />
-            </intent-filter>
-        </receiver>
->>>>>>> origin/issue19-Push-test
         <service
             android:name="ch.epfl.sweng.calamar.RegistrationGcmListenerService"
             android:exported="false" >
@@ -90,11 +71,8 @@
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
         </service>
-<<<<<<< HEAD
         <!-- [END gcm_listener] -->
         <!-- [START instanceId_listener] -->
-=======
->>>>>>> origin/issue19-Push-test
         <service
             android:name="ch.epfl.sweng.calamar.CalamarInstanceIDListenerService"
             android:exported="false">
@@ -102,14 +80,11 @@
                 <action android:name="com.google.android.gms.iid.InstanceID"/>
             </intent-filter>
         </service>
-<<<<<<< HEAD
         <!-- [END instanceId_listener] -->
         <service
             android:name="ch.epfl.sweng.calamar.RegistrationIntentService"
             android:exported="false">
         </service>
-=======
->>>>>>> origin/issue19-Push-test
     </application>
 
 </manifest>
