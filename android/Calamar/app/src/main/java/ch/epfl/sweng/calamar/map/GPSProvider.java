@@ -1,4 +1,4 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.map;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -20,6 +20,8 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
+import ch.epfl.sweng.calamar.CalamarApplication;
 
 
 /**
@@ -61,7 +63,7 @@ public final class GPSProvider implements LocationListener
     /**
      * Checks location settings and starts the location updates if no issue found. <br>
      * Registered observers will get new location periodically through their
-     * {@link ch.epfl.sweng.calamar.GPSProvider.Observer#update(Location) update} method. <br><br>
+     * {@link GPSProvider.Observer#update(Location) update} method. <br><br>
      *
      * <b>Warning :</b> if settings are not OK, nothing done, caller <i>parentActivity</i>
      * should implement {@link Activity#onActivityResult(int, int, Intent)} to react to the user actions.
@@ -223,7 +225,7 @@ public final class GPSProvider implements LocationListener
     }
 
     /**
-     * Notify (call the {@link ch.epfl.sweng.calamar.GPSProvider.Observer#update(Location) update}
+     * Notify (call the {@link GPSProvider.Observer#update(Location) update}
      * method of) the registered observers
      * @param location the new location
      */
@@ -236,7 +238,7 @@ public final class GPSProvider implements LocationListener
     /**
      * Defines observer to GPSProvider ...
      */
-    abstract static class Observer {
+    public abstract static class Observer {
         abstract public void update(Location  newLocation);
     }
 }

@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import ch.epfl.sweng.calamar.condition.Condition;
+
 import static junit.framework.Assert.assertEquals;
 
 /**

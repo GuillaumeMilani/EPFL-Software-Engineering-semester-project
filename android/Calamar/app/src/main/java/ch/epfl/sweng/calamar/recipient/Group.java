@@ -1,4 +1,4 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.recipient;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -101,7 +101,7 @@ public final class Group extends Recipient {
      * @param json the well formed {@link JSONObject json} representing the {@link Group group}
      * @return a {@link Group group} parsed from the JSONObject
      * @throws JSONException
-     * @see ch.epfl.sweng.calamar.Recipient#fromJSON(JSONObject) Recipient.fromJSON
+     * @see Recipient#fromJSON(JSONObject) Recipient.fromJSON
      */
     public static Group fromJSON(JSONObject json) throws JSONException {
         return new Group.Builder().parse(json).build();
@@ -109,7 +109,7 @@ public final class Group extends Recipient {
 
     /**
      * A Builder for {@link Group}, currently only used to parse JSON (little overkill..but ..)
-     * @see ch.epfl.sweng.calamar.Recipient.Builder
+     * @see Recipient.Builder
      */
     private static class Builder extends Recipient.Builder {
         private List<User> users;

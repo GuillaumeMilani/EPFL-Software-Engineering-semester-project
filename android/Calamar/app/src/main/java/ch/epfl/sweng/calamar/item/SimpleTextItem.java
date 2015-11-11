@@ -1,9 +1,13 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.item;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
+
+import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
 /**
  * Models a simple text {@link Item}, (no special properties, just a text message).<br><br>
@@ -68,7 +72,7 @@ public final class SimpleTextItem extends Item {
      * @param json the well formed {@link JSONObject json} representing the {@link SimpleTextItem item}
      * @return a {@link SimpleTextItem} parsed from the JSONObject
      * @throws JSONException
-     * @see ch.epfl.sweng.calamar.Item#fromJSON(JSONObject) Recipient.fromJSON
+     * @see Item#fromJSON(JSONObject) Recipient.fromJSON
      */
     public static SimpleTextItem fromJSON(JSONObject json) throws JSONException {
         return new SimpleTextItem.Builder().parse(json).build();
@@ -112,7 +116,7 @@ public final class SimpleTextItem extends Item {
     /**
      * A Builder for {@link SimpleTextItem}, currently only used to parse JSON (little overkill..but ..)
      *
-     * @see ch.epfl.sweng.calamar.Item.Builder
+     * @see Item.Builder
      */
     public static class Builder extends Item.Builder {
         private String message = "default message";

@@ -9,6 +9,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.Date;
 
+import ch.epfl.sweng.calamar.recipient.User;
+
 public final class CalamarApplication extends Application {
     //TODO There is debate on using a Singleton or not
 

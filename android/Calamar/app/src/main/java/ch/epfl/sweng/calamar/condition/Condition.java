@@ -1,4 +1,4 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.condition;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -291,7 +291,7 @@ public abstract class Condition {
      * is used by the child builders (in {@link PositionCondition} or...) to build the "Condition
      * part of the object". currently only used to parse JSON
      */
-    protected static class Builder {
+    public static class Builder {
 
         public Builder parse(JSONObject o) throws JSONException {
             return this;
@@ -306,7 +306,7 @@ public abstract class Condition {
         return this.observers.remove(observer);
     }
 
-    abstract static class Observer {
-        abstract public void update();
+    public abstract static class Observer {
+        public abstract void update();
     }
 }

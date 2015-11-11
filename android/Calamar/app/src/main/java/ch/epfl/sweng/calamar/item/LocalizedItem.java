@@ -1,8 +1,11 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.item;
 
 import android.location.Location;
 
 import java.util.Date;
+
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
 //TODO : ajouter le code JSON pour location
 public abstract class LocalizedItem extends Item {

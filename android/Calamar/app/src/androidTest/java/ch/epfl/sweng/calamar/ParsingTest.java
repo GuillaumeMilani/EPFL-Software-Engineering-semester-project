@@ -8,6 +8,13 @@ import org.junit.runners.JUnit4;
 
 import java.util.Date;
 
+import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.condition.PositionCondition;
+import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.item.SimpleTextItem;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
+
 import static org.junit.Assert.assertEquals;
 
 /**

@@ -1,9 +1,11 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.condition;
 
 import android.location.Location;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import ch.epfl.sweng.calamar.map.GPSProvider;
 
 /**
  * Created by pierre on 10/27/15.
@@ -105,7 +107,7 @@ public class PositionCondition extends Condition {
 
     /**
      * A Builder for {@link PositionCondition}, currently only used to parse JSON
-     * @see ch.epfl.sweng.calamar.Condition.Builder
+     * @see Condition.Builder
      */
     public static class Builder extends Condition.Builder {
 
