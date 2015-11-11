@@ -42,6 +42,10 @@ public class RegistrationIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+<<<<<<< HEAD
+=======
+        Log.v(TAG,"starting creating the token");
+>>>>>>> origin/issue19-Push-test
 
         try {
             // [START register_for_gcm]
@@ -55,7 +59,13 @@ public class RegistrationIntentService extends IntentService {
                     GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
             // [END get_token]
             Log.i(TAG, "GCM Registration Token: " + token);
+<<<<<<< HEAD
 
+=======
+            Log.v(TAG,"token is " + token);
+
+            // TODO: Implement this method to send any registration to your app's servers.
+>>>>>>> origin/issue19-Push-test
             sendRegistrationToServer(token);
 
             // Subscribe to topic channels
@@ -87,8 +97,17 @@ public class RegistrationIntentService extends IntentService {
      * @param token The new token.
      */
     private void sendRegistrationToServer(String token) {
+<<<<<<< HEAD
         // TODO Send with login parts to the server
 
+=======
+        // Add custom implementation, as needed.
+        // use login parts in the server
+        //TODO : Use the same method as in Network Item Client
+        Log.v("Token", "sendRegistrationToServer token : '" + token +"'");
+
+        //TODO better encapsulation of the sender
+>>>>>>> origin/issue19-Push-test
         NetworkRegistrationClient client = new NetworkRegistrationClient("HTTP://calamar.japan-impact.ch",new DefaultNetworkProvider());
         try {
             client.send(token);

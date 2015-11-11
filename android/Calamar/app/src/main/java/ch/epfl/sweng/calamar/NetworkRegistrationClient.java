@@ -21,7 +21,11 @@ public class NetworkRegistrationClient implements RegistrationClient{
     private final NetworkProvider networkProvider;
     private final static int HTTP_SUCCESS_START = 200;
     private final static int HTTP_SUCCESS_END = 299;
+<<<<<<< HEAD
     private final static String SEND_PATH = "/users.php?action=log";
+=======
+    private final static String SEND_PATH = "/users.php?action=login";
+>>>>>>> origin/issue19-Push-test
 
     public NetworkRegistrationClient(String serverUrl, NetworkProvider networkProvider)  {
         if(null == serverUrl || null == networkProvider) {
@@ -36,12 +40,19 @@ public class NetworkRegistrationClient implements RegistrationClient{
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkRegistrationClient.SEND_PATH);
+<<<<<<< HEAD
             String jsonParameter = "{ " +
                     "\"token\": \"" + token + "\"" +
                     ",\"name\": " + "\"Test1234@gmail.com\"" +
                     " }";
             connection = NetworkRegistrationClient.createConnection(networkProvider, url);
             String response = NetworkRegistrationClient.post(connection, jsonParameter);
+=======
+            String jsonParameter = "{\"token\":\""+token+"\"}";
+            connection = NetworkRegistrationClient.createConnection(networkProvider, url);
+            String response = NetworkRegistrationClient.post(connection, jsonParameter);
+
+>>>>>>> origin/issue19-Push-test
             if (!response.contains("Ack")) {
                 throw new RegisterClientException("error: server couldn't retrieve the item");
             }
