@@ -27,6 +27,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
     private final static int HTTP_SUCCESS_END = 299;
     private final static String SEND_PATH = "/items.php?action=send";
     private final static String RETRIEVE_PATH = "/items.php?action=retrieve";
+    private final static String RETRIEVE_USER_PATH = "/users.php?action=retrieve";
     private final static String NEW_USER_PATH = "/users.php?action=add";
 
     public NetworkDatabaseClient(String serverUrl, NetworkProvider networkProvider)  {
@@ -92,6 +93,25 @@ public class NetworkDatabaseClient implements DatabaseClient {
             String response = NetworkDatabaseClient.post(connection, jsonParameter);
             JSONObject object = new JSONObject(response);
             return object.getInt("ID");
+        } catch (IOException | JSONException e) {
+            throw new DatabaseClientException(e);
+        } finally {
+            NetworkDatabaseClient.close(connection);
+        }
+    }
+
+    @Override
+    public User findUserByName(String name) throws DatabaseClientException{
+        HttpURLConnection connection = null;
+        try {
+            URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_USER_PATH);
+            String jsonParameter = "{ " +
+                    "\"name\": " + "\"" + name +"\""+
+                    " }";
+            connection = NetworkDatabaseClient.createConnection(networkProvider, url);
+            String response = NetworkDatabaseClient.post(connection, jsonParameter);
+            JSONObject resp = new JSONObject(response);
+            return User.fromJSON(resp.getJSONObject("user"));
         } catch (IOException | JSONException e) {
             throw new DatabaseClientException(e);
         } finally {

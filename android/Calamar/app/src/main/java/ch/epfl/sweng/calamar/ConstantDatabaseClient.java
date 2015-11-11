@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by Quentin Jaquier, sciper 235825 on 23.10.2015.
  */
-public class ConstantItemClient implements DatabaseClient {
+public class ConstantDatabaseClient implements DatabaseClient {
 
     private final User alice = new User(1,"Alice");
     private final User bob = new User(2,"Bob");
@@ -34,6 +34,11 @@ public class ConstantItemClient implements DatabaseClient {
     @Override
     public void send(Item item) throws DatabaseClientException {
         //Do nothing
+    }
+
+    @Override
+    public User findUserByName(String name) throws DatabaseClientException {
+        return new User(1,"Bob");
     }
 
     @Override
