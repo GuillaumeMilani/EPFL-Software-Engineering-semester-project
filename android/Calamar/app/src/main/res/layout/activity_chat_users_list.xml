@@ -19,6 +19,7 @@
         android:dividerHeight="2dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
         android:layout_below="@+id/actualUserName"
@@ -36,7 +37,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New"
+        android:text="@string/add_user_text"
         android:id="@+id/newContact"
         android:layout_alignParentTop="true"
         android:layout_alignEnd="@+id/contactsList"

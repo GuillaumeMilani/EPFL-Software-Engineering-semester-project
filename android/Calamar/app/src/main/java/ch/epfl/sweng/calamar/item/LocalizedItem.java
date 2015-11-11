@@ -13,7 +13,7 @@ public abstract class LocalizedItem extends Item {
 
     protected LocalizedItem(int ID, User from, Recipient to, Date date, Location location) {
         super(ID, from, to, date.getTime());
-        if(null == location) {
+        if (null == location) {
             throw new IllegalArgumentException("field 'location' cannot be null");
         }
         this.location = location;

@@ -1,6 +1,5 @@
 package ch.epfl.sweng.calamar;
 
-import android.support.test.InstrumentationRegistry;
 import android.test.ApplicationTestCase;
 
 import org.junit.Before;
@@ -38,7 +37,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        app = ((CalamarApplication) InstrumentationRegistry.getTargetContext().getApplicationContext());
+        app = CalamarApplication.getInstance();
         dbHandler = app.getDB();
         getApplication();
         dbHandler.deleteAllItems();
@@ -57,7 +56,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     }
 
     @Test
-    public void testDeleteOnEmptyDatabase(){
+    public void testDeleteOnEmptyDatabase() {
         dbHandler.deleteItem(0);
         dbHandler.deleteRecipient(0);
         assertEquals(dbHandler.getAllItems().size(), 0);
@@ -141,7 +140,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         toGet.add(testUser.getID());
         toGet.add(testUser2.getID());
         List<Recipient> recipientsGot = dbHandler.getRecipients(toGet);
-        assertEquals(recipientsGot.size(),2);
+        assertEquals(recipientsGot.size(), 2);
         assertEquals(recipientsGot.get(0), testUser);
         assertEquals(recipientsGot.get(1), testUser2);
         clearDB();

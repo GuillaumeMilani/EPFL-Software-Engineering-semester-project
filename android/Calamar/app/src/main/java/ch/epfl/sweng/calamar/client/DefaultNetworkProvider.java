@@ -12,6 +12,6 @@ import ch.epfl.sweng.calamar.client.NetworkProvider;
 public class DefaultNetworkProvider implements NetworkProvider {
     @Override
     public HttpURLConnection getConnection(URL url) throws IOException {
-        return (HttpURLConnection)url.openConnection();
+        return (HttpURLConnection) url.openConnection();
     }
 }

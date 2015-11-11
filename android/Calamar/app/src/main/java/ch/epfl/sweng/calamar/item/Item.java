@@ -27,6 +27,7 @@ public abstract class Item {
     public enum Type {SIMPLETEXTITEM}
     //TODO date d'expiration ?
 
+
     protected Item(int ID, User from, Recipient to, long date, Condition condition) {
         if (null == from || null == to || null == condition) {
             throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' cannot be null");

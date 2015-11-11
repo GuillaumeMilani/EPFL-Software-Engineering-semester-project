@@ -7,6 +7,7 @@ public class DatabaseClientException extends Throwable {
     public DatabaseClientException(String message) {
         super(message);
     }
+
     public DatabaseClientException(Throwable child) {
         super(child);
     }
