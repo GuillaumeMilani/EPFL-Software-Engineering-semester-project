@@ -1,4 +1,4 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.chat;
 
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -9,11 +9,22 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.client.DatabaseClientException;
+import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
+import ch.epfl.sweng.calamar.R;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
+import ch.epfl.sweng.calamar.recipient.User;
+import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.item.SimpleTextItem;
 
 //TODO Support other item types
 
@@ -169,6 +180,13 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 if (!offline) {
                     app.setLastItemsRefresh(new Date());
                 }
+
+                Toast.makeText(getApplicationContext(), R.string.chat_activity_refresh_message,
+                        Toast.LENGTH_SHORT).show();
+
+            } else {
+                Toast.makeText(getApplicationContext(), R.string.chat_activity_unable_to_refresh,
+                        Toast.LENGTH_SHORT).show();
             }
         }
 

@@ -1,9 +1,13 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.item;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
+
+import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
 /**
  * Models an Item, superclass of all the possibly many kind of 'item' the app manage. <br><br>
@@ -18,16 +22,34 @@ public abstract class Item {
     private final User from;
     private final Recipient to;
     private final long date; //posix date
+    private final Condition condition;
+
+    public enum Type {SIMPLETEXTITEM}
     //TODO date d'expiration ?
 
-    protected Item(int ID, User from, Recipient to, long date) {
-        if (null == from || null == to) {
-            throw new IllegalArgumentException("field 'from' and/or 'to' cannot be null");
+
+    protected Item(int ID, User from, Recipient to, long date, Condition condition) {
+        if (null == from || null == to || null == condition) {
+            throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' cannot be null");
         }
         this.ID = ID;
         this.from = from; //User is immutable
         this.to = to;     //Recipient is immutable
         this.date = date;
+        this.condition = condition;
+    }
+
+    protected Item(int ID, User from, Recipient to, long date) {
+        this(ID, from, to, date, Condition.trueCondition());
+    }
+
+    public abstract Type getType();
+
+    /**
+     * @return the 'condition' field of the Item
+     */
+    public Condition getCondition() {
+        return condition;
     }
 
     /**
@@ -70,6 +92,7 @@ public abstract class Item {
         json.accumulate("from", from.toJSON());
         json.accumulate("to", to.toJSON());
         json.accumulate("date", date);
+        json.accumulate("condition", condition.toJSON());
     }
 
     /**
@@ -95,7 +118,7 @@ public abstract class Item {
         Item item;
         String type = json.getString("type");
         switch (type) {
-            case "simpleText":
+            case "SIMPLETEXTITEM":
                 item = SimpleTextItem.fromJSON(json);
                 break;
             default:
@@ -139,12 +162,14 @@ public abstract class Item {
         protected User from;
         protected Recipient to;
         protected long date;
+        protected Condition condition;
 
         public Builder parse(JSONObject o) throws JSONException {
             ID = o.getInt("ID");
             from = User.fromJSON(o.getJSONObject("from"));
             to = Recipient.fromJSON(o.getJSONObject("to"));
             date = o.getLong("date");
+            condition = Condition.fromJSON(o.getJSONObject("condition"));
             return this;
         }
     }

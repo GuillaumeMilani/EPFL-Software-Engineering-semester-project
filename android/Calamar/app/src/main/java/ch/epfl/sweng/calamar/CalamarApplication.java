@@ -5,12 +5,12 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.securepreferences.SecurePreferences;
 
 import java.util.Date;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-
+import ch.epfl.sweng.calamar.recipient.User;
 
 public final class CalamarApplication extends Application {
 

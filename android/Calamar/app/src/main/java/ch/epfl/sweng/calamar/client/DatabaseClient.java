@@ -1,7 +1,11 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.client;
 
 import java.util.Date;
 import java.util.List;
+
+import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
 /**
  * Created by LPI on 19.10.2015.
@@ -26,6 +30,14 @@ public interface DatabaseClient {
      */
     void send(Item item) throws DatabaseClientException;
 
+
+    /**
+     * Retrieve an user from the server from his name.
+     *
+     * @param name
+     */
+    User findUserByName(String name) throws DatabaseClientException;
+
     /**
      * Create a new user on the database
      *
@@ -34,5 +46,6 @@ public interface DatabaseClient {
      * @return the id of the new user given by the database
      * @throws DatabaseClientException
      */
-    public abstract int newUser(String email, String deviceId) throws DatabaseClientException;
+
+    int newUser(String email, String deviceId) throws DatabaseClientException;
 }

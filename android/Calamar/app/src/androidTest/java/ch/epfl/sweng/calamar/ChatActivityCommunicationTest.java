@@ -12,6 +12,15 @@ import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import ch.epfl.sweng.calamar.chat.ChatActivity;
+import ch.epfl.sweng.calamar.chat.ChatUsersListActivity;
+import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
+import ch.epfl.sweng.calamar.client.DatabaseClient;
+import ch.epfl.sweng.calamar.client.DatabaseClientException;
+import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
+import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.item.SimpleTextItem;
+
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
@@ -44,7 +53,7 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
      */
     @Test
     public void testSendButtonSendCorrectInformation() throws DatabaseClientException {
-        DatabaseClient client = Mockito.mock(ConstantItemClient.class);
+        DatabaseClient client = Mockito.mock(ConstantDatabaseClient.class);
         DatabaseClientLocator.setDatabaseClient(client);
         Intent conversation = new Intent();
         conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME, "Alice");

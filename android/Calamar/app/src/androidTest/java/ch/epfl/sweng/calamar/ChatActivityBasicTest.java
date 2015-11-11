@@ -10,6 +10,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import ch.epfl.sweng.calamar.chat.ChatActivity;
+import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
+import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
+
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
@@ -36,7 +40,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        DatabaseClientLocator.setDatabaseClient(new ConstantItemClient());
+        DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
         CalamarApplication.getInstance().getDB().deleteAllItems();
     }
 

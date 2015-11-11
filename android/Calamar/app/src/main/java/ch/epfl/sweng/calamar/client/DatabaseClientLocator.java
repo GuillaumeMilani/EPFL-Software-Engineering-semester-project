@@ -1,4 +1,4 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.client;
 
 /**
  * Created by Quentin Jaquier, sciper 235825 on 23.10.2015.

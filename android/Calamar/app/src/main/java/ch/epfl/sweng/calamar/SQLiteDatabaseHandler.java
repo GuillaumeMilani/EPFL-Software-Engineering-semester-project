@@ -6,9 +6,18 @@ import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.item.SimpleTextItem;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
 
 public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
@@ -23,12 +32,14 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "CalamarDB";
 
     private static final String ITEMS_TABLE = "tb_Items";
+    private static final String ITEMS_KEY_TYPE = "type";
     private static final String ITEMS_KEY_ID = "id";
     private static final String ITEMS_KEY_TEXT = "text";
     private static final String ITEMS_KEY_FROM = "from_id";
     private static final String ITEMS_KEY_TO = "to_id";
     private static final String ITEMS_KEY_TIME = "time";
-    private static final String[] ITEMS_COLUMNS = {ITEMS_KEY_ID, ITEMS_KEY_TEXT, ITEMS_KEY_FROM, ITEMS_KEY_TO, ITEMS_KEY_TIME};
+    private static final String ITEMS_KEY_CONDITION = "condition";
+    private static final String[] ITEMS_COLUMNS = {ITEMS_KEY_TYPE, ITEMS_KEY_ID, ITEMS_KEY_FROM, ITEMS_KEY_TO, ITEMS_KEY_TIME, ITEMS_KEY_CONDITION, ITEMS_KEY_TEXT};
 
     private static final String RECIPIENTS_TABLE = "tb_Recipients";
     private static final String RECIPIENTS_KEY_ID = "id";
@@ -60,10 +71,16 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         final String createMessagesTable = "CREATE TABLE " + ITEMS_TABLE + " ("
-                + ITEMS_KEY_ID + " INTEGER PRIMARY KEY NOT NULL," + ITEMS_KEY_TEXT + " TEXT,"
-                + ITEMS_KEY_FROM + " INTEGER NOT NULL," + ITEMS_KEY_TO + " INTEGER NOT NULL," + ITEMS_KEY_TIME + " INTEGER NOT NULL)";
+                + ITEMS_KEY_TYPE + " TEXT NOT NULL,"
+                + ITEMS_KEY_ID + " INTEGER PRIMARY KEY NOT NULL,"
+                + ITEMS_KEY_FROM + " INTEGER NOT NULL,"
+                + ITEMS_KEY_TO + " INTEGER NOT NULL,"
+                + ITEMS_KEY_TIME + " INTEGER NOT NULL,"
+                + ITEMS_KEY_CONDITION + " TEXT NOT NULL, "
+                + ITEMS_KEY_TEXT + " TEXT)";
         db.execSQL(createMessagesTable);
-        final String createRecipientsTable = "CREATE TABLE " + RECIPIENTS_TABLE + " (" + RECIPIENTS_KEY_ID + " INTEGER PRIMARY KEY NOT NULL,"
+        final String createRecipientsTable = "CREATE TABLE " + RECIPIENTS_TABLE + " ("
+                + RECIPIENTS_KEY_ID + " INTEGER PRIMARY KEY NOT NULL,"
                 + RECIPIENTS_KEY_NAME + " TEXT NOT NULL)";
         db.execSQL(createRecipientsTable);
     }
@@ -470,21 +487,38 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     private ContentValues createItemValues(Item item) {
         ContentValues values = new ContentValues();
+        values.put(ITEMS_KEY_TYPE, item.getType().name());
         values.put(ITEMS_KEY_ID, item.getID());
-        values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());
         values.put(ITEMS_KEY_FROM, item.getFrom().getID());
         values.put(ITEMS_KEY_TO, item.getTo().getID());
         values.put(ITEMS_KEY_TIME, item.getDate().getTime());
+        try {
+            values.put(ITEMS_KEY_CONDITION, item.getCondition().toJSON().toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());
         return values;
     }
 
     private Item createItem(Cursor cursor) {
-        int id = cursor.getInt(0);
-        String text = cursor.getString(1);
-        User from = (User) getRecipientWithoutClosing(cursor.getInt(2));
-        Recipient to = getRecipientWithoutClosing(cursor.getInt(3));
+        String type = cursor.getString(0);
+        int id = cursor.getInt(1);
+        User from = (User) getRecipient(cursor.getInt(2));
+        Recipient to = getRecipient(cursor.getInt(3));
         Date time = new Date(cursor.getInt(4));
-        return new SimpleTextItem(id, from, to, time, text);
+        Condition condition = null;
+        try {
+            condition = Condition.fromJSON(new JSONObject(cursor.getString(5)));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        String text = cursor.getString(6);
+        if (type.equals(Item.Type.SIMPLETEXTITEM.name())) {
+            return new SimpleTextItem(id, from, to, time, condition, text);
+        } else {
+            throw new UnsupportedOperationException("Only SimpleTextItem for now");
+        }
     }
 
     private Recipient getRecipientWithoutClosing(int id) {

@@ -1,9 +1,13 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.item;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
+
+import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
 /**
  * Models a simple text {@link Item}, (no special properties, just a text message).<br><br>
@@ -11,24 +15,30 @@ import java.util.Date;
  */
 public final class SimpleTextItem extends Item {
     private final String message;
-    private final static String ITEM_TYPE = "simpleText";
+    private final static Type ITEM_TYPE = Type.SIMPLETEXTITEM;
 
     /**
      * Instantiates a new SimpleTextItem with the following parameters
      *
-     * @param ID      the ID
-     * @param from    the 'from' field of the Item (sender)
-     * @param to      the 'to' field of the Item (recipient)
-     * @param date    the creation/posting date of the Item
-     * @param message the content (text message)
+     * @param ID        the ID
+     * @param from      the 'from' field of the Item (sender)
+     * @param to        the 'to' field of the Item (recipient)
+     * @param date      the creation/posting date of the Item
+     * @param message   the content (text message)
+     * @param condition the condition
      * @see Item#Item(int, User, Recipient, long)
      */
-    public SimpleTextItem(int ID, User from, Recipient to, Date date, String message) {
-        super(ID, from, to, date.getTime());
+
+    public SimpleTextItem(int ID, User from, Recipient to, Date date, Condition condition, String message) {
+        super(ID, from, to, date.getTime(), condition);
         if (null == message) {
             throw new IllegalArgumentException("field 'message' cannot be null");
         }
         this.message = message;
+    }
+
+    public SimpleTextItem(int ID, User from, Recipient to, Date date, String message) {
+        this(ID, from, to, date, Condition.trueCondition(), message);
     }
 
     /**
@@ -36,6 +46,11 @@ public final class SimpleTextItem extends Item {
      */
     public String getMessage() {
         return this.message;
+    }
+
+    @Override
+    public Type getType() {
+        return ITEM_TYPE;
     }
 
     /**
@@ -49,7 +64,7 @@ public final class SimpleTextItem extends Item {
     public void compose(JSONObject json) throws JSONException {
         super.compose(json);
         json.accumulate("text", message);
-        json.accumulate("type", ITEM_TYPE);
+        json.accumulate("type", ITEM_TYPE.name());
     }
 
     /**
@@ -58,7 +73,7 @@ public final class SimpleTextItem extends Item {
      * @param json the well formed {@link JSONObject json} representing the {@link SimpleTextItem item}
      * @return a {@link SimpleTextItem} parsed from the JSONObject
      * @throws JSONException
-     * @see ch.epfl.sweng.calamar.Item#fromJSON(JSONObject) Recipient.fromJSON
+     * @see Item#fromJSON(JSONObject) Recipient.fromJSON
      */
     public static SimpleTextItem fromJSON(JSONObject json) throws JSONException {
         return new SimpleTextItem.Builder().parse(json).build();
@@ -102,7 +117,7 @@ public final class SimpleTextItem extends Item {
     /**
      * A Builder for {@link SimpleTextItem}, currently only used to parse JSON (little overkill..but ..)
      *
-     * @see ch.epfl.sweng.calamar.Item.Builder
+     * @see Item.Builder
      */
     public static class Builder extends Item.Builder {
         private String message = "default message";
@@ -110,15 +125,15 @@ public final class SimpleTextItem extends Item {
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString("type");
-            if (!type.equals(SimpleTextItem.ITEM_TYPE)) {
-                throw new IllegalArgumentException("expected " + SimpleTextItem.ITEM_TYPE + " was : " + type);
+            if (!type.equals(SimpleTextItem.ITEM_TYPE.name())) {
+                throw new IllegalArgumentException("expected " + SimpleTextItem.ITEM_TYPE.name() + " was : " + type);
             }
             message = json.getString("text");
             return this;
         }
 
         public SimpleTextItem build() {
-            return new SimpleTextItem(super.ID, super.from, super.to, new Date(super.date), message);
+            return new SimpleTextItem(super.ID, super.from, super.to, new Date(super.date), super.condition, message);
         }
     }
 }
