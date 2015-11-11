@@ -9,6 +9,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.Date;
 
+import ch.epfl.sweng.calamar.recipient.User;
+
 public final class CalamarApplication extends Application {
     //TODO There is debate on using a Singleton or not
 
@@ -41,7 +43,7 @@ public final class CalamarApplication extends Application {
     public void onCreate() {
         super.onCreate();
         CalamarApplication.instance = this;
-        db = new SQLiteDatabaseHandler(this);
+        db = new SQLiteDatabaseHandler();
         sp = getSharedPreferences(CALAMAR_PREFERENCES, Context.MODE_PRIVATE);
         editor = sp.edit();
         //TODO remove once database is thoroughly tested (tests delete all entries)
