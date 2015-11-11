@@ -40,7 +40,7 @@ public class PositionCondition extends Condition {
     {
         this.location = location;
         this.radius = radius;
-        GPSProvider.getInstance(null).addObserver(new GPSProvider.Observer() {
+        GPSProvider.getInstance().addObserver(new GPSProvider.Observer() {
 
             @Override
             public void update(Location newLocation) {
