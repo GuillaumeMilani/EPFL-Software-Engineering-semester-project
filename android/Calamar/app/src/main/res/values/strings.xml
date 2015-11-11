@@ -11,7 +11,7 @@
     <string name="add_new_contact_hint">Mail</string>
     <string name="add_new_contact_positive_button">Add</string>
     <string name="add_new_contact_negative_button">Cancel</string>
-    <string name="alert_dialog_default_positive_button">Ok</string>
+    <string name="alert_dialog_default_positive_button">OK</string>
     <string name="title_activity_chat_users_list">ChatUsersListActivity</string>
     <string name="on_click_error">Got an unexpected view Id in Onclick</string>
     <string name="new_account_creation_fail">Your account creation has failed, check your internet connection.</string>
@@ -22,10 +22,8 @@
     <string name="chat_activity_unable_to_refresh">Unable to refresh</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_main">MainActivity</string>
-
     <string name="show_map_button">show map</string>
     <string name="show_chat_activity_button">show chat</string>
-
-
     <string name="action_settings">Settings</string>
+    <string name="add_user_text">New</string>
 </resources>
