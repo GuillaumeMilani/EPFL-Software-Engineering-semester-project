@@ -12,10 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChatUsersListAdapter extends BaseAdapter {
-    private final ArrayList<User> users;
+    private final ArrayList<Recipient> users;
     private final Activity context;
 
-    public ChatUsersListAdapter(Activity context, List<User> users){
+    public ChatUsersListAdapter(Activity context, List<Recipient> users){
         this.users=new ArrayList<>(users);
         this.context=context;
     }
@@ -25,7 +25,7 @@ public class ChatUsersListAdapter extends BaseAdapter {
     }
 
     @Override
-    public User getItem(int position) {
+    public Recipient getItem(int position) {
         return users.get(position);
     }
 
@@ -37,7 +37,7 @@ public class ChatUsersListAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
-        User user = getItem(position);
+        Recipient user = getItem(position);
         LayoutInflater li = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if (convertView == null) {
             convertView = li.inflate(R.layout.list_contacts_chat, null);
@@ -49,6 +49,10 @@ public class ChatUsersListAdapter extends BaseAdapter {
 
         holder.userName.setText(user.getName());
         return convertView;
+    }
+
+    public void add(User user){
+        users.add(user);
     }
 
     /**

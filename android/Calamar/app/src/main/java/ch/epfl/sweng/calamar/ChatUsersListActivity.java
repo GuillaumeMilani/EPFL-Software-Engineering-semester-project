@@ -3,6 +3,7 @@ package ch.epfl.sweng.calamar;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,25 +13,28 @@ import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatUsersListActivity extends AppCompatActivity {
+public class ChatUsersListActivity extends AppCompatActivity implements View.OnClickListener {
 
     public final static String EXTRA_CORRESPONDENT_NAME = "ch.epfl.sweng.calamar.CORRESPONDENT_NAME";
     public final static String EXTRA_CORRESPONDENT_ID = "ch.epfl.sweng.calamar.CORRESPONDENT_ID";
 
     private ListView contactsView;
-    private List<User> contacts;
+    private List<Recipient> contacts;
     private ChatUsersListAdapter adapter;
     private TextView actualUserTextView;
 
     private CalamarApplication app;
 
-    private static final String SERVER_BASE_URL = "http://calamar.japan-impact.ch";
+    private Dialog newContactAlertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,13 +58,43 @@ public class ChatUsersListActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent conversation = new Intent(ChatUsersListActivity.this, ChatActivity.class);
                 //Assuming in same order
-                User user = contacts.get(position);
-                conversation.putExtra(EXTRA_CORRESPONDENT_NAME, user.getName());
+                Recipient user = contacts.get(position);
+                conversation.putExtra(EXTRA_CORRESPONDENT_NAME,user.getName());
+
                 conversation.putExtra(EXTRA_CORRESPONDENT_ID, user.getID());
                 startActivity(conversation);
             }
         });
         contactsView.setSelection(0);
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.newContact) {
+            addNewContact();
+        } else {
+            throw new IllegalArgumentException(getString(R.string.on_click_error));
+        }
+    }
+
+    /**
+     * Called by create_new_contact layout
+     *
+     * @param v
+     */
+    public void addContact(View v){
+        EditText input = (EditText)newContactAlertDialog.findViewById(R.id.newContactInput);
+        newContactAlertDialog.dismiss();
+        new retrieveUserTask(input.getText().toString(), ChatUsersListActivity.this).execute();
+    }
+
+    /**
+     * Called by create_new_contact layout
+     *
+     * @param v
+     */
+    public void cancelNewContact(View v){
+        newContactAlertDialog.dismiss();
     }
 
     /**
@@ -85,11 +119,16 @@ public class ChatUsersListActivity extends AppCompatActivity {
     }
 
     private void getContacts(){
-        //TODO : Store contact ? -- Easy once persist_data is merged
-        contacts.add(new User(2,"Bob"));
-        contacts.add(new User(3, "Carol"));
-        contacts.add(new User(4, "Denis"));
-        contacts.add(new User(5, "Eve"));
+        contacts.addAll(app.getDB().getAllRecipients());
+    }
+
+    private void addNewContact(){
+        newContactAlertDialog = new Dialog(this);
+
+        newContactAlertDialog.setContentView(R.layout.create_new_contact);
+        newContactAlertDialog.setTitle(getString(R.string.add_new_contact_title));
+
+        newContactAlertDialog.show();
     }
 
     /**
@@ -97,7 +136,6 @@ public class ChatUsersListActivity extends AppCompatActivity {
      *
      */
     private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
-
         private String name = null;
         private Context context;
 
@@ -112,7 +150,6 @@ public class ChatUsersListActivity extends AppCompatActivity {
                 //Get the device id.
                 return DatabaseClientLocator.getDatabaseClient().newUser(name, Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
             } catch (DatabaseClientException e) {
-                //TODO : TOAST
                 e.printStackTrace();
                 return null;
             }
@@ -125,22 +162,67 @@ public class ChatUsersListActivity extends AppCompatActivity {
                 app.setCurrentUserName(name);
                 actualUserTextView.setText("Actual user : " + name);
                 AlertDialog.Builder newUser = new AlertDialog.Builder(context);
-                newUser.setTitle("Account correctly created : User : " + name + ", id : " + id);
-                newUser.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                newUser.setTitle(getString(R.string.new_account_creation_success) + name);
+                newUser.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-
+                        //OK
                     }
                 });
                 newUser.show();
             } else {
                 AlertDialog.Builder newUser = new AlertDialog.Builder(context);
-                newUser.setTitle("Your account creation has failed, check your internet connection.");
-                newUser.setPositiveButton("Retry", new DialogInterface.OnClickListener() {
+                newUser.setTitle(R.string.new_account_creation_fail);
+                newUser.setPositiveButton(R.string.new_account_creation_retry, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         new createNewUserTask(name, context).execute();
                     }
                 });
                 newUser.show();
+            }
+        }
+    }
+
+
+    /**
+     * Async task for retrieving a new user.
+     */
+    private class retrieveUserTask extends AsyncTask<Void, Void, User> {
+
+        private String name = null;
+        private Context context;
+
+        public retrieveUserTask(String name,Context context) {
+            this.name = name;
+            this.context = context;
+        }
+
+        @Override
+        protected User doInBackground(Void... v) {
+            try {
+                return DatabaseClientLocator.getDatabaseClient().findUserByName(name);
+            } catch (DatabaseClientException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(User newUser) {
+            if (newUser != null) {
+                adapter.add(newUser);
+                contacts.add(newUser);
+                adapter.notifyDataSetChanged();
+                //Add in memory
+                app.getDB().addRecipient(newUser);
+            } else {
+                AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
+                newUserAlert.setTitle(R.string.add_new_contact_impossible);
+                newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        //OK
+                    }
+                });
+                newUserAlert.show();
             }
         }
     }

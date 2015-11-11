@@ -24,6 +24,14 @@ public interface DatabaseClient {
      */
     void send(Item item) throws DatabaseClientException;
 
+
+    /**
+     * Retrieve an user from the server from his name.
+     *
+     * @param name
+     */
+    User findUserByName(String name) throws DatabaseClientException;
+
     /**
      * Create a new user on the database
      *
@@ -32,5 +40,5 @@ public interface DatabaseClient {
      * @return the id of the new user given by the database
      * @throws DatabaseClientException
      */
-    public abstract int newUser(String email,String deviceId) throws DatabaseClientException;
+    int newUser(String email,String deviceId) throws DatabaseClientException;
 }
