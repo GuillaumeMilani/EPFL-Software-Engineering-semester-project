@@ -38,11 +38,10 @@ public abstract class Condition {
     public abstract String toString();
 
     @Override
-    public boolean equals(Object o)
-    {
-        if ( this == o ) return true;
-        if ( !(o instanceof Condition) ) return false;
-        Condition that = (Condition)o;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Condition)) return false;
+        Condition that = (Condition) o;
         return value == that.value && type().equals(that.type());
     }
 
@@ -128,8 +127,7 @@ public abstract class Condition {
             }
 
             @Override
-            public String type()
-            {
+            public String type() {
                 return "true";
             }
         };
@@ -158,8 +156,7 @@ public abstract class Condition {
             }
 
             @Override
-            public String type()
-            {
+            public String type() {
                 return "false";
             }
         };
@@ -202,8 +199,7 @@ public abstract class Condition {
             }
 
             @Override
-            public String type()
-            {
+            public String type() {
                 return "and";
             }
         };
@@ -245,8 +241,7 @@ public abstract class Condition {
             }
 
             @Override
-            public String type()
-            {
+            public String type() {
                 return "or";
             }
         };
@@ -285,8 +280,7 @@ public abstract class Condition {
             }
 
             @Override
-            public String type()
-            {
+            public String type() {
                 return "not";
             }
         };

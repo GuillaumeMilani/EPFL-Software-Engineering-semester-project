@@ -26,7 +26,7 @@ public class ParsingTest {
 
     @Test
     public void testSimpleTextItemParsing() throws JSONException {
-        testItemParsing(new SimpleTextItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), new Date(2012, 12, 21), Condition.trueCondition(), "hey, How are you ?"));
+        testItemParsing(new SimpleTextItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), new Date(22313), Condition.trueCondition(), "hey, How are you ?"));
     }
 
     @Test
@@ -44,17 +44,17 @@ public class ParsingTest {
         testConditionParsing(new PositionCondition(10., 20., 15.));
     }
 
-    @Test
+    @Ignore
     private void testItemParsing(Item i) throws JSONException {
         assertEquals(i, Item.fromJSON(i.toJSON()));
     }
 
-    @Test
+    @Ignore
     private void testRecipientParsing(Recipient r) throws JSONException {
         assertEquals(r, Recipient.fromJSON(r.toJSON()));
     }
 
-    @Test
+    @Ignore
     private void testConditionParsing(Condition c) throws JSONException {
         assertEquals(c, Condition.fromJSON(c.toJSON()));
     }

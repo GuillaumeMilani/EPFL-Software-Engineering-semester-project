@@ -153,7 +153,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         finish();//TODO maybe refine ?
                 }
                 break;
-            default: throw new IllegalStateException("onActivityResult : unknown request ! ");
+            default:
+                throw new IllegalStateException("onActivityResult : unknown request ! ");
         }
     }
 
@@ -163,6 +164,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * The dialog may simply provide a message explaining the error, but it may also provide an action
      * to launch an activity that can resolve the error
      * (such as when the user needs to install a newer version of Google Play services).
+     *
      * @param errorCode , the error code returned by onConnectionFailed
      */
     private void showGoogleApiErrorDialog(int errorCode) {
@@ -190,9 +192,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     /**
      * Creates google api client object
+     *
      * @see <a href="https://developers.google.com/android/reference/com/google/android/gms/location/FusedLocationProviderApi.html">
-     *      FusedLocationProviderAPI</a>
-     * */
+     * FusedLocationProviderAPI</a>
+     */
     private synchronized void buildGoogleApiClient() {
         CalamarApplication.getInstance().setGoogleApiClient(
                 new GoogleApiClient.Builder(CalamarApplication.getInstance())

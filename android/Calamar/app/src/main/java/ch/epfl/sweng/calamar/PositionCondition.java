@@ -23,7 +23,7 @@ public class PositionCondition extends Condition {
      * @param longitude
      * @return Location in this place
      */
-    static private Location makeLocation(double latitude, double longitude)
+    private static Location makeLocation(double latitude, double longitude)
     {
         Location loc = new Location("calamarTeam");
         loc.setLatitude(latitude);
@@ -36,7 +36,7 @@ public class PositionCondition extends Condition {
      * @param location
      * @param radius
      */
-    PositionCondition(Location location, double radius)
+    public PositionCondition(Location location, double radius)
     {
         this.location = location;
         this.radius = radius;
@@ -55,7 +55,7 @@ public class PositionCondition extends Condition {
      * @param longitude
      * @param radius
      */
-    PositionCondition(double latitude, double longitude, double radius)
+    public PositionCondition(double latitude, double longitude, double radius)
     {
         this(makeLocation(latitude, longitude), radius);
     }
