@@ -41,7 +41,7 @@ public final class CalamarApplication extends Application {
     public void onCreate() {
         super.onCreate();
         CalamarApplication.instance = this;
-        db = new SQLiteDatabaseHandler(this);
+        db = new SQLiteDatabaseHandler();
         sp = getSharedPreferences(CALAMAR_PREFERENCES, Context.MODE_PRIVATE);
         editor = sp.edit();
         //TODO remove once database is thoroughly tested (tests delete all entries)
