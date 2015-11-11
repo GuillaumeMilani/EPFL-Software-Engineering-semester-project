@@ -255,6 +255,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         clearDB();
     }
 
+    @Test
     public void testDeleteEverything() {
         initDB();
         assertFalse(dbHandler.getAllItems().isEmpty());
