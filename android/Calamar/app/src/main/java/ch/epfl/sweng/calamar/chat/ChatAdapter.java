@@ -67,7 +67,7 @@ public class ChatAdapter extends BaseAdapter {
         }
 
 
-        boolean ingoing = item.getTo().getID() == ((CalamarApplication) context.getApplication()).getInstance().getCurrentUserID();
+        boolean ingoing = item.getTo().getID() == CalamarApplication.getInstance().getCurrentUserID();
         setAlignment(holder, ingoing);
         holder.textMessage.setText(item.getMessage());
         holder.textTime.setText(item.getDate().toString());

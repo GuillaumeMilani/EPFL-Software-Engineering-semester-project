@@ -15,3 +15,9 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+-keep class com.google.android.gms.** { *; }
+-dontwarn class com.google.android.gms.**
+-keep class net.zetetic.** { *; }
+-dontwarn class net.zetetic.**
+-keep class com.scottyab.** { *; }
+-dontwarn class com.scottyab.**

@@ -22,7 +22,6 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 
-
 /**
  * Test for the chat activity
  */
@@ -30,7 +29,7 @@ import static org.hamcrest.Matchers.allOf;
 public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<ChatActivity> {
 
     @Rule
-    public ActivityTestRule<ChatActivity> mActivityRule = new ActivityTestRule<>(
+    public final ActivityTestRule<ChatActivity> mActivityRule = new ActivityTestRule<>(
             ChatActivity.class);
 
     public ChatActivityBasicTest() {
@@ -38,9 +37,11 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
     }
 
     @Before
+    @Override
     public void setUp() throws Exception {
         super.setUp();
         DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
+        CalamarApplication.getInstance().getDB().deleteAllItems();
     }
 
 
@@ -66,7 +67,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
      * Test that we can write on the message edit field.
      */
     @Test
-      public void testCanWriteInMessageEdit() {
+    public void testCanWriteInMessageEdit() {
         onView(withId(R.id.messageEdit)).perform(typeText("Hello Alice !"));
         onView(allOf(withId(R.id.messageEdit), withText("Hello Alice !")));
     }
@@ -76,7 +77,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
      */
     @Test
     public void testTwoMessageAreDisplayed() {
-        ListView list = (ListView)mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+        ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
         int before = list.getCount();
         onView(withId(R.id.refreshButton)).perform(click());
         assertEquals(list.getCount(), before + 2);
@@ -97,7 +98,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
      */
     @Test
     public void testMessageIsDisplayedWhenSend() {
-        ListView list = (ListView)mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+        ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
         int before = list.getCount();
         onView(withId(R.id.messageEdit)).perform(typeText("Hello Alice !"));
         onView(withId(R.id.chatSendButton)).perform(click());

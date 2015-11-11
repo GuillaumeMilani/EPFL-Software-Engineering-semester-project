@@ -48,6 +48,7 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
 
     /**
      * Test that when we click on the send button, a correct item is created.
+     *
      * @throws DatabaseClientException
      */
     @Test
@@ -55,7 +56,7 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
         DatabaseClient client = Mockito.mock(ConstantDatabaseClient.class);
         DatabaseClientLocator.setDatabaseClient(client);
         Intent conversation = new Intent();
-        conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME,"Alice");
+        conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME, "Alice");
         conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID, 1);
         setActivityIntent(conversation);
         getActivity();
@@ -70,11 +71,11 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
 
         assertEquals(argument.getValue().getTo().getName(), "Alice");
         //Test the text of the message
-        SimpleTextItem expected = new SimpleTextItem(1,argument.getValue().getFrom(),argument.getValue().getTo(),argument.getValue().getDate(),"Hello Alice !");
-        assertEquals(argument.getValue(),expected);
+        SimpleTextItem expected = new SimpleTextItem(1, argument.getValue().getFrom(), argument.getValue().getTo(), argument.getValue().getDate(), "Hello Alice !");
+        assertEquals(argument.getValue(), expected);
 
         //Test the name of the correspondent.
-        assertEquals("Alice",argument.getValue().getTo().getName());
+        assertEquals("Alice", argument.getValue().getTo().getName());
 
     }
 
@@ -84,14 +85,14 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
     @Test
     public void testActivityCorrectlyGetIntent() {
         Intent conversation = new Intent();
-        conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME,"AliceTest");
+        conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME, "AliceTest");
         conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID, 1);
         setActivityIntent(conversation);
 
         getActivity();
 
-        TextView recipient = (TextView)getActivity().findViewById(R.id.recipientLabel);
+        TextView recipient = (TextView) getActivity().findViewById(R.id.recipientLabel);
 
-        assertEquals("AliceTest",recipient.getText());
+        assertEquals("AliceTest", recipient.getText());
     }
 }

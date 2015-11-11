@@ -28,10 +28,10 @@ public class EqualsAndHashcodeTest {
 
     @Test
     public void testGroup() {
-        List<User> a = new ArrayList<User>();
+        List<User> a = new ArrayList<>();
         a.add(new User(13, "bob"));
         a.add(new User(14, "sponge"));
-        List<User> b = new ArrayList<User>();
+        List<User> b = new ArrayList<>();
         b.add(new User(13, "bob"));
         b.add(new User(14, "sponge"));
         testVerifyEqualsAndHashcode(new Group(1000, "Pat", a), new Group(1000, "Pat", b));
