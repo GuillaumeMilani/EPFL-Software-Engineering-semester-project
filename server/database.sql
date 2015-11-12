@@ -68,6 +68,56 @@ CREATE TABLE IF NOT EXISTS `tb_item_text` (
 ENGINE = InnoDB;
 
 -- -----------------------------------------------------
+-- Table `tb_condition`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tb_condition` (
+    `ID` INT NOT NULL,
+    PRIMARY KEY (`ID`)
+)
+ENGINE = InndoDB;
+
+-- -----------------------------------------------------
+-- Table `tb_condition_position`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tb_condition_position` (
+  `ID` INT NOT NULL,
+  `latitude` FLOAT( 10, 6 ) NOT NULL ,
+  `longitude` FLOAT( 10, 6 ) NOT NULL,
+  `radius` FLOAT NOT NULL,
+  PRIMARY KEY (`ID`) ,
+  CONSTRAINT `ct_id_condition_position`
+    FOREIGN KEY (`ID`)
+    REFERENCES `tb_condition` (`ID`)
+    ON DELETE RESTRICT
+    ON UPDATE RESTRICT
+)
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `tb_item_condition`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tb_item_condition` (
+    `ID` INT NOT NULL,
+    `item` INT NOT NULL,
+    `condition` INT NOT NULL,
+    PRIMARY KEY (`ID`),
+    CONSTRAINT `ct_item_condition_condition`
+        FOREIGN KEY (`ID`)
+        REFERENCES `tb_condition` (`ID`)
+        ON DELETE RESTRICT
+        ON UPDATE RESTRICT,
+    CONSTRAINT `ct_item_condition_item`
+        FOREIGN KEY (`ID`)
+        REFERENCES `tb_item` (`ID`)
+        ON DELETE RESTRICT
+        ON UPDATE RESTRICT
+)
+ENGINE = InnoDB;
+
+CREATE UNIQUE INDEX `idx_un_item_condition` ON `tb_item_condition` (`item`, `condition`);
+
+
+-- -----------------------------------------------------
 -- Placeholder table for view `view_text_message`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `view_text_message` (`ID` INT, `from` INT, `to` INT, `date` INT, `text` INT);
