@@ -59,6 +59,7 @@ public final class CalamarApplication extends Application {
         setLastUsersRefresh(new Date(0));
     }
 
+
     /**
      * Get the database containing the recipients and the items.
      *
