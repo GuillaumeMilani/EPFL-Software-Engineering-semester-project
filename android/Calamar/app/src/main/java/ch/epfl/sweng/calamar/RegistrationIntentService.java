@@ -28,6 +28,8 @@ import com.google.android.gms.iid.InstanceID;
 
 import java.io.IOException;
 
+import ch.epfl.sweng.calamar.client.DefaultNetworkProvider;
+
 public class RegistrationIntentService extends IntentService {
 
     private static final String TAG = "RegIntentService";

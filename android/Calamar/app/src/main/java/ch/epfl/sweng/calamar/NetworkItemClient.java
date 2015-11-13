@@ -15,6 +15,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import ch.epfl.sweng.calamar.client.NetworkProvider;
+import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+
 /**
  * Created by LPI on 19.10.2015.
  */

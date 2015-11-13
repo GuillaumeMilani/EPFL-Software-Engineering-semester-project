@@ -12,6 +12,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import ch.epfl.sweng.calamar.client.NetworkProvider;
+
 /**
  * Created by Tony on 09.11.2015.
  */

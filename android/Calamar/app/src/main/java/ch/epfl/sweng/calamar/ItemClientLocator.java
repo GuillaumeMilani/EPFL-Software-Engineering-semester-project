@@ -1,5 +1,7 @@
 package ch.epfl.sweng.calamar;
 
+import ch.epfl.sweng.calamar.client.DefaultNetworkProvider;
+
 /**
  * Created by Quentin Jaquier, sciper 235825 on 23.10.2015.
  */
