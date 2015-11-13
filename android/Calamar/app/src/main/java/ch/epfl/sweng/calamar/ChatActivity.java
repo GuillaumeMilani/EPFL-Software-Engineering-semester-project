@@ -1,5 +1,7 @@
 package ch.epfl.sweng.calamar;
 
+import android.content.Intent;
+
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -8,12 +10,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import ch.epfl.sweng.calamar.SimpleTextItem;
 
 //TODO Support other item types
 
@@ -28,22 +29,27 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private ListView messagesContainer;
     private ChatAdapter adapter;
 
-    private ItemClient client;
+    private Recipient correspondent;
 
-    public static User actualUser = new User(1,"Alice");
-    private User correspondent;
+    private CalamarApplication app;
 
-    private Date lastRefresh;
+    private SQLiteDatabaseHandler databaseHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        app = ((CalamarApplication) getApplication()).getInstance();
 
-        correspondent = new User(2,"Bob");
-        lastRefresh = new Date(0);
+        Intent intent = getIntent();
+        String correspondentName = intent.getStringExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME);
+        int correspondentID = intent.getIntExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID,-1); // -1 = default value
 
-        client = new NetworkItemClient("http://calamar.japan-impact.ch",new DefaultNetworkProvider());
+        if(correspondentName == null){
+            correspondentName = "";
+        }
+
+        correspondent = new User(correspondentID,correspondentName);
 
         editText = (EditText) findViewById(R.id.messageEdit);
         sendButton = (Button) findViewById(R.id.chatSendButton);
@@ -55,20 +61,23 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         messagesContainer.setAdapter(adapter);
 
         TextView recipient = (TextView) findViewById(R.id.recipientLabel);
-        //TODO Change Recipient depending on User ID
-        recipient.setText("Someone");
+        recipient.setText(correspondent.getName());
 
         refreshButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
 
-        //refresh();
+        databaseHandler = app.getDB();
+
+        boolean offline = true;
+        refresh(offline);
     }
+
 
     /**
      * Gets all messages and display them
      */
-    private void refresh() {
-         new refreshTask(actualUser).execute(client);
+    private void refresh(boolean offline) {
+        new refreshTask(app.getCurrentUser(), offline).execute();
     }
 
     /**
@@ -76,12 +85,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void send() {
         String message = editText.getText().toString();
-        Item textMessage = new SimpleTextItem(1,actualUser,correspondent,new Date(),message);
+        Item textMessage = new SimpleTextItem(1,app.getCurrentUser(),correspondent,new Date(),message);
         adapter.add(textMessage);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
         editText.setText("");
-        new sendItemTask(textMessage).execute(client);
+        new sendItemTask(textMessage).execute();
     }
 
     @Override
@@ -89,34 +98,34 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         if (v.getId() == R.id.chatSendButton) {
             send();
         } else if (v.getId() == R.id.refreshButton) {
-            refresh();
+            refresh(false);
         } else {
             throw new IllegalArgumentException("Got an unexpected view Id in Onclick");
         }
     }
 
 
-
     /**
      * Async task for sending a message.
-     *
      */
-    private class sendItemTask extends AsyncTask<ItemClient, Void, Void> {
+    private class sendItemTask extends AsyncTask<Void, Void, Void> {
 
-        private Item textMessage;
-        public sendItemTask(Item textMessage){
+        private final Item textMessage;
+
+        public sendItemTask(Item textMessage) {
             this.textMessage = textMessage;
         }
 
         @Override
-        protected Void doInBackground(ItemClient... itemClients) {
+        protected Void doInBackground(Void... v) {
             try {
                 //TODO : Determine id of the message ?
-
-                itemClients[0].send(textMessage);
+                DatabaseClientLocator.getDatabaseClient().send(textMessage);
+                //TODO need id to put into database
+                databaseHandler.addItem(textMessage);
                 return null;
                 //return itemClients[0].send(textMessage);
-            } catch (ItemClientException e) {
+            } catch (DatabaseClientException e) {
                 //TODO : TOAST
                 e.printStackTrace();
                 return null;
@@ -125,35 +134,50 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * Async task for sending a message.
-     *
+     * Async task for refreshing / getting new messages.
      */
-    private class refreshTask extends AsyncTask<ItemClient, Void, List<Item>> {
+    private class refreshTask extends AsyncTask<Void, Void, List<Item>> {
 
-        private Recipient recipient;
+        private final Recipient recipient;
+        private final boolean offline;
 
-        public refreshTask(Recipient recipient){
+        public refreshTask(Recipient recipient, boolean offline) {
             this.recipient = recipient;
+            this.offline = offline;
         }
 
         @Override
-        protected List<Item> doInBackground(ItemClient... itemClients) {
-            try {
-                return itemClients[0].getAllItems(recipient,lastRefresh);
-            } catch (ItemClientException e) {
-                //TODO : TOAST
-                e.printStackTrace();
-                return null;
+        protected List<Item> doInBackground(Void... v) {
+            if (offline) {
+                return databaseHandler.getItemsForContact(correspondent);
+            } else {
+                try {
+                    List<Item> items = DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, new Date(app.getLastItemsRefresh()));
+                    databaseHandler.addItems(items);
+                    return items;
+                } catch (DatabaseClientException e) {
+                    e.printStackTrace();
+                    return null;
+                }
             }
         }
 
         @Override
         protected void onPostExecute(List<Item> items) {
-            if(items != null) {
+            if (items != null) {
                 adapter.add(items);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                lastRefresh = new Date();
+                if (!offline) {
+                    app.setLastItemsRefresh(new Date());
+                }
+
+                Toast.makeText(getApplicationContext(), R.string.chat_activity_refresh_message,
+                        Toast.LENGTH_SHORT).show();
+
+            } else {
+                Toast.makeText(getApplicationContext(), R.string.chat_activity_unable_to_refresh,
+                        Toast.LENGTH_SHORT).show();
             }
         }
 
