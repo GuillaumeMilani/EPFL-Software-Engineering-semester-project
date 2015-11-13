@@ -8,8 +8,10 @@ import java.util.List;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 
-
-public class Sorter {
+/**
+ * A class which contains static methods to sort Objects created in this project.
+ */
+public final class Sorter {
     private static final Comparator<Item> itemComparator = new Comparator<Item>() {
         @Override
         public int compare(Item lhs, Item rhs) {
@@ -41,11 +43,21 @@ public class Sorter {
     }
 
 
+    /**
+     * Sorts the given list of items by ascending order.
+     * @param items The list to be sorted
+     * @return the sorted list
+     */
     public static List<Item> sortItemList(List<Item> items) {
         Collections.sort(items, itemComparator);
         return items;
     }
 
+    /**
+     * Sorts the given list of recipients by ascending order.
+     * @param recipients The list to be sorted
+     * @return the sorted list
+     */
     public static List<Recipient> sortRecipientList(List<Recipient> recipients) {
         Collections.sort(recipients, recipientComparator);
         return recipients;
