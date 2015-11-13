@@ -567,6 +567,13 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Closes the database.
+     */
+    public synchronized void closeDatabase() {
+        this.db.close();
+    }
+
     //Helper methods for applyPendingOperations
 
     private void pendingDeleteItems(List<Integer> ids) {
@@ -644,12 +651,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         }
     }
 
-    /**
-     * This method is called when the MainActivity is stopped.
-     */
-    public void closeDatabase() {
-        this.db.close();
-    }
 
     private SQLiteDatabase getWritableIfNotOpen() {
         if (!db.isOpen() || db.isReadOnly()) {

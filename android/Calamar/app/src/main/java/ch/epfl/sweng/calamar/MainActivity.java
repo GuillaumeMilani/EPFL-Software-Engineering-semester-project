@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onStop() {
         app.getGoogleApiClient().disconnect();
         super.onStop();
-        app.getDB().closeDatabase();
+        app.getDatabaseHandler().closeDatabase();
     }
 
     @Override
@@ -256,7 +256,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         @Override
         protected Void doInBackground(Void... v) {
-            app.getDB().applyPendingOperations();
+            app.getDatabaseHandler().applyPendingOperations();
             return null;
         }
 

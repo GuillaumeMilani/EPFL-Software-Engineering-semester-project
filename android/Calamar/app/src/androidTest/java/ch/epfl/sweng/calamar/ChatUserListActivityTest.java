@@ -66,7 +66,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
      */
     @Test
     public void testDisplayContactIsEmptyWhenNoContact() {
-        app.getDB().deleteAllRecipients();
+        app.getDatabaseHandler().deleteAllRecipients();
 
         getActivity();
 
@@ -79,9 +79,9 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
      */
     @Test
     public void testDisplayTwoContact() {
-        app.getDB().deleteAllRecipients();
-        app.getDB().addRecipient(bob);
-        app.getDB().addRecipient(alice);
+        app.getDatabaseHandler().deleteAllRecipients();
+        app.getDatabaseHandler().addRecipient(bob);
+        app.getDatabaseHandler().addRecipient(alice);
 
         getActivity();
 
@@ -89,7 +89,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
 
         assertEquals(list.getCount(), 2);
 
-        app.getDB().deleteAllRecipients();
+        app.getDatabaseHandler().deleteAllRecipients();
     }
 
     /**
@@ -97,7 +97,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
      */
     @Test
     public void testCreateContactCanBeCancelled() {
-        app.getDB().deleteAllRecipients();
+        app.getDatabaseHandler().deleteAllRecipients();
 
         getActivity();
 
@@ -111,7 +111,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
      */
     @Test
     public void testCreateContactIsCorrectlyCreated() {
-        app.getDB().deleteAllRecipients();
+        app.getDatabaseHandler().deleteAllRecipients();
 
         DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
 
@@ -132,7 +132,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
      */
     @Test
     public void testCreateContactSendCorrectParameter() throws DatabaseClientException {
-        app.getDB().deleteAllRecipients();
+        app.getDatabaseHandler().deleteAllRecipients();
 
         DatabaseClient client = Mockito.mock(ConstantDatabaseClient.class);
         DatabaseClientLocator.setDatabaseClient(client);

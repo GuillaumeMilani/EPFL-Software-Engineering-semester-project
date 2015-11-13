@@ -39,7 +39,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     public void setUp() throws Exception {
         super.setUp();
         app = CalamarApplication.getInstance();
-        dbHandler = app.getDB();
+        dbHandler = app.getDatabaseHandler();
         getApplication();
         dbHandler.deleteAllItems();
         dbHandler.deleteAllRecipients();
@@ -270,7 +270,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     @Override
     @After
     public void tearDown() {
-        app.getDB().closeDatabase();
+        app.getDatabaseHandler().closeDatabase();
     }
 
     @Ignore

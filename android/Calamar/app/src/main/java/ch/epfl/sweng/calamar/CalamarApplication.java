@@ -16,7 +16,7 @@ public final class CalamarApplication extends Application {
 
     //TODO Why volatile?
     private static volatile CalamarApplication instance;
-    private SQLiteDatabaseHandler db;
+    private SQLiteDatabaseHandler dbHandler;
     private SharedPreferences sp;
     private SharedPreferences.Editor editor;
 
@@ -53,7 +53,7 @@ public final class CalamarApplication extends Application {
         editor = sp.edit();
         setCurrentUserID(test.getID());
         setCurrentUserName(test.getName());
-        db = SQLiteDatabaseHandler.getInstance();
+        dbHandler = SQLiteDatabaseHandler.getInstance();
 
         setLastItemsRefresh(new Date(0));
         setLastUsersRefresh(new Date(0));
@@ -65,8 +65,8 @@ public final class CalamarApplication extends Application {
      *
      * @return the database
      */
-    public SQLiteDatabaseHandler getDB() {
-        return db;
+    public SQLiteDatabaseHandler getDatabaseHandler() {
+        return dbHandler;
     }
 
     /**

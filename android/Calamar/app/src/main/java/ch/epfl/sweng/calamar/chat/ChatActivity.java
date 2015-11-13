@@ -75,7 +75,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         refreshButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
 
-        databaseHandler = app.getDB();
+        databaseHandler = app.getDatabaseHandler();
 
         boolean offline = true;
         refresh(offline);

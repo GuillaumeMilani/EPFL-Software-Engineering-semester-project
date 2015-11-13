@@ -124,7 +124,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
     }
 
     private void getContacts() {
-        contacts.addAll(app.getDB().getAllRecipients());
+        contacts.addAll(app.getDatabaseHandler().getAllRecipients());
     }
 
     private void addNewContact() {
@@ -217,7 +217,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
                 contacts.add(newUser);
                 adapter.notifyDataSetChanged();
                 //Add in memory
-                app.getDB().addRecipient(newUser);
+                app.getDatabaseHandler().addRecipient(newUser);
             } else {
                 AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
                 newUserAlert.setTitle(R.string.add_new_contact_impossible);
