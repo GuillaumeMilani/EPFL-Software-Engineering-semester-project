@@ -30,7 +30,6 @@
         android:layout_below="@+id/newContactInput"
         android:layout_alignRight="@+id/textView"
         android:layout_alignEnd="@+id/textView"
-        android:onClick="addContact"
         android:nestedScrollingEnabled="false" />
 
     <Button
