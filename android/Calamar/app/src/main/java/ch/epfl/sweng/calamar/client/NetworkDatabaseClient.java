@@ -90,11 +90,12 @@ public class NetworkDatabaseClient implements DatabaseClient {
             URL url = new URL(serverUrl + NetworkDatabaseClient.NEW_USER_PATH);
 
             String jsonParameter = "{ " +
-                    "\"DeviceID\": \"" + deviceId + "\"" +
+                    "\"deviceID\": \"" + deviceId + "\"" +
                     ",\"name\": \"" + email + "\"" +
                     " }";
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter);
+
             JSONObject object = new JSONObject(response);
             return object.getInt("ID");
         } catch (IOException | JSONException e) {
@@ -172,6 +173,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
         wr.close();
 
         int responseCode = connection.getResponseCode();
+
         if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
             throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )");
         }

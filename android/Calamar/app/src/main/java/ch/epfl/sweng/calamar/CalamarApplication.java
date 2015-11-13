@@ -51,8 +51,6 @@ public final class CalamarApplication extends Application {
         instance = this;
         sp = new SecurePreferences(this, test.getPassword(), "user_pref.xml");
         editor = sp.edit();
-        setCurrentUserID(test.getID());
-        setCurrentUserName(test.getName());
         db = SQLiteDatabaseHandler.getInstance();
 
         setLastItemsRefresh(new Date(0));
