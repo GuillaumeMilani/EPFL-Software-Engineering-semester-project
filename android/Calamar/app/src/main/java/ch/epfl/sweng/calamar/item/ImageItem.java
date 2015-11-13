@@ -14,7 +14,7 @@ import ch.epfl.sweng.calamar.recipient.User;
  */
 public final class ImageItem extends Item {
 
-    private final static Type ITEM_TYPE = Type.SIMPLETEXTITEM;
+    private final static Type ITEM_TYPE = Type.IMAGEITEM;
 
     protected ImageItem(int ID, User from, Recipient to, Date date, Condition condition) {
         super(ID, from, to, date.getTime(), condition);
