@@ -106,7 +106,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private void sendTextItem() {
         String message = editText.getText().toString();
         Item textMessage = new SimpleTextItem(1, app.getCurrentUser(), correspondent, new Date(), message);
-        adapter.add(textMessage);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
         editText.setText("");
