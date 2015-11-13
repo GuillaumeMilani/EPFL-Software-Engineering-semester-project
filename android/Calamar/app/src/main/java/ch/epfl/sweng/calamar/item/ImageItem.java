@@ -22,12 +22,12 @@ public final class ImageItem extends Item {
 
     private final Bitmap bitmap;
 
-    protected ImageItem(int ID, User from, Recipient to, Date date, Condition condition, Bitmap bitmap) {
+    public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, Bitmap bitmap) {
         super(ID, from, to, date.getTime(), condition);
         this.bitmap = bitmap;
     }
 
-    protected ImageItem(int ID, User from, Recipient to, Date date, Bitmap bitmap) {
+    public ImageItem(int ID, User from, Recipient to, Date date, Bitmap bitmap) {
         super(ID, from, to, date.getTime());
         this.bitmap = bitmap;
     }

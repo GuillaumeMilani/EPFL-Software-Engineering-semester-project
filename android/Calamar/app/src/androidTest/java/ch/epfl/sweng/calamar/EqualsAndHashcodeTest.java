@@ -1,5 +1,7 @@
 package ch.epfl.sweng.calamar;
 
+import android.graphics.BitmapFactory;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -9,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.Group;
 import ch.epfl.sweng.calamar.recipient.User;
@@ -41,6 +44,13 @@ public class EqualsAndHashcodeTest {
     public void testSimpleTextItem() {
         testVerifyEqualsAndHashcode(new SimpleTextItem(12, new User(13, "bob"), new User(14, "sponge"), new Date(1000), Condition.trueCondition(), "Heeeeyyyyy"),
                 new SimpleTextItem(12, new User(13, "bob"), new User(14, "sponge"), new Date(1000), Condition.trueCondition(), "Heeeeyyyyy"));
+    }
+
+    @Test
+    public void testImageItem() {
+        String imagePath = "androidTest/res/lena.jpg";
+        testVerifyEqualsAndHashcode(new ImageItem(12, new User(13, "bob"), new User(14, "sponge"), new Date(1000), Condition.trueCondition(), BitmapFactory.decodeFile(imagePath)),
+                new ImageItem(12, new User(13, "bob"), new User(14, "sponge"), new Date(1000), Condition.trueCondition(), BitmapFactory.decodeFile(imagePath)));
     }
 
     private void testVerifyEqualsAndHashcode(Object a, Object b) {

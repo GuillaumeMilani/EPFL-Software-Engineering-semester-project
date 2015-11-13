@@ -1,5 +1,7 @@
 package ch.epfl.sweng.calamar;
 
+import android.graphics.BitmapFactory;
+
 import org.json.JSONException;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -10,6 +12,7 @@ import java.util.Date;
 
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
+import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -34,6 +37,12 @@ public class ParsingTest {
     @Test
     public void testSimpleTextItemParsing() throws JSONException {
         testItemParsing(new SimpleTextItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), new Date(22313), Condition.trueCondition(), "hey, How are you ?"));
+    }
+
+    @Test
+    public void testImageItemParsing() throws JSONException {
+        String imagePath = "androidTest/res/lena.jpg";
+        testItemParsing(new ImageItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), new Date(22313), Condition.trueCondition(),  BitmapFactory.decodeFile(imagePath)));
     }
 
     @Test
