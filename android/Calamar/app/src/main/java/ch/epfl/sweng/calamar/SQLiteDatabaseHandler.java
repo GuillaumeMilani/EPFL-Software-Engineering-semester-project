@@ -38,7 +38,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private final Map<Integer, Pair<Operation, Item>> pendingItems;
     private final Map<Integer, Pair<Operation, Recipient>> pendingRecipients;
 
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     private static final String DATABASE_NAME = "CalamarDB";
 
     private static final String ITEMS_TABLE = "tb_Items";
@@ -140,7 +140,25 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         for (Integer i : ids) {
             pendingItems.put(i, new Pair<Operation, Item>(Operation.DELETE, null));
         }
+    }
 
+    /**
+     * Deletes all items for the given recipient
+     * @param recipient the contact to delete the conversation with
+     */
+    public synchronized void deleteItemsForContact(Recipient recipient){
+        deleteItemsForContact(recipient.getID());
+    }
+
+    /**
+     * Deletes all items for the given recipient
+     * @param id the id of the contact to delete the conversation with
+     */
+    public synchronized void deleteItemsForContact(int id){
+        List<Item> items = getItemsForContact(id);
+        for(Item i : items){
+            pendingItems.put(i.getID(), new Pair<Operation,Item>(Operation.DELETE, null));
+        }
     }
 
     /**
@@ -390,7 +408,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public synchronized void deleteRecipient(int id) {
         pendingRecipients.put(id, new Pair<Operation, Recipient>(Operation.DELETE, null));
-
+        deleteItemsForContact(id);
     }
 
     /**
@@ -660,7 +678,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     private SQLiteDatabase getReadableIfNotOpen() {
-        if (!(db.isOpen() && db.isReadOnly())) {
+        if (!(db.isOpen())) {
             return getReadableDatabase(app.getCurrentUser().getPassword());
         }
         return db;

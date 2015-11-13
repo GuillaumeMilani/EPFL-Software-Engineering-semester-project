@@ -43,6 +43,8 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         getApplication();
         dbHandler.deleteAllItems();
         dbHandler.deleteAllRecipients();
+        app.setCurrentUserID(testUser.getID());
+        app.setCurrentUserName(testUser.getName());
     }
 
     public SQLiteDatabaseHandlerTest() {
@@ -195,6 +197,15 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     }
 
     @Test
+    public void testDeleteUserDeleteItemsOfUser(){
+        initDB();
+        assertFalse(dbHandler.getItemsForContact(testUser2).isEmpty());
+        dbHandler.deleteRecipient(testUser2);
+        assertTrue(dbHandler.getItemsForContact(testUser2).isEmpty());
+        clearDB();
+    }
+
+    @Test
     public void testAddAndDeleteRecipientSecondMethod() {
         dbHandler.addRecipient(testUser);
         dbHandler.deleteRecipient(testUser);
@@ -226,7 +237,6 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     @Test
     public void testGetItemsBetweenTwoRecipients() {
         initDB();
-        app.setCurrentUserID(testUser.getID());
         List<Item> contactItems = dbHandler.getItemsForContact(testUser2);
         assertEquals(contactItems.size(), 3);
         SimpleTextItem item = (SimpleTextItem) contactItems.get(0);
@@ -235,14 +245,12 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         assertEquals(item, testItem3);
         item = (SimpleTextItem) contactItems.get(2);
         assertEquals(item, testItem4);
-        app.setCurrentUserID(-1);
         clearDB();
     }
 
     @Test
     public void testGetItemsBetweenTwoRecipientsSecondMethod() {
         initDB();
-        app.setCurrentUserID(testUser.getID());
         List<Item> contactItems = dbHandler.getItemsForContact(testUser2.getID());
         assertEquals(contactItems.size(), 3);
         SimpleTextItem item = (SimpleTextItem) contactItems.get(0);
@@ -251,7 +259,6 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         assertEquals(item, testItem3);
         item = (SimpleTextItem) contactItems.get(2);
         assertEquals(item, testItem4);
-        app.setCurrentUserID(-1);
         clearDB();
     }
 
@@ -271,6 +278,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     @After
     public void tearDown() {
         app.getDatabaseHandler().closeDatabase();
+        app.resetPreferences();
     }
 
     @Ignore
