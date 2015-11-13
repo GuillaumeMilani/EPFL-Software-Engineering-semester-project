@@ -39,6 +39,5 @@
         android:id="@+id/newContactCancelButton"
         android:layout_below="@+id/newContactInput"
         android:layout_alignLeft="@+id/textView"
-        android:layout_alignStart="@+id/textView"
-        android:onClick="cancelNewContact" />
+        android:layout_alignStart="@+id/textView" />
 </RelativeLayout>

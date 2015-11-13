@@ -91,7 +91,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     }
 
     /**
-     * Called by create_new_contact layout
+     * Called by button OnClickListener
      *
      */
     public void addContact() {
@@ -101,11 +101,9 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     }
 
     /**
-     * Called by create_new_contact layout
-     *
-     * @param v
+     * Called by button OnClickListener
      */
-    public void cancelNewContact(View v) {
+    public void cancelNewContact() {
         newContactAlertDialog.dismiss();
     }
 
@@ -143,6 +141,13 @@ public class ChatFragment extends android.support.v4.app.Fragment {
             @Override
             public void onClick(View v) {
                 addContact();
+            }
+        });
+
+        newContactAlertDialog.findViewById(R.id.newContactCancelButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cancelNewContact();
             }
         });
         newContactAlertDialog.show();
