@@ -1,15 +1,25 @@
 package ch.epfl.sweng.calamar;
 
+import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.test.ActivityInstrumentationTestCase2;
+import android.widget.TextView;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import java.util.Date;
+import ch.epfl.sweng.calamar.chat.ChatActivity;
+import ch.epfl.sweng.calamar.chat.ChatUsersListActivity;
+import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
+import ch.epfl.sweng.calamar.client.DatabaseClient;
+import ch.epfl.sweng.calamar.client.DatabaseClientException;
+import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
+import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.item.SimpleTextItem;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -24,14 +34,12 @@ import static org.mockito.Mockito.verify;
 @RunWith(JUnit4.class)
 public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCase2<ChatActivity> {
 
-    private User alice = new User(1,"Alice");
-    private User bob = new User(2,"Bob");
 
     public ChatActivityCommunicationTest() {
         super(ChatActivity.class);
     }
 
-    @Override
+    @Before
     public void setUp() throws Exception {
         super.setUp();
         injectInstrumentation(InstrumentationRegistry.getInstrumentation());
@@ -40,12 +48,17 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
 
     /**
      * Test that when we click on the send button, a correct item is created.
-     * @throws ItemClientException
+     *
+     * @throws DatabaseClientException
      */
     @Test
-    public void testSendButtonSendCorrectInformation() throws ItemClientException {
-        ItemClient client = Mockito.mock(ConstantItemClient.class);
-        ItemClientLocator.setItemClient(client);
+    public void testSendButtonSendCorrectInformation() throws DatabaseClientException {
+        DatabaseClient client = Mockito.mock(ConstantDatabaseClient.class);
+        DatabaseClientLocator.setDatabaseClient(client);
+        Intent conversation = new Intent();
+        conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME, "Alice");
+        conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID, 1);
+        setActivityIntent(conversation);
         getActivity();
 
         //The argument captor capture the argument that the activity give to the send method.
@@ -56,33 +69,30 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
 
         verify(client).send(argument.capture());
 
-        assertEquals(argument.getValue().getFrom().getName(), "Alice");
+        assertEquals(argument.getValue().getTo().getName(), "Alice");
+        //Test the text of the message
+        SimpleTextItem expected = new SimpleTextItem(1, argument.getValue().getFrom(), argument.getValue().getTo(), argument.getValue().getDate(), "Hello Alice !");
+        assertEquals(argument.getValue(), expected);
 
-        // We use the same date !
-        //SimpleTextItem expected = new SimpleTextItem(1,alice,bob,argument.getValue().getDate(),"Hello Alice !");
-        //assertEquals(argument.getValue().getFrom(),expected); // When equals on item is ok.
+        //Test the name of the correspondent.
+        assertEquals("Alice", argument.getValue().getTo().getName());
+
     }
 
     /**
-     * Test that when we click on the send button, a correct item is created.
-     * @throws ItemClientException
+     * Test that the intent are correctly received.
      */
     @Test
-    public void testRefreshButtonGiveCorrectUser() throws ItemClientException {
-        ItemClient client = Mockito.mock(ConstantItemClient.class);
-        ItemClientLocator.setItemClient(client);
+    public void testActivityCorrectlyGetIntent() {
+        Intent conversation = new Intent();
+        conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME, "AliceTest");
+        conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID, 1);
+        setActivityIntent(conversation);
+
         getActivity();
 
-        ArgumentCaptor<Recipient> argument = ArgumentCaptor.forClass(Recipient.class);
-        ArgumentCaptor<Date> date = ArgumentCaptor.forClass(Date.class);
+        TextView recipient = (TextView) getActivity().findViewById(R.id.recipientLabel);
 
-        onView(withId(R.id.refreshButton)).perform(click());
-
-        verify(client).getAllItems(argument.capture(), date.capture());
-        //TODO : Test date == last refresh.
-        assertEquals(argument.getValue().getName(), "Alice");
-        //assertEquals(argument.getValue(), ChatActivity.actualUser);
+        assertEquals("AliceTest", recipient.getText());
     }
-
-
 }

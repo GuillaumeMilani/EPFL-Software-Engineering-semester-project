@@ -1,33 +1,54 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.item;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
 
+import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
+
 /**
  * Models an Item, superclass of all the possibly many kind of 'item' the app manage. <br><br>
- *     known subclasses : <li>
- *                          <ul>{@link SimpleTextItem},</ul>
- *                          <ul>{@link LocalizedItem}</ul>
- *                        </li>
- *     Item is immutable
+ * known subclasses : <li>
+ * <ul>{@link SimpleTextItem},</ul>
+ * </li>
+ * Item is immutable
  */
 public abstract class Item {
     private final int ID;
     private final User from;
     private final Recipient to;
     private final long date; //posix date
+    private final Condition condition;
+
+    public enum Type {SIMPLETEXTITEM}
     //TODO date d'expiration ?
 
-    protected Item(int ID, User from, Recipient to, long date) {
-        if(null == from || null == to) {
-            throw new IllegalArgumentException("field 'from' and/or 'to' cannot be null");
+
+    protected Item(int ID, User from, Recipient to, long date, Condition condition) {
+        if (null == from || null == to || null == condition) {
+            throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' cannot be null");
         }
         this.ID = ID;
         this.from = from; //User is immutable
         this.to = to;     //Recipient is immutable
         this.date = date;
+        this.condition = condition;
+    }
+
+    protected Item(int ID, User from, Recipient to, long date) {
+        this(ID, from, to, date, Condition.trueCondition());
+    }
+
+    public abstract Type getType();
+
+    /**
+     * @return the 'condition' field of the Item
+     */
+    public Condition getCondition() {
+        return condition;
     }
 
     /**
@@ -51,16 +72,17 @@ public abstract class Item {
         return new Date(this.date);
     }
 
-    public int getID(){
+    public int getID() {
         return ID;
     }
 
     /**
      * Appends the fields of {@link Item} to a {@link JSONObject} representing the Item.<br>
-     *     is called by the {@link #compose(JSONObject)} method of the child classes in
-     *     a chain where each compose method append the field of its class to the object.<br>
-     *         The chain begins by a call to {@link #toJSON()} in an instantiable child class.<br><br>
+     * is called by the {@link #compose(JSONObject)} method of the child classes in
+     * a chain where each compose method append the field of its class to the object.<br>
+     * The chain begins by a call to {@link #toJSON()} in an instantiable child class.<br><br>
      * Should <b>NOT</b> be used alone.
+     *
      * @param json the json to which we append (using {@link JSONObject#accumulate(String, Object)} ) data
      * @throws JSONException
      */
@@ -69,6 +91,7 @@ public abstract class Item {
         json.accumulate("from", from.toJSON());
         json.accumulate("to", to.toJSON());
         json.accumulate("date", date);
+        json.accumulate("condition", condition.toJSON());
     }
 
     /**
@@ -82,6 +105,7 @@ public abstract class Item {
      * Parses an Item from a JSONObject.<br>
      * To instantiate the correct Item ({@link SimpleTextItem}, etc ...)
      * the JSON must have a 'type' field indicating the type...('simpleText', ...)
+     *
      * @param json the well formed {@link JSONObject json} representing the {@link Item item}
      * @return a {@link Item item} parsed from the JSONObject
      * @throws JSONException
@@ -92,8 +116,8 @@ public abstract class Item {
         }
         Item item;
         String type = json.getString("type");
-        switch(type) {
-            case "simpleText":
+        switch (type) {
+            case "SIMPLETEXTITEM":
                 item = SimpleTextItem.fromJSON(json);
                 break;
             default:
@@ -104,25 +128,27 @@ public abstract class Item {
 
     /**
      * java equals
+     *
      * @param o other Object to compare this with
      * @return true if o is equal in value to this
      */
     @Override
     public boolean equals(Object o) {
-        if ( this == o ) return true;
-	if ( o == null ) return false;
-        if ( !(o instanceof Item) ) return false;
-        Item that = (Item)o;
+        if (this == o) return true;
+        if (o == null) return false;
+        if (!(o instanceof Item)) return false;
+        Item that = (Item) o;
         return that.ID == ID && that.from.equals(from) && that.to.equals(to) && that.date == date;
     }
 
     /**
      * java hash function
+     *
      * @return hash of the Object
      */
     @Override
     public int hashCode() {
-        return ID+from.hashCode()*89+to.hashCode()*197+((int)date)*479;
+        return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date) * 479;
     }
 
     /**
@@ -135,12 +161,14 @@ public abstract class Item {
         protected User from;
         protected Recipient to;
         protected long date;
+        protected Condition condition;
 
         public Builder parse(JSONObject o) throws JSONException {
             ID = o.getInt("ID");
             from = User.fromJSON(o.getJSONObject("from"));
             to = Recipient.fromJSON(o.getJSONObject("to"));
             date = o.getLong("date");
+            condition = Condition.fromJSON(o.getJSONObject("condition"));
             return this;
         }
     }

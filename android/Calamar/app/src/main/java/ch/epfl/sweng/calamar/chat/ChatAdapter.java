@@ -1,4 +1,4 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.chat;
 
 import android.app.Activity;
 import android.content.Context;
@@ -14,6 +14,11 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
+import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.item.SimpleTextItem;
 
 //TODO : Support other item types
 
@@ -62,7 +67,7 @@ public class ChatAdapter extends BaseAdapter {
         }
 
 
-        boolean ingoing = item.getTo().getID() == ((CalamarApplication) context.getApplication()).getInstance().getCurrentUserID();
+        boolean ingoing = item.getTo().getID() == CalamarApplication.getInstance().getCurrentUserID();
         setAlignment(holder, ingoing);
         holder.textMessage.setText(item.getMessage());
         holder.textTime.setText(item.getDate().toString());

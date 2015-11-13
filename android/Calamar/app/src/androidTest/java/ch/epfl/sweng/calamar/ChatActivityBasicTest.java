@@ -1,19 +1,18 @@
 package ch.epfl.sweng.calamar;
 
-import android.os.SystemClock;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.ActivityInstrumentationTestCase2;
-import android.test.suitebuilder.annotation.LargeTest;
-import android.view.View;
 import android.widget.ListView;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
+
+import ch.epfl.sweng.calamar.chat.ChatActivity;
+import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
+import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -23,22 +22,26 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 
-import static junit.framework.Assert.assertEquals;
-
 /**
  * Test for the chat activity
  */
 @RunWith(AndroidJUnit4.class)
-@LargeTest
-public class ChatActivityBasicTest {
+public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<ChatActivity> {
 
     @Rule
-    public ActivityTestRule<ChatActivity> mActivityRule = new ActivityTestRule<>(
+    public final ActivityTestRule<ChatActivity> mActivityRule = new ActivityTestRule<>(
             ChatActivity.class);
 
+    public ChatActivityBasicTest() {
+        super(ChatActivity.class);
+    }
+
     @Before
+    @Override
     public void setUp() throws Exception {
-        ItemClientLocator.setItemClient(new ConstantItemClient());
+        super.setUp();
+        DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
+        CalamarApplication.getInstance().getDB().deleteAllItems();
     }
 
 
@@ -64,7 +67,7 @@ public class ChatActivityBasicTest {
      * Test that we can write on the message edit field.
      */
     @Test
-      public void testCanWriteInMessageEdit() {
+    public void testCanWriteInMessageEdit() {
         onView(withId(R.id.messageEdit)).perform(typeText("Hello Alice !"));
         onView(allOf(withId(R.id.messageEdit), withText("Hello Alice !")));
     }
@@ -74,10 +77,10 @@ public class ChatActivityBasicTest {
      */
     @Test
     public void testTwoMessageAreDisplayed() {
-        ListView list = (ListView)mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+        ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
         int before = list.getCount();
         onView(withId(R.id.refreshButton)).perform(click());
-        assertEquals(list.getCount(), before+ 2);
+        assertEquals(list.getCount(), before + 2);
     }
 
     /**
@@ -95,10 +98,11 @@ public class ChatActivityBasicTest {
      */
     @Test
     public void testMessageIsDisplayedWhenSend() {
-        ListView list = (ListView)mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+        ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
         int before = list.getCount();
         onView(withId(R.id.messageEdit)).perform(typeText("Hello Alice !"));
         onView(withId(R.id.chatSendButton)).perform(click());
         assertEquals(list.getCount(), before + 1);
     }
+
 }

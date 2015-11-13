@@ -1,4 +1,4 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.chat;
 
 import android.app.Activity;
 import android.content.Context;
@@ -11,21 +11,26 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.epfl.sweng.calamar.R;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
+
 public class ChatUsersListAdapter extends BaseAdapter {
-    private final ArrayList<User> users;
+    private final ArrayList<Recipient> users;
     private final Activity context;
 
-    public ChatUsersListAdapter(Activity context, List<User> users){
-        this.users=new ArrayList<>(users);
-        this.context=context;
+    public ChatUsersListAdapter(Activity context, List<Recipient> users) {
+        this.users = new ArrayList<>(users);
+        this.context = context;
     }
+
     @Override
     public int getCount() {
         return users.size();
     }
 
     @Override
-    public User getItem(int position) {
+    public Recipient getItem(int position) {
         return users.get(position);
     }
 
@@ -37,7 +42,7 @@ public class ChatUsersListAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
-        User user = getItem(position);
+        Recipient user = getItem(position);
         LayoutInflater li = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if (convertView == null) {
             convertView = li.inflate(R.layout.list_contacts_chat, null);
@@ -51,8 +56,13 @@ public class ChatUsersListAdapter extends BaseAdapter {
         return convertView;
     }
 
+    public void add(User user) {
+        users.add(user);
+    }
+
     /**
      * Creates a ViewHolder containing the name of the user, and one LinearLayout containing it.
+     *
      * @param v The view holding those values
      * @return The newly created ViewHolder
      */
