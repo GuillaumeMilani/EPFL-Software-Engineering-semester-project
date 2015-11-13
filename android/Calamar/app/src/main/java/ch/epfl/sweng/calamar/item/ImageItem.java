@@ -7,7 +7,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import ch.epfl.sweng.calamar.condition.Condition;
@@ -21,8 +20,16 @@ public final class ImageItem extends Item {
 
     private final static Type ITEM_TYPE = Type.IMAGEITEM;
 
-    protected ImageItem(int ID, User from, Recipient to, Date date, Condition condition) {
+    private final Bitmap bitmap;
+
+    protected ImageItem(int ID, User from, Recipient to, Date date, Condition condition, Bitmap bitmap) {
         super(ID, from, to, date.getTime(), condition);
+        this.bitmap = bitmap;
+    }
+
+    protected ImageItem(int ID, User from, Recipient to, Date date, Bitmap bitmap) {
+        super(ID, from, to, date.getTime());
+        this.bitmap = bitmap;
     }
 
     @Override
@@ -32,7 +39,9 @@ public final class ImageItem extends Item {
 
     @Override
     public void compose(JSONObject json) throws JSONException {
-
+        super.compose(json);
+        json.accumulate("image", bitmap2String(bitmap));
+        json.accumulate("type", ITEM_TYPE.name());
     }
 
     public static ImageItem fromJSON(JSONObject json) throws JSONException {
@@ -41,7 +50,9 @@ public final class ImageItem extends Item {
 
     @Override
     public JSONObject toJSON() throws JSONException {
-        return null;
+        JSONObject ret = new JSONObject();
+        this.compose(ret);
+        return ret;
     }
 
     @Override
@@ -52,13 +63,13 @@ public final class ImageItem extends Item {
         return super.equals(that);
     }
 
-    private static Bitmap String2Bitmap(String str)
+    private static Bitmap string2Bitmap(String str)
     {
         byte[] bytes = str.getBytes();
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
     }
 
-    private static String Bitmap2String(Bitmap bitmap)
+    private static String bitmap2String(Bitmap bitmap)
     {
         ByteArrayOutputStream blob = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 0, blob);
@@ -72,17 +83,20 @@ public final class ImageItem extends Item {
 
     public static class Builder extends Item.Builder {
 
+        private Bitmap bitmap;
+
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString("type");
             if (!type.equals(ImageItem.ITEM_TYPE.name())) {
                 throw new IllegalArgumentException("expected " + ImageItem.ITEM_TYPE.name() + " was : " + type);
             }
+            bitmap = string2Bitmap(json.getString("image"));
             return this;
         }
 
         public ImageItem build() {
-            return new ImageItem(super.ID, super.from, super.to, new Date(super.date), super.condition);
+            return new ImageItem(super.ID, super.from, super.to, new Date(super.date), super.condition, bitmap);
         }
     }
 }
