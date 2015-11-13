@@ -1,4 +1,4 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.map;
 
 
 import android.app.Fragment;
@@ -15,7 +15,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import ch.epfl.sweng.calamar.map.GPSProvider;
+import ch.epfl.sweng.calamar.R;
 
 
 /**
