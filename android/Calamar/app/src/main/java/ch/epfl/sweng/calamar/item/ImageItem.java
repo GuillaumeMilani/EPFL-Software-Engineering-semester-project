@@ -1,8 +1,13 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import ch.epfl.sweng.calamar.condition.Condition;
@@ -45,6 +50,19 @@ public final class ImageItem extends Item {
         if (!(o instanceof ImageItem)) return false;
         ImageItem that = (ImageItem) o;
         return super.equals(that);
+    }
+
+    private static Bitmap String2Bitmap(String str)
+    {
+        byte[] bytes = str.getBytes();
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+    }
+
+    private static String Bitmap2String(Bitmap bitmap)
+    {
+        ByteArrayOutputStream blob = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, blob);
+        return new String(blob.toByteArray());
     }
 
     @Override
