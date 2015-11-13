@@ -1,6 +1,5 @@
 package ch.epfl.sweng.calamar;
 
-import android.support.test.InstrumentationRegistry;
 import android.test.ApplicationTestCase;
 
 import org.junit.Before;
@@ -12,6 +11,11 @@ import org.junit.runners.JUnit4;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.item.SimpleTextItem;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
 @RunWith(JUnit4.class)
 public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplication> {
@@ -33,7 +37,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        app = ((CalamarApplication) InstrumentationRegistry.getTargetContext().getApplicationContext());
+        app = CalamarApplication.getInstance();
         dbHandler = app.getDB();
         getApplication();
         dbHandler.deleteAllItems();
@@ -52,7 +56,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     }
 
     @Test
-    public void testDeleteOnEmptyDatabase(){
+    public void testDeleteOnEmptyDatabase() {
         dbHandler.deleteItem(0);
         dbHandler.deleteRecipient(0);
         assertEquals(dbHandler.getAllItems().size(), 0);
@@ -136,7 +140,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         toGet.add(testUser.getID());
         toGet.add(testUser2.getID());
         List<Recipient> recipientsGot = dbHandler.getRecipients(toGet);
-        assertEquals(recipientsGot.size(),2);
+        assertEquals(recipientsGot.size(), 2);
         assertEquals(recipientsGot.get(0), testUser);
         assertEquals(recipientsGot.get(1), testUser2);
         clearDB();
@@ -250,6 +254,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         clearDB();
     }
 
+    @Test
     public void testDeleteEverything() {
         initDB();
         assertFalse(dbHandler.getAllItems().isEmpty());

@@ -1,4 +1,4 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.client;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;

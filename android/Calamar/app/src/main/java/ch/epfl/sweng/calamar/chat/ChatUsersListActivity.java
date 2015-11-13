@@ -1,4 +1,4 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.chat;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -13,14 +13,19 @@ import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
+import ch.epfl.sweng.calamar.client.DatabaseClientException;
+import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
 public class ChatUsersListActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -41,7 +46,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_users_list);
 
-        app = ((CalamarApplication) getApplication()).getInstance();
+        app = CalamarApplication.getInstance();
 
         contacts = new ArrayList<>();
         getContacts();
@@ -51,7 +56,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
 
         contactsView = (ListView) findViewById(R.id.contactsList);
         contactsView.setSelector(R.drawable.list_selector);
-        adapter = new ChatUsersListAdapter(this,contacts);
+        adapter = new ChatUsersListAdapter(this, contacts);
         contactsView.setAdapter(adapter);
         contactsView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -59,7 +64,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
                 Intent conversation = new Intent(ChatUsersListActivity.this, ChatActivity.class);
                 //Assuming in same order
                 Recipient user = contacts.get(position);
-                conversation.putExtra(EXTRA_CORRESPONDENT_NAME,user.getName());
+                conversation.putExtra(EXTRA_CORRESPONDENT_NAME, user.getName());
 
                 conversation.putExtra(EXTRA_CORRESPONDENT_ID, user.getID());
                 startActivity(conversation);
@@ -82,8 +87,8 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
      *
      * @param v
      */
-    public void addContact(View v){
-        EditText input = (EditText)newContactAlertDialog.findViewById(R.id.newContactInput);
+    public void addContact(View v) {
+        EditText input = (EditText) newContactAlertDialog.findViewById(R.id.newContactInput);
         newContactAlertDialog.dismiss();
         new retrieveUserTask(input.getText().toString(), ChatUsersListActivity.this).execute();
     }
@@ -93,36 +98,36 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
      *
      * @param v
      */
-    public void cancelNewContact(View v){
+    public void cancelNewContact(View v) {
         newContactAlertDialog.dismiss();
     }
 
     /**
      * Return the actual user of the app.
      */
-    private void setActualUser(){
+    private void setActualUser() {
         //TODO : Remove when you use a real device.
         app.setCurrentUserID(11);
         app.setCurrentUserName("calamaremulator@gmail.com");
 
-        if(app.getCurrentUserID() == -1){
+        if (app.getCurrentUserID() == -1) {
             String name = null;
             //Get google account email
             AccountManager manager = AccountManager.get(this);
             Account[] list = manager.getAccountsByType("com.google");
-            if(list.length > 0){
+            if (list.length > 0) {
                 name = list[0].name;
             }
-            new createNewUserTask(name,this).execute();
+            new createNewUserTask(name, this).execute();
         }
         actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
     }
 
-    private void getContacts(){
+    private void getContacts() {
         contacts.addAll(app.getDB().getAllRecipients());
     }
 
-    private void addNewContact(){
+    private void addNewContact() {
         newContactAlertDialog = new Dialog(this);
 
         newContactAlertDialog.setContentView(R.layout.create_new_contact);
@@ -133,13 +138,12 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
 
     /**
      * Async task for sending a message.
-     *
      */
     private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
         private String name = null;
         private Context context;
 
-        public createNewUserTask(String name,Context context){
+        public createNewUserTask(String name, Context context) {
             this.name = name;
             this.context = context;
         }
@@ -157,7 +161,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
 
         @Override
         protected void onPostExecute(Integer id) {
-            if(id != null) {
+            if (id != null) {
                 app.setCurrentUserID(id);
                 app.setCurrentUserName(name);
                 actualUserTextView.setText("Actual user : " + name);
@@ -191,7 +195,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         private String name = null;
         private Context context;
 
-        public retrieveUserTask(String name,Context context) {
+        public retrieveUserTask(String name, Context context) {
             this.name = name;
             this.context = context;
         }

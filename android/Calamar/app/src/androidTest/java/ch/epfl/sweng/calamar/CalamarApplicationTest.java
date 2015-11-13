@@ -1,10 +1,7 @@
 package ch.epfl.sweng.calamar;
 
-import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
 import android.test.ApplicationTestCase;
-import android.test.RenamingDelegatingContext;
 import android.util.Log;
 
 import org.junit.After;
@@ -18,16 +15,16 @@ import java.util.Date;
 @RunWith(JUnit4.class)
 public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplication> {
 
-    private final String defaultUsername="";
-    private final int defaultID=-1;
-    private final long defaultLastRefresh=0;
+    private final String defaultUsername = "";
+    private final int defaultID = -1;
+    private final long defaultLastRefresh = 0;
 
-    private final String testUsername="test";
-    private final int testID=0;
-    private final Date testDate=new Date(100);
+    private final String testUsername = "test";
+    private final int testID = 0;
+    private final Date testDate = new Date(100);
 
-    private String curUsername="";
-    private int curUserID=0;
+    private String curUsername = "";
+    private int curUserID = 0;
 
     private CalamarApplication app;
 
@@ -35,7 +32,7 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        app = (CalamarApplication)InstrumentationRegistry.getTargetContext().getApplicationContext();
+        app = (CalamarApplication) InstrumentationRegistry.getTargetContext().getApplicationContext();
         getApplication();
     }
 
@@ -45,7 +42,7 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
 
 
     @Test
-    public void testDefaultValues(){
+    public void testDefaultValues() {
         app.resetPreferences();
         Log.v("Def ", app.getCurrentUserID() + "");
         assertEquals(defaultID, app.getCurrentUserID());
@@ -56,7 +53,7 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
     }
 
     @Test
-    public void testSetUsername(){
+    public void testSetUsername() {
         app.resetPreferences();
         app.setCurrentUserName(testUsername);
         assertEquals(testUsername, app.getCurrentUserName());
@@ -64,7 +61,7 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
     }
 
     @Test
-    public void testSetUserID(){
+    public void testSetUserID() {
         app.resetPreferences();
         app.setCurrentUserID(testID);
         assertEquals(testID, app.getCurrentUserID());
@@ -72,7 +69,7 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
     }
 
     @Test
-    public void testSetLastItemsRefresh(){
+    public void testSetLastItemsRefresh() {
         app.resetPreferences();
         app.setLastItemsRefresh(testDate);
         assertEquals(testDate.getTime(), app.getLastItemsRefresh());
@@ -80,7 +77,7 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
     }
 
     @Test
-    public void testSetLastUsersRefresh(){
+    public void testSetLastUsersRefresh() {
         app.resetPreferences();
         app.setLastUsersRefresh(testDate);
         assertEquals(testDate.getTime(), app.getLastUsersRefresh());
@@ -88,7 +85,7 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
     }
 
     @Test
-    public void testResets(){
+    public void testResets() {
         app.resetPreferences();
         app.setLastUsersRefresh(testDate);
         app.resetLastUsersRefresh();
@@ -106,7 +103,7 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
     }
 
     @After
-    public void tearDown(){
+    public void tearDown() {
         //app.resetPreferences();
     }
 }

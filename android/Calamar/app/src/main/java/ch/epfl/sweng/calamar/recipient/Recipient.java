@@ -1,4 +1,4 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.recipient;
 
 
 import org.json.JSONException;
@@ -6,11 +6,11 @@ import org.json.JSONObject;
 
 /**
  * Models a recipient (name and ID).<br>
- *     known subclasses : <li>
- *                          <ul>{@link User},</ul>
- *                          <ul>{@link Group}</ul>
- *                        </li>
- *     Recipient is immutable
+ * known subclasses : <li>
+ * <ul>{@link User},</ul>
+ * <ul>{@link Group}</ul>
+ * </li>
+ * Recipient is immutable
  */
 public abstract class Recipient {
     /**
@@ -54,10 +54,11 @@ public abstract class Recipient {
 
     /**
      * Appends the fields of {@link Recipient} to a {@link JSONObject} representing the Recipient.<br>
-     *     is called by the {@link #compose(JSONObject)} method of the child classes in
-     *     a chain where each compose method append the field of its class to the objects.<br>
-     *         The chain begins by a call to {@link #toJSON()} in an instantiable child class.<br><br>
+     * is called by the {@link #compose(JSONObject)} method of the child classes in
+     * a chain where each compose method append the field of its class to the objects.<br>
+     * The chain begins by a call to {@link #toJSON()} in an instantiable child class.<br><br>
      * Should <b>NOT</b> be used alone.
+     *
      * @param json the json to which we append (using {@link JSONObject#accumulate(String, Object)} ) data
      * @throws JSONException
      */
@@ -77,6 +78,7 @@ public abstract class Recipient {
      * Parses a Recipient from a JSONObject.<br>
      * To instantiate the correct Recipient ({@link User}, {@link Group}, ...)
      * the JSON must have a 'type' field indicating the type...('user', 'group')
+     *
      * @param json the well formed {@link JSONObject json} representing the {@link Recipient recipient}
      * @return a {@link Recipient recipient} parsed from the JSONObject
      * @throws JSONException
@@ -101,25 +103,27 @@ public abstract class Recipient {
 
     /**
      * java equals
+     *
      * @param o other Object to compare this with
      * @return true if o is equal in value to this
      */
     @Override
     public boolean equals(Object o) {
-        if ( this == o ) return true;
-	if ( o == null ) return false;
-        if ( !(o instanceof Recipient) ) return false;
-        Recipient that = (Recipient)o;
+        if (this == o) return true;
+        if (o == null) return false;
+        if (!(o instanceof Recipient)) return false;
+        Recipient that = (Recipient) o;
         return that.name.equals(name) && that.ID == ID;
     }
 
     /**
      * java hash function
+     *
      * @return hash of the Object
      */
     @Override
     public int hashCode() {
-        return ID+name.hashCode()*89;
+        return ID + name.hashCode() * 89;
     }
 
     /**
