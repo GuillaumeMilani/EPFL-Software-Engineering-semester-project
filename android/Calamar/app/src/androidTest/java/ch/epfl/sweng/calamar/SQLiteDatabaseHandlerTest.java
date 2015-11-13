@@ -197,7 +197,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     }
 
     @Test
-    public void testDeleteUserDeleteItemsOfUser(){
+    public void testDeleteUserDeletesItemsOfUser() {
         initDB();
         assertFalse(dbHandler.getItemsForContact(testUser2).isEmpty());
         dbHandler.deleteRecipient(testUser2);
@@ -263,19 +263,169 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     }
 
     @Test
-    public void testDeleteMoreThan99Items(){
-        for (int i=0;i<1000;++i){
-            dbHandler.addItem(new SimpleTextItem(i,new User(0,""),new User(1,""),new Date(),""));
+    public void testDeleteMoreThan99Items() {
+        for (int i = 0; i < 1000; ++i) {
+            dbHandler.addItem(new SimpleTextItem(i, new User(0, ""), new User(1, ""), new Date(), ""));
         }
-        assertEquals(dbHandler.getAllItems().size(),1000);
+        assertEquals(dbHandler.getAllItems().size(), 1000);
         dbHandler.applyPendingOperations();
-        assertEquals(dbHandler.getAllItems().size(),1000);
-        for (int i=0;i<1000;++i){
-            dbHandler.deleteItem(new SimpleTextItem(i,new User(0,""),new User(1,""), new Date(),""));
+        assertEquals(dbHandler.getAllItems().size(), 1000);
+        for (int i = 0; i < 1000; ++i) {
+            dbHandler.deleteItem(new SimpleTextItem(i, new User(0, ""), new User(1, ""), new Date(), ""));
         }
         assertTrue(dbHandler.getAllItems().isEmpty());
         dbHandler.applyPendingOperations();
         assertTrue(dbHandler.getAllItems().isEmpty());
+    }
+
+    @Test
+    public void testMultipleItemOperationsWithoutApplying() {
+        for (int i = 0; i < 1000; ++i) {
+            dbHandler.addItem(createDummyItem(i, false));
+        }
+        for (int i = 0; i < 1000; ++i) {
+            assertEquals(dbHandler.getItem(i), createDummyItem(i, false));
+        }
+        for (int i = 0; i < 500; ++i) {
+            dbHandler.updateItem(createDummyItem(i, true));
+        }
+        for (int i = 0; i < 500; ++i) {
+            assertEquals(dbHandler.getItem(i), createDummyItem(i, true));
+        }
+        for (int i = 500; i < 1000; ++i) {
+            assertEquals(dbHandler.getItem(i), createDummyItem(i, false));
+        }
+        for (int i = 500; i < 1000; ++i) {
+            dbHandler.deleteItem(i);
+        }
+        for (int i = 0; i < 500; ++i) {
+            assertEquals(dbHandler.getItem(i), createDummyItem(i, true));
+        }
+        for (int i = 500; i < 1000; ++i) {
+            assertEquals(dbHandler.getItem(i), null);
+        }
+        dbHandler.deleteAllItems();
+        assertTrue(dbHandler.getAllItems().isEmpty());
+        assertEquals(dbHandler.getAllRecipients().size(), 3);
+        dbHandler.deleteAllRecipients();
+        assertTrue(dbHandler.getAllRecipients().isEmpty());
+    }
+
+    @Test
+    public void testMultipleItemOperationsAlwaysApplying() {
+        for (int i = 0; i < 1000; ++i) {
+            dbHandler.addItem(createDummyItem(i, false));
+        }
+        dbHandler.applyPendingOperations();
+        for (int i = 0; i < 1000; ++i) {
+            assertEquals(dbHandler.getItem(i), createDummyItem(i, false));
+        }
+        for (int i = 0; i < 500; ++i) {
+            dbHandler.updateItem(createDummyItem(i, true));
+        }
+        dbHandler.applyPendingOperations();
+        for (int i = 0; i < 500; ++i) {
+            assertEquals(dbHandler.getItem(i), createDummyItem(i, true));
+        }
+        for (int i = 500; i < 1000; ++i) {
+            assertEquals(dbHandler.getItem(i), createDummyItem(i, false));
+        }
+        for (int i = 500; i < 1000; ++i) {
+            dbHandler.deleteItem(i);
+        }
+        dbHandler.applyPendingOperations();
+        for (int i = 0; i < 500; ++i) {
+            assertEquals(dbHandler.getItem(i), createDummyItem(i, true));
+        }
+        for (int i = 500; i < 1000; ++i) {
+            assertEquals(dbHandler.getItem(i), null);
+        }
+        dbHandler.deleteAllItems();
+        assertTrue(dbHandler.getAllItems().isEmpty());
+        assertEquals(dbHandler.getAllRecipients().size(), 3);
+        dbHandler.deleteAllRecipients();
+        assertTrue(dbHandler.getAllRecipients().isEmpty());
+    }
+
+    @Test
+    public void testMultipleRecipientsOperationsWithoutApplying() {
+        for (int i = 0; i < 1000; ++i) {
+            dbHandler.addRecipient(createDummyUser(i, false));
+        }
+        for (int i = 0; i < 1000; ++i) {
+            assertEquals(dbHandler.getRecipient(i), createDummyUser(i, false));
+        }
+        for (int i = 0; i < 500; ++i) {
+            dbHandler.updateRecipient(createDummyUser(i, true));
+        }
+        for (int i = 0; i < 500; ++i) {
+            assertEquals(dbHandler.getRecipient(i), createDummyUser(i, true));
+        }
+        for (int i = 500; i < 1000; ++i) {
+            assertEquals(dbHandler.getRecipient(i), createDummyUser(i, false));
+        }
+        for (int i = 500; i < 1000; ++i) {
+            dbHandler.deleteRecipient(i);
+        }
+        for (int i = 0; i < 500; ++i) {
+            assertEquals(dbHandler.getRecipient(i), createDummyUser(i, true));
+        }
+        for (int i = 500; i < 1000; ++i) {
+            assertEquals(dbHandler.getRecipient(i), null);
+        }
+        dbHandler.deleteAllRecipients();
+        assertTrue(dbHandler.getAllRecipients().isEmpty());
+    }
+
+    @Test
+    public void testMultipleRecipientOperationAlwaysApplying() {
+        for (int i = 0; i < 1000; ++i) {
+            dbHandler.addRecipient(createDummyUser(i, false));
+        }
+        dbHandler.applyPendingOperations();
+        for (int i = 0; i < 1000; ++i) {
+            assertEquals(dbHandler.getRecipient(i), createDummyUser(i, false));
+        }
+        for (int i = 0; i < 500; ++i) {
+            dbHandler.updateRecipient(createDummyUser(i, true));
+        }
+        dbHandler.applyPendingOperations();
+        for (int i = 0; i < 500; ++i) {
+            assertEquals(dbHandler.getRecipient(i), createDummyUser(i, true));
+        }
+        for (int i = 500; i < 1000; ++i) {
+            assertEquals(dbHandler.getRecipient(i), createDummyUser(i, false));
+        }
+        for (int i = 500; i < 1000; ++i) {
+            dbHandler.deleteRecipient(i);
+        }
+        dbHandler.applyPendingOperations();
+        for (int i = 0; i < 500; ++i) {
+            assertEquals(dbHandler.getRecipient(i), createDummyUser(i, true));
+        }
+        for (int i = 500; i < 1000; ++i) {
+            assertEquals(dbHandler.getRecipient(i), null);
+        }
+        dbHandler.deleteAllRecipients();
+        assertTrue(dbHandler.getAllRecipients().isEmpty());
+    }
+
+    @Ignore
+    private SimpleTextItem createDummyItem(int i, boolean update) {
+        if (update) {
+            return new SimpleTextItem(i, new User(1, ""), new User(2, ""), new Date(1), "bla");
+        } else {
+            return new SimpleTextItem(i, new User(0, ""), new User(1, ""), new Date(0), "");
+        }
+    }
+
+    @Ignore
+    private User createDummyUser(int i, boolean update) {
+        if (update) {
+            return new User(i, "hey");
+        } else {
+            return new User(i, "");
+        }
     }
 
     @Test

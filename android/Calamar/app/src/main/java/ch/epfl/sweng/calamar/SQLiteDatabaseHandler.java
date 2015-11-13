@@ -175,6 +175,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public synchronized void addItem(Item item) {
         pendingItems.put(item.getID(), new Pair<>(Operation.ADD, item));
+        updateRecipientsWithItem(item);
     }
 
     /**
@@ -185,6 +186,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized void addItems(List<Item> items) {
         for (Item item : items) {
             pendingItems.put(item.getID(), new Pair<>(Operation.ADD, item));
+            updateRecipientsWithItem(item);
         }
     }
 
@@ -196,6 +198,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public synchronized void updateItem(Item item) {
         pendingItems.put(item.getID(), new Pair<>(Operation.UPDATE, item));
+        updateRecipientsWithItem(item);
     }
 
     /**
@@ -206,6 +209,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized void updateItems(List<Item> items) {
         for (Item item : items) {
             pendingItems.put(item.getID(), new Pair<>(Operation.UPDATE, item));
+            updateRecipientsWithItem(item);
         }
     }
 
@@ -521,6 +525,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 recipients.add(fromMap.getRight());
             }
         }
+        System.out.println("MAPIDS SIZE : " + mapIds.size());
         db = getReadableIfNotOpen();
         Cursor cursor = db.rawQuery("SELECT * FROM " + RECIPIENTS_TABLE + " ORDER BY " + RECIPIENTS_KEY_ID, null);
         boolean hasNext;
@@ -662,7 +667,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         for (Item item : items) {
             ContentValues values = createItemValues(item);
             db.replace(ITEMS_TABLE, null, values);
-            updateRecipientsWithItem(item, db);
         }
     }
 
@@ -678,7 +682,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             ContentValues values = createItemValues(item);
             String[] args = {Integer.toString(item.getID())};
             db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = ?", args);
-            updateRecipientsWithItem(item, db);
         }
     }
 
@@ -754,11 +757,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         return new User(id, name);
     }
 
-    private void updateRecipientsWithItem(Item item, SQLiteDatabase db) {
-        ContentValues valuesFrom = createRecipientValues(item.getFrom());
-        ContentValues valuesTo = createRecipientValues(item.getTo());
-        db.replace(RECIPIENTS_TABLE, null, valuesFrom);
-        db.replace(RECIPIENTS_TABLE, null, valuesTo);
+    private void updateRecipientsWithItem(Item item) {
+        pendingRecipients.put(item.getFrom().getID(), new Pair<>(Operation.ADD, (Recipient) item.getFrom()));
+        pendingRecipients.put(item.getTo().getID(), new Pair<>(Operation.ADD, item.getTo()));
     }
 
     private String createPlaceholders(int length) {
