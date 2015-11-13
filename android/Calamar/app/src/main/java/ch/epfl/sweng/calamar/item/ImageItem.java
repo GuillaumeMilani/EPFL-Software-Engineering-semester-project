@@ -60,7 +60,12 @@ public final class ImageItem extends Item {
         if (this == o) return true;
         if (!(o instanceof ImageItem)) return false;
         ImageItem that = (ImageItem) o;
-        return super.equals(that);
+        return super.equals(that) && bitmap.equals(that.bitmap);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() * 73 + (bitmap != null ? bitmap.hashCode() : 0);
     }
 
     private static Bitmap string2Bitmap(String str)
@@ -74,11 +79,6 @@ public final class ImageItem extends Item {
         ByteArrayOutputStream blob = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 0, blob);
         return new String(blob.toByteArray());
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() * 73;
     }
 
     public static class Builder extends Item.Builder {
