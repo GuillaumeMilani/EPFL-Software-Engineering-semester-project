@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar;
 
 import android.test.ApplicationTestCase;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -264,6 +265,12 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         dbHandler.deleteAllRecipients();
         assertTrue(dbHandler.getAllRecipients().isEmpty());
         clearDB();
+    }
+
+    @Override
+    @After
+    public void tearDown() {
+        app.getDB().closeDatabase();
     }
 
     @Ignore

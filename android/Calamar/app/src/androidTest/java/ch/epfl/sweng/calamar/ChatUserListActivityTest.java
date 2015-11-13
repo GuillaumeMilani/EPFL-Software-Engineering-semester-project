@@ -38,10 +38,10 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
         super(ChatUsersListActivity.class);
     }
 
-    CalamarApplication  app;
+    CalamarApplication app;
 
-    private Recipient bob = new User(1, "bob");
-    private Recipient alice = new User(2, "alice");
+    private final Recipient bob = new User(1, "bob");
+    private final Recipient alice = new User(2, "alice");
 
     @Override
     @Before
@@ -70,7 +70,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
 
         getActivity();
 
-        ListView list = (ListView)getActivity().findViewById(R.id.contactsList);
+        ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
         assertEquals(list.getCount(), 0);
     }
 
@@ -85,7 +85,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
 
         getActivity();
 
-        ListView list = (ListView)getActivity().findViewById(R.id.contactsList);
+        ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
 
         assertEquals(list.getCount(), 2);
 
@@ -117,14 +117,14 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
 
         getActivity();
 
-        ListView list = (ListView)getActivity().findViewById(R.id.contactsList);
+        ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
         final int before = list.getCount();
 
         onView(withId(R.id.newContact)).perform(click());
 
         onView(withText("Add")).perform(click());
 
-        assertEquals(before + 1,list.getCount());
+        assertEquals(before + 1, list.getCount());
     }
 
     /**
@@ -149,7 +149,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
 
         verify(client).findUserByName(argument.capture());
 
-        assertEquals("calamar@gmail.com",argument.getValue());
+        assertEquals("calamar@gmail.com", argument.getValue());
     }
 
 }

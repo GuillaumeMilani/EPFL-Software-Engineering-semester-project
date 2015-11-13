@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -17,6 +18,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+
+import java.util.Date;
 
 import ch.epfl.sweng.calamar.chat.ChatActivity;
 import ch.epfl.sweng.calamar.map.MapsActivity;
@@ -32,6 +35,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     // google api related stuff
     private boolean resolvingError;
 
+    private CalamarApplication app;
+
 
     //TODO check activity lifecycle and pertinent action to make when entering new states
     // regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
@@ -42,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         setContentView(R.layout.activity_main);
 
         buildGoogleApiClient();  // will connect in onResume(), errors are handled in onConnectionFailed()
+        app = CalamarApplication.getInstance();
 
         // retrieve UI element
         Button showChatBtn = (Button) findViewById(R.id.showChatBtn);
@@ -66,15 +72,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onResume() {
         super.onResume();
         if (!resolvingError) {
-            CalamarApplication.getInstance().getGoogleApiClient().connect();
+            app.getGoogleApiClient().connect();
             // if errors, such as no google play apk, onConnectionFailed will handle the errors
         }
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        new applyPendingDatabaseOperationsTask();
+    }
+
+    @Override
     protected void onStop() {
-        CalamarApplication.getInstance().getGoogleApiClient().disconnect();
+        app.getGoogleApiClient().disconnect();
         super.onStop();
+        app.getDB().closeDatabase();
     }
 
     @Override
@@ -107,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public void onConnectionSuspended(int arg0) {
-        CalamarApplication.getInstance().getGoogleApiClient().connect();
+        app.getGoogleApiClient().connect();
     }
 
     @Override
@@ -124,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 connectionResult.startResolutionForResult(this, ERROR_RESOLUTION_REQUEST);
             } catch (IntentSender.SendIntentException e) {
                 // There was an error with the resolution intent. Try again.
-                CalamarApplication.getInstance().getGoogleApiClient().connect();
+                app.getGoogleApiClient().connect();
             }
         } else {
             resolvingError = true;
@@ -146,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     case Activity.RESULT_OK:
                         // Make sure the app is not already connected or attempting to connect
                         GoogleApiClient googleApiClient =
-                                CalamarApplication.getInstance().getGoogleApiClient();
+                                app.getGoogleApiClient();
                         if (!googleApiClient.isConnecting() && !googleApiClient.isConnected()) {
                             googleApiClient.connect();
                         }
@@ -200,8 +213,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * FusedLocationProviderAPI</a>
      */
     private synchronized void buildGoogleApiClient() {
-        CalamarApplication.getInstance().setGoogleApiClient(
-                new GoogleApiClient.Builder(CalamarApplication.getInstance())
+        app.setGoogleApiClient(
+                new GoogleApiClient.Builder(app)
                         .addApi(LocationServices.API)//TODO add service push TONY
                         .addConnectionCallbacks(this)
                         .addOnConnectionFailedListener(this).build());
@@ -215,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         startActivity(intent);
     }
 
-//    /**
+    //    /**
 //     * Verifies google play services availability on the device
 //     */
 //    //keeped just in case.., not used now, I go the other way by connecting and then eventually
@@ -238,4 +251,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 //        }
 //        return true;
 //    }
+    private class applyPendingDatabaseOperationsTask extends AsyncTask<Void, Void, Void> {
+
+
+        @Override
+        protected Void doInBackground(Void... v) {
+            app.getDB().applyPendingOperations();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void v) {
+            app.setLastUsersRefresh(new Date());
+            app.setLastItemsRefresh(new Date());
+        }
+
+    }
 }
