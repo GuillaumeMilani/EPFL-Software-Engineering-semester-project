@@ -13,7 +13,6 @@ import ch.epfl.sweng.calamar.recipient.User;
  * Models an Item, superclass of all the possibly many kind of 'item' the app manage. <br><br>
  * known subclasses : <li>
  * <ul>{@link SimpleTextItem},</ul>
- * <ul>{@link LocalizedItem}</ul>
  * </li>
  * Item is immutable
  */
