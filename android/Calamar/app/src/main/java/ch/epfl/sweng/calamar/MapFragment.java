@@ -1,12 +1,9 @@
 package ch.epfl.sweng.calamar;
 
 
-import android.app.Activity;
-import android.content.Intent;
+import android.app.Fragment;
 import android.location.Location;
 import android.os.Bundle;
-import android.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,17 +23,13 @@ import ch.epfl.sweng.calamar.map.GPSProvider;
  */
 public class MapFragment extends android.support.v4.app.Fragment implements OnMapReadyCallback {
 
-    public MapFragment() {
-        // Required empty public constructor
-    }
-
-    private static final String TAG = MapFragment.class.getSimpleName();
+    public static final String TAG = MapFragment.class.getSimpleName();
 
     //TODO : add two buttons begin checks stop checks
     // that will : checklocation settings + startlocation updates
     //TODO : manage activity lifecycle : start stop location updates when not needed, plus many potential problems
 
-    private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+    private GoogleMap map; // Might be null if Google Play services APK is not available.
     // however google play services are checked at app startup...and
     // maps fragment will do all the necessary if gplay services apk not present
     // see comment on setupMapIfNeeded
@@ -46,7 +39,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     private final GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
         @Override
         public void update(Location newLocation) {
-            assert mMap != null :
+            assert map != null :
                     "map should be initialized and ready before accessed by location updater";
 
             // TODO here place useful stuff, display items and position
@@ -54,45 +47,45 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             double latitude = newLocation.getLatitude();
             double longitude = newLocation.getLongitude();
             LatLng myLoc = new LatLng(latitude, longitude);
-            mMap.addMarker(new MarkerOptions().position(myLoc));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(myLoc));
+            map.addMarker(new MarkerOptions().position(myLoc));
+            map.moveCamera(CameraUpdateFactory.newLatLng(myLoc));
         }
     };
 
+    public MapFragment() {
+        // Required empty public constructor
+    }
+
+    // *********************************************************************************************
+    // map fragment lifecycle callbacks
+    // https://developer.android.com/guide/components/fragments.html
+    /**
+     * Replaces the "onCreate" method from an Activity
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return
+     */
     @Override
-    public void onMapReady(GoogleMap map) {
-        mMap = map;
-        setUpMap();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState)
+    {
+        super.onCreateView(inflater, container, savedInstanceState);
+
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_map, container, false);
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case GPSProvider.CHECK_SETTINGS_REQUEST:
-                switch (resultCode) {
-                    case Activity.RESULT_OK:
-                        Log.i(MapFragment.TAG, "user correctly set location settings");
-
-                        // reiterate the process
-                        gpsProvider.startLocationUpdates(getActivity());
-                        //TODO WTF why is the whole process executed twice ?????????????????????????
-                        // (double check....)
-
-                        //TODO activate/deactivate UI
-                        break;
-                    default:
-                        Log.e(MapFragment.TAG, "user declined offer to set location settings");
-                        // finish();//TODO activate/deactivate UI...
-                        // what to do ?
-                }
-                break;
-            default: throw new IllegalStateException("onActivityResult : unknown request ! ");
-        }
-    }
-
     public void onResume() {
         super.onResume();
-        setUpMapIfNeeded();
+        setUpMapIfNeeded(); // if needed, onMapReady is called with the map
+    }
+
+    @Override
+    public void onMapReady(GoogleMap map) {
+        this.map = map;
+        setUpGPS(); // register to the GPSProvider location updates
     }
 
     @Override
@@ -104,11 +97,12 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         // or on create / stop ??
         // gpsProvider.stopLocationUpdates();
     }
+    // *********************************************************************************************
 
     /**
      * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
      * installed) and the map has not already been instantiated.. This will ensure that we only ever
-     * call {@link #setUpMap()} once when {@link #mMap} is not null.
+     * call {@link #setUpGPS()} once when {@link #map} is not null.
      * <p>
      * If it isn't installed {@link SupportMapFragment} (and
      * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
@@ -122,7 +116,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      */
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
-        if (mMap == null) {
+        if (map == null) {
             // Try to obtain the map from the SupportMapFragment.
             ((SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map))
                     .getMapAsync(this);
@@ -132,33 +126,11 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     /**
      * This is where we can add markers or lines, add listeners or move the camera.
      * <p>
-     * This should only be called once and when we are sure that {@link #mMap} is not null.
+     * This should only be called once and when we are sure that {@link #map} is not null.
      */
-    private void setUpMap() {
+    private void setUpGPS() {
         gpsProvider = GPSProvider.getInstance();
         gpsProvider.addObserver(gpsObserver);
         gpsProvider.startLocationUpdates(getActivity());
-    }
-
-    /**
-     * Replaces the "onCreate" method from an Activity
-     * @param inflater
-     * @param container
-     * @param savedInstanceState
-     * @return
-     */
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
-
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_map, container, false);
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        setUpMapIfNeeded();
     }
 }

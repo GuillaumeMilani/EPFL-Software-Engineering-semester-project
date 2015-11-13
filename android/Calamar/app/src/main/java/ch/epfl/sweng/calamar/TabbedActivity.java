@@ -23,6 +23,10 @@ import com.google.android.gms.location.LocationServices;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.epfl.sweng.calamar.map.GPSProvider;
+
+import static android.app.PendingIntent.getActivity;
+
 /**
  * Created by Guillaume on 12.11.2015.
  */
@@ -41,36 +45,6 @@ public class TabbedActivity extends AppCompatActivity implements GoogleApiClient
     // google api related stuff
     private boolean resolvingError;
 
-    //TODO check activity lifecycle and pertinent action to make when entering new states
-    // regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
-    // etc...
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_tabbed);
-
-        // Layout
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Calamar");
-
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
-        setupViewPager(viewPager);
-
-        tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
-
-        buildGoogleApiClient();  // will connect in onResume(), errors are handled in onConnectionFailed()
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (!resolvingError) {
-            CalamarApplication.getInstance().getGoogleApiClient().connect();
-            // if errors, such as no google play apk, onConnectionFailed will handle the errors
-        }
-    }
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -78,12 +52,7 @@ public class TabbedActivity extends AppCompatActivity implements GoogleApiClient
         viewPager.setAdapter(adapter);
     }
 
-    @Override
-    protected void onStop() {
-        CalamarApplication.getInstance().getGoogleApiClient().disconnect();
-        super.onStop();
-    }
-
+    // *********************************************************************************************
     // GOOGLE API CLIENT CALLBACKS METHODS
     @Override
     public void onConnected(Bundle arg0) {
@@ -120,12 +89,12 @@ public class TabbedActivity extends AppCompatActivity implements GoogleApiClient
             showGoogleApiErrorDialog(connectionResult.getErrorCode());
         }
     }
+    // *********************************************************************************************
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case ERROR_RESOLUTION_REQUEST:
-
                 resolvingError = false;
                 switch (resultCode) {
                     case Activity.RESULT_OK:
@@ -141,10 +110,80 @@ public class TabbedActivity extends AppCompatActivity implements GoogleApiClient
                         finish();//TODO maybe refine ?
                 }
                 break;
+
+            case GPSProvider.CHECK_SETTINGS_REQUEST:
+                switch (resultCode) {
+                    case Activity.RESULT_OK:
+                        Log.i(MapFragment.TAG, "user correctly set location settings");
+
+                        // reiterate the process
+                        GPSProvider gpsProvider = GPSProvider.getInstance();
+                        gpsProvider.startLocationUpdates(this);
+                        //TODO WTF why is the whole process executed twice ?????????????????????????
+                        // (double check....)
+
+                        //TODO activate/deactivate UI
+                        break;
+                    default:
+                        Log.e(MapFragment.TAG, "user declined offer to set location settings");
+                        // finish();//TODO activate/deactivate UI...
+                        // what to do ?
+                }
+                break;
+
             default:
                 throw new IllegalStateException("onActivityResult : unknown request ! ");
         }
     }
+
+
+    // *********************************************************************************************
+    // ACTIVITY LIFECYCLE CALLBACKS
+    // https://developer.android.com/training/basics/activity-lifecycle/starting.html
+    // even better :
+    // https://stackoverflow.com/questions/12203651/why-is-onresume-called-when-an-activity-starts
+    //
+    // every time screen is rotated, activity is destroyed/recreated :
+    // https://stackoverflow.com/questions/7618703/activity-lifecycle-oncreate-called-on-every-re-orientation
+    // maybe prevent this ...
+    //
+    //TODO check activity lifecycle and pertinent action to make when entering new states
+    // regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
+    // etc...
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_tabbed);
+
+        // Layout
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Calamar");
+
+        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        setupViewPager(viewPager);
+
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+
+        buildGoogleApiClient();  // will connect in onResume(), errors are handled in onConnectionFailed()
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!resolvingError) {
+            CalamarApplication.getInstance().getGoogleApiClient().connect();
+            // if errors, such as no google play apk, onConnectionFailed will handle the errors
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        CalamarApplication.getInstance().getGoogleApiClient().disconnect();
+        super.onStop();
+    }
+    // *********************************************************************************************
 
 
     /**
@@ -187,9 +226,10 @@ public class TabbedActivity extends AppCompatActivity implements GoogleApiClient
     private synchronized void buildGoogleApiClient() {
         CalamarApplication.getInstance().setGoogleApiClient(
                 new GoogleApiClient.Builder(CalamarApplication.getInstance())
-                        .addApi(LocationServices.API)//TODO add service push TONY
+                        .addApi(LocationServices.API)
                         .addConnectionCallbacks(this)
                         .addOnConnectionFailedListener(this).build());
+        // TODO check issue #59
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
