@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
@@ -31,7 +32,7 @@ import ch.epfl.sweng.calamar.item.SimpleTextItem;
 /**
  * This activity manages the chat between two users (or in a group)
  */
-public class ChatActivity extends AppCompatActivity implements View.OnClickListener {
+public class ChatActivity extends BaseActivity implements View.OnClickListener {
     private EditText editText;
     private Button sendButton;
     private Button refreshButton;

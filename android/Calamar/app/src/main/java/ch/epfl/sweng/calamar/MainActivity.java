@@ -21,7 +21,7 @@ import com.google.android.gms.location.LocationServices;
 import ch.epfl.sweng.calamar.chat.ChatActivity;
 import ch.epfl.sweng.calamar.map.MapsActivity;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends BaseActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     // LogCat tag
     private static final String TAG = MainActivity.class.getSimpleName();

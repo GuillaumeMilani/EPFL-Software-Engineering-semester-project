@@ -1,8 +1,11 @@
 package ch.epfl.sweng.calamar;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -12,7 +15,7 @@ import java.util.Date;
 
 import ch.epfl.sweng.calamar.recipient.User;
 
-public final class CalamarApplication extends Application {
+public final class CalamarApplication extends Application implements Application.ActivityLifecycleCallbacks {
 
     //TODO Why volatile?
     private static volatile CalamarApplication instance;
@@ -29,6 +32,12 @@ public final class CalamarApplication extends Application {
     // Google client to interact with Google API
     //https://developers.google.com/android/guides/api-client
     private GoogleApiClient googleApiClient = null;
+
+    //Used to check and do stuff if the app is on background -- not foolproof, there is no real good way apparently
+    private boolean onForeground = true;
+    private int resumed = 0;
+    private int paused = 0;
+    private Handler handler;
 
     /**
      * Returns the current instance of the application.
@@ -54,7 +63,7 @@ public final class CalamarApplication extends Application {
         setCurrentUserID(test.getID());
         setCurrentUserName(test.getName());
         db = SQLiteDatabaseHandler.getInstance();
-
+        handler = new Handler();
         setLastItemsRefresh(new Date(0));
         setLastUsersRefresh(new Date(0));
     }
@@ -204,6 +213,68 @@ public final class CalamarApplication extends Application {
             throw new IllegalStateException("getGoogleApiClient : google api client has not been created !");
         }
         return googleApiClient;
+    }
+
+
+    //Used to check if app is in background (triggers database)
+    @Override
+    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+
+    }
+
+    @Override
+    public void onActivityStarted(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityResumed(Activity activity) {
+        ++resumed;
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (isOnForeground()) {
+                    //TODO db.applyPendingOperations() once improve_database is merged;
+                }
+            }
+        }, 500);
+    }
+
+    @Override
+    public void onActivityPaused(Activity activity) {
+        ++paused;
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (isOnForeground()) {
+                    //TODO same as above;
+                }
+            }
+        }, 500);
+    }
+
+    @Override
+    public void onActivityStopped(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+
+    }
+
+    @Override
+    public void onActivityDestroyed(Activity activity) {
+
+    }
+
+    private boolean isOnForeground() {
+        if (paused >= resumed && onForeground) {
+            onForeground = false;
+        } else if (resumed > paused && !onForeground) {
+            onForeground = true;
+        }
+        return onForeground;
     }
 
 

@@ -20,6 +20,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
@@ -27,7 +28,7 @@ import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
 
-public class ChatUsersListActivity extends AppCompatActivity implements View.OnClickListener {
+public class ChatUsersListActivity extends BaseActivity implements View.OnClickListener {
 
     public final static String EXTRA_CORRESPONDENT_NAME = "ch.epfl.sweng.calamar.CORRESPONDENT_NAME";
     public final static String EXTRA_CORRESPONDENT_ID = "ch.epfl.sweng.calamar.CORRESPONDENT_ID";
