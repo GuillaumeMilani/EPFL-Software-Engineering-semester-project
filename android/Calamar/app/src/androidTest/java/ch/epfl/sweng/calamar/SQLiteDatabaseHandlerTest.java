@@ -263,6 +263,22 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     }
 
     @Test
+    public void testDeleteMoreThan99Items(){
+        for (int i=0;i<1000;++i){
+            dbHandler.addItem(new SimpleTextItem(i,new User(0,""),new User(1,""),new Date(),""));
+        }
+        assertEquals(dbHandler.getAllItems().size(),1000);
+        dbHandler.applyPendingOperations();
+        assertEquals(dbHandler.getAllItems().size(),1000);
+        for (int i=0;i<1000;++i){
+            dbHandler.deleteItem(new SimpleTextItem(i,new User(0,""),new User(1,""), new Date(),""));
+        }
+        assertTrue(dbHandler.getAllItems().isEmpty());
+        dbHandler.applyPendingOperations();
+        assertTrue(dbHandler.getAllItems().isEmpty());
+    }
+
+    @Test
     public void testDeleteEverything() {
         initDB();
         assertFalse(dbHandler.getAllItems().isEmpty());

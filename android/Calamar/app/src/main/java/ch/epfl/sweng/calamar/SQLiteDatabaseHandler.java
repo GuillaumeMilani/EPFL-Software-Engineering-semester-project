@@ -40,6 +40,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 3;
     private static final String DATABASE_NAME = "CalamarDB";
+    private static final int MAX_PLACEHOLDERS_COUNT = 99;
 
     private static final String ITEMS_TABLE = "tb_Items";
     private static final String ITEMS_KEY_TYPE = "type";
@@ -101,6 +102,10 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         //TODO only recreates db at the moment
+        db.execSQL("DROP TABLE IF EXISTS " + ITEMS_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + RECIPIENTS_TABLE);
+        CalamarApplication.getInstance().setLastItemsRefresh(new Date(0));
+        CalamarApplication.getInstance().setLastUsersRefresh(new Date(0));
         onCreate(db);
     }
 
@@ -144,20 +149,22 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     /**
      * Deletes all items for the given recipient
+     *
      * @param recipient the contact to delete the conversation with
      */
-    public synchronized void deleteItemsForContact(Recipient recipient){
+    public synchronized void deleteItemsForContact(Recipient recipient) {
         deleteItemsForContact(recipient.getID());
     }
 
     /**
      * Deletes all items for the given recipient
+     *
      * @param id the id of the contact to delete the conversation with
      */
-    public synchronized void deleteItemsForContact(int id){
+    public synchronized void deleteItemsForContact(int id) {
         List<Item> items = getItemsForContact(id);
-        for(Item i : items){
-            pendingItems.put(i.getID(), new Pair<Operation,Item>(Operation.DELETE, null));
+        for (Item i : items) {
+            pendingItems.put(i.getID(), new Pair<Operation, Item>(Operation.DELETE, null));
         }
     }
 
@@ -553,9 +560,12 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                             itemsToDelete.add(e.getKey());
                         }
                     }
+
                     pendingAddItems(itemsToAdd);
                     pendingUpdateItems(itemsToUpdate);
-                    pendingDeleteItems(itemsToDelete);
+                    if (!itemsToDelete.isEmpty()) {
+                        pendingDeleteItems(itemsToDelete);
+                    }
                 }
                 if (!pendingRecipients.isEmpty()) {
                     List<Recipient> recipientsToAdd = new ArrayList<>();
@@ -573,7 +583,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                     }
                     pendingAddRecipients(recipientsToAdd);
                     pendingUpdateRecipients(recipientsToUpdate);
-                    pendingDeleteRecipients(recipientsToDelete);
+                    if (!recipientsToDelete.isEmpty()) {
+                        pendingDeleteRecipients(recipientsToDelete);
+                    }
                 }
                 db.setTransactionSuccessful();
                 pendingItems.clear();
@@ -595,16 +607,20 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     //Helper methods for applyPendingOperations
 
     private void pendingDeleteItems(List<Integer> ids) {
-        if (ids.size() >= 100) {
-            int counter = ids.size() - 1;
+        if (ids.size() >= MAX_PLACEHOLDERS_COUNT + 1) {
+            int counter = ids.size();
+            String fullPlaceHolders = createPlaceholders(MAX_PLACEHOLDERS_COUNT);
             while (counter > 0) {
-                int num = counter - 99 > 0 ? 99 : counter;
-                System.out.println("num : " + num + " counter : " + counter);
+                int num = counter - MAX_PLACEHOLDERS_COUNT > 0 ? MAX_PLACEHOLDERS_COUNT : counter;
                 String[] args = new String[num];
                 for (int i = 0; i < num; ++i) {
                     args[i] = Integer.toString(ids.get(i + (ids.size() - counter)));
                 }
-                db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " IN (" + createPlaceholders(num) + ")", args);
+                if (num == MAX_PLACEHOLDERS_COUNT) {
+                    db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " IN (" + fullPlaceHolders + ")", args);
+                } else {
+                    db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " IN (" + createPlaceholders(num) + ")", args);
+                }
                 counter -= num;
             }
         } else {
@@ -617,15 +633,20 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     private void pendingDeleteRecipients(List<Integer> ids) {
-        if (ids.size() >= 100) {
-            int counter = ids.size() - 1;
+        if (ids.size() >= MAX_PLACEHOLDERS_COUNT + 1) {
+            int counter = ids.size();
+            String fullPlaceHolders = createPlaceholders(MAX_PLACEHOLDERS_COUNT);
             while (counter > 0) {
-                int num = counter - 99 > 0 ? 99 : counter;
+                int num = counter - MAX_PLACEHOLDERS_COUNT > 0 ? MAX_PLACEHOLDERS_COUNT : counter;
                 String[] args = new String[num];
                 for (int i = 0; i < num; ++i) {
                     args[i] = Integer.toString(ids.get(i + (ids.size() - counter)));
                 }
-                db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(num) + ")", args);
+                if (num == MAX_PLACEHOLDERS_COUNT) {
+                    db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " IN (" + fullPlaceHolders + ")", args);
+                } else {
+                    db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(num) + ")", args);
+                }
                 counter -= num;
             }
         } else {
