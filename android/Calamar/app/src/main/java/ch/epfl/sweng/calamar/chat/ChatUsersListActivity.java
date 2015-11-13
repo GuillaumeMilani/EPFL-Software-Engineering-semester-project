@@ -130,7 +130,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
     private void addNewContact() {
         newContactAlertDialog = new Dialog(this);
 
-        newContactAlertDialog.setContentView(R.layout.create_new_contact);
+        newContactAlertDialog.setContentView(R.layout.create_new_contact_deprecated);
         newContactAlertDialog.setTitle(getString(R.string.add_new_contact_title));
 
         newContactAlertDialog.show();
