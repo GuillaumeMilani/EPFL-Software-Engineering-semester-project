@@ -188,14 +188,16 @@ public final class CalamarApplication extends Application {
     }
 
     public void setGoogleApiClient(GoogleApiClient googleApiClient) {
-        //TODO ask guru, when unresolvable errors cause the main activity to finish (destroy activity)
-        //if user reopen, activity's oncreate is called again but because the app isn't killed,
-        // the following code will cause the app to crash (but we nearly don't care...enfin...)
-        if (this.googleApiClient != null) {
-            Log.e(CalamarApplication.TAG, "setGoogleApiClient : google api client is already created !");
-            throw new IllegalStateException("setGoogleApiClient : google api client is already created !");
+//        //TODO ask guru, when unresolvable errors cause the main activity to finish (destroy activity)
+//        //if user reopen, activity's oncreate is called again but because the app isn't killed,
+//        // the following code will cause the app to crash (but we nearly don't care...enfin...)
+//        if (this.googleApiClient != null) {
+//            Log.e(CalamarApplication.TAG, "setGoogleApiClient : google api client is already created !");
+//            throw new IllegalStateException("setGoogleApiClient : google api client is already created !");
+//        }
+        if (this.googleApiClient == null) {
+            this.googleApiClient = googleApiClient;
         }
-        this.googleApiClient = googleApiClient;
     }
 
     public GoogleApiClient getGoogleApiClient() {
