@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.Date;
 
 import ch.epfl.sweng.calamar.condition.Condition;
@@ -118,7 +119,9 @@ public final class ImageItem extends Item {
      */
     @Override
     public int hashCode() {
-        return super.hashCode() * 73 + (bitmap != null ? bitmap.hashCode() : 0);
+        ByteArrayOutputStream blob = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, blob);
+        return super.hashCode() * 73 + (bitmap != null ? Arrays.hashCode(blob.toByteArray()) : 0);
     }
 
     /**
