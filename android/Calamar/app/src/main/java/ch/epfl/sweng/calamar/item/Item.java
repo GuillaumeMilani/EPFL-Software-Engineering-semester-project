@@ -151,6 +151,11 @@ public abstract class Item {
         return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date) * 479;
     }
 
+    @Override
+    public String toString(){
+        return "id : "+ID+" , from : ("+from+") , to : ("+to+") , at : "+new Date(date);
+    }
+
     /**
      * A Builder for {@link Item}, has no build() method since Item isn't instantiable,
      * is used by the child builders (in {@link SimpleTextItem} or...) to build the "Item

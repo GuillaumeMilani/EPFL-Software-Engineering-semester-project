@@ -40,7 +40,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 3;
     private static final String DATABASE_NAME = "CalamarDB";
+
     private static final int MAX_PLACEHOLDERS_COUNT = 99;
+    private final String FULL_PLACEHOLDERS;
 
     private static final String ITEMS_TABLE = "tb_Items";
     private static final String ITEMS_KEY_TYPE = "type";
@@ -79,6 +81,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         db = getReadableDatabase(app.getCurrentUser().getPassword());
         this.pendingRecipients = new HashMap<>();
         this.pendingItems = new HashMap<>();
+        this.FULL_PLACEHOLDERS = createPlaceholders(MAX_PLACEHOLDERS_COUNT);
 
     }
 
@@ -175,7 +178,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public synchronized void addItem(Item item) {
         pendingItems.put(item.getID(), new Pair<>(Operation.ADD, item));
-        updateRecipientsWithItem(item);
+        addOrUpdateRecipientWithItem(item);
     }
 
     /**
@@ -186,32 +189,32 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized void addItems(List<Item> items) {
         for (Item item : items) {
             pendingItems.put(item.getID(), new Pair<>(Operation.ADD, item));
-            updateRecipientsWithItem(item);
+            addOrUpdateRecipientWithItem(item);
         }
     }
 
 
     /**
-     * Updates an item and the recipients related to it
+     * Updates an item and the recipients related to it (Does not add the item if it doesn't already exist)
      *
      * @param item the item to update
      */
     public synchronized void updateItem(Item item) {
-        pendingItems.put(item.getID(), new Pair<>(Operation.UPDATE, item));
-        updateRecipientsWithItem(item);
+        manageItemUpdate(item);
     }
 
     /**
-     * Updates several items given a list, as well as the recipients related to them
+     * Updates several items given a list, as well as the recipients related to them (Does not add the items if they don't already exist)
      *
      * @param items the list of items to update
      */
+
     public synchronized void updateItems(List<Item> items) {
         for (Item item : items) {
-            pendingItems.put(item.getID(), new Pair<>(Operation.UPDATE, item));
-            updateRecipientsWithItem(item);
+            manageItemUpdate(item);
         }
     }
+
 
     /**
      * Returns an item given an id
@@ -263,18 +266,44 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             return Sorter.sortItemList(new ArrayList<>(items));
         }
         db = getReadableIfNotOpen();
-        String[] args = new String[databaseIds.size()];
-        for (int i = 0; i < databaseIds.size(); ++i) {
-            args[i] = Integer.toString(databaseIds.get(i));
-        }
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " IN (" + createPlaceholders(databaseIds.size()) + ")", args, null, null, ITEMS_KEY_ID);
-        if (cursor != null) {
-            boolean hasNext = cursor.moveToFirst();
-            while (hasNext) {
-                items.add(createItem(cursor));
-                hasNext = cursor.moveToNext();
+        if (databaseIds.size() > MAX_PLACEHOLDERS_COUNT) {
+            int count = databaseIds.size();
+            while (count > 0) {
+                int num = count - MAX_PLACEHOLDERS_COUNT > 0 ? MAX_PLACEHOLDERS_COUNT : count;
+                String[] args = new String[num];
+                for (int i = 0; i < num; ++i) {
+                    args[i] = Integer.toString(databaseIds.get(i + (databaseIds.size() - count)));
+                }
+                Cursor cursor = null;
+                if (num == MAX_PLACEHOLDERS_COUNT) {
+                    cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " IN (" + FULL_PLACEHOLDERS + ")", args, null, null, ITEMS_KEY_ID);
+                } else {
+                    cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " IN (" + createPlaceholders(num) + ")", args, null, null, ITEMS_KEY_ID);
+                }
+                if (cursor != null) {
+                    boolean hasNext = cursor.moveToFirst();
+                    while (hasNext) {
+                        items.add(createItem(cursor));
+                        hasNext = cursor.moveToNext();
+                    }
+                    cursor.close();
+                }
+                count -= num;
             }
-            cursor.close();
+        } else {
+            String[] args = new String[databaseIds.size()];
+            for (int i = 0; i < databaseIds.size(); ++i) {
+                args[i] = Integer.toString(databaseIds.get(i));
+            }
+            Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " IN (" + createPlaceholders(databaseIds.size()) + ")", args, null, null, ITEMS_KEY_ID);
+            if (cursor != null) {
+                boolean hasNext = cursor.moveToFirst();
+                while (hasNext) {
+                    items.add(createItem(cursor));
+                    hasNext = cursor.moveToNext();
+                }
+                cursor.close();
+            }
         }
         return Sorter.sortItemList(new ArrayList<>(items));
     }
@@ -383,23 +412,22 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     /**
-     * Updates a recipient
+     * Updates a recipient (Does not add the recipient if it doesn't already exist)
      *
      * @param recipient the recipient to update
      */
     public synchronized void updateRecipient(Recipient recipient) {
-        pendingRecipients.put(recipient.getID(), new Pair<>(Operation.UPDATE, recipient));
-
+        manageRecipientUpdate(recipient);
     }
 
     /**
-     * Updates all recipients given in the list
+     * Updates all recipients given in the list (Does not add the recipients if they don't already exist)
      *
      * @param recipients the list of recipients to update
      */
     public synchronized void updateRecipients(List<Recipient> recipients) {
-        for (Recipient r : recipients) {
-            pendingRecipients.put(r.getID(), new Pair<>(Operation.UPDATE, r));
+        for (Recipient recipient : recipients) {
+            manageRecipientUpdate(recipient);
         }
     }
 
@@ -418,8 +446,8 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param id the id
      */
     public synchronized void deleteRecipient(int id) {
-        pendingRecipients.put(id, new Pair<Operation, Recipient>(Operation.DELETE, null));
         deleteItemsForContact(id);
+        pendingRecipients.put(id, new Pair<Operation, Recipient>(Operation.DELETE, null));
     }
 
     /**
@@ -494,18 +522,44 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             return Sorter.sortRecipientList(new ArrayList<>(recipients));
         }
         db = getReadableIfNotOpen();
-        String[] args = new String[databaseIds.size()];
-        for (int i = 0; i < databaseIds.size(); ++i) {
-            args[i] = Integer.toString(databaseIds.get(i));
-        }
-        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(databaseIds.size()) + ")", args, null, null, RECIPIENTS_KEY_ID);
-        if (cursor != null) {
-            boolean hasNext = cursor.moveToFirst();
-            while (hasNext) {
-                recipients.add(createUser(cursor));
-                hasNext = cursor.moveToNext();
+        if (databaseIds.size() > MAX_PLACEHOLDERS_COUNT) {
+            int count = databaseIds.size();
+            while (count > 0) {
+                int num = count - MAX_PLACEHOLDERS_COUNT > 0 ? MAX_PLACEHOLDERS_COUNT : count;
+                String[] args = new String[num];
+                for (int i = 0; i < num; ++i) {
+                    args[i] = Integer.toString(databaseIds.get(i+(databaseIds.size()-count)));
+                }
+                Cursor cursor = null;
+                if (num == MAX_PLACEHOLDERS_COUNT) {
+                    cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " IN (" + FULL_PLACEHOLDERS + ")", args, null, null, RECIPIENTS_KEY_ID);
+                } else {
+                    cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(num) + ")", args, null, null, RECIPIENTS_KEY_ID);
+                }
+                if (cursor != null) {
+                    boolean hasNext = cursor.moveToFirst();
+                    while (hasNext) {
+                        recipients.add(createUser(cursor));
+                        hasNext = cursor.moveToNext();
+                    }
+                    cursor.close();
+                }
+                count -= num;
             }
-            cursor.close();
+        } else {
+            String[] args = new String[databaseIds.size()];
+            for (int i = 0; i < databaseIds.size(); ++i) {
+                args[i] = Integer.toString(databaseIds.get(i));
+            }
+            Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(databaseIds.size()) + ")", args, null, null, RECIPIENTS_KEY_ID);
+            if (cursor != null) {
+                boolean hasNext = cursor.moveToFirst();
+                while (hasNext) {
+                    recipients.add(createUser(cursor));
+                    hasNext = cursor.moveToNext();
+                }
+                cursor.close();
+            }
         }
         return Sorter.sortRecipientList(new ArrayList<>(recipients));
     }
@@ -525,7 +579,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 recipients.add(fromPending.getRight());
             }
         }
-        System.out.println("MAPIDS SIZE : " + mapIds.size());
         db = getReadableIfNotOpen();
         Cursor cursor = db.rawQuery("SELECT * FROM " + RECIPIENTS_TABLE + " ORDER BY " + RECIPIENTS_KEY_ID, null);
         boolean hasNext;
@@ -612,9 +665,8 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     //Helper methods for applyPendingOperations
 
     private void pendingDeleteItems(List<Integer> ids) {
-        if (ids.size() >= MAX_PLACEHOLDERS_COUNT + 1) {
+        if (ids.size() > MAX_PLACEHOLDERS_COUNT) {
             int counter = ids.size();
-            String fullPlaceHolders = createPlaceholders(MAX_PLACEHOLDERS_COUNT);
             while (counter > 0) {
                 int num = counter - MAX_PLACEHOLDERS_COUNT > 0 ? MAX_PLACEHOLDERS_COUNT : counter;
                 String[] args = new String[num];
@@ -622,7 +674,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                     args[i] = Integer.toString(ids.get(i + (ids.size() - counter)));
                 }
                 if (num == MAX_PLACEHOLDERS_COUNT) {
-                    db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " IN (" + fullPlaceHolders + ")", args);
+                    db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " IN (" + FULL_PLACEHOLDERS + ")", args);
                 } else {
                     db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " IN (" + createPlaceholders(num) + ")", args);
                 }
@@ -638,9 +690,8 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     private void pendingDeleteRecipients(List<Integer> ids) {
-        if (ids.size() >= MAX_PLACEHOLDERS_COUNT + 1) {
+        if (ids.size() > MAX_PLACEHOLDERS_COUNT) {
             int counter = ids.size();
-            String fullPlaceHolders = createPlaceholders(MAX_PLACEHOLDERS_COUNT);
             while (counter > 0) {
                 int num = counter - MAX_PLACEHOLDERS_COUNT > 0 ? MAX_PLACEHOLDERS_COUNT : counter;
                 String[] args = new String[num];
@@ -648,7 +699,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                     args[i] = Integer.toString(ids.get(i + (ids.size() - counter)));
                 }
                 if (num == MAX_PLACEHOLDERS_COUNT) {
-                    db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " IN (" + fullPlaceHolders + ")", args);
+                    db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " IN (" + FULL_PLACEHOLDERS + ")", args);
                 } else {
                     db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(num) + ")", args);
                 }
@@ -757,9 +808,38 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         return new User(id, name);
     }
 
-    private void updateRecipientsWithItem(Item item) {
+    private void addOrUpdateRecipientWithItem(Item item) {
         pendingRecipients.put(item.getFrom().getID(), new Pair<>(Operation.ADD, (Recipient) item.getFrom()));
         pendingRecipients.put(item.getTo().getID(), new Pair<>(Operation.ADD, item.getTo()));
+    }
+
+    private void manageItemUpdate(Item item) {
+        Pair<Operation, Item> fromPending = pendingItems.get(item.getID());
+        if (fromPending != null) {
+            if (fromPending.getLeft() == Operation.UPDATE) {
+                pendingItems.put(item.getID(), new Pair<>(Operation.UPDATE, item));
+                addOrUpdateRecipientWithItem(item);
+            } else if (fromPending.getLeft() == Operation.ADD) {
+                pendingItems.put(item.getID(), new Pair<>(Operation.ADD, item));
+                addOrUpdateRecipientWithItem(item);
+            }
+        } else {
+            pendingItems.put(item.getID(), new Pair<>(Operation.UPDATE, item));
+            addOrUpdateRecipientWithItem(item);
+        }
+    }
+
+    private void manageRecipientUpdate(Recipient recipient) {
+        Pair<Operation, Recipient> fromPending = pendingRecipients.get(recipient.getID());
+        if (fromPending != null) {
+            if (fromPending.getLeft() == Operation.UPDATE) {
+                pendingRecipients.put(recipient.getID(), new Pair<>(Operation.UPDATE, recipient));
+            } else if (fromPending.getLeft() == Operation.ADD) {
+                pendingRecipients.put(recipient.getID(), new Pair<>(Operation.ADD, recipient));
+            }
+        } else {
+            pendingRecipients.put(recipient.getID(), new Pair<>(Operation.UPDATE, recipient));
+        }
     }
 
     private String createPlaceholders(int length) {
