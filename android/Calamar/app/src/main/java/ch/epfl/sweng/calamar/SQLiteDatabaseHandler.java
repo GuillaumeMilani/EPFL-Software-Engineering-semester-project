@@ -220,12 +220,12 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @return the item, or null
      */
     public synchronized Item getItem(int id) {
-        Pair<Operation, Item> fromWaiting = pendingItems.get(id);
-        if (fromWaiting != null) {
-            if (fromWaiting.getLeft() == Operation.DELETE) {
+        Pair<Operation, Item> fromPending = pendingItems.get(id);
+        if (fromPending != null) {
+            if (fromPending.getLeft() == Operation.DELETE) {
                 return null;
             } else {
-                return fromWaiting.getRight();
+                return fromPending.getRight();
             }
         }
         Item toReturn = null;
@@ -251,11 +251,11 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         List<Integer> databaseIds = new ArrayList<>(ids);
         Set<Item> items = new HashSet<>();
         for (Integer i : ids) {
-            Pair<Operation, Item> fromMap = pendingItems.get(i);
-            if (fromMap != null) {
+            Pair<Operation, Item> fromPending = pendingItems.get(i);
+            if (fromPending != null) {
                 databaseIds.remove(i);
-                if (fromMap.getLeft() != Operation.DELETE) {
-                    items.add(fromMap.getRight());
+                if (fromPending.getLeft() != Operation.DELETE) {
+                    items.add(fromPending.getRight());
                 }
             }
         }
@@ -339,10 +339,10 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         Set<Integer> mapIds = new HashSet<>();
         Set<Item> items = new HashSet<>();
         for (Map.Entry<Integer, Pair<Operation, Item>> e : pendingItems.entrySet()) {
-            Pair<Operation, Item> fromMap = e.getValue();
+            Pair<Operation, Item> fromPending = e.getValue();
             mapIds.add(e.getKey());
-            if (fromMap.getLeft() != Operation.DELETE) {
-                items.add(fromMap.getRight());
+            if (fromPending.getLeft() != Operation.DELETE) {
+                items.add(fromPending.getRight());
             }
         }
         db = getReadableIfNotOpen();
@@ -449,12 +449,12 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @return the recipient
      */
     public synchronized Recipient getRecipient(int id) {
-        Pair<Operation, Recipient> fromWaiting = pendingRecipients.get(id);
-        if (fromWaiting != null) {
-            if (fromWaiting.getLeft() == Operation.DELETE) {
+        Pair<Operation, Recipient> fromPending = pendingRecipients.get(id);
+        if (fromPending != null) {
+            if (fromPending.getLeft() == Operation.DELETE) {
                 return null;
             } else {
-                return fromWaiting.getRight();
+                return fromPending.getRight();
             }
         }
         db = getReadableIfNotOpen();
@@ -482,11 +482,11 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         List<Integer> databaseIds = new ArrayList<>(ids);
         Set<Recipient> recipients = new HashSet<>();
         for (Integer i : ids) {
-            Pair<Operation, Recipient> fromMap = pendingRecipients.get(i);
-            if (fromMap != null) {
+            Pair<Operation, Recipient> fromPending = pendingRecipients.get(i);
+            if (fromPending != null) {
                 databaseIds.remove(i);
-                if (fromMap.getLeft() != Operation.DELETE) {
-                    recipients.add(fromMap.getRight());
+                if (fromPending.getLeft() != Operation.DELETE) {
+                    recipients.add(fromPending.getRight());
                 }
             }
         }
@@ -519,10 +519,10 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         Set<Integer> mapIds = new HashSet<>();
         Set<Recipient> recipients = new HashSet<>();
         for (Map.Entry<Integer, Pair<Operation, Recipient>> e : pendingRecipients.entrySet()) {
-            Pair<Operation, Recipient> fromMap = e.getValue();
+            Pair<Operation, Recipient> fromPending = e.getValue();
             mapIds.add(e.getKey());
-            if (fromMap.getLeft() != Operation.DELETE) {
-                recipients.add(fromMap.getRight());
+            if (fromPending.getLeft() != Operation.DELETE) {
+                recipients.add(fromPending.getRight());
             }
         }
         System.out.println("MAPIDS SIZE : " + mapIds.size());
