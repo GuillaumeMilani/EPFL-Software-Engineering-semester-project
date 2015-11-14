@@ -41,8 +41,8 @@ public class ParsingTest {
 
     @Test
     public void testImageItemParsing() throws JSONException {
-        String imagePath = "androidTest/res/lena.jpg";
-        testItemParsing(new ImageItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), new Date(22313), Condition.trueCondition(),  BitmapFactory.decodeFile(imagePath)));
+        byte[] bytes = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+        testItemParsing(new ImageItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), new Date(22313), Condition.trueCondition(),  BitmapFactory.decodeByteArray(bytes, 0, bytes.length)));
     }
 
     @Test

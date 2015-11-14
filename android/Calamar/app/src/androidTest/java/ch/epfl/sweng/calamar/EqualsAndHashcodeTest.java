@@ -48,9 +48,9 @@ public class EqualsAndHashcodeTest {
 
     @Test
     public void testImageItem() {
-        String imagePath = "androidTest/res/lena.jpg";
-        testVerifyEqualsAndHashcode(new ImageItem(12, new User(13, "bob"), new User(14, "sponge"), new Date(1000), Condition.trueCondition(), BitmapFactory.decodeFile(imagePath)),
-                new ImageItem(12, new User(13, "bob"), new User(14, "sponge"), new Date(1000), Condition.trueCondition(), BitmapFactory.decodeFile(imagePath)));
+        byte[] bytes = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+        testVerifyEqualsAndHashcode(new ImageItem(12, new User(13, "bob"), new User(14, "sponge"), new Date(1000), Condition.trueCondition(), BitmapFactory.decodeByteArray(bytes, 0, bytes.length)),
+                new ImageItem(12, new User(13, "bob"), new User(14, "sponge"), new Date(1000), Condition.trueCondition(), BitmapFactory.decodeByteArray(bytes, 0, bytes.length)));
     }
 
     private void testVerifyEqualsAndHashcode(Object a, Object b) {
