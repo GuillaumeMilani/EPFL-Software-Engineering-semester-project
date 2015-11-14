@@ -26,7 +26,7 @@ public final class SimpleTextItem extends Item {
      * @param date      the creation/posting date of the Item
      * @param message   the content (text message)
      * @param condition the condition
-     * @see Item#Item(int, User, Recipient, long)
+     * @see Item#Item(int, User, Recipient, long, Condition)
      */
 
     public SimpleTextItem(int ID, User from, Recipient to, Date date, Condition condition, String message) {
