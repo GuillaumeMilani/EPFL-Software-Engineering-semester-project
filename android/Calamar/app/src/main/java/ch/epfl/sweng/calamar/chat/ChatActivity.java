@@ -3,7 +3,6 @@ package ch.epfl.sweng.calamar.chat;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,14 +17,14 @@ import java.util.List;
 
 import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
+import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
-import ch.epfl.sweng.calamar.R;
-import ch.epfl.sweng.calamar.recipient.Recipient;
-import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
-import ch.epfl.sweng.calamar.recipient.User;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
 //TODO Support other item types
 
@@ -45,6 +44,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     private SQLiteDatabaseHandler databaseHandler;
 
     private CalamarApplication app;
+
+    private final String TAG = ChatActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -41,6 +40,8 @@ public class ChatUsersListActivity extends BaseActivity implements View.OnClickL
     private CalamarApplication app;
 
     private Dialog newContactAlertDialog;
+
+    private final String TAG = ChatUsersListActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
