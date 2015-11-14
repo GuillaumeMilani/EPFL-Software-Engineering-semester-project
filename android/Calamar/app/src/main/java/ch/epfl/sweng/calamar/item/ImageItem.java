@@ -60,7 +60,7 @@ public final class ImageItem extends Item {
         if (this == o) return true;
         if (!(o instanceof ImageItem)) return false;
         ImageItem that = (ImageItem) o;
-        return super.equals(that) && bitmap.equals(that.bitmap);
+        return super.equals(that) && bitmap.sameAs(that.bitmap);
     }
 
     @Override
