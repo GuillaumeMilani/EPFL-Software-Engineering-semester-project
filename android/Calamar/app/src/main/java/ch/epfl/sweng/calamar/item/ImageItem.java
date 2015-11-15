@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -119,9 +120,14 @@ public final class ImageItem extends Item {
      */
     @Override
     public int hashCode() {
-        ByteArrayOutputStream blob = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 0, blob);
-        return super.hashCode() * 73 + (bitmap != null ? Arrays.hashCode(blob.toByteArray()) : 0);
+        if(bitmap != null) {
+            return super.hashCode() * 73;
+        }
+        else {
+            ByteArrayOutputStream blob = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 0, blob);
+            return super.hashCode() * 73 + Arrays.hashCode(blob.toByteArray());
+        }
     }
 
     /**
@@ -129,10 +135,10 @@ public final class ImageItem extends Item {
      * @param str png image as byte[]
      * @return bitmap corresponding to given byte[] input
      */
-    private static Bitmap string2Bitmap(String str)
+    public static Bitmap string2Bitmap(String str)
     {
-        byte[] bytes = str.getBytes();
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        byte[] bytes2 = str.getBytes(Charset.forName("UTF-8"));
+        return BitmapFactory.decodeByteArray(bytes2, 0, bytes2.length);
     }
 
     /**
@@ -140,11 +146,11 @@ public final class ImageItem extends Item {
      * @param bitmap the bitmap to convert
      * @return string representation as array of byte in png format
      */
-    private static String bitmap2String(Bitmap bitmap)
+    public static String bitmap2String(Bitmap bitmap)
     {
         ByteArrayOutputStream blob = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 0, blob);
-        return new String(blob.toByteArray());
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, blob);
+        return new String(blob.toByteArray(), Charset.forName("UTF-8"));
     }
 
     /**
