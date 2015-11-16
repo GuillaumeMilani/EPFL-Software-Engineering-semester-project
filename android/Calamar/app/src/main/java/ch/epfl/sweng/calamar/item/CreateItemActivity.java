@@ -3,13 +3,16 @@ package ch.epfl.sweng.calamar.item;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
@@ -28,6 +31,8 @@ public class CreateItemActivity extends AppCompatActivity {
     private List<Recipient> contacts;
     private List<String> contactsName;
     private Location currentLocation;
+    private RadioGroup timeGroup;
+    private CheckBox timeCheck;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,31 +47,44 @@ public class CreateItemActivity extends AppCompatActivity {
             contactsName.add(r.getName());
         }
         contactsSpinner = (Spinner) findViewById(R.id.contactSpinner);
+        contactsSpinner.setVisibility(View.INVISIBLE);
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, contactsName);
         contactsSpinner.setAdapter(spinnerAdapter);
+        timeCheck = (CheckBox) findViewById(R.id.timeCheck);
+        timeGroup = (RadioGroup) findViewById(R.id.timeGroup);
+        timeGroup.setVisibility(View.INVISIBLE);
         file = null;
-        currentLocation=null;
+        currentLocation = null;
     }
 
-    private void startFilePicker() {
+    //Button listeners ; Not a big fan of methods having to be public
+    public void startFilePicker(View v) {
         //TODO filepicker activity
     }
 
-    private void locationChecked(){
+    public void locationChecked(View v) {
         GPSProvider.getInstance().startLocationUpdates(this);
-        currentLocation=GPSProvider.getInstance().getLastLocation();
+        currentLocation = GPSProvider.getInstance().getLastLocation();
         GPSProvider.getInstance().stopLocationUpdates();
     }
 
-    private void privateChecked(){
-
+    public void privateChecked(View v) {
+        if (privateCheck.isChecked()) {
+            contactsSpinner.setVisibility(View.VISIBLE);
+        } else {
+            timeGroup.setVisibility(View.INVISIBLE);
+        }
     }
 
-    private void timeChecked(){
-
+    public void timeChecked(View v) {
+        if (timeCheck.isChecked()) {
+            timeGroup.setVisibility(View.VISIBLE);
+        } else {
+            timeGroup.setVisibility(View.INVISIBLE);
+        }
     }
 
-    private void createAndSend() {
+    public void createAndSend(View v) {
         Item.Builder toSendBuilder = null;
         if (file != null) {
             String name = file.getName();
@@ -82,10 +100,10 @@ public class CreateItemActivity extends AppCompatActivity {
             toSendBuilder = new SimpleTextItem.Builder();
         }
         if (!message.getText().toString().equals("")) {
-            //toSendBuilder.setText(message)
+            ((SimpleTextItem.Builder) toSendBuilder).setMessage(message.getText().toString());
         } else {
             if (toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
-                //Toast : must have a file and/or message
+                //TODO Toast : must have a file or message or both
             }
         }
         if (privateCheck.isChecked()) {
@@ -95,9 +113,11 @@ public class CreateItemActivity extends AppCompatActivity {
             //TODO Public?
             toSendBuilder.setTo(null);
         }
-        if (locationCheck.isChecked()){
-            toSendBuilder.addCondition(new PositionCondition(currentLocation));
+        if (locationCheck.isChecked()) {
+            toSendBuilder.setCondition(new PositionCondition(currentLocation));
         }
+        toSendBuilder.setFrom(CalamarApplication.getInstance().getCurrentUser());
+        toSendBuilder.setDate(new Date().getTime());
         //TODO add time
         Item toSend = toSendBuilder.build();
     }
