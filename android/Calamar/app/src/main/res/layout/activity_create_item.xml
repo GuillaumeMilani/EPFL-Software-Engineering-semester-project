@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context="ch.epfl.sweng.calamar.item.CreateItemActivity">
+
+    <TextView
+        android:id="@+id/activityTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:paddingLeft="12dp"
+        android:paddingRight="0dp"
+        android:paddingEnd="0dp"
+        android:paddingStart="12dp"
+        android:paddingTop="12dp"
+        android:singleLine="false"
+        android:text="@string/create_new_item_title"
+        android:textSize="24sp"
+        android:paddingBottom="6dp" />
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:background="#000000"
+        android:layout_below="@+id/activityTitle"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/line"
+        android:paddingBottom="10dp"
+        android:paddingTop="0dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/createItemActivity_messageText"
+        android:inputType="text|textMultiLine"
+        android:hint="@string/new_item_text_hint"
+        android:layout_below="@+id/line"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/createItemActivity_messageText"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:id="@+id/linearLayout">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/select_file_text"
+            android:id="@+id/selectFileText"
+            android:layout_marginLeft="35dp"
+            android:layout_marginStart="35dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginRight="35dp"
+            android:layout_marginBottom="0dp"
+            android:layout_margin="0dp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/select_button_text"
+            android:id="@+id/selectFileButton"
+            android:onClick="startFilePicker()" />
+    </LinearLayout>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/private_checkbutton_text"
+        android:id="@+id/privateCheck"
+        android:layout_below="@+id/linearLayout"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:checked="false" />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/contactSpinner"
+        android:layout_below="@+id/linearLayout"
+        android:layout_toRightOf="@+id/privateCheck"
+        android:layout_toEndOf="@+id/privateCheck"
+        android:spinnerMode="dropdown" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/location_checkbutton_text"
+        android:id="@+id/locationCheck"
+        android:layout_below="@+id/contactSpinner"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:checked="false" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/time_checkbutton_text"
+        android:id="@+id/timeCheck"
+        android:layout_below="@+id/locationCheck"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:checked="false" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/timeCheck"
+        android:layout_toRightOf="@+id/timeCheck"
+        android:layout_toEndOf="@+id/timeCheck"
+        android:id="@+id/linearLayout2">
+
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/till_radiobutton_text"
+                android:id="@+id/tillRadio"
+                android:checked="false" />
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/at_radiobutton_text"
+                android:id="@+id/atRadio"
+                android:checked="false" />
+        </RadioGroup>
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/preview_text"
+        android:id="@+id/previewText"
+        android:layout_alignTop="@+id/linearLayout2"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="75dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/create_button_text"
+        android:id="@+id/createButton"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/contactSpinner"
+        android:layout_alignEnd="@+id/contactSpinner"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="20dp"
+        android:layout_alignParentRight="true"
+        android:onClick="createAndSend()" />
+
+
+</RelativeLayout>
