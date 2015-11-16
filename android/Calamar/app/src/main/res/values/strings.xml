@@ -5,6 +5,7 @@
     <string name="recipient">Her/Him</string>
     <string name="send_message">Send</string>
     <string name="refresh_button">Refresh</string>
+    <string name="item_send_error">Impossible to send the message</string>
     <string name="error_add_contact">Impossible to add the contact</string>
     <string name="add_new_contact_title">Add a new contact</string>
     <string name="add_new_contact_message">Enter the mail of the new contact</string>
@@ -38,4 +39,7 @@
     <string name="private_checkbutton_text">private</string>
     <string name="preview_text">Preview :</string>
     <string name="create_button_text">Create</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
