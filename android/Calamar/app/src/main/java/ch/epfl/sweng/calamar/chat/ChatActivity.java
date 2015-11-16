@@ -17,14 +17,15 @@ import java.util.Date;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
+import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
-import ch.epfl.sweng.calamar.R;
-import ch.epfl.sweng.calamar.recipient.Recipient;
-import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
-import ch.epfl.sweng.calamar.recipient.User;
+import ch.epfl.sweng.calamar.item.CreateItemActivity;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
 //TODO Support other item types
 
@@ -32,6 +33,9 @@ import ch.epfl.sweng.calamar.item.SimpleTextItem;
  * This activity manages the chat between two users (or in a group)
  */
 public class ChatActivity extends AppCompatActivity implements View.OnClickListener {
+
+    private static final String RECIPIENT_EXTRA_ID = "ID";
+    private static final String RECIPIENT_EXTRA_NAME = "Name";
     private EditText editText;
     private Button sendButton;
     private Button refreshButton;
@@ -205,5 +209,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             databaseHandler.addItems(toAdd);
             return null;
         }
+    }
+
+    public void createItem(View v){
+        Intent intent = new Intent(this, CreateItemActivity.class);
+        intent.putExtra(RECIPIENT_EXTRA_ID,correspondent.getID());
+        intent.putExtra(RECIPIENT_EXTRA_NAME,correspondent.getName());
+        startActivity(intent);
     }
 }

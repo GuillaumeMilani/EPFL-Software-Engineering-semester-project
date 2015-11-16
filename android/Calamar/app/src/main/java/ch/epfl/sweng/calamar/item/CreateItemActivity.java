@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.content.Intent;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -24,9 +25,12 @@ import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
 public class CreateItemActivity extends AppCompatActivity {
 
+    private static final String RECIPIENT_EXTRA_ID = "ID";
+    private static final String RECIPIENT_EXTRA_NAME = "Name";
     private Spinner contactsSpinner;
     private CheckBox privateCheck;
     private CheckBox locationCheck;
@@ -42,6 +46,7 @@ public class CreateItemActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_item);
+        Intent intent = getIntent();
         privateCheck = (CheckBox) findViewById(R.id.privateCheck);
         locationCheck = (CheckBox) findViewById(R.id.locationCheck);
         message = (EditText) findViewById(R.id.createItemActivity_messageText);
@@ -57,6 +62,13 @@ public class CreateItemActivity extends AppCompatActivity {
         timeCheck = (CheckBox) findViewById(R.id.timeCheck);
         timeGroup = (RadioGroup) findViewById(R.id.timeGroup);
         timeGroup.setVisibility(View.INVISIBLE);
+        final int id = intent.getIntExtra(RECIPIENT_EXTRA_ID, -1);
+        if (id != -1) {
+            final String name = intent.getStringExtra(RECIPIENT_EXTRA_NAME);
+            contactsSpinner.setVisibility(View.VISIBLE);
+            privateCheck.setChecked(true);
+            contactsSpinner.setSelection(contacts.indexOf(new User(id,name)));
+        }
         file = null;
         currentLocation = null;
     }

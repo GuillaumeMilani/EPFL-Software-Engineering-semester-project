@@ -25,11 +25,9 @@
         android:id="@+id/chatSendButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/refreshButton"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_alignStart="@+id/refreshButton"
         android:layout_alignTop="@+id/messageEdit"
         android:background="@color/background_floating_material_dark"
         android:text="@string/send_message"
@@ -69,6 +67,23 @@
         android:layout_alignParentTop="true"
         android:nestedScrollingEnabled="false"
         android:text="@string/refresh_button" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/create_item_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="right|bottom"
+        android:clickable="true"
+        android:onClick="createItem"
+        android:scaleType="center"
+        android:src="@drawable/ic_add_circle_outline_black_48dp"
+        app:backgroundTint="@android:color/white"
+        app:borderWidth="0dp"
+        app:fabSize="normal"
+        app:layout_anchor="@id/messageEdit"
+        app:layout_anchorGravity="bottom|right|end" />
 
 
 </RelativeLayout>
