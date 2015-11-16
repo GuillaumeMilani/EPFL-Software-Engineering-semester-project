@@ -11,7 +11,7 @@ import java.util.Set;
  */
 public abstract class Condition {
 
-    private Boolean value = null;
+    private Boolean value = false;
     private Set<Observer> observers = new HashSet<>();
 
     /**
@@ -57,7 +57,7 @@ public abstract class Condition {
         if (value != newValue) {
             value = newValue;
             for (Observer o : observers) {
-                o.update();
+                o.update(this);
             }
         }
     }
@@ -177,7 +177,7 @@ public abstract class Condition {
                 Condition.Observer o = new Observer() {
 
                     @Override
-                    public void update() {
+                    public void update(Condition c) {
                         setValue(c1.value && c2.value);
                     }
                 };
@@ -220,7 +220,7 @@ public abstract class Condition {
                 Condition.Observer o = new Observer() {
 
                     @Override
-                    public void update() {
+                    public void update(Condition c) {
                         setValue(c1.value || c2.value);
                     }
                 };
@@ -261,7 +261,7 @@ public abstract class Condition {
                 Condition.Observer o = new Observer() {
 
                     @Override
-                    public void update() {
+                    public void update(Condition c) {
                         setValue(!c.value);
                     }
                 };
@@ -307,6 +307,6 @@ public abstract class Condition {
     }
 
     public abstract static class Observer {
-        public abstract void update();
+        public abstract void update(Condition condition);
     }
 }
