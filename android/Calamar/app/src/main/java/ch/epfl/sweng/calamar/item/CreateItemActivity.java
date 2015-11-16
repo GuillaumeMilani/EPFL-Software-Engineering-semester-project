@@ -1,6 +1,7 @@
 package ch.epfl.sweng.calamar.item;
 
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -17,6 +19,8 @@ import java.util.List;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
+import ch.epfl.sweng.calamar.client.DatabaseClientException;
+import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -120,7 +124,39 @@ public class CreateItemActivity extends AppCompatActivity {
         toSendBuilder.setDate(new Date().getTime());
         //TODO add time
         Item toSend = toSendBuilder.build();
-        CalamarApplication.getInstance().getDB().addItem(toSend);
+        new SendItemTask(toSend);
+    }
+
+    /**
+     * Async task for sending the created item.
+     */
+    private class SendItemTask extends AsyncTask<Void, Void, Item> {
+
+        private final Item item;
+
+        public SendItemTask(Item item) {
+            this.item = item;
+        }
+
+        @Override
+        protected Item doInBackground(Void... v) {
+            try {
+                return DatabaseClientLocator.getDatabaseClient().send(item);
+            } catch (DatabaseClientException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Item item) {
+            if (item != null) {
+                CalamarApplication.getInstance().getDB().addItem(item);
+            } else {
+                Toast.makeText(getApplicationContext(), getString(R.string.item_send_error),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
 }
