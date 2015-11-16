@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -109,7 +110,9 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         //TODO : Remove when you use a real device.
         app.setCurrentUserID(11);
         app.setCurrentUserName("calamaremulator@gmail.com");
+        //app.resetPreferences();
 
+        /*
         if (app.getCurrentUserID() == -1) {
             String name = null;
             //Get google account email
@@ -119,7 +122,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
                 name = list[0].name;
             }
             new createNewUserTask(name, this).execute();
-        }
+        }*/
         actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
     }
 

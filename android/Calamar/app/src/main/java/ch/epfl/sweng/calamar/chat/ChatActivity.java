@@ -82,6 +82,16 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         refresh(offline);
     }
 
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.chatSendButton) {
+            sendTextItem();
+        } else if (v.getId() == R.id.refreshButton) {
+            refresh(false);
+        } else {
+            throw new IllegalArgumentException("Got an unexpected view Id in Onclick");
+        }
+    }
 
     /**
      * Gets all messages and display them
@@ -91,54 +101,49 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * Sends a new message
+     * Sends a new text message
      */
-    private void send() {
+    private void sendTextItem() {
         String message = editText.getText().toString();
         Item textMessage = new SimpleTextItem(1, app.getCurrentUser(), correspondent, new Date(), message);
-        adapter.add(textMessage);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
         editText.setText("");
         new SendItemTask(textMessage).execute();
     }
 
-    @Override
-    public void onClick(View v) {
-        if (v.getId() == R.id.chatSendButton) {
-            send();
-        } else if (v.getId() == R.id.refreshButton) {
-            refresh(false);
-        } else {
-            throw new IllegalArgumentException("Got an unexpected view Id in Onclick");
-        }
-    }
-
 
     /**
      * Async task for sending a message.
      */
-    private class SendItemTask extends AsyncTask<Void, Void, Void> {
+    private class SendItemTask extends AsyncTask<Void, Void, Item> {
 
-        private final Item textMessage;
+        private final Item item;
 
-        public SendItemTask(Item textMessage) {
-            this.textMessage = textMessage;
+        public SendItemTask(Item item) {
+            this.item = item;
         }
 
         @Override
-        protected Void doInBackground(Void... v) {
+        protected Item doInBackground(Void... v) {
             try {
-                //TODO : Determine id of the message ?
-                DatabaseClientLocator.getDatabaseClient().send(textMessage);
-                //TODO need id to put into database
-                databaseHandler.addItem(textMessage);
-                return null;
-                //return itemClients[0].send(textMessage);
+                return DatabaseClientLocator.getDatabaseClient().send(item);
             } catch (DatabaseClientException e) {
-                //TODO : TOAST
                 e.printStackTrace();
                 return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Item item) {
+            if (item != null) {
+                adapter.add(item);
+                adapter.notifyDataSetChanged();
+                messagesContainer.setSelection(messagesContainer.getCount() - 1);
+                databaseHandler.addItem(item);
+            } else {
+                Toast.makeText(getApplicationContext(), getString(R.string.item_send_error),
+                        Toast.LENGTH_SHORT).show();
             }
         }
     }
