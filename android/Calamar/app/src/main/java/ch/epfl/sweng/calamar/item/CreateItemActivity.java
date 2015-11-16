@@ -120,6 +120,7 @@ public class CreateItemActivity extends AppCompatActivity {
         toSendBuilder.setDate(new Date().getTime());
         //TODO add time
         Item toSend = toSendBuilder.build();
+        CalamarApplication.getInstance().getDB().addItem(toSend);
     }
 
 }
