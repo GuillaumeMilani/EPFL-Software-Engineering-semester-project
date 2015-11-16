@@ -4,6 +4,7 @@ package ch.epfl.sweng.calamar.map;
 import android.app.Fragment;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,10 +13,24 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import ch.epfl.sweng.calamar.R;
+import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.condition.PositionCondition;
+import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.item.SimpleTextItem;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
 
 /**
@@ -28,6 +43,9 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     //TODO : add two buttons begin checks stop checks
     // that will : checklocation settings + startlocation updates
     //TODO : manage activity lifecycle : start stop location updates when not needed, plus many potential problems
+
+
+    private Map<Condition,Marker> markers;
 
     private GoogleMap map; // Might be null if Google Play services APK is not available.
     // however google play services are checked at app startup...and
@@ -42,15 +60,28 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             assert map != null :
                     "map should be initialized and ready before accessed by location updater";
 
-            // TODO here place useful stuff, display items and position
-            // ex:
-            double latitude = newLocation.getLatitude();
-            double longitude = newLocation.getLongitude();
-            LatLng myLoc = new LatLng(latitude, longitude);
-            map.addMarker(new MarkerOptions().position(myLoc));
-            map.moveCamera(CameraUpdateFactory.newLatLng(myLoc));
+            map.moveCamera(CameraUpdateFactory.zoomTo(18.0f));
         }
     };
+
+
+
+    // The condition get updated when the location change and if the value(true/false) of the
+    // condition change we get updated and update the value of the marker on the map.
+    private final Condition.Observer conditionObserver = new Condition.Observer() {
+        @Override
+        public void update(Condition condition) {
+            Marker updatedMarker = markers.get(condition);
+            //TODO : If we want to have the information of the item, we have to make the item observe the condition.
+            if(condition.getValue()) {
+                updatedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+            } else {
+                updatedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+            }
+        }
+    };
+
+
 
     public MapFragment() {
         // Required empty public constructor
@@ -71,6 +102,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                              Bundle savedInstanceState)
     {
         super.onCreateView(inflater, container, savedInstanceState);
+        markers = new HashMap<>();
 
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_map, container, false);
@@ -79,12 +111,22 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     @Override
     public void onResume() {
         super.onResume();
+
+        getView().findViewById(R.id.addNewItemButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addItem();
+            }
+        });
+
         setUpMapIfNeeded(); // if needed, onMapReady is called with the map
     }
 
     @Override
     public void onMapReady(GoogleMap map) {
         this.map = map;
+        map.setMyLocationEnabled(true);
+        addAllItemToMap();
         setUpGPS(); // register to the GPSProvider location updates
     }
 
@@ -98,6 +140,79 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         // gpsProvider.stopLocationUpdates();
     }
     // *********************************************************************************************
+
+
+    /**
+     * Call by fragment_map.xml
+     *
+     * TOTO : To remove once pull request 90 is ready.
+     *
+     */
+    public void addItem() {
+        //TODO : add a real item
+        User bob = new User(1, "bob");
+        User alice = new User(2, "alice");
+        Location l = new Location("Calamar");
+        //TODO : Be sure that the location is correct
+        gpsProvider.getLastLocation().getLatitude();
+        l.setLatitude(gpsProvider.getLastLocation().getLatitude());
+        l.setLongitude(gpsProvider.getLastLocation().getLongitude());
+
+        addItemToMap(new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l, 5), "Salut"));
+    }
+
+    private void addAllItemToMap(){
+        List<Item> item = getItemToDisplay();
+
+        for(Item i : item){
+            addItemToMap(i);
+        }
+
+    }
+
+    /**
+     * Add all item to the googleMap, and fill the map markers
+     */
+    private void addItemToMap(Item i) {
+        //TODO : WRONG, we have to change this once the issue #56 is solved.
+        PositionCondition pos = (PositionCondition)i.getCondition();
+
+        Location l = pos.getLocation();
+
+        MarkerOptions marker = new MarkerOptions()
+                    .position(new LatLng(l.getLatitude(), l.getLongitude()));
+
+        marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+
+        marker.title("Mesage");
+
+        Condition condition = i.getCondition();
+
+        condition.addObserver(conditionObserver);
+
+        markers.put(condition,map.addMarker(marker));
+
+    }
+
+    /**
+     * Return the list of all item we want to display.
+     *
+     * @return list of all item we want to display.
+     */
+    private List<Item> getItemToDisplay() {
+        //TODO : get real item ( for now it is fake items )
+        User bob = new User(1, "bob");
+        User alice = new User(2, "alice");
+        List<Item> list = new ArrayList<>();
+        Location l1 = new Location("Calamar");
+        // INF 1 position
+        l1.setLatitude(46.5186669);
+        l1.setLongitude(6.5636998);
+
+
+        list.add(new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l1, 5), "Salut"));
+        return list;
+    }
 
     /**
      * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
