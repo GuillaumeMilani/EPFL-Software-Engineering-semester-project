@@ -110,7 +110,7 @@ public class CreateItemActivity extends AppCompatActivity {
             Recipient to = contacts.get(contactsSpinner.getSelectedItemPosition());
             toSendBuilder.setTo(to);
         } else {
-            //TODO Public?
+            //TODO Public = null ? Not allowed by Item constructor at the moment
             toSendBuilder.setTo(null);
         }
         if (locationCheck.isChecked()) {

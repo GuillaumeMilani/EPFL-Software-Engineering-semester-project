@@ -136,8 +136,8 @@ public final class SimpleTextItem extends Item {
             return new SimpleTextItem(super.ID, super.from, super.to, new Date(super.date), super.condition, message);
         }
 
-        protected void setMessage(String message){
-            this.message=message;
+        protected void setMessage(String message) {
+            this.message = message;
         }
     }
 }

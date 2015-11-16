@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-   tools:context="ch.epfl.sweng.calamar.chat.ChatActivity">
+    tools:context="ch.epfl.sweng.calamar.chat.ChatActivity">
 
     <EditText
         android:id="@+id/messageEdit"
@@ -23,51 +25,50 @@
         android:id="@+id/chatSendButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/refreshButton"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignStart="@+id/refreshButton"
+        android:layout_alignTop="@+id/messageEdit"
         android:background="@color/background_floating_material_dark"
         android:text="@string/send_message"
-        android:textColor="@color/background_material_light"
-        android:layout_alignTop="@+id/messageEdit"
-        android:layout_alignStart="@+id/refreshButton"
-        android:layout_alignLeft="@+id/refreshButton"
-        />
+        android:textColor="@color/background_material_light" />
 
     <ListView
         android:id="@+id/messagesContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentLeft="false"
-        android:layout_alignParentStart="false"
-        android:layout_marginBottom="20dp"
         android:layout_above="@+id/messageEdit"
-        android:listSelector="@android:color/transparent"
-        android:transcriptMode="alwaysScroll"
-        android:divider="@null"
-        android:layout_alignParentRight="false"
         android:layout_alignParentEnd="false"
-        android:layout_below="@+id/refreshButton" />
+        android:layout_alignParentLeft="false"
+        android:layout_alignParentRight="false"
+        android:layout_alignParentStart="false"
+        android:layout_below="@+id/refreshButton"
+        android:layout_marginBottom="20dp"
+        android:divider="@null"
+        android:listSelector="@android:color/transparent"
+        android:transcriptMode="alwaysScroll" />
 
     <TextView
         android:id="@+id/recipientLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/recipient"
-        android:textSize="20sp"
-        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true" />
+        android:layout_alignParentTop="true"
+        android:text="@string/recipient"
+        android:textSize="20sp" />
 
     <Button
+        android:id="@+id/refreshButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/refresh_button"
-        android:id="@+id/refreshButton"
-        android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:nestedScrollingEnabled="false" />
+        android:layout_alignParentTop="true"
+        android:nestedScrollingEnabled="false"
+        android:text="@string/refresh_button" />
 
 
 </RelativeLayout>

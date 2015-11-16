@@ -174,24 +174,24 @@ public abstract class Item {
             return this;
         }
 
-        protected void setID(int ID){
-            this.ID=ID;
+        protected void setID(int ID) {
+            this.ID = ID;
         }
 
-        protected void setFrom(User from){
-            this.from=from;
+        protected void setFrom(User from) {
+            this.from = from;
         }
 
-        protected void setTo(Recipient to){
-            this.to=to;
+        protected void setTo(Recipient to) {
+            this.to = to;
         }
 
-        protected void setDate(long date){
-            this.date=date;
+        protected void setDate(long date) {
+            this.date = date;
         }
 
-        protected void setCondition(Condition condition){
-            this.condition=condition;
+        protected void setCondition(Condition condition) {
+            this.condition = condition;
         }
 
         protected abstract Item build();
