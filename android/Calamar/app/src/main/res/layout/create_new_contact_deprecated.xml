@@ -28,6 +28,7 @@
         android:text="@string/add_new_contact_positive_button"
         android:id="@+id/newContactAddButton"
         android:layout_below="@+id/newContactInput"
+        android:onClick="addContact"
         android:layout_alignRight="@+id/textView"
         android:layout_alignEnd="@+id/textView"
         android:nestedScrollingEnabled="false" />
@@ -37,6 +38,7 @@
         android:layout_height="wrap_content"
         android:text="@string/add_new_contact_negative_button"
         android:id="@+id/newContactCancelButton"
+        android:onClick="cancelNewContact"
         android:layout_below="@+id/newContactInput"
         android:layout_alignLeft="@+id/textView"
         android:layout_alignStart="@+id/textView" />

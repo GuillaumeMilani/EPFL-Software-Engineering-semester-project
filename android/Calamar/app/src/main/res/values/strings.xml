@@ -27,4 +27,7 @@
     <string name="show_chat_activity_button">show chat</string>
     <string name="action_settings">Settings</string>
     <string name="add_user_text">New</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
