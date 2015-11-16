@@ -32,6 +32,8 @@ import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
 
+import static ch.epfl.sweng.calamar.item.Item.Type.SIMPLETEXTITEM;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -45,7 +47,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     //TODO : manage activity lifecycle : start stop location updates when not needed, plus many potential problems
 
 
-    private Map<Condition,Marker> markers;
+    private Map<Item,Marker> markers;
 
     private GoogleMap map; // Might be null if Google Play services APK is not available.
     // however google play services are checked at app startup...and
@@ -59,7 +61,10 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         public void update(Location newLocation) {
             assert map != null :
                     "map should be initialized and ready before accessed by location updater";
-
+            double latitude = newLocation.getLatitude();
+            double longitude = newLocation.getLongitude();
+            LatLng myLoc = new LatLng(latitude, longitude);
+            map.moveCamera(CameraUpdateFactory.newLatLng(myLoc));
             map.moveCamera(CameraUpdateFactory.zoomTo(18.0f));
         }
     };
@@ -67,15 +72,25 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
 
     // The condition get updated when the location change and if the value(true/false) of the
-    // condition change we get updated and update the value of the marker on the map.
-    private final Condition.Observer conditionObserver = new Condition.Observer() {
+    // condition change -> The item is updated, if all are true
+    // -> we get updated and update the value of the marker on the map.
+    private final Item.Observer itemObserver = new Item.Observer() {
         @Override
-        public void update(Condition condition) {
-            Marker updatedMarker = markers.get(condition);
-            //TODO : If we want to have the information of the item, we have to make the item observe the condition.
-            if(condition.getValue()) {
-                updatedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+        public void update(Item item) {
+            Marker updatedMarker = markers.get(item);
+            if(item.getCondition().getValue()) {
+                //TODO : Maybe better to let the item display himself ? ( issue #91 )
+                switch (item.getType()) {
+                    case SIMPLETEXTITEM:
+                        SimpleTextItem textItem = (SimpleTextItem)item;
+                        updatedMarker.setTitle(textItem.getMessage());
+                        updatedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unexpected Item type (" + item.getType() + ")");
+                }
             } else {
+                updatedMarker.setTitle("Locked");
                 updatedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
             }
         }
@@ -158,7 +173,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         l.setLatitude(gpsProvider.getLastLocation().getLatitude());
         l.setLongitude(gpsProvider.getLastLocation().getLongitude());
 
-        addItemToMap(new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l, 5), "Salut"));
+        addItemToMap(new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l, 5), "Password : calamar42"));
     }
 
     private void addAllItemToMap(){
@@ -184,13 +199,13 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
         marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
 
-        marker.title("Mesage");
+        marker.title("Locked");
 
         Condition condition = i.getCondition();
 
-        condition.addObserver(conditionObserver);
+        i.addObserver(itemObserver);
 
-        markers.put(condition,map.addMarker(marker));
+        markers.put(i,map.addMarker(marker));
 
     }
 
@@ -210,7 +225,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         l1.setLongitude(6.5636998);
 
 
-        list.add(new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l1, 5), "Salut"));
+        list.add(new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l1, 5), "Password : calamar42"));
         return list;
     }
 
