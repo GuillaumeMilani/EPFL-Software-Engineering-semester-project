@@ -99,7 +99,7 @@ public class CreateItemActivity extends AppCompatActivity {
                     || ext.equals("JPEG")) {
                 //TODO add image
             }
-            //TODO add audio
+            //TODO add audio/others
         } else {
             toSendBuilder = new SimpleTextItem.Builder();
         }
@@ -107,7 +107,9 @@ public class CreateItemActivity extends AppCompatActivity {
             ((SimpleTextItem.Builder) toSendBuilder).setMessage(message.getText().toString());
         } else {
             if (toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
-                //TODO Toast : must have a file or message or both
+                Toast.makeText(getApplicationContext(), getString(R.string.item_create_invalid),
+                        Toast.LENGTH_SHORT).show();
+                return;
             }
         }
         if (privateCheck.isChecked()) {
@@ -122,7 +124,6 @@ public class CreateItemActivity extends AppCompatActivity {
         }
         toSendBuilder.setFrom(CalamarApplication.getInstance().getCurrentUser());
         toSendBuilder.setDate(new Date().getTime());
-        //TODO add time
         Item toSend = toSendBuilder.build();
         new SendItemTask(toSend);
     }
