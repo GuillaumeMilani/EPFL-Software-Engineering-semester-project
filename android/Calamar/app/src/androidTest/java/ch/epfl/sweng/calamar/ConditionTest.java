@@ -32,7 +32,7 @@ public class ConditionTest {
         }
 
         @Override
-        public void update() {
+        public void update(Condition c) {
             triggered++;
         }
 
