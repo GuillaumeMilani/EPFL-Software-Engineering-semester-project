@@ -49,7 +49,7 @@ public abstract class Recipient {
      */
     @Override
     public String toString() {
-        return getID()+" "+getName();
+        return getName();
     }
 
     /**
