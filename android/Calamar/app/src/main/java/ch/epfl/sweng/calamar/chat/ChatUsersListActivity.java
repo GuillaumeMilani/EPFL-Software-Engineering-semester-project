@@ -39,6 +39,8 @@ public class ChatUsersListActivity extends BaseActivity implements View.OnClickL
 
     private Dialog newContactAlertDialog;
 
+    private final String TAG = ChatUsersListActivity.class.getSimpleName();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

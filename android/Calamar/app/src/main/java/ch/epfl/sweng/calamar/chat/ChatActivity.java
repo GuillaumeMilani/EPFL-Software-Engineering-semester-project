@@ -45,6 +45,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
 
     private CalamarApplication app;
 
+    private final String TAG = ChatActivity.class.getSimpleName();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
