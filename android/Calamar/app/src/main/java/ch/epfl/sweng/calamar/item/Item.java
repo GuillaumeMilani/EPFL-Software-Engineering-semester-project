@@ -138,7 +138,8 @@ public abstract class Item {
         if (o == null) return false;
         if (!(o instanceof Item)) return false;
         Item that = (Item) o;
-        return that.ID == ID && that.from.equals(from) && that.to.equals(to) && that.date == date;
+        return that.ID == ID && that.from.equals(from) && that.to.equals(to) &&
+                that.date == date && this.getType().equals(that.getType()) && this.condition.equals(that.condition);
     }
 
     /**
@@ -168,7 +169,8 @@ public abstract class Item {
             from = User.fromJSON(o.getJSONObject("from"));
             to = Recipient.fromJSON(o.getJSONObject("to"));
             date = o.getLong("date");
-            condition = Condition.fromJSON(o.getJSONObject("condition"));
+            condition = Condition.trueCondition();
+            //condition = Condition.fromJSON(o.getJSONObject("condition"));
             return this;
         }
     }
