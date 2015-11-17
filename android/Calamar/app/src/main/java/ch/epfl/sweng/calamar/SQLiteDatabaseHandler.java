@@ -34,11 +34,11 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static final String ITEMS_TABLE = "tb_Items";
     private static final String ITEMS_KEY_TYPE = "type";
     private static final String ITEMS_KEY_ID = "id";
-    private static final String ITEMS_KEY_TEXT = "text";
     private static final String ITEMS_KEY_FROM = "from_id";
     private static final String ITEMS_KEY_TO = "to_id";
     private static final String ITEMS_KEY_TIME = "time";
     private static final String ITEMS_KEY_CONDITION = "condition";
+    private static final String ITEMS_KEY_TEXT = "text";
     private static final String[] ITEMS_COLUMNS = {ITEMS_KEY_TYPE, ITEMS_KEY_ID, ITEMS_KEY_FROM, ITEMS_KEY_TO, ITEMS_KEY_TIME, ITEMS_KEY_CONDITION, ITEMS_KEY_TEXT};
 
     private static final String RECIPIENTS_TABLE = "tb_Recipients";

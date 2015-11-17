@@ -67,7 +67,7 @@ public class CreateItemActivity extends AppCompatActivity {
             final String name = intent.getStringExtra(RECIPIENT_EXTRA_NAME);
             contactsSpinner.setVisibility(View.VISIBLE);
             privateCheck.setChecked(true);
-            contactsSpinner.setSelection(contacts.indexOf(new User(id,name)));
+            contactsSpinner.setSelection(contacts.indexOf(new User(id, name)));
         }
         file = null;
         currentLocation = null;
@@ -129,7 +129,7 @@ public class CreateItemActivity extends AppCompatActivity {
             toSendBuilder.setTo(to);
         } else {
             //TODO Public = null ? Not allowed by Item constructor at the moment
-            toSendBuilder.setTo(null);
+            toSendBuilder.setTo(new User(0, "public"));
         }
         if (locationCheck.isChecked()) {
             toSendBuilder.setCondition(new PositionCondition(currentLocation));
@@ -138,6 +138,7 @@ public class CreateItemActivity extends AppCompatActivity {
         toSendBuilder.setDate(new Date().getTime());
         Item toSend = toSendBuilder.build();
         new SendItemTask(toSend);
+        this.finish();
     }
 
     /**
@@ -165,6 +166,7 @@ public class CreateItemActivity extends AppCompatActivity {
         protected void onPostExecute(Item item) {
             if (item != null) {
                 CalamarApplication.getInstance().getDB().addItem(item);
+                Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getApplicationContext(), getString(R.string.item_send_error),
                         Toast.LENGTH_SHORT).show();

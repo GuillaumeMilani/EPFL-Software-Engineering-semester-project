@@ -162,7 +162,7 @@ public abstract class Item {
         protected User from;
         protected Recipient to;
         protected long date;
-        protected Condition condition;
+        protected Condition condition=Condition.trueCondition();
 
         protected Builder parse(JSONObject o) throws JSONException {
             ID = o.getInt("ID");
