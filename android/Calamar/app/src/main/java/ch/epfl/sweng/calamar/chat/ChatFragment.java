@@ -1,5 +1,7 @@
 package ch.epfl.sweng.calamar.chat;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -8,7 +10,10 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.Nullable;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -17,7 +22,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
@@ -25,7 +29,8 @@ import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
 
-public class ChatUsersListActivity extends BaseActivity implements View.OnClickListener {
+// TODO: Clean up code and organize methods
+public class ChatFragment extends android.support.v4.app.Fragment {
 
     public final static String EXTRA_CORRESPONDENT_NAME = "ch.epfl.sweng.calamar.CORRESPONDENT_NAME";
     public final static String EXTRA_CORRESPONDENT_ID = "ch.epfl.sweng.calamar.CORRESPONDENT_ID";
@@ -39,29 +44,29 @@ public class ChatUsersListActivity extends BaseActivity implements View.OnClickL
 
     private Dialog newContactAlertDialog;
 
-    private final String TAG = ChatUsersListActivity.class.getSimpleName();
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.activity_chat_users_list, container, false);
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chat_users_list);
-
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         app = CalamarApplication.getInstance();
 
         contacts = new ArrayList<>();
         getContacts();
 
-        actualUserTextView = (TextView) findViewById(R.id.actualUserName);
+        actualUserTextView = (TextView) getView().findViewById(R.id.actualUserName);
         setActualUser();
 
-        contactsView = (ListView) findViewById(R.id.contactsList);
+        contactsView = (ListView) getView().findViewById(R.id.contactsList);
         contactsView.setSelector(R.drawable.list_selector);
-        adapter = new ChatUsersListAdapter(this, contacts);
+        adapter = new ChatUsersListAdapter(getActivity(), contacts);
         contactsView.setAdapter(adapter);
         contactsView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent conversation = new Intent(ChatUsersListActivity.this, ChatActivity.class);
+                Intent conversation = new Intent(getActivity(), ChatActivity.class);
                 //Assuming in same order
                 Recipient user = contacts.get(position);
                 conversation.putExtra(EXTRA_CORRESPONDENT_NAME, user.getName());
@@ -71,34 +76,29 @@ public class ChatUsersListActivity extends BaseActivity implements View.OnClickL
             }
         });
         contactsView.setSelection(0);
-    }
 
-    @Override
-    public void onClick(View v) {
-        if (v.getId() == R.id.newContact) {
-            addNewContact();
-        } else {
-            throw new IllegalArgumentException(getString(R.string.on_click_error));
-        }
+        (getView().findViewById(R.id.newContact)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addNewContact();
+            }
+        });
+        super.onActivityCreated(savedInstanceState);
     }
 
     /**
-     * Called by create_new_contact layout
-     *
-     * @param v
+     * Called by button OnClickListener
      */
-    public void addContact(View v) {
+    public void addContact() {
         EditText input = (EditText) newContactAlertDialog.findViewById(R.id.newContactInput);
         newContactAlertDialog.dismiss();
-        new retrieveUserTask(input.getText().toString(), ChatUsersListActivity.this).execute();
+        new retrieveUserTask(input.getText().toString(), getActivity()).execute();
     }
 
     /**
-     * Called by create_new_contact layout
-     *
-     * @param v
+     * Called by button OnClickListener
      */
-    public void cancelNewContact(View v) {
+    public void cancelNewContact() {
         newContactAlertDialog.dismiss();
     }
 
@@ -109,19 +109,17 @@ public class ChatUsersListActivity extends BaseActivity implements View.OnClickL
         //TODO : Remove when you use a real device.
         app.setCurrentUserID(11);
         app.setCurrentUserName("calamaremulator@gmail.com");
-        //app.resetPreferences();
 
-        /*
         if (app.getCurrentUserID() == -1) {
             String name = null;
             //Get google account email
-            AccountManager manager = AccountManager.get(this);
+            AccountManager manager = AccountManager.get(getActivity());
             Account[] list = manager.getAccountsByType("com.google");
             if (list.length > 0) {
                 name = list[0].name;
             }
-            new createNewUserTask(name, this).execute();
-        }*/
+            new createNewUserTask(name, getActivity()).execute();
+        }
         actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
     }
 
@@ -130,11 +128,23 @@ public class ChatUsersListActivity extends BaseActivity implements View.OnClickL
     }
 
     private void addNewContact() {
-        newContactAlertDialog = new Dialog(this);
+        newContactAlertDialog = new Dialog(getActivity());
 
-        newContactAlertDialog.setContentView(R.layout.create_new_contact_deprecated);
+        newContactAlertDialog.setContentView(R.layout.create_new_contact);
         newContactAlertDialog.setTitle(getString(R.string.add_new_contact_title));
+        newContactAlertDialog.findViewById(R.id.newContactAddButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addContact();
+            }
+        });
 
+        newContactAlertDialog.findViewById(R.id.newContactCancelButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cancelNewContact();
+            }
+        });
         newContactAlertDialog.show();
     }
 
@@ -154,7 +164,7 @@ public class ChatUsersListActivity extends BaseActivity implements View.OnClickL
         protected Integer doInBackground(Void... v) {
             try {
                 //Get the device id.
-                return DatabaseClientLocator.getDatabaseClient().newUser(name, Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
+                return DatabaseClientLocator.getDatabaseClient().newUser(name, Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
             } catch (DatabaseClientException e) {
                 e.printStackTrace();
                 return null;
@@ -232,5 +242,10 @@ public class ChatUsersListActivity extends BaseActivity implements View.OnClickL
             }
         }
     }
+
+    public ChatFragment() {
+        // Required empty public constructor
+    }
+
 
 }

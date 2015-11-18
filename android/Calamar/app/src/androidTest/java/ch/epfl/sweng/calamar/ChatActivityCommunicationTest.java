@@ -13,7 +13,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import ch.epfl.sweng.calamar.chat.ChatActivity;
-import ch.epfl.sweng.calamar.chat.ChatUsersListActivity;
+import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
@@ -58,8 +58,8 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
         DatabaseClient client = Mockito.mock(ConstantDatabaseClient.class);
         DatabaseClientLocator.setDatabaseClient(client);
         Intent conversation = new Intent();
-        conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME, ALICE);
-        conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID, 1);
+        conversation.putExtra(ChatFragment.EXTRA_CORRESPONDENT_NAME, ALICE);
+        conversation.putExtra(ChatFragment.EXTRA_CORRESPONDENT_ID, 1);
         setActivityIntent(conversation);
         getActivity();
 
@@ -84,8 +84,8 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
     @Test
     public void testActivityCorrectlyGetIntent() {
         Intent conversation = new Intent();
-        conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_NAME, "AliceTest");
-        conversation.putExtra(ChatUsersListActivity.EXTRA_CORRESPONDENT_ID, 1);
+        conversation.putExtra(ChatFragment.EXTRA_CORRESPONDENT_NAME, "AliceTest");
+        conversation.putExtra(ChatFragment.EXTRA_CORRESPONDENT_ID, 1);
         setActivityIntent(conversation);
 
         getActivity();
