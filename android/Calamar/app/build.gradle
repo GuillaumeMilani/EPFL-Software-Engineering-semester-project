@@ -1,9 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        Calamar {
+        }
+    }
     compileSdkVersion 23
     buildToolsVersion "23.0.1"
-
+    useLibrary 'org.apache.http.legacy'
     defaultConfig {
         applicationId "ch.epfl.sweng.calamar"
         minSdkVersion 16
@@ -11,11 +15,19 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+
     }
+
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            debuggable false
+            jniDebuggable false
+        }
+        debug {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     productFlavors {
@@ -23,9 +35,9 @@ android {
 }
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:23.1.0'
-    compile 'com.android.support:design:23.1.0'
-    androidTestCompile 'com.android.support:support-annotations:23.1.0'
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:design:23.1.1'
+    androidTestCompile 'com.android.support:support-annotations:23.1.1'
     androidTestCompile 'com.android.support.test:runner:0.4'
     androidTestCompile 'com.android.support.test:rules:0.3'
     androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.1'
