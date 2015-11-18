@@ -17,6 +17,7 @@ import ch.epfl.sweng.calamar.recipient.Group;
 import ch.epfl.sweng.calamar.recipient.User;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Created by pierre on 10/24/15.
@@ -59,6 +60,8 @@ public class EqualsAndHashcodeTest {
     private void testVerifyEqualsAndHashcode(Object a, Object b) {
         assertEquals(a, b);
         assertEquals(b, a);
+        assertNotEquals(a, null);
+        assertNotEquals(b, null);
         assertEquals(a.hashCode(), b.hashCode());
     }
 }
