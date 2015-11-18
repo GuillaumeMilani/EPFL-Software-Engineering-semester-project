@@ -152,6 +152,14 @@ public abstract class Item {
     }
 
     /**
+     * Overriden to aloow easier debug
+     */
+    @Override
+    public String toString() {
+        return "ID : " + this.ID + " from : " + from + " to : " + to + " date : " + date;
+    }
+
+    /**
      * A Builder for {@link Item}, has no build() method since Item isn't instantiable,
      * is used by the child builders (in {@link SimpleTextItem} or...) to build the "Item
      * part of the object". currently only used to parse JSON (little overkill..but ..)

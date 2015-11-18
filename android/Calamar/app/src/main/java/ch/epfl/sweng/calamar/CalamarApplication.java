@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.securepreferences.SecurePreferences;
@@ -38,6 +39,7 @@ public final class CalamarApplication extends Application implements Application
     private int resumed = 0;
     private int paused = 0;
     private Handler handler;
+    private final int WAITING_TIME = 500;
 
     /**
      * Returns the current instance of the application.
@@ -215,6 +217,15 @@ public final class CalamarApplication extends Application implements Application
         return googleApiClient;
     }
 
+    /**
+     * Tells if the google API client is created
+     *
+     * @return true if it is, false otherwise
+     */
+    public boolean isGoogleApiClientCreated() {
+        return googleApiClient != null;
+    }
+
 
     //Used to check if app is in background (triggers database)
     @Override
@@ -235,9 +246,12 @@ public final class CalamarApplication extends Application implements Application
             public void run() {
                 if (isOnForeground()) {
                     //TODO db.applyPendingOperations() once improve_database is merged;
+                    Toast.makeText(CalamarApplication.getInstance(), "OnForeground", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(CalamarApplication.getInstance(), "OnBackground", Toast.LENGTH_SHORT).show();
                 }
             }
-        }, 500);
+        }, WAITING_TIME);
     }
 
     @Override
@@ -248,9 +262,12 @@ public final class CalamarApplication extends Application implements Application
             public void run() {
                 if (isOnForeground()) {
                     //TODO same as above;
+                    Toast.makeText(CalamarApplication.getInstance(), "OnForeground", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(CalamarApplication.getInstance(), "OnBackground", Toast.LENGTH_SHORT).show();
                 }
             }
-        }, 500);
+        }, WAITING_TIME);
     }
 
     @Override

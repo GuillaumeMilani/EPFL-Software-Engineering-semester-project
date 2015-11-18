@@ -30,7 +30,9 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         app = CalamarApplication.getInstance();
-        buildGoogleApiClient();  // will connect in onResume(), errors are handled in onConnectionFailed()
+        if (!app.isGoogleApiClientCreated()) {
+            buildGoogleApiClient();
+        }  // will connect in onResume(), errors are handled in onConnectionFailed()
     }
 
     @Override
