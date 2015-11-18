@@ -120,8 +120,8 @@ public final class ImageItem extends Item {
      */
     @Override
     public int hashCode() {
-        if(bitmap != null) {
-            return super.hashCode() * 73;
+        if(bitmap == null) {
+            return 0;
         }
         else {
             ByteArrayOutputStream blob = new ByteArrayOutputStream();
