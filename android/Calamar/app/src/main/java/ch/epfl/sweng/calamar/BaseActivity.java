@@ -23,6 +23,9 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
     // activity request codes
     private static final int ERROR_RESOLUTION_REQUEST = 1001;
 
+    //TODO Test if i can use the location architecture to check the google play services
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+
     // google api related stuff
     private boolean resolvingError;
 
@@ -163,27 +166,27 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
-//    /**
-//     * Verifies google play services availability on the device
-//     */
-//    //keeped just in case.., not used now, I go the other way by connecting and then eventually
-//    //handle errors in onConnectionFailed
-//    private boolean checkPlayServices() {
-//        GoogleApiAvailability apiAvailabilitySingleton = GoogleApiAvailability.getInstance();
-//        int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(app);
-//        if (resultCode != ConnectionResult.SUCCESS) {
-//            if (apiAvailabilitySingleton.isUserResolvableError(resultCode)) {
-//                apiAvailabilitySingleton.getErrorDialog(this, resultCode,
-//                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
-//
-//            } else {
-//                Log.e(TAG, "This device is not supported. play services unavailable " +
-//                        "and automatic error resolution failed. error code : " + resultCode);
-//                //show dialog using geterrordialog on singleton
-//                finish();
-//            }
-//            return false;
-//        }
-//        return true;
-//    }
+    /**
+     * Verifies google play services availability on the device
+     */
+    //keeped just in case.., not used now, I go the other way by connecting and then eventually
+    //handle errors in onConnectionFailed
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailabilitySingleton = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(CalamarApplication.getInstance());
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailabilitySingleton.isUserResolvableError(resultCode)) {
+                apiAvailabilitySingleton.getErrorDialog(this, resultCode,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+
+            } else {
+                Log.e(TAG, "This device is not supported. play services unavailable " +
+                        "and automatic error resolution failed. error code : " + resultCode);
+                //show dialog using geterrordialog on singleton
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
 }
