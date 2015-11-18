@@ -18,3 +18,6 @@
 -keep class net.sqlcipher.** {*;}
 -keep class com.securepreferences.** {*;}
 -keep class com.google.gms.** {*;}
+-keepclassmembers class net.sqlcipher.** {*;}
+-keepclassmembers class com.securepreferences.** {*;}
+-keepclassmembers class com.google.gms.** {*;}
