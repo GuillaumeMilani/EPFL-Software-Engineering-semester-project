@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.securepreferences.SecurePreferences;
@@ -34,7 +33,8 @@ public final class CalamarApplication extends Application implements Application
     //https://developers.google.com/android/guides/api-client
     private GoogleApiClient googleApiClient = null;
 
-    //Used to check and do stuff if the app is on background -- not foolproof, there is no real good way apparently
+    //Used to check and do stuff if the app is on background -- not foolproof,
+    // there is no real good way to check that apparently, but seems to be working fine
     private boolean onForeground = true;
     private int resumed = 0;
     private int paused = 0;
@@ -259,7 +259,6 @@ public final class CalamarApplication extends Application implements Application
             public void run() {
                 if (!isOnForeground()) {
                     //TODO same as above;
-                    Toast.makeText(CalamarApplication.getInstance(), "OnForeground", Toast.LENGTH_SHORT).show();
                 }
             }
         }, WAITING_TIME);

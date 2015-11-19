@@ -100,7 +100,7 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case ERROR_RESOLUTION_REQUEST:
+            case ERROR_RESOLUTION_REQUEST | PLAY_SERVICES_RESOLUTION_REQUEST:
                 resolvingError = false;
                 switch (resultCode) {
                     case Activity.RESULT_OK:
@@ -116,7 +116,6 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
                         finish();//TODO maybe refine ?
                 }
                 break;
-            case PLAY_SERVICES_RESOLUTION_REQUEST:
             default:
                 throw new IllegalStateException("onActivityResult : unknown request ! ");
         }
