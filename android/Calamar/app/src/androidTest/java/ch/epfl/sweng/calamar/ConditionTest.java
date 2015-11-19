@@ -151,7 +151,11 @@ public class ConditionTest {
     @Test
     public void testMetadataPositionCondition() throws JSONException {
         Condition pc = new PositionCondition(123.4, 432.1, 10);
-        JSONObject jo = new JSONObject("{'type':'position', 'latitude':123.4, 'longitude':432.1, 'radius':10}");
+        JSONObject jo = new JSONObject();
+        jo.accumulate("type", "position");
+        jo.accumulate("latitude", 123.4);
+        jo.accumulate("longitude", 432.1);
+        jo.accumulate("radius", 10);
         JSONArray ja = (new JSONArray()).put(jo);
         assertEquals(ja.toString(), pc.getMetadata().toString());
     }
@@ -161,8 +165,16 @@ public class ConditionTest {
         Condition pc1 = new PositionCondition(123.4, 432.1, 10);
         Condition pc2 = new PositionCondition(432.1, 123.4, 20);
         Condition pc1AndPc2 = Condition.and(pc1, pc2);
-        JSONObject jo1 = new JSONObject("{'type':'position', 'latitude':123.4, 'longitude':432.1, 'radius':10}");
-        JSONObject jo2 = new JSONObject("{'type':'position', 'latitude':432.1, 'longitude':123.4, 'radius':20}");
+        JSONObject jo1 = new JSONObject();
+        jo1.accumulate("type", "position");
+        jo1.accumulate("latitude", 123.4);
+        jo1.accumulate("longitude", 432.1);
+        jo1.accumulate("radius", 10);
+        JSONObject jo2 = new JSONObject();
+        jo2.accumulate("type", "position");
+        jo2.accumulate("latitude", 432.1);
+        jo2.accumulate("longitude", 123.4);
+        jo2.accumulate("radius", 20);
         JSONArray ja = new JSONArray();
         ja.put(jo1);
         ja.put(jo2);
