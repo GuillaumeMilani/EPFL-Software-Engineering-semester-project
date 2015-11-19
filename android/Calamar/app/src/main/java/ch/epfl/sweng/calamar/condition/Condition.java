@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar.condition;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,6 +14,17 @@ public abstract class Condition {
 
     private Boolean value = null;
     private Set<Observer> observers = new HashSet<>();
+
+    private static JSONArray concatArray(JSONArray... arrays)
+            throws JSONException {
+        JSONArray result = new JSONArray();
+        for (JSONArray array : arrays) {
+            for (int i = 0; i < array.length(); i++) {
+                result.put(array.get(i));
+            }
+        }
+        return result;
+    }
 
     /**
      * compose this Condition in the json object
@@ -31,6 +43,7 @@ public abstract class Condition {
     public JSONObject toJSON() throws JSONException {
         JSONObject ret = new JSONObject();
         this.compose(ret);
+        ret.accumulate("metadata", getMetadata());
         return ret;
     }
 
@@ -65,6 +78,8 @@ public abstract class Condition {
     public boolean getValue() {
         return value;
     }
+
+    public JSONArray getMetadata() throws JSONException { return new JSONArray(); }
 
     /**
      * create a Condition from a JSONObject
@@ -202,6 +217,9 @@ public abstract class Condition {
             public String type() {
                 return "and";
             }
+
+            @Override
+            public JSONArray getMetadata() throws JSONException { return concatArray(c1.getMetadata(), c2.getMetadata()); }
         };
     }
 
@@ -244,6 +262,9 @@ public abstract class Condition {
             public String type() {
                 return "or";
             }
+
+            @Override
+            public JSONArray getMetadata() throws JSONException { return concatArray(c1.getMetadata(), c2.getMetadata()); }
         };
     }
 
@@ -283,6 +304,8 @@ public abstract class Condition {
             public String type() {
                 return "not";
             }
+
+            // TODO How to deal metadata with not operator ?
         };
     }
 

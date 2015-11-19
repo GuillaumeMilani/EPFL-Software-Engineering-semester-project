@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar.condition;
 
 import android.location.Location;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -92,6 +93,15 @@ public class PositionCondition extends Condition {
         if ( !(o instanceof PositionCondition) ) return false;
         PositionCondition that = (PositionCondition)o;
         return super.equals(that) && location.equals(that.location) && radius == that.radius;
+    }
+
+    @Override
+    public JSONArray getMetadata()throws JSONException {
+        JSONArray array = new JSONArray();
+        JSONObject jObject = new JSONObject();
+        compose(jObject);
+        array.put(jObject);
+        return array;
     }
 
     /**
