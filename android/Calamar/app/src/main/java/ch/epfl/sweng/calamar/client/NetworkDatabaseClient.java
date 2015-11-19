@@ -68,14 +68,14 @@ public class NetworkDatabaseClient implements DatabaseClient {
     }
 
     @Override
-    public void send(Item item) throws DatabaseClientException {
+    public Item send(Item item) throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.SEND_PATH);
             String jsonParameter = item.toJSON().toString();
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter);
-            
+            return Item.fromJSON(new JSONObject(response));
         } catch (IOException | JSONException e) {
             throw new DatabaseClientException(e);
         } finally {
@@ -90,11 +90,12 @@ public class NetworkDatabaseClient implements DatabaseClient {
             URL url = new URL(serverUrl + NetworkDatabaseClient.NEW_USER_PATH);
 
             String jsonParameter = "{ " +
-                    "\"DeviceID\": \"" + deviceId + "\"" +
+                    "\"deviceID\": \"" + deviceId + "\"" +
                     ",\"name\": \"" + email + "\"" +
                     " }";
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter);
+
             JSONObject object = new JSONObject(response);
             return object.getInt("ID");
         } catch (IOException | JSONException e) {
@@ -172,6 +173,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
         wr.close();
 
         int responseCode = connection.getResponseCode();
+
         if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
             throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )");
         }
@@ -200,5 +202,10 @@ public class NetworkDatabaseClient implements DatabaseClient {
         }
 
         return result;
+    }
+
+    private int idFromJson(String response) throws JSONException {
+        JSONObject object = new JSONObject(response);
+        return object.getInt("ID");
     }
 }

@@ -11,6 +11,7 @@ import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.chat.ChatUsersListActivity;
 import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClient;
