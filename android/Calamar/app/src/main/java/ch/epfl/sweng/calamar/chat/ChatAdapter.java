@@ -163,7 +163,7 @@ public class ChatAdapter extends BaseAdapter {
      */
     private ViewHolder createViewHolder(View v) {
         ViewHolder holder = new ViewHolder();
-        holder.view = (TextView) v.findViewById(R.id.textMessage);
+        holder.view = (View) v.findViewById(R.id.textMessage);
         holder.textTime = (TextView) v.findViewById(R.id.textTime);
         holder.content = (LinearLayout) v.findViewById(R.id.content);
         holder.contentWithBG = (LinearLayout) v.findViewById(R.id.contentWithBG);
