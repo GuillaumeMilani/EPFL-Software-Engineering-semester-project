@@ -1,16 +1,13 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.push;
 
 import android.content.Intent;
-import android.content.IntentSender;
-import android.os.AsyncTask;
-import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.google.android.gms.iid.InstanceID;
+
 import com.google.android.gms.iid.InstanceIDListenerService;
 
 /**
  * Created by Tony on 06.11.2015.
  */
-public class CalamarInstanceIDListenerService extends InstanceIDListenerService{
+public class CalamarInstanceIDListenerService extends InstanceIDListenerService {
 
     private static final String TAG = "CalamarInstanceIDListenerService";
 

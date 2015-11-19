@@ -5,10 +5,10 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -26,8 +26,6 @@ import java.util.List;
 import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.map.MapFragment;
-
-import static android.app.PendingIntent.getActivity;
 
 /**
  * Created by Guillaume on 12.11.2015.
@@ -266,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             return mFragmentTitleList.get(position);
         }
     }
-}
+
     /**
      * Verifies google play services availability on the device
      */
