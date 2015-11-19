@@ -1,9 +1,6 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.push;
 
 import android.util.Log;
-
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -17,7 +14,7 @@ import ch.epfl.sweng.calamar.client.NetworkProvider;
 /**
  * Created by Tony on 09.11.2015.
  */
-public class NetworkRegistrationClient implements RegistrationClient{
+public class NetworkRegistrationClient implements RegistrationClient {
 
     private final String serverUrl;
     private final NetworkProvider networkProvider;
@@ -25,8 +22,8 @@ public class NetworkRegistrationClient implements RegistrationClient{
     private final static int HTTP_SUCCESS_END = 299;
     private final static String SEND_PATH = "/users.php?action=log";
 
-    public NetworkRegistrationClient(String serverUrl, NetworkProvider networkProvider)  {
-        if(null == serverUrl || null == networkProvider) {
+    public NetworkRegistrationClient(String serverUrl, NetworkProvider networkProvider) {
+        if (null == serverUrl || null == networkProvider) {
             throw new IllegalArgumentException("'serverUrl' or 'networkProvider' is null");
         }
         this.serverUrl = serverUrl;
@@ -63,22 +60,21 @@ public class NetworkRegistrationClient implements RegistrationClient{
     }
 
     private static HttpURLConnection createConnection(NetworkProvider networkProvider, URL url)
-            throws IOException
-    {
+            throws IOException {
         return networkProvider.getConnection(url);
     }
 
     /**
      * used to post data on connection
-     * @param connection the connection used to post data
+     *
+     * @param connection    the connection used to post data
      * @param jsonParameter the data posted
      * @return the result of the request
      * @throws IOException
-     * @throws ItemClientException
+     * @throws RegisterClientException
      */
     private static String post(HttpURLConnection connection, String jsonParameter)
-            throws IOException, RegisterClientException
-    {
+            throws IOException, RegisterClientException {
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type",
                 "application/json");//TODO clarify
