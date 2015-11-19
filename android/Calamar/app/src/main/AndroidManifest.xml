@@ -64,7 +64,7 @@
             </intent-filter>
         </receiver>
         <service
-            android:name="ch.epfl.sweng.calamar.RegistrationGcmListenerService"
+            android:name=".push.RegistrationGcmListenerService"
             android:exported="false" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
@@ -73,7 +73,7 @@
         <!-- [END gcm_listener] -->
         <!-- [START instanceId_listener] -->
         <service
-            android:name="ch.epfl.sweng.calamar.CalamarInstanceIDListenerService"
+            android:name=".push.CalamarInstanceIDListenerService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.gms.iid.InstanceID"/>
@@ -81,7 +81,7 @@
         </service>
         <!-- [END instanceId_listener] -->
         <service
-            android:name="ch.epfl.sweng.calamar.RegistrationIntentService"
+            android:name=".push.RegistrationIntentService"
             android:exported="false">
         </service>
     </application>
