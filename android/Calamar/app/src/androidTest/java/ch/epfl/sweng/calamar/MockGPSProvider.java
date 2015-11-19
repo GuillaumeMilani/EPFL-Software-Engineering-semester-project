@@ -1,4 +1,4 @@
-package ch.epfl.sweng.calamar.map;
+package ch.epfl.sweng.calamar;
 
 import android.app.Activity;
 import android.location.Location;
@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.map.GPSProvider;
 
 
 /**
@@ -96,7 +96,8 @@ public final class MockGPSProvider implements LocationListener
     }
 
     public void setMockLocation(Location location) {
-        // location must have certain fields sets ...
+        // TODO location must have certain fields sets ...
+        // Mais pas vraiment compris lesquels.....à voir si important pour nous
         checkLocation(location);
         // note : client must be connected.........
         LocationServices.FusedLocationApi.setMockMode(googleApiClient, true);
