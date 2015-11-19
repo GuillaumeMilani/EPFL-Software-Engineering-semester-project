@@ -16,6 +16,10 @@ import ch.epfl.sweng.calamar.map.MapFragment;
 
 public class MainActivity extends BaseActivity {
 
+    /**
+     * Created by Guillaume on 12.11.2015.
+     */
+
     // Tabs related stuff
     private Toolbar toolbar;
     private TabLayout tabLayout;
@@ -92,4 +96,5 @@ public class MainActivity extends BaseActivity {
             return mFragmentTitleList.get(position);
         }
     }
+
 }

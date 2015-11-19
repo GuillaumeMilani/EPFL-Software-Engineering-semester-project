@@ -20,6 +20,9 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
     // LogCat tag
     private final String TAG = BaseActivity.class.getSimpleName();
 
+    //TODO Test if i can use the location architecture to check the google play services
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+
     // activity request codes
     private static final int ERROR_RESOLUTION_REQUEST = 1001;
 
@@ -113,6 +116,7 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
                         finish();//TODO maybe refine ?
                 }
                 break;
+            case PLAY_SERVICES_RESOLUTION_REQUEST:
             default:
                 throw new IllegalStateException("onActivityResult : unknown request ! ");
         }

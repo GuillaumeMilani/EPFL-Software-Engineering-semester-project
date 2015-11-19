@@ -244,11 +244,8 @@ public final class CalamarApplication extends Application implements Application
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (isOnForeground()) {
+                if (!isOnForeground()) {
                     //TODO db.applyPendingOperations() once improve_database is merged;
-                    Toast.makeText(CalamarApplication.getInstance(), "OnForeground", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(CalamarApplication.getInstance(), "OnBackground", Toast.LENGTH_SHORT).show();
                 }
             }
         }, WAITING_TIME);
@@ -260,11 +257,9 @@ public final class CalamarApplication extends Application implements Application
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (isOnForeground()) {
+                if (!isOnForeground()) {
                     //TODO same as above;
                     Toast.makeText(CalamarApplication.getInstance(), "OnForeground", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(CalamarApplication.getInstance(), "OnBackground", Toast.LENGTH_SHORT).show();
                 }
             }
         }, WAITING_TIME);
