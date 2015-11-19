@@ -24,7 +24,7 @@ import ch.epfl.sweng.calamar.item.SimpleTextItem;
 
 public class ChatAdapter extends BaseAdapter {
 
-    private final List<SimpleTextItem> messages;
+    private final List<Item> messages;
     private final Activity context;
 
     public ChatAdapter(Activity context, List<Item> messages) {
@@ -44,7 +44,7 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     @Override
-    public SimpleTextItem getItem(final int position) {
+    public Item getItem(final int position) {
         return messages.get(position);
     }
 
@@ -56,7 +56,7 @@ public class ChatAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, View convertView, final ViewGroup parent) {
         ViewHolder holder;
-        SimpleTextItem item = getItem(position);
+        Item item = getItem(position);
         LayoutInflater li = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if (convertView == null) {
             convertView = li.inflate(R.layout.list_chat_messages, null);
@@ -69,7 +69,7 @@ public class ChatAdapter extends BaseAdapter {
 
         boolean ingoing = item.getTo().getID() == CalamarApplication.getInstance().getCurrentUserID();
         setAlignment(holder, ingoing);
-        holder.textMessage.setText(item.getMessage());
+        holder.view = item.getView();
         holder.textTime.setText(item.getDate().toString());
         return convertView;
     }
@@ -95,10 +95,7 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     private void addItem(Item i) {
-        //TODO : Identify type (with an enum in item ? )
-        if (i.getClass() == SimpleTextItem.class) {
-            this.messages.add((SimpleTextItem) i);
-        }
+        this.messages.add((SimpleTextItem) i);
     }
 
     /**
@@ -123,9 +120,9 @@ public class ChatAdapter extends BaseAdapter {
                 rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END, 0);
             }
             holder.content.setLayoutParams(rLayoutParams);
-            layoutParams = (LinearLayout.LayoutParams) holder.textMessage.getLayoutParams();
+            layoutParams = (LinearLayout.LayoutParams) holder.view.getLayoutParams();
             layoutParams.gravity = Gravity.START;
-            holder.textMessage.setLayoutParams(layoutParams);
+            holder.view.setLayoutParams(layoutParams);
 
             layoutParams = (LinearLayout.LayoutParams) holder.textTime.getLayoutParams();
             layoutParams.gravity = Gravity.START;
@@ -147,9 +144,9 @@ public class ChatAdapter extends BaseAdapter {
                 rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
             }
             holder.content.setLayoutParams(rLayoutParams);
-            layoutParams = (LinearLayout.LayoutParams) holder.textMessage.getLayoutParams();
+            layoutParams = (LinearLayout.LayoutParams) holder.view.getLayoutParams();
             layoutParams.gravity = Gravity.END;
-            holder.textMessage.setLayoutParams(layoutParams);
+            holder.view.setLayoutParams(layoutParams);
 
             layoutParams = (LinearLayout.LayoutParams) holder.textTime.getLayoutParams();
             layoutParams.gravity = Gravity.END;
@@ -166,7 +163,7 @@ public class ChatAdapter extends BaseAdapter {
      */
     private ViewHolder createViewHolder(View v) {
         ViewHolder holder = new ViewHolder();
-        holder.textMessage = (TextView) v.findViewById(R.id.textMessage);
+        holder.view = (TextView) v.findViewById(R.id.textMessage);
         holder.textTime = (TextView) v.findViewById(R.id.textTime);
         holder.content = (LinearLayout) v.findViewById(R.id.content);
         holder.contentWithBG = (LinearLayout) v.findViewById(R.id.contentWithBG);
@@ -178,7 +175,7 @@ public class ChatAdapter extends BaseAdapter {
      * Avoids using findViewById too much (more efficient and readable)
      */
     private static class ViewHolder {
-        public TextView textMessage;
+        public View view;
         public TextView textTime;
         public LinearLayout content;
         public LinearLayout contentWithBG;
