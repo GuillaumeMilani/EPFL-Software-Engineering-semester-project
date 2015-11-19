@@ -69,7 +69,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
     @Test
     public void testCanWriteInMessageEdit() {
         onView(withId(R.id.messageEdit)).perform(typeText("Hello Alice !"));
-        onView(allOf(withId(R.id.messageEdit), withText("Hello Alice !")));
+        onView(withId(R.id.messageEdit)).check(matches(withText("Hello Alice !")));
     }
 
     /**
