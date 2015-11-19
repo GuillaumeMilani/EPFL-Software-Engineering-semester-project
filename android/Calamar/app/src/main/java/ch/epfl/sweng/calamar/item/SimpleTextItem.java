@@ -1,5 +1,7 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.view.View;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -51,6 +53,11 @@ public final class SimpleTextItem extends Item {
     @Override
     public Type getType() {
         return ITEM_TYPE;
+    }
+
+    @Override
+    public View getView() {
+        return null;
     }
 
     /**

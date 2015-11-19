@@ -1,5 +1,7 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.view.View;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -43,6 +45,8 @@ public abstract class Item {
     }
 
     public abstract Type getType();
+
+    public abstract View getView();
 
     /**
      * @return the 'condition' field of the Item
