@@ -1,6 +1,8 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.content.Context;
 import android.view.View;
+import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,8 +58,10 @@ public final class SimpleTextItem extends Item {
     }
 
     @Override
-    public View getView() {
-        return null;
+    public View getView(Context context) {
+        TextView res = new TextView(context);
+        res.setText(message);
+        return res;
     }
 
     /**

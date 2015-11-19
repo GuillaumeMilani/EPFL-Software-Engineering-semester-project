@@ -69,7 +69,7 @@ public class ChatAdapter extends BaseAdapter {
 
         boolean ingoing = item.getTo().getID() == CalamarApplication.getInstance().getCurrentUserID();
         setAlignment(holder, ingoing);
-        holder.view = item.getView();
+        holder.view = item.getView(context);
         holder.textTime.setText(item.getDate().toString());
         return convertView;
     }
@@ -95,7 +95,7 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     private void addItem(Item i) {
-        this.messages.add((SimpleTextItem) i);
+        this.messages.add(i);
     }
 
     /**
