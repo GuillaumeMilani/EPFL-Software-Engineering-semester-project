@@ -225,10 +225,10 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized Item getItem(int id) {
         Pair<Operation, Item> fromPending = pendingItems.get(id);
         if (fromPending != null) {
-            if (fromPending.getLeft() == Operation.DELETE) {
-                return null;
-            } else {
+            if (fromPending.getLeft() == Operation.ADD) {
                 return fromPending.getRight();
+            } else if (fromPending.getLeft() == Operation.DELETE) {
+                return null;
             }
         }
         Item toReturn = null;
@@ -240,6 +240,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 toReturn = createItem(cursor);
             }
             cursor.close();
+        }
+        if (toReturn != null && fromPending != null && fromPending.getLeft() == Operation.UPDATE) {
+            toReturn = fromPending.getRight();
         }
         return toReturn;
     }
@@ -253,16 +256,21 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized List<Item> getItems(List<Integer> ids) {
         List<Integer> databaseIds = new ArrayList<>(ids);
         Set<Item> items = new HashSet<>();
+        Set<Item> toUpdate = new HashSet<>();
         for (Integer i : ids) {
             Pair<Operation, Item> fromPending = pendingItems.get(i);
             if (fromPending != null) {
-                databaseIds.remove(i);
-                if (fromPending.getLeft() != Operation.DELETE) {
+                if (fromPending.getLeft() == Operation.ADD) {
                     items.add(fromPending.getRight());
+                    databaseIds.remove(i);
+                } else if (fromPending.getLeft() == Operation.UPDATE) {
+                    toUpdate.add(fromPending.getRight());
+                } else {
+                    databaseIds.remove(i);
                 }
             }
         }
-        if (items.size() == ids.size()) {
+        if (databaseIds.isEmpty()) {
             return Sorter.sortItemList(new ArrayList<>(items));
         }
         db = getReadableIfNotOpen();
@@ -274,7 +282,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 for (int i = 0; i < num; ++i) {
                     args[i] = Integer.toString(databaseIds.get(i + (databaseIds.size() - count)));
                 }
-                Cursor cursor = null;
+                Cursor cursor;
                 if (num == MAX_PLACEHOLDERS_COUNT) {
                     cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " IN (" + FULL_PLACEHOLDERS + ")", args, null, null, ITEMS_KEY_ID);
                 } else {
@@ -305,6 +313,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 cursor.close();
             }
         }
+        updateGetItemsFromPending(items, toUpdate);
         return Sorter.sortItemList(new ArrayList<>(items));
     }
 
@@ -327,17 +336,22 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized List<Item> getItemsForContact(int contactID) {
         Set<Integer> mapIds = new HashSet<>();
         Set<Item> items = new HashSet<>();
+        Set<Item> toUpdate = new HashSet<>();
         int userID = app.getCurrentUserID();
         for (Map.Entry<Integer, Pair<Operation, Item>> e : pendingItems.entrySet()) {
             Pair<Operation, Item> p = e.getValue();
-            mapIds.add(e.getKey());
-            if (p.getLeft() != Operation.DELETE) {
+            if (p.getLeft() == Operation.ADD) {
+                mapIds.add(e.getKey());
                 Item i = p.getRight();
                 int itemFromID = i.getFrom().getID();
                 int itemToID = i.getTo().getID();
                 if ((itemFromID == userID && itemToID == contactID) || (itemFromID == contactID && itemToID == userID)) {
                     items.add(i);
                 }
+            } else if (p.getLeft() == Operation.UPDATE) {
+                toUpdate.add(p.getRight());
+            } else {
+                mapIds.add(e.getKey());
             }
         }
         db = getReadableIfNotOpen();
@@ -356,6 +370,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             cursor.close();
         }
+        updateGetItemsFromPending(items, toUpdate);
         return Sorter.sortItemList(new ArrayList<>(items));
     }
 
@@ -367,11 +382,16 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized List<Item> getAllItems() {
         Set<Integer> mapIds = new HashSet<>();
         Set<Item> items = new HashSet<>();
+        Set<Item> toUpdate = new HashSet<>();
         for (Map.Entry<Integer, Pair<Operation, Item>> e : pendingItems.entrySet()) {
             Pair<Operation, Item> fromPending = e.getValue();
-            mapIds.add(e.getKey());
-            if (fromPending.getLeft() != Operation.DELETE) {
+            if (fromPending.getLeft() == Operation.ADD) {
+                mapIds.add(e.getKey());
                 items.add(fromPending.getRight());
+            } else if (fromPending.getLeft() == Operation.UPDATE) {
+                toUpdate.add(fromPending.getRight());
+            } else {
+                mapIds.add(e.getKey());
             }
         }
         db = getReadableIfNotOpen();
@@ -388,6 +408,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             cursor.close();
         }
+        updateGetItemsFromPending(items, toUpdate);
         return Sorter.sortItemList(new ArrayList<>(items));
     }
 
@@ -479,14 +500,14 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized Recipient getRecipient(int id) {
         Pair<Operation, Recipient> fromPending = pendingRecipients.get(id);
         if (fromPending != null) {
-            if (fromPending.getLeft() == Operation.DELETE) {
-                return null;
-            } else {
+            if (fromPending.getLeft() == Operation.ADD) {
                 return fromPending.getRight();
+            } else if (fromPending.getLeft() == Operation.DELETE) {
+                return null;
             }
         }
         db = getReadableIfNotOpen();
-        User toReturn = null;
+        Recipient toReturn = null;
         String[] args = {Integer.toString(id)};
         Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = ?", args, null, null, null, null);
         if (cursor != null) {
@@ -496,6 +517,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 toReturn = new User(id, name);
             }
             cursor.close();
+        }
+        if (toReturn != null && fromPending != null && fromPending.getLeft() == Operation.UPDATE) {
+            toReturn = fromPending.getRight();
         }
         return toReturn;
     }
@@ -509,16 +533,21 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized List<Recipient> getRecipients(List<Integer> ids) {
         List<Integer> databaseIds = new ArrayList<>(ids);
         Set<Recipient> recipients = new HashSet<>();
+        Set<Recipient> toUpdate = new HashSet<>();
         for (Integer i : ids) {
             Pair<Operation, Recipient> fromPending = pendingRecipients.get(i);
             if (fromPending != null) {
-                databaseIds.remove(i);
-                if (fromPending.getLeft() != Operation.DELETE) {
+                if (fromPending.getLeft() == Operation.UPDATE) {
+                    toUpdate.add(fromPending.getRight());
+                } else if (fromPending.getLeft() == Operation.ADD) {
                     recipients.add(fromPending.getRight());
+                    databaseIds.remove(i);
+                } else {
+                    databaseIds.remove(i);
                 }
             }
         }
-        if (recipients.size() == ids.size()) {
+        if (databaseIds.isEmpty()) {
             return Sorter.sortRecipientList(new ArrayList<>(recipients));
         }
         db = getReadableIfNotOpen();
@@ -528,9 +557,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 int num = count - MAX_PLACEHOLDERS_COUNT > 0 ? MAX_PLACEHOLDERS_COUNT : count;
                 String[] args = new String[num];
                 for (int i = 0; i < num; ++i) {
-                    args[i] = Integer.toString(databaseIds.get(i+(databaseIds.size()-count)));
+                    args[i] = Integer.toString(databaseIds.get(i + (databaseIds.size() - count)));
                 }
-                Cursor cursor = null;
+                Cursor cursor;
                 if (num == MAX_PLACEHOLDERS_COUNT) {
                     cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " IN (" + FULL_PLACEHOLDERS + ")", args, null, null, RECIPIENTS_KEY_ID);
                 } else {
@@ -561,6 +590,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 cursor.close();
             }
         }
+        updateGetRecipientsFromPending(recipients, toUpdate);
         return Sorter.sortRecipientList(new ArrayList<>(recipients));
     }
 
@@ -572,11 +602,16 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized List<Recipient> getAllRecipients() {
         Set<Integer> mapIds = new HashSet<>();
         Set<Recipient> recipients = new HashSet<>();
+        Set<Recipient> toUpdate = new HashSet<>();
         for (Map.Entry<Integer, Pair<Operation, Recipient>> e : pendingRecipients.entrySet()) {
             Pair<Operation, Recipient> fromPending = e.getValue();
-            mapIds.add(e.getKey());
-            if (fromPending.getLeft() != Operation.DELETE) {
+            if (fromPending.getLeft() == Operation.UPDATE) {
+                toUpdate.add(fromPending.getRight());
+            } else if (fromPending.getLeft() == Operation.ADD) {
                 recipients.add(fromPending.getRight());
+                mapIds.add(e.getKey());
+            } else {
+                mapIds.add(e.getKey());
             }
         }
         db = getReadableIfNotOpen();
@@ -585,7 +620,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
-                if (!mapIds.contains(cursor.getInt(1))) {
+                if (!mapIds.contains(cursor.getInt(0))) {
                     Recipient recipient = createUser(cursor);
                     recipients.add(recipient);
                 }
@@ -593,6 +628,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             cursor.close();
         }
+        updateGetRecipientsFromPending(recipients, toUpdate);
         return Sorter.sortRecipientList(new ArrayList<>(recipients));
     }
 
@@ -839,6 +875,44 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
         } else {
             pendingRecipients.put(recipient.getID(), new Pair<>(Operation.UPDATE, recipient));
+        }
+    }
+
+    private void updateGetItemsFromPending(Set<Item> items, Set<Item> toUpdate) {
+        if (toUpdate.size() < items.size()) {
+            for (Item i : toUpdate) {
+                if (items.contains(i)) {
+                    items.remove(i);
+                    items.add(i);
+                }
+            }
+        } else {
+            for (Item i : items) {
+                Pair<Operation, Item> fromPending = pendingItems.get(i.getID());
+                if (fromPending != null && fromPending.getLeft() == Operation.UPDATE) {
+                    items.remove(i);
+                    items.add(fromPending.getRight());
+                }
+            }
+        }
+    }
+
+    private void updateGetRecipientsFromPending(Set<Recipient> recipients, Set<Recipient> toUpdate) {
+        if (toUpdate.size() < recipients.size()) {
+            for (Recipient i : toUpdate) {
+                if (recipients.contains(i)) {
+                    recipients.remove(i);
+                    recipients.add(i);
+                }
+            }
+        } else {
+            for (Recipient i : recipients) {
+                Pair<Operation, Recipient> fromPending = pendingRecipients.get(i.getID());
+                if (fromPending != null && fromPending.getLeft() == Operation.UPDATE) {
+                    recipients.remove(i);
+                    recipients.add(fromPending.getRight());
+                }
+            }
         }
     }
 

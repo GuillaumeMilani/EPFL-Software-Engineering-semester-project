@@ -319,9 +319,9 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
             dbHandler.updateRecipient(createDummyUser(i, true));
         }
         List<Recipient> recipientsGot = dbHandler.getRecipients(toGet);
-        assertEquals(recipientsGot.size(),NUM_ITER/2);
+        assertEquals(recipientsGot.size(), NUM_ITER / 2);
         for (int i = 0; i < NUM_ITER / 2; ++i) {
-            assertEquals(recipientsGot.get(i),createDummyUser(i, true));
+            assertEquals(recipientsGot.get(i), createDummyUser(i, true));
             assertEquals(dbHandler.getRecipient(i), createDummyUser(i, true));
         }
         for (int i = NUM_ITER / 2; i < NUM_ITER; ++i) {
@@ -355,10 +355,10 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
             dbHandler.updateItem(createDummyItem(i, true));
         }
         List<Item> itemsGot = dbHandler.getItems(toGet);
-        assertEquals(itemsGot.size(),NUM_ITER/2);
+        assertEquals(itemsGot.size(), NUM_ITER / 2);
         for (int i = 0; i < NUM_ITER / 2; ++i) {
             assertEquals(dbHandler.getItem(i), createDummyItem(i, true));
-            assertEquals(itemsGot.get(i),createDummyItem(i, true));
+            assertEquals(itemsGot.get(i), createDummyItem(i, true));
         }
         assertEquals(dbHandler.getItems(toGet).size(), NUM_ITER / 2);
         for (int i = NUM_ITER / 2; i < NUM_ITER; ++i) {
@@ -378,6 +378,49 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         assertEquals(dbHandler.getAllRecipients().size(), 3);
         dbHandler.deleteAllRecipients();
         assertTrue(dbHandler.getAllRecipients().isEmpty());
+    }
+
+    @Test
+    public void testGetUpdatedNonexistent() {
+        dbHandler.updateRecipient(createDummyUser(10, false));
+        dbHandler.updateItem(createDummyItem(10, false));
+        assertTrue(dbHandler.getAllItems().isEmpty());
+        assertEquals(dbHandler.getAllRecipients().size(), 2);
+        assertTrue(dbHandler.getRecipient(10) == null);
+        assertTrue(dbHandler.getItem(10) == null);
+        List<Integer> toGet = new ArrayList<>();
+        toGet.add(10);
+        assertTrue(dbHandler.getRecipients(toGet).isEmpty());
+        assertTrue(dbHandler.getItems(toGet).isEmpty());
+        dbHandler.applyPendingOperations();
+        assertEquals(dbHandler.getAllRecipients().size(), 2);
+        assertTrue(dbHandler.getAllItems().isEmpty());
+        assertTrue(dbHandler.getRecipient(10) == null);
+        assertTrue(dbHandler.getItem(10) == null);
+        assertTrue(dbHandler.getRecipients(toGet).isEmpty());
+        assertTrue(dbHandler.getItems(toGet).isEmpty());
+        dbHandler.addItem(createDummyItem(20, false));
+        dbHandler.addRecipient(createDummyUser(20, false));
+        dbHandler.applyPendingOperations();
+        dbHandler.deleteItem(20);
+        dbHandler.deleteRecipient(20);
+        dbHandler.updateItem(createDummyItem(20, false));
+        dbHandler.updateRecipient(createDummyUser(20, false));
+        assertEquals(dbHandler.getAllRecipients().size(), 2);
+        assertTrue(dbHandler.getAllItems().isEmpty());
+        assertTrue(dbHandler.getRecipient(20) == null);
+        assertTrue(dbHandler.getItem(20) == null);
+        toGet = new ArrayList<>();
+        toGet.add(20);
+        assertTrue(dbHandler.getRecipients(toGet).isEmpty());
+        assertTrue(dbHandler.getItems(toGet).isEmpty());
+        dbHandler.applyPendingOperations();
+        assertEquals(dbHandler.getAllRecipients().size(), 2);
+        assertTrue(dbHandler.getAllItems().isEmpty());
+        assertTrue(dbHandler.getRecipient(20) == null);
+        assertTrue(dbHandler.getItem(20) == null);
+        assertTrue(dbHandler.getRecipients(toGet).isEmpty());
+        assertTrue(dbHandler.getItems(toGet).isEmpty());
     }
 
     @Test
@@ -605,10 +648,10 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         }
         dbHandler.applyPendingOperations();
         List<Item> itemsGot = dbHandler.getItems(toGet);
-        assertEquals(itemsGot.size(),NUM_ITER/2);
+        assertEquals(itemsGot.size(), NUM_ITER / 2);
         for (int i = 0; i < NUM_ITER / 2; ++i) {
             assertEquals(dbHandler.getItem(i), createDummyItem(i, true));
-            assertEquals(itemsGot.get(i),createDummyItem(i, true));
+            assertEquals(itemsGot.get(i), createDummyItem(i, true));
         }
         assertEquals(dbHandler.getItems(toGet).size(), NUM_ITER / 2);
         for (int i = NUM_ITER / 2; i < NUM_ITER; ++i) {
@@ -642,16 +685,16 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         for (int i = 0; i < NUM_ITER; ++i) {
             assertEquals(dbHandler.getRecipient(i), createDummyUser(i, false));
         }
-        List<Integer> toGet=new ArrayList<>();
+        List<Integer> toGet = new ArrayList<>();
         for (int i = 0; i < NUM_ITER / 2; ++i) {
             toGet.add(i);
             dbHandler.updateRecipient(createDummyUser(i, true));
         }
         dbHandler.applyPendingOperations();
         List<Recipient> recipientsGot = dbHandler.getRecipients(toGet);
-        assertEquals(recipientsGot.size(),NUM_ITER/2);
+        assertEquals(recipientsGot.size(), NUM_ITER / 2);
         for (int i = 0; i < NUM_ITER / 2; ++i) {
-            assertEquals(recipientsGot.get(i),createDummyUser(i,true));
+            assertEquals(recipientsGot.get(i), createDummyUser(i, true));
             assertEquals(dbHandler.getRecipient(i), createDummyUser(i, true));
         }
         for (int i = NUM_ITER / 2; i < NUM_ITER; ++i) {
