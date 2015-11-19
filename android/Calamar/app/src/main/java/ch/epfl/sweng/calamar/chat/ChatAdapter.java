@@ -18,7 +18,6 @@ import java.util.List;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.item.Item;
-import ch.epfl.sweng.calamar.item.SimpleTextItem;
 
 //TODO : Support other item types
 
