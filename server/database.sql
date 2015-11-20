@@ -29,7 +29,7 @@ ENGINE = InnoDB;
 -- Table `tb_condition`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_condition` (
-    `ID` INT NOT NULL,
+    `ID` INT NOT NULL AUTO_INCREMENT,
     `condition` VARCHAR(512),
     `value` TINYINT(1) NOT NULL,
     PRIMARY KEY (`ID`)
@@ -40,7 +40,7 @@ ENGINE = InnoDB;
 -- Table `tb_metadata`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_metadata` (
-    `ID` INT NOT NULL,
+    `ID` INT NOT NULL AUTO_INCREMENT,
     `condition` INT NOT NULL,
     PRIMARY KEY (`ID`),
     CONSTRAINT `ct_metadata_condition`
