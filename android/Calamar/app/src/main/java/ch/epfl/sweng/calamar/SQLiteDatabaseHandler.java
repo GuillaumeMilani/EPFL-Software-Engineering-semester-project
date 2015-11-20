@@ -225,10 +225,12 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized Item getItem(int id) {
         Pair<Operation, Item> fromPending = pendingItems.get(id);
         if (fromPending != null) {
-            if (fromPending.getLeft() == Operation.ADD) {
-                return fromPending.getRight();
-            } else if (fromPending.getLeft() == Operation.DELETE) {
-                return null;
+            switch (fromPending.getLeft()) {
+                case ADD:
+                    return fromPending.getRight();
+                case DELETE:
+                    return null;
+                case UPDATE:
             }
         }
         Item toReturn = null;
@@ -260,13 +262,17 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         for (Integer i : ids) {
             Pair<Operation, Item> fromPending = pendingItems.get(i);
             if (fromPending != null) {
-                if (fromPending.getLeft() == Operation.ADD) {
-                    items.add(fromPending.getRight());
-                    databaseIds.remove(i);
-                } else if (fromPending.getLeft() == Operation.UPDATE) {
-                    toUpdate.add(fromPending.getRight());
-                } else {
-                    databaseIds.remove(i);
+                switch (fromPending.getLeft()) {
+                    case ADD:
+                        items.add(fromPending.getRight());
+                        databaseIds.remove(i);
+                        break;
+                    case UPDATE:
+                        toUpdate.add(fromPending.getRight());
+                        break;
+                    case DELETE:
+                        databaseIds.remove(i);
+                        break;
                 }
             }
         }
@@ -340,18 +346,22 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         int userID = app.getCurrentUserID();
         for (Map.Entry<Integer, Pair<Operation, Item>> e : pendingItems.entrySet()) {
             Pair<Operation, Item> p = e.getValue();
-            if (p.getLeft() == Operation.ADD) {
-                mapIds.add(e.getKey());
-                Item i = p.getRight();
-                int itemFromID = i.getFrom().getID();
-                int itemToID = i.getTo().getID();
-                if ((itemFromID == userID && itemToID == contactID) || (itemFromID == contactID && itemToID == userID)) {
-                    items.add(i);
-                }
-            } else if (p.getLeft() == Operation.UPDATE) {
-                toUpdate.add(p.getRight());
-            } else {
-                mapIds.add(e.getKey());
+            switch (p.getLeft()) {
+                case ADD:
+                    mapIds.add(e.getKey());
+                    Item i = p.getRight();
+                    int itemFromID = i.getFrom().getID();
+                    int itemToID = i.getTo().getID();
+                    if ((itemFromID == userID && itemToID == contactID) || (itemFromID == contactID && itemToID == userID)) {
+                        items.add(i);
+                    }
+                    break;
+                case UPDATE:
+                    toUpdate.add(p.getRight());
+                    break;
+                case DELETE:
+                    mapIds.add(e.getKey());
+                    break;
             }
         }
         db = getReadableIfNotOpen();
@@ -385,13 +395,17 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         Set<Item> toUpdate = new HashSet<>();
         for (Map.Entry<Integer, Pair<Operation, Item>> e : pendingItems.entrySet()) {
             Pair<Operation, Item> fromPending = e.getValue();
-            if (fromPending.getLeft() == Operation.ADD) {
-                mapIds.add(e.getKey());
-                items.add(fromPending.getRight());
-            } else if (fromPending.getLeft() == Operation.UPDATE) {
-                toUpdate.add(fromPending.getRight());
-            } else {
-                mapIds.add(e.getKey());
+            switch (fromPending.getLeft()) {
+                case ADD:
+                    mapIds.add(e.getKey());
+                    items.add(fromPending.getRight());
+                    break;
+                case UPDATE:
+                    toUpdate.add(fromPending.getRight());
+                    break;
+                case DELETE:
+                    mapIds.add(e.getKey());
+                    break;
             }
         }
         db = getReadableIfNotOpen();
@@ -500,10 +514,13 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized Recipient getRecipient(int id) {
         Pair<Operation, Recipient> fromPending = pendingRecipients.get(id);
         if (fromPending != null) {
-            if (fromPending.getLeft() == Operation.ADD) {
-                return fromPending.getRight();
-            } else if (fromPending.getLeft() == Operation.DELETE) {
-                return null;
+            switch (fromPending.getLeft()) {
+                case ADD:
+                    return fromPending.getRight();
+                case DELETE:
+                    return null;
+                case UPDATE:
+                    break;
             }
         }
         db = getReadableIfNotOpen();
@@ -537,13 +554,17 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         for (Integer i : ids) {
             Pair<Operation, Recipient> fromPending = pendingRecipients.get(i);
             if (fromPending != null) {
-                if (fromPending.getLeft() == Operation.UPDATE) {
-                    toUpdate.add(fromPending.getRight());
-                } else if (fromPending.getLeft() == Operation.ADD) {
-                    recipients.add(fromPending.getRight());
-                    databaseIds.remove(i);
-                } else {
-                    databaseIds.remove(i);
+                switch (fromPending.getLeft()) {
+                    case ADD:
+                        recipients.add(fromPending.getRight());
+                        databaseIds.remove(i);
+                        break;
+                    case UPDATE:
+                        toUpdate.add(fromPending.getRight());
+                        break;
+                    case DELETE:
+                        databaseIds.remove(i);
+                        break;
                 }
             }
         }
@@ -605,13 +626,17 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         Set<Recipient> toUpdate = new HashSet<>();
         for (Map.Entry<Integer, Pair<Operation, Recipient>> e : pendingRecipients.entrySet()) {
             Pair<Operation, Recipient> fromPending = e.getValue();
-            if (fromPending.getLeft() == Operation.UPDATE) {
-                toUpdate.add(fromPending.getRight());
-            } else if (fromPending.getLeft() == Operation.ADD) {
-                recipients.add(fromPending.getRight());
-                mapIds.add(e.getKey());
-            } else {
-                mapIds.add(e.getKey());
+            switch (fromPending.getLeft()) {
+                case ADD:
+                    recipients.add(fromPending.getRight());
+                    mapIds.add(e.getKey());
+                    break;
+                case UPDATE:
+                    toUpdate.add(fromPending.getRight());
+                    break;
+                case DELETE:
+                    mapIds.add(e.getKey());
+                    break;
             }
         }
         db = getReadableIfNotOpen();
@@ -646,15 +671,18 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                     List<Integer> itemsToDelete = new ArrayList<>();
                     for (Map.Entry<Integer, Pair<Operation, Item>> e : pendingItems.entrySet()) {
                         Pair<Operation, Item> pair = e.getValue();
-                        if (pair.getLeft() == Operation.ADD) {
-                            itemsToAdd.add(pair.getRight());
-                        } else if (pair.getLeft() == Operation.UPDATE) {
-                            itemsToUpdate.add(pair.getRight());
-                        } else {
-                            itemsToDelete.add(e.getKey());
+                        switch (pair.getLeft()) {
+                            case ADD:
+                                itemsToAdd.add(pair.getRight());
+                                break;
+                            case UPDATE:
+                                itemsToUpdate.add(pair.getRight());
+                                break;
+                            case DELETE:
+                                itemsToDelete.add(e.getKey());
+                                break;
                         }
                     }
-
                     pendingAddItems(itemsToAdd);
                     pendingUpdateItems(itemsToUpdate);
                     if (!itemsToDelete.isEmpty()) {
@@ -667,12 +695,15 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                     List<Integer> recipientsToDelete = new ArrayList<>();
                     for (Map.Entry<Integer, Pair<Operation, Recipient>> e : pendingRecipients.entrySet()) {
                         Pair<Operation, Recipient> pair = e.getValue();
-                        if (pair.getLeft() == Operation.ADD) {
-                            recipientsToAdd.add(pair.getRight());
-                        } else if (pair.getLeft() == Operation.UPDATE) {
-                            recipientsToUpdate.add(pair.getRight());
-                        } else {
-                            recipientsToDelete.add(e.getKey());
+                        switch (pair.getLeft()) {
+                            case ADD:
+                                recipientsToAdd.add(pair.getRight());
+                                break;
+                            case UPDATE:
+                                recipientsToUpdate.add(pair.getRight());
+                                break;
+                            case DELETE:
+                                recipientsToDelete.add(e.getKey());
                         }
                     }
                     pendingAddRecipients(recipientsToAdd);
@@ -812,7 +843,12 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     private Item createItem(Cursor cursor) {
-        String type = cursor.getString(0);
+        Item.Type type;
+        try {
+            type = Item.Type.valueOf(cursor.getString(0));
+        } catch (IllegalArgumentException e) {
+            throw new UnsupportedOperationException("Only SimpleTextItem for now");
+        }
         int id = cursor.getInt(1);
         User from = (User) getRecipient(cursor.getInt(2));
         Recipient to = getRecipient(cursor.getInt(3));
@@ -824,10 +860,11 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             e.printStackTrace();
         }
         String text = cursor.getString(6);
-        if (type.equals(Item.Type.SIMPLETEXTITEM.name())) {
-            return new SimpleTextItem(id, from, to, time, condition, text);
-        } else {
-            throw new UnsupportedOperationException("Only SimpleTextItem for now");
+        switch (type) {
+            case SIMPLETEXTITEM:
+                return new SimpleTextItem(id, from, to, time, condition, text);
+            default:
+                throw new UnsupportedOperationException("Only SimpleTextItem for now");
         }
     }
 
@@ -852,12 +889,17 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private void manageItemUpdate(Item item) {
         Pair<Operation, Item> fromPending = pendingItems.get(item.getID());
         if (fromPending != null) {
-            if (fromPending.getLeft() == Operation.UPDATE) {
-                pendingItems.put(item.getID(), new Pair<>(Operation.UPDATE, item));
-                addOrUpdateRecipientWithItem(item);
-            } else if (fromPending.getLeft() == Operation.ADD) {
-                pendingItems.put(item.getID(), new Pair<>(Operation.ADD, item));
-                addOrUpdateRecipientWithItem(item);
+            switch (fromPending.getLeft()) {
+                case ADD:
+                    pendingItems.put(item.getID(), new Pair<>(Operation.ADD, item));
+                    addOrUpdateRecipientWithItem(item);
+                    break;
+                case UPDATE:
+                    pendingItems.put(item.getID(), new Pair<>(Operation.UPDATE, item));
+                    addOrUpdateRecipientWithItem(item);
+                    break;
+                case DELETE:
+                    break;
             }
         } else {
             pendingItems.put(item.getID(), new Pair<>(Operation.UPDATE, item));
@@ -868,10 +910,15 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private void manageRecipientUpdate(Recipient recipient) {
         Pair<Operation, Recipient> fromPending = pendingRecipients.get(recipient.getID());
         if (fromPending != null) {
-            if (fromPending.getLeft() == Operation.UPDATE) {
-                pendingRecipients.put(recipient.getID(), new Pair<>(Operation.UPDATE, recipient));
-            } else if (fromPending.getLeft() == Operation.ADD) {
-                pendingRecipients.put(recipient.getID(), new Pair<>(Operation.ADD, recipient));
+            switch (fromPending.getLeft()) {
+                case ADD:
+                    pendingRecipients.put(recipient.getID(), new Pair<>(Operation.ADD, recipient));
+                    break;
+                case UPDATE:
+                    pendingRecipients.put(recipient.getID(), new Pair<>(Operation.UPDATE, recipient));
+                    break;
+                case DELETE:
+                    break;
             }
         } else {
             pendingRecipients.put(recipient.getID(), new Pair<>(Operation.UPDATE, recipient));
