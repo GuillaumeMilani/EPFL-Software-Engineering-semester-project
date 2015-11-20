@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar.item;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Base64;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -137,7 +138,7 @@ public final class ImageItem extends Item {
      */
     public static Bitmap string2Bitmap(String str)
     {
-        byte[] bytes2 = str.getBytes(Charset.forName("UTF-8"));
+        byte[] bytes2 = Base64.decode(str, Base64.DEFAULT);
         return BitmapFactory.decodeByteArray(bytes2, 0, bytes2.length);
     }
 
@@ -150,7 +151,7 @@ public final class ImageItem extends Item {
     {
         ByteArrayOutputStream blob = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, blob);
-        return new String(blob.toByteArray(), Charset.forName("UTF-8"));
+        return Base64.encodeToString(blob.toByteArray(), Base64.DEFAULT);
     }
 
     /**
