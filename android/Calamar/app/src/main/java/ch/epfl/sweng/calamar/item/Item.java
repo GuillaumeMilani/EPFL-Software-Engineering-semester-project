@@ -192,8 +192,13 @@ public abstract class Item {
             from = User.fromJSON(o.getJSONObject("from"));
             to = Recipient.fromJSON(o.getJSONObject("to"));
             date = o.getLong("date");
-            condition = Condition.trueCondition();
-            //condition = Condition.fromJSON(o.getJSONObject("condition"));
+            //TODO to delete when server ready to send true condition when there is no condition
+            // and replace by just fromJSON etc..
+            if(o.has("condition")) {
+                condition = Condition.fromJSON(o.getJSONObject("condition"));
+            } else {
+                condition = Condition.trueCondition();
+            }
             return this;
         }
     }
