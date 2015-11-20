@@ -116,7 +116,7 @@ public final class SimpleTextItem extends Item {
 
     @Override
     public String toString(){
-        return super.toString()+"\nmessage : "+message;
+        return super.toString()+" message : "+message;
     }
 
     /**
