@@ -2,6 +2,9 @@ package ch.epfl.sweng.calamar.condition;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,7 +55,9 @@ public abstract class Condition {
 
     public View getView(Context context)
     {
-        return null;
+        FrameLayout view = new FrameLayout(context);
+        //draw a rectangle around with color for true or false and add an observer in this Condition
+        return view;
     }
 
 
@@ -138,6 +143,16 @@ public abstract class Condition {
             public String type() {
                 return "true";
             }
+
+            @Override
+            public View getView(Context context)
+            {
+                FrameLayout view = (FrameLayout)(super.getView(context));
+                TextView tv = new TextView(context);
+                tv.setText("oui");
+                view.addView(tv);
+                return view;
+            }
         };
     }
 
@@ -166,6 +181,16 @@ public abstract class Condition {
             @Override
             public String type() {
                 return "false";
+            }
+
+            @Override
+            public View getView(Context context)
+            {
+                FrameLayout view = (FrameLayout)(super.getView(context));
+                TextView tv = new TextView(context);
+                tv.setText("non");
+                view.addView(tv);
+                return view;
             }
         };
     }
@@ -210,6 +235,21 @@ public abstract class Condition {
             public String type() {
                 return "and";
             }
+
+            @Override
+            public View getView(Context context)
+            {
+                FrameLayout view = (FrameLayout)(super.getView(context));
+                LinearLayout LL = new LinearLayout(context);
+                LL.setOrientation(LinearLayout.HORIZONTAL);
+                TextView tv = new TextView(context);
+                tv.setText("et");
+                LL.addView(c1.getView(context));
+                LL.addView(tv);
+                LL.addView(c2.getView(context));
+                view.addView(LL);
+                return view;
+            }
         };
     }
 
@@ -252,6 +292,21 @@ public abstract class Condition {
             public String type() {
                 return "or";
             }
+
+            @Override
+            public View getView(Context context)
+            {
+                FrameLayout view = (FrameLayout)(super.getView(context));
+                LinearLayout LL = new LinearLayout(context);
+                LL.setOrientation(LinearLayout.HORIZONTAL);
+                TextView tv = new TextView(context);
+                tv.setText("ou");
+                LL.addView(c1.getView(context));
+                LL.addView(tv);
+                LL.addView(c2.getView(context));
+                view.addView(LL);
+                return view;
+            }
         };
     }
 
@@ -290,6 +345,20 @@ public abstract class Condition {
             @Override
             public String type() {
                 return "not";
+            }
+
+            @Override
+            public View getView(Context context)
+            {
+                FrameLayout view = (FrameLayout)(super.getView(context));
+                LinearLayout LL = new LinearLayout(context);
+                LL.setOrientation(LinearLayout.HORIZONTAL);
+                TextView tv = new TextView(context);
+                tv.setText("non");
+                LL.addView(tv);
+                LL.addView(c.getView(context));
+                view.addView(LL);
+                return view;
             }
         };
     }
