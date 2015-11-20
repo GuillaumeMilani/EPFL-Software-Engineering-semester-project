@@ -68,7 +68,7 @@ public class ChatAdapter extends BaseAdapter {
 
         boolean ingoing = item.getTo().getID() == CalamarApplication.getInstance().getCurrentUserID();
         setAlignment(holder, ingoing);
-        holder.view = item.getView(context);
+        holder.itemView = item.getView(context);
         holder.textTime.setText(item.getDate().toString());
         return convertView;
     }
@@ -119,9 +119,9 @@ public class ChatAdapter extends BaseAdapter {
                 rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END, 0);
             }
             holder.content.setLayoutParams(rLayoutParams);
-            layoutParams = (LinearLayout.LayoutParams) holder.view.getLayoutParams();
+            layoutParams = (LinearLayout.LayoutParams) holder.itemView.getLayoutParams();
             layoutParams.gravity = Gravity.START;
-            holder.view.setLayoutParams(layoutParams);
+            holder.itemView.setLayoutParams(layoutParams);
 
             layoutParams = (LinearLayout.LayoutParams) holder.textTime.getLayoutParams();
             layoutParams.gravity = Gravity.START;
@@ -143,9 +143,9 @@ public class ChatAdapter extends BaseAdapter {
                 rLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
             }
             holder.content.setLayoutParams(rLayoutParams);
-            layoutParams = (LinearLayout.LayoutParams) holder.view.getLayoutParams();
+            layoutParams = (LinearLayout.LayoutParams) holder.itemView.getLayoutParams();
             layoutParams.gravity = Gravity.END;
-            holder.view.setLayoutParams(layoutParams);
+            holder.itemView.setLayoutParams(layoutParams);
 
             layoutParams = (LinearLayout.LayoutParams) holder.textTime.getLayoutParams();
             layoutParams.gravity = Gravity.END;
@@ -157,12 +157,12 @@ public class ChatAdapter extends BaseAdapter {
      * Creates a ViewHolder containing the text of the message, the time, and two LinearLayout
      * (one for the whole message, and one for the text, contained in a "bubble")
      *
-     * @param v The view holding those values
+     * @param v The itemView holding those values
      * @return The newly created ViewHolder
      */
     private ViewHolder createViewHolder(View v) {
         ViewHolder holder = new ViewHolder();
-        holder.view = (View) v.findViewById(R.id.textMessage);
+        holder.itemView = (View) v.findViewById(R.id.textMessage);
         holder.textTime = (TextView) v.findViewById(R.id.textTime);
         holder.content = (LinearLayout) v.findViewById(R.id.content);
         holder.contentWithBG = (LinearLayout) v.findViewById(R.id.contentWithBG);
@@ -174,7 +174,7 @@ public class ChatAdapter extends BaseAdapter {
      * Avoids using findViewById too much (more efficient and readable)
      */
     private static class ViewHolder {
-        public View view;
+        public View itemView;
         public TextView textTime;
         public LinearLayout content;
         public LinearLayout contentWithBG;

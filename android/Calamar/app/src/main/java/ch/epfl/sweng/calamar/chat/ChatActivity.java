@@ -89,7 +89,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         } else if (v.getId() == R.id.refreshButton) {
             refresh(false);
         } else {
-            throw new IllegalArgumentException("Got an unexpected view Id in Onclick");
+            throw new IllegalArgumentException("Got an unexpected itemView Id in Onclick");
         }
     }
 
