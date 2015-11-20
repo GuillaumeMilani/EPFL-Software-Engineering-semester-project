@@ -16,7 +16,7 @@ public final class CalamarApplication extends Application {
 
     //TODO Why volatile?
     private static volatile CalamarApplication instance;
-    private SQLiteDatabaseHandler db;
+    private SQLiteDatabaseHandler dbHandler;
     private SharedPreferences sp;
     private SharedPreferences.Editor editor;
 
@@ -51,21 +51,19 @@ public final class CalamarApplication extends Application {
         instance = this;
         sp = new SecurePreferences(this, test.getPassword(), "user_pref.xml");
         editor = sp.edit();
-        setCurrentUserID(test.getID());
-        setCurrentUserName(test.getName());
-        db = SQLiteDatabaseHandler.getInstance();
-
+        dbHandler = SQLiteDatabaseHandler.getInstance();
         setLastItemsRefresh(new Date(0));
         setLastUsersRefresh(new Date(0));
     }
+
 
     /**
      * Get the database containing the recipients and the items.
      *
      * @return the database
      */
-    public SQLiteDatabaseHandler getDB() {
-        return db;
+    public SQLiteDatabaseHandler getDatabaseHandler() {
+        return dbHandler;
     }
 
     /**
@@ -188,14 +186,16 @@ public final class CalamarApplication extends Application {
     }
 
     public void setGoogleApiClient(GoogleApiClient googleApiClient) {
-        //TODO ask guru, when unresolvable errors cause the main activity to finish (destroy activity)
-        //if user reopen, activity's oncreate is called again but because the app isn't killed,
-        // the following code will cause the app to crash (but we nearly don't care...enfin...)
-        if (this.googleApiClient != null) {
-            Log.e(CalamarApplication.TAG, "setGoogleApiClient : google api client is already created !");
-            throw new IllegalStateException("setGoogleApiClient : google api client is already created !");
+//        //TODO ask guru, when unresolvable errors cause the main activity to finish (destroy activity)
+//        //if user reopen, activity's oncreate is called again but because the app isn't killed,
+//        // the following code will cause the app to crash (but we nearly don't care...enfin...)
+//        if (this.googleApiClient != null) {
+//            Log.e(CalamarApplication.TAG, "setGoogleApiClient : google api client is already created !");
+//            throw new IllegalStateException("setGoogleApiClient : google api client is already created !");
+//        }
+        if (this.googleApiClient == null) {
+            this.googleApiClient = googleApiClient;
         }
-        this.googleApiClient = googleApiClient;
     }
 
     public GoogleApiClient getGoogleApiClient() {

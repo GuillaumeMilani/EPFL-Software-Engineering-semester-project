@@ -28,7 +28,7 @@ public interface DatabaseClient {
      *
      * @param item the item to send
      */
-    void send(Item item) throws DatabaseClientException;
+    Item send(Item item) throws DatabaseClientException;
 
 
     /**
