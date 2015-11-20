@@ -1,10 +1,16 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.content.Context;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
 
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
@@ -102,6 +108,24 @@ public final class SimpleTextItem extends Item {
         if (!(o instanceof SimpleTextItem)) return false;
         SimpleTextItem that = (SimpleTextItem) o;
         return super.equals(that) && that.message.equals(message);
+    }
+
+    public View getCompleteView(Context context){
+
+        LinearLayout layout = (LinearLayout)super.getCompleteView(context);
+
+        //TODO : Use getView of items.
+        TextView title = new TextView(context);
+        title.setText(R.string.itemDetailsSimpleTextItemTitle);
+
+        TextView text = new TextView(context);
+
+        text.setText(message);
+        
+        layout.addView(title);
+        layout.addView(text);
+
+        return layout;
     }
 
     /**

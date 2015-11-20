@@ -1,10 +1,21 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.app.Dialog;
+import android.content.Context;
+import android.text.Layout;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.awt.font.TextAttribute;
 import java.util.Date;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
@@ -74,6 +85,19 @@ public abstract class Item {
 
     public int getID() {
         return ID;
+    }
+
+    public View getCompleteView(Context context){
+
+        LinearLayout layout = new LinearLayout(context);
+        layout.setOrientation(LinearLayout.HORIZONTAL);
+
+        //TODO : Use getView of conditions.
+        TextView condition = new TextView(context);
+        condition.setText(context.getString(R.string.item_details_conditions));
+        layout.addView(condition);
+
+        return layout;
     }
 
     /**
