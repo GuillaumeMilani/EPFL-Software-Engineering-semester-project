@@ -116,8 +116,8 @@ public abstract class Item {
         }
         Item item;
         String type = json.getString("type");
-        switch (type) {
-            case "SIMPLETEXTITEM":
+        switch (Type.valueOf(type)) {
+            case SIMPLETEXTITEM:
                 item = SimpleTextItem.fromJSON(json);
                 break;
             default:
