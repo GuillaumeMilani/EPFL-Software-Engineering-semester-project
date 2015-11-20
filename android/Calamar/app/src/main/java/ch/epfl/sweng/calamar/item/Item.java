@@ -7,12 +7,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Marker;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.awt.font.TextAttribute;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
@@ -37,6 +41,17 @@ public abstract class Item {
     public enum Type {SIMPLETEXTITEM}
     //TODO date d'expiration ?
 
+    private Set<Observer> observers = new HashSet<>();
+
+
+    private final Condition.Observer conditionObserver = new Condition.Observer() {
+        @Override
+        public void update(Condition condition) {
+            for(Observer o : observers){
+                o.update(Item.this);
+            }
+        }
+    };
 
     protected Item(int ID, User from, Recipient to, long date, Condition condition) {
         if (null == from || null == to || null == condition) {
@@ -47,6 +62,8 @@ public abstract class Item {
         this.to = to;     //Recipient is immutable
         this.date = date;
         this.condition = condition;
+
+        condition.addObserver(conditionObserver);
     }
 
     protected Item(int ID, User from, Recipient to, long date) {
@@ -140,8 +157,8 @@ public abstract class Item {
         }
         Item item;
         String type = json.getString("type");
-        switch (type) {
-            case "SIMPLETEXTITEM":
+        switch (Type.valueOf(type)) {
+            case SIMPLETEXTITEM:
                 item = SimpleTextItem.fromJSON(json);
                 break;
             default:
@@ -176,6 +193,11 @@ public abstract class Item {
         return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date) * 479;
     }
 
+    @Override
+    public String toString(){
+        return "id : "+ID+" , from : ("+from+") , to : ("+to+") , at : "+new Date(date);
+    }
+
     /**
      * A Builder for {@link Item}, has no build() method since Item isn't instantiable,
      * is used by the child builders (in {@link SimpleTextItem} or...) to build the "Item
@@ -197,5 +219,17 @@ public abstract class Item {
             //condition = Condition.fromJSON(o.getJSONObject("condition"));
             return this;
         }
+    }
+
+    public void addObserver(Item.Observer observer) {
+        this.observers.add(observer);
+    }
+
+    public boolean removeObserver(Item.Observer observer) {
+        return this.observers.remove(observer);
+    }
+
+    public abstract static class Observer {
+        public abstract void update(Item item);
     }
 }

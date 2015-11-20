@@ -127,7 +127,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
     }
 
     private void getContacts() {
-        contacts.addAll(app.getDB().getAllRecipients());
+        contacts.addAll(app.getDatabaseHandler().getAllRecipients());
     }
 
     private void addNewContact() {
@@ -144,7 +144,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
      */
     private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
         private String name = null;
-        private Context context;
+        private final Context context;
 
         public createNewUserTask(String name, Context context) {
             this.name = name;
@@ -196,7 +196,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
     private class retrieveUserTask extends AsyncTask<Void, Void, User> {
 
         private String name = null;
-        private Context context;
+        private final Context context;
 
         public retrieveUserTask(String name, Context context) {
             this.name = name;
@@ -220,7 +220,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
                 contacts.add(newUser);
                 adapter.notifyDataSetChanged();
                 //Add in memory
-                app.getDB().addRecipient(newUser);
+                app.getDatabaseHandler().addRecipient(newUser);
             } else {
                 AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
                 newUserAlert.setTitle(R.string.add_new_contact_impossible);

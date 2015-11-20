@@ -10,4 +10,11 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         tools:layout="@layout/abc_screen_simple" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add"
+        android:id="@+id/addNewItemButton"
+        android:layout_gravity="right|top" />
+
 </FrameLayout>
