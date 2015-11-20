@@ -169,7 +169,11 @@ public abstract class Item {
             from = User.fromJSON(o.getJSONObject("from"));
             to = Recipient.fromJSON(o.getJSONObject("to"));
             date = o.getLong("date");
-            condition = Condition.fromJSON(o.getJSONObject("condition"));
+            if(o.has("condition")) {
+                condition = Condition.fromJSON(o.getJSONObject("condition"));
+            } else {
+                condition = Condition.trueCondition();
+            }
             return this;
         }
     }
