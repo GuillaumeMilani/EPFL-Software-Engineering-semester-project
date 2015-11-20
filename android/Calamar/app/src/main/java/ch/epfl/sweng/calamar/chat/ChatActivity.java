@@ -12,19 +12,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
+import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
-import ch.epfl.sweng.calamar.R;
-import ch.epfl.sweng.calamar.recipient.Recipient;
-import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
-import ch.epfl.sweng.calamar.recipient.User;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
 //TODO Support other item types
 
@@ -76,7 +75,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         refreshButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
 
-        databaseHandler = app.getDB();
+        databaseHandler = app.getDatabaseHandler();
 
         boolean offline = true;
         refresh(offline);
@@ -178,14 +177,10 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected void onPostExecute(List<Item> items) {
             if (items != null) {
-                new AddToDatabaseTask().execute(items.toArray(new Item[items.size()]));
+                databaseHandler.addItems(items);
                 adapter.add(items);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                if (!offline) {
-                    app.setLastItemsRefresh(new Date());
-                }
-
                 Toast.makeText(getApplicationContext(), R.string.chat_activity_refresh_message,
                         Toast.LENGTH_SHORT).show();
 
@@ -197,13 +192,4 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private class AddToDatabaseTask extends AsyncTask<Item, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Item... items) {
-            List<Item> toAdd = Arrays.asList(items);
-            databaseHandler.addItems(toAdd);
-            return null;
-        }
-    }
 }
