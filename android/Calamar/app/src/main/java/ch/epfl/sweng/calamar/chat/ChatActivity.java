@@ -181,11 +181,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 adapter.add(items);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                Toast.makeText(getApplicationContext(), R.string.chat_activity_refresh_message,
+                Toast.makeText(getApplicationContext(), R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();
 
             } else {
-                Toast.makeText(getApplicationContext(), R.string.chat_activity_unable_to_refresh,
+                Toast.makeText(getApplicationContext(), R.string.unable_to_refresh_message,
                         Toast.LENGTH_SHORT).show();
             }
         }

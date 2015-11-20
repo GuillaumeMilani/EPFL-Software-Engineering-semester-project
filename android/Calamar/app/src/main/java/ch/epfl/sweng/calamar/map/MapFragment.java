@@ -3,11 +3,13 @@ package ch.epfl.sweng.calamar.map;
 
 import android.app.Fragment;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -20,11 +22,15 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
+import ch.epfl.sweng.calamar.client.DatabaseClientException;
+import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.item.Item;
@@ -41,6 +47,7 @@ import static ch.epfl.sweng.calamar.item.Item.Type.SIMPLETEXTITEM;
 public class MapFragment extends android.support.v4.app.Fragment implements OnMapReadyCallback {
 
     public static final String TAG = MapFragment.class.getSimpleName();
+    private static final long MAP_RADIUS = 25;
 
     //TODO : add two buttons begin checks stop checks
     // that will : checklocation settings + startlocation updates
@@ -142,7 +149,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         this.map = map;
         map.setMyLocationEnabled(true);
         setUpGPS(); // register to the GPSProvider location updates
-        addAllItemToMap();
+        addAllItemsToMap();
     }
 
     @Override
@@ -176,12 +183,14 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         addItemToMap(new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l, 5), "Password : calamar42"));
     }
 
-    private void addAllItemToMap(){
-        List<Item> item = getItemToDisplay();
-
-        for(Item i : item){
-            addItemToMap(i);
-        }
+    private void addAllItemsToMap() {
+        if(null != map) {
+            LatLng latlng = map.getCameraPosition().target;
+            Location loc = new Location(TAG);
+            loc.setLatitude(latlng.latitude);
+            loc.setLongitude(latlng.longitude);
+            new RefreshTask(loc).execute();
+        } else throw new IllegalStateException("map not ready when refresh");
     }
 
     /**
@@ -205,17 +214,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         i.addObserver(itemObserver);
 
         markers.put(i,map.addMarker(marker));
-
-    }
-
-    /**
-     * Return the list of all item we want to display.
-     *
-     * @return list of all item we want to display.
-     */
-    private List<Item> getItemToDisplay() {
-        //TODO
-        return null;
     }
 
     /**
@@ -251,5 +249,54 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         gpsProvider = GPSProvider.getInstance();
         gpsProvider.addObserver(gpsObserver);
         gpsProvider.startLocationUpdates(getActivity());
+    }
+
+    /**
+     * Async task for refreshing / getting new messages.
+     */
+    private class RefreshTask extends AsyncTask<Void, Void, List<Item>> {
+
+        private final Location nearLocation;
+
+        public RefreshTask(Location nearLocation) {
+            this.nearLocation = nearLocation;
+        }
+
+        @Override
+        protected List<Item> doInBackground(Void... v) {
+                try {
+                    return DatabaseClientLocator.getDatabaseClient().getAllItems(
+                            CalamarApplication.getInstance().getCurrentUser(),
+                            new Date(0), //TODO need to ask others what are we going to do with the local database
+                                         //lastrefresh and etc...
+                            //or we don't store them in local db and everytime we refresh we flush the map
+                            //before re adding all the items in visible range
+                            //I think it can make sense ..
+                            nearLocation,
+                            MAP_RADIUS);//TODO radius
+                } catch (DatabaseClientException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+        }
+
+        @Override
+        protected void onPostExecute(List<Item> items) {
+            if (items != null) {
+
+                //TODO local db ?
+                for(Item item : items){
+                    addItemToMap(item);
+                }
+
+                Toast.makeText(getContext(), R.string.refresh_message,
+                        Toast.LENGTH_SHORT).show();
+
+            } else {
+                Toast.makeText(getContext(), R.string.unable_to_refresh_message,
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+
     }
 }
