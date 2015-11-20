@@ -141,6 +141,7 @@ public class ConditionTest {
         o.assertAll(true, 2);
     }
 
+    /*
     @Test
     public void testMetadataTrueCondition() throws JSONException {
         Condition a = Condition.trueCondition();
@@ -180,4 +181,20 @@ public class ConditionTest {
         ja.put(jo2);
         assertEquals(ja.toString(), pc1AndPc2.getMetadata().toString());
     }
+
+    @Test
+    public void testToJSONMetadata() throws JSONException {
+        Condition pc1 = new PositionCondition(123.4, 432.1, 10);
+        JSONObject jo1 = new JSONObject();
+        jo1.accumulate("type", "position");
+        jo1.accumulate("latitude", 123.4);
+        jo1.accumulate("longitude", 432.1);
+        jo1.accumulate("radius", 10);
+        JSONArray ja = new JSONArray();
+        ja.put(jo1);
+        jo1.accumulate("metadata", ja);
+
+        assertEquals(jo1.toString(), pc1.toJSON().toString());
+    }
+    */
 }
