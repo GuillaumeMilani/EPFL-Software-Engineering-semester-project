@@ -1,5 +1,8 @@
 package ch.epfl.sweng.calamar.condition;
 
+import android.content.Context;
+import android.view.View;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -46,6 +49,11 @@ public abstract class Condition {
     }
 
     public abstract String type();
+
+    public View getView(Context context)
+    {
+        return null;
+    }
 
 
     /**

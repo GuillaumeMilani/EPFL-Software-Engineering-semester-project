@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar.item;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -66,8 +67,11 @@ public abstract class Item {
 
     public View getView(Context context)
     {
-        // TODO: make a Layout with Condition view and subItemView (getItemView)
-        return getItemView(context);
+        LinearLayout view = new LinearLayout(context);
+        view.setOrientation(LinearLayout.VERTICAL);
+        view.addView(getItemView(context));
+        condition.getView(context);
+        return view;
     }
 
     /**
