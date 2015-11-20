@@ -141,8 +141,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     public void onMapReady(GoogleMap map) {
         this.map = map;
         map.setMyLocationEnabled(true);
-        addAllItemToMap();
         setUpGPS(); // register to the GPSProvider location updates
+        addAllItemToMap();
     }
 
     @Override
@@ -182,7 +182,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         for(Item i : item){
             addItemToMap(i);
         }
-
     }
 
     /**

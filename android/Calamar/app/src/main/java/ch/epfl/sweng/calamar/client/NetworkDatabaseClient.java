@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar.client;
 
+import android.location.Location;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -14,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.IllegalFormatCodePointException;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -42,8 +44,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
         this.networkProvider = networkProvider;
     }
 
-    @Override
-    public List<Item> getAllItems(Recipient recipient, Date from) throws DatabaseClientException {
+    private List<Item> getItems(Recipient recipient, Date from, Location nearLocation, long radius) throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_PATH);
@@ -51,6 +52,11 @@ public class NetworkDatabaseClient implements DatabaseClient {
             JSONObject jsonParameter = new JSONObject();
             jsonParameter.accumulate("recipient", recipient.toJSON().toString());
             jsonParameter.accumulate("lastRefresh", from.getTime());
+            if(nearLocation != null) {
+                jsonParameter.accumulate("latitude", nearLocation.getLatitude());
+                jsonParameter.accumulate("longitude", nearLocation.getLongitude());
+                jsonParameter.accumulate("radius", radius);
+            }
 
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
@@ -64,8 +70,18 @@ public class NetworkDatabaseClient implements DatabaseClient {
     }
 
     @Override
-    public List<Item> getAllItems(Recipient recipient) throws DatabaseClientException {
-        return getAllItems(recipient, new Date());
+    public List<Item> getAllItems(Recipient recipient, Date from, Location nearLocation, long radius)
+            throws DatabaseClientException
+    {
+        if (null == nearLocation) {
+            throw new IllegalArgumentException("getAllItems: nearLocation is null");
+        }
+        return getItems(recipient, from, nearLocation, radius);
+    }
+
+    @Override
+    public List<Item> getAllItems(Recipient recipient, Date from) throws DatabaseClientException {
+        return getItems(recipient, from, null, 0);
     }
 
     @Override
