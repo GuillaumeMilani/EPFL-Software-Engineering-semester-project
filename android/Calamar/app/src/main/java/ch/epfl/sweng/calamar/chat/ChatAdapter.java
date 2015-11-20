@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -68,7 +69,7 @@ public class ChatAdapter extends BaseAdapter {
 
         boolean ingoing = item.getTo().getID() == CalamarApplication.getInstance().getCurrentUserID();
         setAlignment(holder, ingoing);
-        holder.itemView = item.getView(context);
+        holder.itemView.addView(item.getView(context));
         holder.textTime.setText(item.getDate().toString());
         return convertView;
     }
@@ -162,7 +163,7 @@ public class ChatAdapter extends BaseAdapter {
      */
     private ViewHolder createViewHolder(View v) {
         ViewHolder holder = new ViewHolder();
-        holder.itemView = (View) v.findViewById(R.id.textMessage);
+        holder.itemView = (FrameLayout) v.findViewById(R.id.itemView);
         holder.textTime = (TextView) v.findViewById(R.id.textTime);
         holder.content = (LinearLayout) v.findViewById(R.id.content);
         holder.contentWithBG = (LinearLayout) v.findViewById(R.id.contentWithBG);
@@ -174,7 +175,7 @@ public class ChatAdapter extends BaseAdapter {
      * Avoids using findViewById too much (more efficient and readable)
      */
     private static class ViewHolder {
-        public View itemView;
+        public FrameLayout itemView;
         public TextView textTime;
         public LinearLayout content;
         public LinearLayout contentWithBG;

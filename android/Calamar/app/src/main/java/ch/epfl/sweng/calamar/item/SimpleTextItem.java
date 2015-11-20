@@ -58,7 +58,7 @@ public final class SimpleTextItem extends Item {
     }
 
     @Override
-    public View getView(Context context) {
+    protected View getItemView(Context context) {
         TextView res = new TextView(context);
         res.setText(message);
         return res;
