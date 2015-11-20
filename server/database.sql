@@ -25,6 +25,48 @@ CREATE TABLE IF NOT EXISTS `tb_recipient_user` (
 )
 ENGINE = InnoDB;
 
+-- -----------------------------------------------------
+-- Table `tb_condition`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tb_condition` (
+    `ID` INT NOT NULL,
+    `condition` VARCHAR(512),
+    `value` TINYINT(1) NOT NULL,
+    PRIMARY KEY (`ID`)
+)
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `tb_metadata`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tb_metadata` (
+    `ID` INT NOT NULL,
+    `condition` INT NOT NULL,
+    PRIMARY KEY (`ID`),
+    CONSTRAINT `ct_metadata_condition`
+      FOREIGN KEY (`condition`)
+      REFERENCES `tb_condition` (`ID`)
+      ON DELETE RESTRICT
+      ON UPDATE RESTRICT
+)
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `tb_metadata_position`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tb_metadata_position` (
+  `ID` INT NOT NULL,
+  `latitude` FLOAT( 10, 6 ) NOT NULL ,
+  `longitude` FLOAT( 10, 6 ) NOT NULL,
+  `radius` FLOAT NOT NULL,
+  PRIMARY KEY (`ID`),
+  CONSTRAINT `ct_id_metadata_position`
+    FOREIGN KEY (`ID`)
+    REFERENCES `tb_metadata` (`ID`)
+    ON DELETE RESTRICT
+    ON UPDATE RESTRICT
+)
+ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `tb_item`
@@ -34,6 +76,7 @@ CREATE TABLE IF NOT EXISTS `tb_item` (
   `from` INT NULL,
   `to` INT NOT NULL,
   `date` MEDIUMTEXT NOT NULL,
+  `condition` INT NULL,
   PRIMARY KEY (`ID`) ,
   CONSTRAINT `ct_from`
     FOREIGN KEY (`from`)
@@ -43,6 +86,11 @@ CREATE TABLE IF NOT EXISTS `tb_item` (
   CONSTRAINT `ct_to`
     FOREIGN KEY (`to`)
     REFERENCES `tb_recipient` (`ID`)
+    ON DELETE RESTRICT
+    ON UPDATE RESTRICT,
+  CONSTRAINT `ct_item_condition`
+    FOREIGN KEY (`condition`)
+    REFERENCES `tb_condition` (`ID`)
     ON DELETE RESTRICT
     ON UPDATE RESTRICT
 )
@@ -66,56 +114,6 @@ CREATE TABLE IF NOT EXISTS `tb_item_text` (
     ON UPDATE RESTRICT
 )
 ENGINE = InnoDB;
-
--- -----------------------------------------------------
--- Table `tb_condition`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tb_condition` (
-    `ID` INT NOT NULL,
-    PRIMARY KEY (`ID`)
-)
-ENGINE = InndoDB;
-
--- -----------------------------------------------------
--- Table `tb_condition_position`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tb_condition_position` (
-  `ID` INT NOT NULL,
-  `latitude` FLOAT( 10, 6 ) NOT NULL ,
-  `longitude` FLOAT( 10, 6 ) NOT NULL,
-  `radius` FLOAT NOT NULL,
-  PRIMARY KEY (`ID`) ,
-  CONSTRAINT `ct_id_condition_position`
-    FOREIGN KEY (`ID`)
-    REFERENCES `tb_condition` (`ID`)
-    ON DELETE RESTRICT
-    ON UPDATE RESTRICT
-)
-ENGINE = InnoDB;
-
--- -----------------------------------------------------
--- Table `tb_item_condition`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tb_item_condition` (
-    `ID` INT NOT NULL,
-    `item` INT NOT NULL,
-    `condition` INT NOT NULL,
-    PRIMARY KEY (`ID`),
-    CONSTRAINT `ct_item_condition_condition`
-        FOREIGN KEY (`ID`)
-        REFERENCES `tb_condition` (`ID`)
-        ON DELETE RESTRICT
-        ON UPDATE RESTRICT,
-    CONSTRAINT `ct_item_condition_item`
-        FOREIGN KEY (`ID`)
-        REFERENCES `tb_item` (`ID`)
-        ON DELETE RESTRICT
-        ON UPDATE RESTRICT
-)
-ENGINE = InnoDB;
-
-CREATE UNIQUE INDEX `idx_un_item_condition` ON `tb_item_condition` (`item`, `condition`);
-
 
 -- -----------------------------------------------------
 -- Placeholder table for view `view_text_message`
