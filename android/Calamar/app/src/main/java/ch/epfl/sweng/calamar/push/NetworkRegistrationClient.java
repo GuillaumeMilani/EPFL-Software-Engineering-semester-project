@@ -31,13 +31,13 @@ public class NetworkRegistrationClient implements RegistrationClient {
     }
 
     @Override
-    public void send(String token) throws RegisterClientException {
+    public void send(String token,String userName) throws RegisterClientException {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkRegistrationClient.SEND_PATH);
             String jsonParameter = "{ " +
                     "\"token\": \"" + token + "\"" +
-                    ",\"name\": " + "\"Test1234@gmail.com\"" +
+                    ",\"name\": " + "\"" + userName + "\"" +
                     " }";
             connection = NetworkRegistrationClient.createConnection(networkProvider, url);
             String response = NetworkRegistrationClient.post(connection, jsonParameter);
