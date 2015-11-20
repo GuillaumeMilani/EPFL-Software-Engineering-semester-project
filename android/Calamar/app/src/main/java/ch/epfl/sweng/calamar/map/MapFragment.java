@@ -1,7 +1,9 @@
 package ch.epfl.sweng.calamar.map;
 
 
+import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -49,6 +51,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
     private Map<Item,Marker> markers;
 
+    private Map<Marker,Item> itemFromMarkers;
+
     private GoogleMap map; // Might be null if Google Play services APK is not available.
     // however google play services are checked at app startup...and
     // maps fragment will do all the necessary if gplay services apk not present
@@ -79,16 +83,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         public void update(Item item) {
             Marker updatedMarker = markers.get(item);
             if(item.getCondition().getValue()) {
-                //TODO : Maybe better to let the item display himself ? ( issue #91 )
-                switch (item.getType()) {
-                    case SIMPLETEXTITEM:
-                        SimpleTextItem textItem = (SimpleTextItem)item;
-                        updatedMarker.setTitle(textItem.getMessage());
-                        updatedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unexpected Item type (" + item.getType() + ")");
-                }
+                updatedMarker.setTitle("Unlocked");
+                updatedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
             } else {
                 updatedMarker.setTitle("Locked");
                 updatedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
@@ -118,6 +114,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     {
         super.onCreateView(inflater, container, savedInstanceState);
         markers = new HashMap<>();
+        itemFromMarkers = new HashMap<>();
 
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_map, container, false);
@@ -141,6 +138,27 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     public void onMapReady(GoogleMap map) {
         this.map = map;
         map.setMyLocationEnabled(true);
+        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                Item item = itemFromMarkers.get(marker);
+
+                AlertDialog.Builder itemDescription = new AlertDialog.Builder(getActivity());
+                itemDescription.setTitle(R.string.item_details_alertDialog_title);
+
+                itemDescription.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        //OK
+                    }
+                });
+
+                itemDescription.setView(item.getCompleteView(getActivity()));
+
+                itemDescription.show();
+
+                return false;
+            }
+        });
         addAllItemToMap();
         setUpGPS(); // register to the GPSProvider location updates
     }
@@ -205,8 +223,10 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
         i.addObserver(itemObserver);
 
-        markers.put(i,map.addMarker(marker));
+        Marker finalMarker = map.addMarker(marker);
 
+        markers.put(i,finalMarker);
+        itemFromMarkers.put(finalMarker,i);
     }
 
     /**
