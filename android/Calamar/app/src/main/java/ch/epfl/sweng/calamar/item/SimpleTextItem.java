@@ -114,6 +114,11 @@ public final class SimpleTextItem extends Item {
         return super.hashCode() * 73 + (message != null ? message.hashCode() : 0);
     }
 
+    @Override
+    public String toString(){
+        return super.toString()+" message : "+message;
+    }
+
     /**
      * A Builder for {@link SimpleTextItem}, currently only used to parse JSON (little overkill..but ..)
      *
