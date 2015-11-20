@@ -12,7 +12,7 @@ import java.util.Set;
 public abstract class Condition {
 
     private Boolean value = false;
-    private Set<Observer> observers = new HashSet<>();
+    private final Set<Observer> observers = new HashSet<>();
 
     /**
      * compose this Condition in the json object
