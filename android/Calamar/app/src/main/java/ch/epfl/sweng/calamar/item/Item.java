@@ -47,7 +47,13 @@ public abstract class Item {
 
     public abstract Type getType();
 
-    public abstract View getView(Context context);
+    protected abstract View getItemView(Context context);
+
+    public View getView(Context context)
+    {
+        // TODO: make a Layout with Condition view and subItemView (getItemView)
+        return getItemView(context);
+    }
 
     /**
      * @return the 'condition' field of the Item
