@@ -215,18 +215,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      * @return list of all item we want to display.
      */
     private List<Item> getItemToDisplay() {
-        //TODO : get real item ( for now it is fake items )
-        User bob = new User(1, "bob");
-        User alice = new User(2, "alice");
-        List<Item> list = new ArrayList<>();
-        Location l1 = new Location("Calamar");
-        // INF 1 position
-        l1.setLatitude(46.5186669);
-        l1.setLongitude(6.5636998);
-
-
-        list.add(new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l1, 5), "Password : calamar42"));
-        return list;
+        //TODO
+        return null;
     }
 
     /**
