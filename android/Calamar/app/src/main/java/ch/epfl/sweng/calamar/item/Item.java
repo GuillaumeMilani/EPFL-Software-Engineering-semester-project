@@ -152,12 +152,9 @@ public abstract class Item {
         return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date) * 479;
     }
 
-    /**
-     * Overriden to aloow easier debug
-     */
     @Override
     public String toString() {
-        return "ID : " + this.ID + " from : " + from + " to : " + to + " date : " + date;
+        return "id : " + ID + " , from : (" + from + ") , to : (" + to + ") , at : " + new Date(date);
     }
 
     /**

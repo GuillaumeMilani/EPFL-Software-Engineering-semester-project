@@ -41,7 +41,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
     public void setUp() throws Exception {
         super.setUp();
         DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
-        CalamarApplication.getInstance().getDB().deleteAllItems();
+        CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
     }
 
 

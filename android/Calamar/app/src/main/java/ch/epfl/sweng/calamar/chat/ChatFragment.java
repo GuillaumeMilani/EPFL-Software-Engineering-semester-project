@@ -124,7 +124,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     }
 
     private void getContacts() {
-        contacts.addAll(app.getDB().getAllRecipients());
+        contacts.addAll(app.getDatabaseHandler().getAllRecipients());
     }
 
     private void addNewContact() {
@@ -229,7 +229,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
                 contacts.add(newUser);
                 adapter.notifyDataSetChanged();
                 //Add in memory
-                app.getDB().addRecipient(newUser);
+                app.getDatabaseHandler().addRecipient(newUser);
             } else {
                 AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
                 newUserAlert.setTitle(R.string.add_new_contact_impossible);

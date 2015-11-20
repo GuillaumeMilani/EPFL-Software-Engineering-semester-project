@@ -11,25 +11,41 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
+import ch.epfl.sweng.calamar.utils.Pair;
+import ch.epfl.sweng.calamar.utils.Sorter;
 
 
-public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
-
-    //TODO add support for other items (now assuming only SimpleTextItem)
+public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     private static CalamarApplication app;
 
     private static SQLiteDatabaseHandler instance;
+    private SQLiteDatabase db;
 
-    private static final int DATABASE_VERSION = 2;
+    private enum Operation {ADD, UPDATE, DELETE}
+
+    private final Map<Integer, Pair<Operation, Item>> pendingItems;
+    private final Map<Integer, Pair<Operation, Recipient>> pendingRecipients;
+
+    private static long lastUpdateTime;
+    private static long lastItemTime;
+
+    private static final int DATABASE_VERSION = 3;
     private static final String DATABASE_NAME = "CalamarDB";
+
+    private static final int MAX_PLACEHOLDERS_COUNT = 99;
+    private final String FULL_PLACEHOLDERS;
 
     private static final String ITEMS_TABLE = "tb_Items";
     private static final String ITEMS_KEY_TYPE = "type";
@@ -54,8 +70,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public static SQLiteDatabaseHandler getInstance() {
         if (instance == null) {
             app = CalamarApplication.getInstance();
-            instance = new SQLiteDatabaseHandler();
             SQLiteDatabase.loadLibs(app);
+            instance = new SQLiteDatabaseHandler();
         }
         return instance;
     }
@@ -65,6 +81,12 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     private SQLiteDatabaseHandler() {
         super(app, DATABASE_NAME, null, DATABASE_VERSION);
+        db = getReadableDatabase(app.getCurrentUser().getPassword());
+        this.pendingRecipients = new HashMap<>();
+        this.pendingItems = new HashMap<>();
+        this.FULL_PLACEHOLDERS = createPlaceholders(MAX_PLACEHOLDERS_COUNT);
+        lastItemTime = app.getLastItemsRefresh();
+        lastUpdateTime = app.getLastItemsRefresh();
 
     }
 
@@ -88,6 +110,12 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         //TODO only recreates db at the moment
+        db.execSQL("DROP TABLE IF EXISTS " + ITEMS_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + RECIPIENTS_TABLE);
+        lastUpdateTime = 0;
+        lastItemTime = 0;
+        app.setLastItemsRefresh(lastUpdateTime);
+        app.setLastUsersRefresh(lastUpdateTime);
         onCreate(db);
     }
 
@@ -95,9 +123,9 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * Deletes all items in the database
      */
     public synchronized void deleteAllItems() {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
+        pendingItems.clear();
+        db = getWritableIfNotOpen();
         db.delete(ITEMS_TABLE, null, null);
-        db.close();
     }
 
     /**
@@ -106,10 +134,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param message the item to delete
      */
     public synchronized void deleteItem(Item message) {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
-        String[] args = {Integer.toString(message.getID())};
-        db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = ?", args);
-        db.close();
+        deleteItem(message.getID());
     }
 
     /**
@@ -118,10 +143,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param id the id of the item
      */
     public synchronized void deleteItem(int id) {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
-        String[] args = {Integer.toString(id)};
-        db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " = ?", args);
-        db.close();
+        pendingItems.put(id, new Pair<Operation, Item>(Operation.DELETE, null));
     }
 
     /**
@@ -130,13 +152,30 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param ids the ids of the items to delete
      */
     public synchronized void deleteItems(List<Integer> ids) {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
-        String[] args = new String[ids.size()];
-        for (int i = 0; i < ids.size(); ++i) {
-            args[i] = Integer.toString(ids.get(i));
+        for (Integer i : ids) {
+            pendingItems.put(i, new Pair<Operation, Item>(Operation.DELETE, null));
         }
-        db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " IN (" + createPlaceholders(ids.size()) + ")", args);
-        db.close();
+    }
+
+    /**
+     * Deletes all items for the given recipient
+     *
+     * @param recipient the contact to delete the conversation with
+     */
+    public synchronized void deleteItemsForContact(Recipient recipient) {
+        deleteItemsForContact(recipient.getID());
+    }
+
+    /**
+     * Deletes all items for the given recipient
+     *
+     * @param id the id of the contact to delete the conversation with
+     */
+    public synchronized void deleteItemsForContact(int id) {
+        List<Item> items = getItemsForContact(id);
+        for (Item i : items) {
+            pendingItems.put(i.getID(), new Pair<Operation, Item>(Operation.DELETE, null));
+        }
     }
 
     /**
@@ -145,11 +184,9 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param item the item to add
      */
     public synchronized void addItem(Item item) {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
-        ContentValues values = createItemValues(item);
-        db.replace(ITEMS_TABLE, null, values);
-        updateRecipientsWithItem(item, db);
-        db.close();
+        pendingItems.put(item.getID(), new Pair<>(Operation.ADD, item));
+        addOrUpdateRecipientWithItem(item);
+        updateTime(item);
     }
 
     /**
@@ -158,45 +195,37 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param items the list of items to add
      */
     public synchronized void addItems(List<Item> items) {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
         for (Item item : items) {
-            ContentValues values = createItemValues(item);
-            db.replace(ITEMS_TABLE, null, values);
-            updateRecipientsWithItem(item, db);
+            pendingItems.put(item.getID(), new Pair<>(Operation.ADD, item));
+            addOrUpdateRecipientWithItem(item);
+            updateTime(item);
         }
-        db.close();
     }
 
 
     /**
-     * Updates an item and the recipients related to it
+     * Updates an item and the recipients related to it (Does not add the item if it doesn't already exist)
      *
      * @param item the item to update
      */
     public synchronized void updateItem(Item item) {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
-        ContentValues values = createItemValues(item);
-        String[] args = {Integer.toString(item.getID())};
-        db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = ?", args);
-        updateRecipientsWithItem(item, db);
-        db.close();
+        manageItemUpdate(item);
+        updateTime(item);
     }
 
     /**
-     * Updates several items given a list, as well as the recipients related to them
+     * Updates several items given a list, as well as the recipients related to them (Does not add the items if they don't already exist)
      *
      * @param items the list of items to update
      */
+
     public synchronized void updateItems(List<Item> items) {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
         for (Item item : items) {
-            ContentValues values = createItemValues(item);
-            String[] args = {Integer.toString(item.getID())};
-            db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = ?", args);
-            updateRecipientsWithItem(item, db);
+            manageItemUpdate(item);
+            updateTime(item);
         }
-        db.close();
     }
+
 
     /**
      * Returns an item given an id
@@ -205,8 +234,18 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @return the item, or null
      */
     public synchronized Item getItem(int id) {
-        SQLiteDatabase db = this.getReadableDatabase(app.getCurrentUser().getPassword());
+        Pair<Operation, Item> fromPending = pendingItems.get(id);
+        if (fromPending != null) {
+            switch (fromPending.getLeft()) {
+                case ADD:
+                    return fromPending.getRight();
+                case DELETE:
+                    return null;
+                case UPDATE:
+            }
+        }
         Item toReturn = null;
+        db = getReadableIfNotOpen();
         String[] args = {Integer.toString(id)};
         Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " = ?", args, null, null, null, null);
         if (cursor != null) {
@@ -215,7 +254,9 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             cursor.close();
         }
-        db.close();
+        if (toReturn != null && fromPending != null && fromPending.getLeft() == Operation.UPDATE) {
+            toReturn = fromPending.getRight();
+        }
         return toReturn;
     }
 
@@ -226,23 +267,71 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @return the items
      */
     public synchronized List<Item> getItems(List<Integer> ids) {
-        SQLiteDatabase db = this.getReadableDatabase(app.getCurrentUser().getPassword());
-        List<Item> items = new ArrayList<>();
-        String[] args = new String[ids.size()];
-        for (int i = 0; i < ids.size(); ++i) {
-            args[i] = Integer.toString(ids.get(i));
-        }
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " IN (" + createPlaceholders(ids.size()) + ")", args, null, null, ITEMS_KEY_ID + " ASC");
-        if (cursor != null) {
-            boolean hasNext = cursor.moveToFirst();
-            while (hasNext) {
-                items.add(createItem(cursor));
-                hasNext = cursor.moveToNext();
+        List<Integer> databaseIds = new ArrayList<>(ids);
+        Set<Item> items = new HashSet<>();
+        Set<Item> toUpdate = new HashSet<>();
+        for (Integer i : ids) {
+            Pair<Operation, Item> fromPending = pendingItems.get(i);
+            if (fromPending != null) {
+                switch (fromPending.getLeft()) {
+                    case ADD:
+                        items.add(fromPending.getRight());
+                        databaseIds.remove(i);
+                        break;
+                    case UPDATE:
+                        toUpdate.add(fromPending.getRight());
+                        break;
+                    case DELETE:
+                        databaseIds.remove(i);
+                        break;
+                }
             }
-            cursor.close();
         }
-        db.close();
-        return items;
+        if (databaseIds.isEmpty()) {
+            return Sorter.sortItemList(new ArrayList<>(items));
+        }
+        db = getReadableIfNotOpen();
+        if (databaseIds.size() > MAX_PLACEHOLDERS_COUNT) {
+            int count = databaseIds.size();
+            while (count > 0) {
+                int num = count - MAX_PLACEHOLDERS_COUNT > 0 ? MAX_PLACEHOLDERS_COUNT : count;
+                String[] args = new String[num];
+                for (int i = 0; i < num; ++i) {
+                    args[i] = Integer.toString(databaseIds.get(i + (databaseIds.size() - count)));
+                }
+                Cursor cursor;
+                if (num == MAX_PLACEHOLDERS_COUNT) {
+                    cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " IN (" + FULL_PLACEHOLDERS + ")", args, null, null, ITEMS_KEY_ID);
+                } else {
+                    cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " IN (" + createPlaceholders(num) + ")", args, null, null, ITEMS_KEY_ID);
+                }
+                if (cursor != null) {
+                    boolean hasNext = cursor.moveToFirst();
+                    while (hasNext) {
+                        items.add(createItem(cursor));
+                        hasNext = cursor.moveToNext();
+                    }
+                    cursor.close();
+                }
+                count -= num;
+            }
+        } else {
+            String[] args = new String[databaseIds.size()];
+            for (int i = 0; i < databaseIds.size(); ++i) {
+                args[i] = Integer.toString(databaseIds.get(i));
+            }
+            Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, ITEMS_KEY_ID + " IN (" + createPlaceholders(databaseIds.size()) + ")", args, null, null, ITEMS_KEY_ID);
+            if (cursor != null) {
+                boolean hasNext = cursor.moveToFirst();
+                while (hasNext) {
+                    items.add(createItem(cursor));
+                    hasNext = cursor.moveToNext();
+                }
+                cursor.close();
+            }
+        }
+        updateGetItemsFromPending(items, toUpdate);
+        return Sorter.sortItemList(new ArrayList<>(items));
     }
 
     /**
@@ -252,23 +341,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @return a list of items
      */
     public synchronized List<Item> getItemsForContact(Recipient recipient) {
-        SQLiteDatabase db = this.getReadableDatabase(app.getCurrentUser().getPassword());
-        List<Item> items = new ArrayList<>();
-        int currentUserID = app.getCurrentUserID();
-        String[] args = {Integer.toString(currentUserID), Integer.toString(recipient.getID()), Integer.toString(currentUserID), Integer.toString(recipient.getID())};
-        Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? ) OR ( " + ITEMS_KEY_TO + " = ? AND " + ITEMS_KEY_FROM + " = ? ) ", args, null, null, ITEMS_KEY_ID + " ASC");
-        boolean hasNext;
-        if (cursor != null) {
-            hasNext = cursor.moveToFirst();
-            while (hasNext) {
-                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
-                items.add(item);
-                hasNext = cursor.moveToNext();
-            }
-            cursor.close();
-        }
-        db.close();
-        return items;
+        return getItemsForContact(recipient.getID());
     }
 
     /**
@@ -278,8 +351,31 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @return a list of items
      */
     public synchronized List<Item> getItemsForContact(int contactID) {
-        SQLiteDatabase db = this.getReadableDatabase(app.getCurrentUser().getPassword());
-        List<Item> items = new ArrayList<>();
+        Set<Integer> mapIds = new HashSet<>();
+        Set<Item> items = new HashSet<>();
+        Set<Item> toUpdate = new HashSet<>();
+        int userID = app.getCurrentUserID();
+        for (Map.Entry<Integer, Pair<Operation, Item>> e : pendingItems.entrySet()) {
+            Pair<Operation, Item> p = e.getValue();
+            switch (p.getLeft()) {
+                case ADD:
+                    mapIds.add(e.getKey());
+                    Item i = p.getRight();
+                    int itemFromID = i.getFrom().getID();
+                    int itemToID = i.getTo().getID();
+                    if ((itemFromID == userID && itemToID == contactID) || (itemFromID == contactID && itemToID == userID)) {
+                        items.add(i);
+                    }
+                    break;
+                case UPDATE:
+                    toUpdate.add(p.getRight());
+                    break;
+                case DELETE:
+                    mapIds.add(e.getKey());
+                    break;
+            }
+        }
+        db = getReadableIfNotOpen();
         int currentUserID = app.getCurrentUserID();
         String[] args = {Integer.toString(currentUserID), Integer.toString(contactID), Integer.toString(currentUserID), Integer.toString(contactID)};
         Cursor cursor = db.query(ITEMS_TABLE, ITEMS_COLUMNS, "( " + ITEMS_KEY_FROM + " = ? AND " + ITEMS_KEY_TO + " = ? ) OR ( " + ITEMS_KEY_TO + " = ? AND " + ITEMS_KEY_FROM + " = ? ) ", args, null, null, ITEMS_KEY_ID + " ASC");
@@ -287,14 +383,16 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
-                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
-                items.add(item);
+                if (!mapIds.contains(cursor.getInt(1))) {
+                    SimpleTextItem item = (SimpleTextItem) createItem(cursor);
+                    items.add(item);
+                }
                 hasNext = cursor.moveToNext();
             }
             cursor.close();
         }
-        db.close();
-        return items;
+        updateGetItemsFromPending(items, toUpdate);
+        return Sorter.sortItemList(new ArrayList<>(items));
     }
 
     /**
@@ -303,21 +401,40 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @return the list of Item
      */
     public synchronized List<Item> getAllItems() {
-        SQLiteDatabase db = this.getReadableDatabase(app.getCurrentUser().getPassword());
-        Cursor cursor = db.rawQuery("SELECT * FROM " + ITEMS_TABLE + " ORDER BY " + ITEMS_KEY_ID + " ASC", null);
+        Set<Integer> mapIds = new HashSet<>();
+        Set<Item> items = new HashSet<>();
+        Set<Item> toUpdate = new HashSet<>();
+        for (Map.Entry<Integer, Pair<Operation, Item>> e : pendingItems.entrySet()) {
+            Pair<Operation, Item> fromPending = e.getValue();
+            switch (fromPending.getLeft()) {
+                case ADD:
+                    mapIds.add(e.getKey());
+                    items.add(fromPending.getRight());
+                    break;
+                case UPDATE:
+                    toUpdate.add(fromPending.getRight());
+                    break;
+                case DELETE:
+                    mapIds.add(e.getKey());
+                    break;
+            }
+        }
+        db = getReadableIfNotOpen();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + ITEMS_TABLE + " ORDER BY " + ITEMS_KEY_ID, null);
         boolean hasNext;
-        List<Item> items = new ArrayList<>();
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
-                SimpleTextItem item = (SimpleTextItem) createItem(cursor);
-                items.add(item);
+                if (!mapIds.contains(cursor.getInt(1))) {
+                    SimpleTextItem item = (SimpleTextItem) createItem(cursor);
+                    items.add(item);
+                }
                 hasNext = cursor.moveToNext();
             }
             cursor.close();
         }
-        db.close();
-        return items;
+        updateGetItemsFromPending(items, toUpdate);
+        return Sorter.sortItemList(new ArrayList<>(items));
     }
 
     /**
@@ -326,10 +443,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param recipient the recipient to add
      */
     public synchronized void addRecipient(Recipient recipient) {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
-        ContentValues values = createRecipientValues(recipient);
-        db.replace(RECIPIENTS_TABLE, null, values);
-        db.close();
+        pendingRecipients.put(recipient.getID(), new Pair<>(Operation.ADD, recipient));
     }
 
     /**
@@ -338,40 +452,29 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param recipients the list of recipients to add.
      */
     public synchronized void addRecipients(List<Recipient> recipients) {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
-        for (Recipient recipient : recipients) {
-            ContentValues values = createRecipientValues(recipient);
-            db.replace(RECIPIENTS_TABLE, null, values);
+        for (Recipient r : recipients) {
+            pendingRecipients.put(r.getID(), new Pair<>(Operation.ADD, r));
         }
-        db.close();
     }
 
     /**
-     * Updates a recipient
+     * Updates a recipient (Does not add the recipient if it doesn't already exist)
      *
      * @param recipient the recipient to update
      */
     public synchronized void updateRecipient(Recipient recipient) {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
-        ContentValues values = createRecipientValues(recipient);
-        String[] args = {Integer.toString(recipient.getID())};
-        db.update(RECIPIENTS_TABLE, values, RECIPIENTS_KEY_ID + " = ?", args);
-        db.close();
+        manageRecipientUpdate(recipient);
     }
 
     /**
-     * Updates all recipients given in the list
+     * Updates all recipients given in the list (Does not add the recipients if they don't already exist)
      *
      * @param recipients the list of recipients to update
      */
     public synchronized void updateRecipients(List<Recipient> recipients) {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
         for (Recipient recipient : recipients) {
-            ContentValues values = createRecipientValues(recipient);
-            String[] args = {Integer.toString(recipient.getID())};
-            db.update(RECIPIENTS_TABLE, values, RECIPIENTS_KEY_ID + " = ?", args);
+            manageRecipientUpdate(recipient);
         }
-        db.close();
     }
 
     /**
@@ -380,10 +483,7 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param recipient the recipient to delete
      */
     public synchronized void deleteRecipient(Recipient recipient) {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
-        String[] args = {Integer.toString(recipient.getID())};
-        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = ?", args);
-        db.close();
+        deleteRecipient(recipient.getID());
     }
 
     /**
@@ -392,10 +492,8 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param id the id
      */
     public synchronized void deleteRecipient(int id) {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
-        String[] args = {Integer.toString(id)};
-        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " = ?", args);
-        db.close();
+        deleteItemsForContact(id);
+        pendingRecipients.put(id, new Pair<Operation, Recipient>(Operation.DELETE, null));
     }
 
     /**
@@ -404,23 +502,18 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @param ids a list of ids of recipients to delete.
      */
     public synchronized void deleteRecipients(List<Integer> ids) {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
-        String[] args = new String[ids.size()];
-        for (int i = 0; i < ids.size(); ++i) {
-            args[i] = Integer.toString(ids.get(i));
+        for (Integer i : ids) {
+            pendingRecipients.put(i, new Pair<Operation, Recipient>(Operation.DELETE, null));
         }
-
-        db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(ids.size()) + ")", args);
-        db.close();
     }
 
     /**
      * Deletes all recipients
      */
     public synchronized void deleteAllRecipients() {
-        SQLiteDatabase db = this.getWritableDatabase(app.getCurrentUser().getPassword());
+        pendingRecipients.clear();
+        db = getWritableIfNotOpen();
         db.delete(RECIPIENTS_TABLE, null, null);
-        db.close();
     }
 
     /**
@@ -430,9 +523,32 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @return the recipient
      */
     public synchronized Recipient getRecipient(int id) {
-        SQLiteDatabase db = this.getReadableDatabase(app.getCurrentUser().getPassword());
-        Recipient toReturn = getRecipientWithoutClosing(id);
-        db.close();
+        Pair<Operation, Recipient> fromPending = pendingRecipients.get(id);
+        if (fromPending != null) {
+            switch (fromPending.getLeft()) {
+                case ADD:
+                    return fromPending.getRight();
+                case DELETE:
+                    return null;
+                case UPDATE:
+                    break;
+            }
+        }
+        db = getReadableIfNotOpen();
+        Recipient toReturn = null;
+        String[] args = {Integer.toString(id)};
+        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = ?", args, null, null, null, null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                String name = cursor.getString(1);
+                //TODO returns only user now
+                toReturn = new User(id, name);
+            }
+            cursor.close();
+        }
+        if (toReturn != null && fromPending != null && fromPending.getLeft() == Operation.UPDATE) {
+            toReturn = fromPending.getRight();
+        }
         return toReturn;
     }
 
@@ -443,24 +559,71 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @return a list of Recipients
      */
     public synchronized List<Recipient> getRecipients(List<Integer> ids) {
-        SQLiteDatabase db = this.getReadableDatabase(app.getCurrentUser().getPassword());
-        List<Recipient> recipients = new ArrayList<>();
-        String[] args = new String[ids.size()];
-        for (int i = 0; i < ids.size(); ++i) {
-            args[i] = Integer.toString(ids.get(i));
-        }
-        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(ids.size()) + ")", args, null, null, RECIPIENTS_KEY_ID + " ASC", null);
-        boolean hasNext;
-        if (cursor != null) {
-            hasNext = cursor.moveToFirst();
-            while (hasNext) {
-                recipients.add(createUser(cursor));
-                hasNext = cursor.moveToNext();
+        List<Integer> databaseIds = new ArrayList<>(ids);
+        Set<Recipient> recipients = new HashSet<>();
+        Set<Recipient> toUpdate = new HashSet<>();
+        for (Integer i : ids) {
+            Pair<Operation, Recipient> fromPending = pendingRecipients.get(i);
+            if (fromPending != null) {
+                switch (fromPending.getLeft()) {
+                    case ADD:
+                        recipients.add(fromPending.getRight());
+                        databaseIds.remove(i);
+                        break;
+                    case UPDATE:
+                        toUpdate.add(fromPending.getRight());
+                        break;
+                    case DELETE:
+                        databaseIds.remove(i);
+                        break;
+                }
             }
-            cursor.close();
         }
-        db.close();
-        return recipients;
+        if (databaseIds.isEmpty()) {
+            return Sorter.sortRecipientList(new ArrayList<>(recipients));
+        }
+        db = getReadableIfNotOpen();
+        if (databaseIds.size() > MAX_PLACEHOLDERS_COUNT) {
+            int count = databaseIds.size();
+            while (count > 0) {
+                int num = count - MAX_PLACEHOLDERS_COUNT > 0 ? MAX_PLACEHOLDERS_COUNT : count;
+                String[] args = new String[num];
+                for (int i = 0; i < num; ++i) {
+                    args[i] = Integer.toString(databaseIds.get(i + (databaseIds.size() - count)));
+                }
+                Cursor cursor;
+                if (num == MAX_PLACEHOLDERS_COUNT) {
+                    cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " IN (" + FULL_PLACEHOLDERS + ")", args, null, null, RECIPIENTS_KEY_ID);
+                } else {
+                    cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(num) + ")", args, null, null, RECIPIENTS_KEY_ID);
+                }
+                if (cursor != null) {
+                    boolean hasNext = cursor.moveToFirst();
+                    while (hasNext) {
+                        recipients.add(createUser(cursor));
+                        hasNext = cursor.moveToNext();
+                    }
+                    cursor.close();
+                }
+                count -= num;
+            }
+        } else {
+            String[] args = new String[databaseIds.size()];
+            for (int i = 0; i < databaseIds.size(); ++i) {
+                args[i] = Integer.toString(databaseIds.get(i));
+            }
+            Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(databaseIds.size()) + ")", args, null, null, RECIPIENTS_KEY_ID);
+            if (cursor != null) {
+                boolean hasNext = cursor.moveToFirst();
+                while (hasNext) {
+                    recipients.add(createUser(cursor));
+                    hasNext = cursor.moveToNext();
+                }
+                cursor.close();
+            }
+        }
+        updateGetRecipientsFromPending(recipients, toUpdate);
+        return Sorter.sortRecipientList(new ArrayList<>(recipients));
     }
 
     /**
@@ -469,20 +632,227 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @return all recipients as a List
      */
     public synchronized List<Recipient> getAllRecipients() {
-        SQLiteDatabase db = this.getReadableDatabase(app.getCurrentUser().getPassword());
-        Cursor cursor = db.rawQuery("SELECT * FROM " + RECIPIENTS_TABLE + " ORDER BY " + RECIPIENTS_KEY_ID + " ASC", null);
+        Set<Integer> mapIds = new HashSet<>();
+        Set<Recipient> recipients = new HashSet<>();
+        Set<Recipient> toUpdate = new HashSet<>();
+        for (Map.Entry<Integer, Pair<Operation, Recipient>> e : pendingRecipients.entrySet()) {
+            Pair<Operation, Recipient> fromPending = e.getValue();
+            switch (fromPending.getLeft()) {
+                case ADD:
+                    recipients.add(fromPending.getRight());
+                    mapIds.add(e.getKey());
+                    break;
+                case UPDATE:
+                    toUpdate.add(fromPending.getRight());
+                    break;
+                case DELETE:
+                    mapIds.add(e.getKey());
+                    break;
+            }
+        }
+        db = getReadableIfNotOpen();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + RECIPIENTS_TABLE + " ORDER BY " + RECIPIENTS_KEY_ID, null);
         boolean hasNext;
-        List<Recipient> recipients = new ArrayList<>();
         if (cursor != null) {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
-                recipients.add(createUser(cursor));
+                if (!mapIds.contains(cursor.getInt(0))) {
+                    Recipient recipient = createUser(cursor);
+                    recipients.add(recipient);
+                }
                 hasNext = cursor.moveToNext();
             }
             cursor.close();
         }
-        db.close();
-        return recipients;
+        updateGetRecipientsFromPending(recipients, toUpdate);
+        return Sorter.sortRecipientList(new ArrayList<>(recipients));
+    }
+
+    /**
+     * Write all pending operations in the database
+     */
+    public synchronized void applyPendingOperations() {
+        if (!(pendingItems.isEmpty() && pendingRecipients.isEmpty())) {
+            db = getWritableIfNotOpen();
+            db.beginTransaction();
+            try {
+                if (!pendingItems.isEmpty()) {
+                    List<Item> itemsToAdd = new ArrayList<>();
+                    List<Item> itemsToUpdate = new ArrayList<>();
+                    List<Integer> itemsToDelete = new ArrayList<>();
+                    for (Map.Entry<Integer, Pair<Operation, Item>> e : pendingItems.entrySet()) {
+                        Pair<Operation, Item> pair = e.getValue();
+                        switch (pair.getLeft()) {
+                            case ADD:
+                                itemsToAdd.add(pair.getRight());
+                                break;
+                            case UPDATE:
+                                itemsToUpdate.add(pair.getRight());
+                                break;
+                            case DELETE:
+                                itemsToDelete.add(e.getKey());
+                                break;
+                        }
+                    }
+                    pendingAddItems(itemsToAdd);
+                    pendingUpdateItems(itemsToUpdate);
+                    if (!itemsToDelete.isEmpty()) {
+                        pendingDeleteItems(itemsToDelete);
+                    }
+                }
+                if (!pendingRecipients.isEmpty()) {
+                    List<Recipient> recipientsToAdd = new ArrayList<>();
+                    List<Recipient> recipientsToUpdate = new ArrayList<>();
+                    List<Integer> recipientsToDelete = new ArrayList<>();
+                    for (Map.Entry<Integer, Pair<Operation, Recipient>> e : pendingRecipients.entrySet()) {
+                        Pair<Operation, Recipient> pair = e.getValue();
+                        switch (pair.getLeft()) {
+                            case ADD:
+                                recipientsToAdd.add(pair.getRight());
+                                break;
+                            case UPDATE:
+                                recipientsToUpdate.add(pair.getRight());
+                                break;
+                            case DELETE:
+                                recipientsToDelete.add(e.getKey());
+                        }
+                    }
+                    pendingAddRecipients(recipientsToAdd);
+                    pendingUpdateRecipients(recipientsToUpdate);
+                    if (!recipientsToDelete.isEmpty()) {
+                        pendingDeleteRecipients(recipientsToDelete);
+                    }
+                }
+                db.setTransactionSuccessful();
+                pendingItems.clear();
+                pendingRecipients.clear();
+                lastUpdateTime = lastItemTime;
+            } finally {
+                db.endTransaction();
+            }
+
+        }
+    }
+
+    /**
+     * Closes the database.
+     */
+    public synchronized void closeDatabase() {
+        this.db.close();
+    }
+
+    /**
+     * Returns the time corresponding to the most recent item the database has updated/added.
+     *
+     * @return the time as a long
+     */
+    public synchronized long getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    /**
+     * Resets the last update time
+     */
+    public synchronized void resetLastUpdateTime() {
+        lastItemTime = 0;
+        lastUpdateTime = 0;
+    }
+
+    //Helper methods for applyPendingOperations
+
+    private void pendingDeleteItems(List<Integer> ids) {
+        if (ids.size() > MAX_PLACEHOLDERS_COUNT) {
+            int counter = ids.size();
+            while (counter > 0) {
+                int num = counter - MAX_PLACEHOLDERS_COUNT > 0 ? MAX_PLACEHOLDERS_COUNT : counter;
+                String[] args = new String[num];
+                for (int i = 0; i < num; ++i) {
+                    args[i] = Integer.toString(ids.get(i + (ids.size() - counter)));
+                }
+                if (num == MAX_PLACEHOLDERS_COUNT) {
+                    db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " IN (" + FULL_PLACEHOLDERS + ")", args);
+                } else {
+                    db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " IN (" + createPlaceholders(num) + ")", args);
+                }
+                counter -= num;
+            }
+        } else {
+            String[] args = new String[ids.size()];
+            for (int i = 0; i < ids.size(); ++i) {
+                args[i] = Integer.toString(ids.get(i));
+            }
+            db.delete(ITEMS_TABLE, ITEMS_KEY_ID + " IN (" + createPlaceholders(ids.size()) + ")", args);
+        }
+    }
+
+    private void pendingDeleteRecipients(List<Integer> ids) {
+        if (ids.size() > MAX_PLACEHOLDERS_COUNT) {
+            int counter = ids.size();
+            while (counter > 0) {
+                int num = counter - MAX_PLACEHOLDERS_COUNT > 0 ? MAX_PLACEHOLDERS_COUNT : counter;
+                String[] args = new String[num];
+                for (int i = 0; i < num; ++i) {
+                    args[i] = Integer.toString(ids.get(i + (ids.size() - counter)));
+                }
+                if (num == MAX_PLACEHOLDERS_COUNT) {
+                    db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " IN (" + FULL_PLACEHOLDERS + ")", args);
+                } else {
+                    db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(num) + ")", args);
+                }
+                counter -= num;
+            }
+        } else {
+            String[] args = new String[ids.size()];
+            for (int i = 0; i < ids.size(); ++i) {
+                args[i] = Integer.toString(ids.get(i));
+            }
+            db.delete(RECIPIENTS_TABLE, RECIPIENTS_KEY_ID + " IN (" + createPlaceholders(ids.size()) + ")", args);
+        }
+    }
+
+    private void pendingAddItems(List<Item> items) {
+        for (Item item : items) {
+            ContentValues values = createItemValues(item);
+            db.replace(ITEMS_TABLE, null, values);
+        }
+    }
+
+    private void pendingAddRecipients(List<Recipient> recipients) {
+        for (Recipient recipient : recipients) {
+            ContentValues values = createRecipientValues(recipient);
+            db.replace(RECIPIENTS_TABLE, null, values);
+        }
+    }
+
+    private void pendingUpdateItems(List<Item> items) {
+        for (Item item : items) {
+            ContentValues values = createItemValues(item);
+            String[] args = {Integer.toString(item.getID())};
+            db.update(ITEMS_TABLE, values, ITEMS_KEY_ID + " = ?", args);
+        }
+    }
+
+    private void pendingUpdateRecipients(List<Recipient> recipients) {
+        for (Recipient recipient : recipients) {
+            ContentValues values = createRecipientValues(recipient);
+            String[] args = {Integer.toString(recipient.getID())};
+            db.update(RECIPIENTS_TABLE, values, RECIPIENTS_KEY_ID + " = ?", args);
+        }
+    }
+
+
+    private SQLiteDatabase getWritableIfNotOpen() {
+        if (!db.isOpen() || db.isReadOnly()) {
+            return getWritableDatabase(app.getCurrentUser().getPassword());
+        }
+        return db;
+    }
+
+    private SQLiteDatabase getReadableIfNotOpen() {
+        if (!(db.isOpen())) {
+            return getReadableDatabase(app.getCurrentUser().getPassword());
+        }
+        return db;
     }
 
     private ContentValues createItemValues(Item item) {
@@ -502,7 +872,12 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     private Item createItem(Cursor cursor) {
-        String type = cursor.getString(0);
+        Item.Type type;
+        try {
+            type = Item.Type.valueOf(cursor.getString(0));
+        } catch (IllegalArgumentException e) {
+            throw new UnsupportedOperationException("Only SimpleTextItem for now");
+        }
         int id = cursor.getInt(1);
         User from = (User) getRecipient(cursor.getInt(2));
         Recipient to = getRecipient(cursor.getInt(3));
@@ -514,27 +889,12 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             e.printStackTrace();
         }
         String text = cursor.getString(6);
-        if (type.equals(Item.Type.SIMPLETEXTITEM.name())) {
-            return new SimpleTextItem(id, from, to, time, condition, text);
-        } else {
-            throw new UnsupportedOperationException("Only SimpleTextItem for now");
+        switch (type) {
+            case SIMPLETEXTITEM:
+                return new SimpleTextItem(id, from, to, time, condition, text);
+            default:
+                throw new UnsupportedOperationException("Only SimpleTextItem for now");
         }
-    }
-
-    private Recipient getRecipientWithoutClosing(int id) {
-        SQLiteDatabase db = getReadableDatabase(app.getCurrentUser().getPassword());
-        User toReturn = null;
-        String[] args = {Integer.toString(id)};
-        Cursor cursor = db.query(RECIPIENTS_TABLE, RECIPIENTS_COLUMN, RECIPIENTS_KEY_ID + " = ?", args, null, null, null, null);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                String name = cursor.getString(1);
-                //TODO returns only user now
-                toReturn = new User(id, name);
-            }
-            cursor.close();
-        }
-        return toReturn;
     }
 
     private ContentValues createRecipientValues(Recipient recipient) {
@@ -550,11 +910,86 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         return new User(id, name);
     }
 
-    private void updateRecipientsWithItem(Item item, SQLiteDatabase db) {
-        ContentValues valuesFrom = createRecipientValues(item.getFrom());
-        ContentValues valuesTo = createRecipientValues(item.getTo());
-        db.replace(RECIPIENTS_TABLE, null, valuesFrom);
-        db.replace(RECIPIENTS_TABLE, null, valuesTo);
+    private void addOrUpdateRecipientWithItem(Item item) {
+        pendingRecipients.put(item.getFrom().getID(), new Pair<>(Operation.ADD, (Recipient) item.getFrom()));
+        pendingRecipients.put(item.getTo().getID(), new Pair<>(Operation.ADD, item.getTo()));
+    }
+
+    private void manageItemUpdate(Item item) {
+        Pair<Operation, Item> fromPending = pendingItems.get(item.getID());
+        if (fromPending != null) {
+            switch (fromPending.getLeft()) {
+                case ADD:
+                    pendingItems.put(item.getID(), new Pair<>(Operation.ADD, item));
+                    addOrUpdateRecipientWithItem(item);
+                    break;
+                case UPDATE:
+                    pendingItems.put(item.getID(), new Pair<>(Operation.UPDATE, item));
+                    addOrUpdateRecipientWithItem(item);
+                    break;
+                case DELETE:
+                    break;
+            }
+        } else {
+            pendingItems.put(item.getID(), new Pair<>(Operation.UPDATE, item));
+            addOrUpdateRecipientWithItem(item);
+        }
+    }
+
+    private void manageRecipientUpdate(Recipient recipient) {
+        Pair<Operation, Recipient> fromPending = pendingRecipients.get(recipient.getID());
+        if (fromPending != null) {
+            switch (fromPending.getLeft()) {
+                case ADD:
+                    pendingRecipients.put(recipient.getID(), new Pair<>(Operation.ADD, recipient));
+                    break;
+                case UPDATE:
+                    pendingRecipients.put(recipient.getID(), new Pair<>(Operation.UPDATE, recipient));
+                    break;
+                case DELETE:
+                    break;
+            }
+        } else {
+            pendingRecipients.put(recipient.getID(), new Pair<>(Operation.UPDATE, recipient));
+        }
+    }
+
+    private void updateGetItemsFromPending(Set<Item> items, Set<Item> toUpdate) {
+        if (toUpdate.size() < items.size()) {
+            for (Item i : toUpdate) {
+                if (items.contains(i)) {
+                    items.remove(i);
+                    items.add(i);
+                }
+            }
+        } else {
+            for (Item i : items) {
+                Pair<Operation, Item> fromPending = pendingItems.get(i.getID());
+                if (fromPending != null && fromPending.getLeft() == Operation.UPDATE) {
+                    items.remove(i);
+                    items.add(fromPending.getRight());
+                }
+            }
+        }
+    }
+
+    private void updateGetRecipientsFromPending(Set<Recipient> recipients, Set<Recipient> toUpdate) {
+        if (toUpdate.size() < recipients.size()) {
+            for (Recipient i : toUpdate) {
+                if (recipients.contains(i)) {
+                    recipients.remove(i);
+                    recipients.add(i);
+                }
+            }
+        } else {
+            for (Recipient i : recipients) {
+                Pair<Operation, Recipient> fromPending = pendingRecipients.get(i.getID());
+                if (fromPending != null && fromPending.getLeft() == Operation.UPDATE) {
+                    recipients.remove(i);
+                    recipients.add(fromPending.getRight());
+                }
+            }
+        }
     }
 
     private String createPlaceholders(int length) {
@@ -567,6 +1002,13 @@ public class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 builder.append(",?");
             }
             return builder.toString();
+        }
+    }
+
+    private void updateTime(Item i) {
+        long itemTime = i.getDate().getTime();
+        if (lastItemTime < itemTime) {
+            lastItemTime = itemTime;
         }
     }
 }

@@ -11,7 +11,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -78,7 +77,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         refreshButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
 
-        databaseHandler = app.getDB();
+        databaseHandler = app.getDatabaseHandler();
 
         boolean offline = true;
         refresh(offline);
@@ -180,14 +179,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         @Override
         protected void onPostExecute(List<Item> items) {
             if (items != null) {
-                new AddToDatabaseTask().execute(items.toArray(new Item[items.size()]));
+                databaseHandler.addItems(items);
                 adapter.add(items);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                if (!offline) {
-                    app.setLastItemsRefresh(new Date());
-                }
-
                 Toast.makeText(getApplicationContext(), R.string.chat_activity_refresh_message,
                         Toast.LENGTH_SHORT).show();
 
@@ -199,13 +194,4 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
 
     }
 
-    private class AddToDatabaseTask extends AsyncTask<Item, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Item... items) {
-            List<Item> toAdd = Arrays.asList(items);
-            databaseHandler.addItems(toAdd);
-            return null;
-        }
-    }
 }

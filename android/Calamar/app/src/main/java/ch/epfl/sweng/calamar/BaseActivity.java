@@ -29,6 +29,20 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
     // google api related stuff
     private boolean resolvingError;
 
+    // *********************************************************************************************
+    // ACTIVITY LIFECYCLE CALLBACKS
+    // https://developer.android.com/training/basics/activity-lifecycle/starting.html
+    // even better :
+    // https://stackoverflow.com/questions/12203651/why-is-onresume-called-when-an-activity-starts
+    //
+    // every time screen is rotated, activity is destroyed/recreated :
+    // https://stackoverflow.com/questions/7618703/activity-lifecycle-oncreate-called-on-every-re-orientation
+    // maybe prevent this ...
+    //
+    //TODO check activity lifecycle and pertinent action to make when entering new states
+    // regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
+    // etc...
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
