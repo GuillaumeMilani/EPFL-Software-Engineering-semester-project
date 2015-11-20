@@ -38,6 +38,7 @@ public class ParsingTest  {
 
     @Test
     public void testSimpleTextItemParsing() throws JSONException {
+        helperItemParsing(new SimpleTextItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), new Date(22313), Condition.falseCondition(), "hey, How are you ?"));
         helperItemParsing(new SimpleTextItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), new Date(22313), Condition.trueCondition(), "hey, How are you ?"));
     }
 
