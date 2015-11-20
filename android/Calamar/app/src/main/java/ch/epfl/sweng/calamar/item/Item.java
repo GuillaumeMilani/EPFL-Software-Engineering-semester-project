@@ -138,7 +138,7 @@ public abstract class Item {
             case SIMPLETEXTITEM:
                 item = SimpleTextItem.fromJSON(json);
                 break;
-            case "IMAGEITEM":
+            case IMAGEITEM:
                 item = ImageItem.fromJSON(json);
                 break;
             default:
