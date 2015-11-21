@@ -42,7 +42,7 @@ import static ch.epfl.sweng.calamar.item.Item.Type.SIMPLETEXTITEM;
 
 
 /**
- * A simple {@link Fragment} subclass.
+ * A simple {@link Fragment} subclass holding the calamar map !.
  */
 public class MapFragment extends android.support.v4.app.Fragment implements OnMapReadyCallback {
 
@@ -52,6 +52,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     //TODO : add two buttons begin checks stop checks
     // that will : checklocation settings + startlocation updates
     //TODO : manage activity lifecycle : start stop location updates when not needed, plus many potential problems
+    //TODO : do we save state of fragment/map using a bundle ?
 
 
     private Map<Item,Marker> markers;
@@ -158,10 +159,15 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         addAllItemsToMap();
     }
 
+
     @Override
+    // is called after activity.onStop !!!
+    // https://developer.android.com/guide/components/fragments.html#Lifecycle
     public void onStop() {
+
+        // cause exception because client is disconnected in activity.onStop
+        //gpsProvider.stopLocationUpdates();
         super.onStop();
-        gpsProvider.stopLocationUpdates();
 
         //TODO
         // think about when should we start stop locationUpdates
@@ -279,6 +285,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
                 } catch (DatabaseClientException e) {
                     e.printStackTrace();
+                    Log.e(MapFragment.TAG, e.getMessage());
                     return null;
                 }
         }
@@ -291,6 +298,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                     addItemToMap(item);
                 }
 
+                Log.i(MapFragment.TAG, "map refreshed");
                 Toast.makeText(getContext(), R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();
 

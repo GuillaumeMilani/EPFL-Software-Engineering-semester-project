@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int ERROR_REGISTRATION_REQUEST = 2001;
 
     // google api related stuff
-    private boolean resolvingError;
+    private boolean resolvingError = false;
 
     private CalamarApplication app;
 
@@ -133,11 +133,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         //launch intent again
-                        Intent intent = new Intent(this, RegistrationIntentService.class);
-                        startService(intent);
+                        gcmRegisterApplication();
                         break;
                     default:
-                        Log.e(MainActivity.TAG, "registration can't connect");
+                        Log.e(MainActivity.TAG, "registration can't proceed");
                         finish();
                 }
             case ERROR_CLIENT_REQUEST:
@@ -161,14 +160,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         Log.i(MapFragment.TAG, "user correctly set location settings");
-
                         // reiterate the process
-                        GPSProvider gpsProvider = GPSProvider.getInstance();
-                        gpsProvider.startLocationUpdates(this);
-                        //TODO WTF why is the whole process executed twice ?????????????????????????
-                        // (double check....)
-
-                        //TODO activate/deactivate UI
+                        GPSProvider.getInstance().startLocationUpdates(this);
                         break;
                     default:
                         Log.e(MapFragment.TAG, "user declined offer to set location settings");
@@ -216,25 +209,38 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         buildGoogleApiClient();  // will connect in onResume(), errors are handled in onConnectionFailed()
 
+        // TODO maybe whole process useless, register in onConnected
         if (checkPlayServices()) {
-            // Start IntentService to register this application with GCM.
-            Intent intent = new Intent(this, RegistrationIntentService.class);
-            startService(intent);
+            gcmRegisterApplication();
         }
+    }
+
+    private void gcmRegisterApplication() {
+        // Start IntentService to register this application with GCM.
+        Intent intent = new Intent(this, RegistrationIntentService.class);
+        startService(intent);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (!resolvingError) {
-            app.getGoogleApiClient().connect();
+        GoogleApiClient googleApiClient = app.getGoogleApiClient();
+
+        if (!resolvingError &&
+                !googleApiClient.isConnected() &&
+                !googleApiClient.isConnecting())
+        {
+            googleApiClient.connect();
             // if errors, such as no google play apk, onConnectionFailed will handle the errors
         }
     }
 
     @Override
     protected void onStop() {
-        app.getGoogleApiClient().disconnect();
+        GoogleApiClient googleApiClient = app.getGoogleApiClient();
+        if(googleApiClient.isConnected()) {
+            googleApiClient.disconnect();
+        }
         super.onStop();
         app.getDatabaseHandler().closeDatabase();
     }
@@ -291,26 +297,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         .addApi(LocationServices.API)
                         .addConnectionCallbacks(this)
                         .addOnConnectionFailedListener(this).build());
-        // TODO check issue #59
+        // TODO check issue #59 test when baseactivity available
     }
 
     /**
      * Verifies google play services availability on the device
      */
-    //keeped just in case.., not used now, I go the other way by connecting and then eventually
-    //handle errors in onConnectionFailed
     private boolean checkPlayServices() {
         GoogleApiAvailability apiAvailabilitySingleton = GoogleApiAvailability.getInstance();
         int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(app);
         if (resultCode != ConnectionResult.SUCCESS) {
             if (apiAvailabilitySingleton.isUserResolvableError(resultCode)) {
-                showGoogleApiErrorDialog(resultCode,ERROR_REGISTRATION_REQUEST);
+                Log.e(MainActivity.TAG, "play services unavailable " +
+                        "but automatic error resolution available. error code : " + resultCode);
             } else {
-                Log.e(TAG, "This device is not supported. play services unavailable " +
+                Log.e(MainActivity.TAG, "This device is not supported. play services unavailable " +
                         "and automatic error resolution failed. error code : " + resultCode);
-                //show dialog using geterrordialog on singleton
-                finish();
             }
+            showGoogleApiErrorDialog(resultCode, ERROR_REGISTRATION_REQUEST);
             return false;
         }
         return true;

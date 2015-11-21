@@ -44,31 +44,6 @@ public class NetworkDatabaseClient implements DatabaseClient {
         this.networkProvider = networkProvider;
     }
 
-    private List<Item> getItems(Recipient recipient, Date from, Location nearLocation, long radius) throws DatabaseClientException {
-        HttpURLConnection connection = null;
-        try {
-            URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_PATH);
-
-            JSONObject jsonParameter = new JSONObject();
-            jsonParameter.accumulate("recipient", recipient.toJSON().toString());
-            jsonParameter.accumulate("lastRefresh", from.getTime());
-            if(nearLocation != null) {
-                jsonParameter.accumulate("latitude", nearLocation.getLatitude());
-                jsonParameter.accumulate("longitude", nearLocation.getLongitude());
-                jsonParameter.accumulate("radius", radius);
-            }
-
-            connection = NetworkDatabaseClient.createConnection(networkProvider, url);
-            String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
-
-            return NetworkDatabaseClient.itemsFromJSON(response);
-        } catch (IOException | JSONException e) {
-            throw new DatabaseClientException(e);
-        } finally {
-            NetworkDatabaseClient.close(connection);
-        }
-    }
-
     @Override
     public List<Item> getAllItems(Recipient recipient, Date from, Location nearLocation, long radius)
             throws DatabaseClientException
@@ -135,6 +110,32 @@ public class NetworkDatabaseClient implements DatabaseClient {
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
             JSONObject resp = new JSONObject(response);
             return User.fromJSON(resp.getJSONObject("user"));
+        } catch (IOException | JSONException e) {
+            throw new DatabaseClientException(e);
+        } finally {
+            NetworkDatabaseClient.close(connection);
+        }
+    }
+
+    private List<Item> getItems(Recipient recipient, Date from, Location nearLocation, long radius) throws DatabaseClientException {
+        HttpURLConnection connection = null;
+        try {
+            URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_PATH);
+
+            JSONObject jsonParameter = new JSONObject();
+            jsonParameter.accumulate("recipient", recipient.toJSON().toString());
+            jsonParameter.accumulate("lastRefresh", from.getTime());
+
+            if(nearLocation != null) {
+                jsonParameter.accumulate("latitude", nearLocation.getLatitude());
+                jsonParameter.accumulate("longitude", nearLocation.getLongitude());
+                jsonParameter.accumulate("radius", radius);
+            }
+
+            connection = NetworkDatabaseClient.createConnection(networkProvider, url);
+            String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
+
+            return NetworkDatabaseClient.itemsFromJSON(response);
         } catch (IOException | JSONException e) {
             throw new DatabaseClientException(e);
         } finally {

@@ -79,7 +79,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         if (v.getId() == R.id.newContact) {
             addNewContact();
         } else {
-            throw new IllegalArgumentException(getString(R.string.on_click_error));
+            throw new IllegalArgumentException("");
         }
     }
 
