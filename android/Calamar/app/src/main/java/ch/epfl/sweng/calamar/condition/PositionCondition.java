@@ -11,6 +11,7 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.map.GPSProvider;
 
 /**
@@ -110,7 +111,7 @@ public class PositionCondition extends Condition {
     {
         FrameLayout view = (FrameLayout)(super.getView(context));
         Button button = new Button(context);
-        button.setText("tu dois être ici!");
+        button.setText(context.getResources().getString(R.string.condition_position));
         view.addView(button);
         return view;
     }

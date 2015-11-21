@@ -12,6 +12,8 @@ import org.json.JSONObject;
 import java.util.HashSet;
 import java.util.Set;
 
+import ch.epfl.sweng.calamar.R;
+
 /**
  * Created by pierre on 10/27/15.
  */
@@ -149,7 +151,7 @@ public abstract class Condition {
             {
                 FrameLayout view = (FrameLayout)(super.getView(context));
                 TextView tv = new TextView(context);
-                tv.setText("oui");
+                tv.setText(context.getResources().getString(R.string.condition_true));
                 view.addView(tv);
                 return view;
             }
@@ -188,7 +190,7 @@ public abstract class Condition {
             {
                 FrameLayout view = (FrameLayout)(super.getView(context));
                 TextView tv = new TextView(context);
-                tv.setText("non");
+                tv.setText(context.getResources().getString(R.string.condition_false));
                 view.addView(tv);
                 return view;
             }
@@ -243,7 +245,7 @@ public abstract class Condition {
                 LinearLayout LL = new LinearLayout(context);
                 LL.setOrientation(LinearLayout.HORIZONTAL);
                 TextView tv = new TextView(context);
-                tv.setText("et");
+                tv.setText(context.getResources().getString(R.string.condition_and));
                 LL.addView(c1.getView(context));
                 LL.addView(tv);
                 LL.addView(c2.getView(context));
@@ -300,7 +302,7 @@ public abstract class Condition {
                 LinearLayout LL = new LinearLayout(context);
                 LL.setOrientation(LinearLayout.HORIZONTAL);
                 TextView tv = new TextView(context);
-                tv.setText("ou");
+                tv.setText(context.getResources().getString(R.string.condition_or));
                 LL.addView(c1.getView(context));
                 LL.addView(tv);
                 LL.addView(c2.getView(context));
@@ -354,7 +356,7 @@ public abstract class Condition {
                 LinearLayout LL = new LinearLayout(context);
                 LL.setOrientation(LinearLayout.HORIZONTAL);
                 TextView tv = new TextView(context);
-                tv.setText("non");
+                tv.setText(context.getResources().getString(R.string.condition_not));
                 LL.addView(tv);
                 LL.addView(c.getView(context));
                 view.addView(LL);
