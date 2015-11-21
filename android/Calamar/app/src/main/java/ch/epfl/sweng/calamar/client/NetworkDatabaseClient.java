@@ -47,12 +47,13 @@ public class NetworkDatabaseClient implements DatabaseClient {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_PATH);
-            String jsonParameter = "{ " +
-                    "\"recipient\": " + recipient.toJSON().toString() +
-                    ",\"lastRefresh\": " + from.getTime() +
-                    " }";
+
+            JSONObject jsonParameter = new JSONObject();
+            jsonParameter.accumulate("recipient", recipient.toJSON().toString());
+            jsonParameter.accumulate("lastRefresh", from.getTime());
+
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
-            String response = NetworkDatabaseClient.post(connection, jsonParameter);
+            String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
 
             return NetworkDatabaseClient.itemsFromJSON(response);
         } catch (IOException | JSONException e) {
@@ -89,12 +90,12 @@ public class NetworkDatabaseClient implements DatabaseClient {
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.NEW_USER_PATH);
 
-            String jsonParameter = "{ " +
-                    "\"deviceID\": \"" + deviceId + "\"" +
-                    ",\"name\": \"" + email + "\"" +
-                    " }";
+            JSONObject jsonParameter = new JSONObject();
+            jsonParameter.accumulate("deviceID", deviceId);
+            jsonParameter.accumulate("name", email);
+
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
-            String response = NetworkDatabaseClient.post(connection, jsonParameter);
+            String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
 
             JSONObject object = new JSONObject(response);
             return object.getInt("ID");
@@ -110,11 +111,12 @@ public class NetworkDatabaseClient implements DatabaseClient {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_USER_PATH);
-            String jsonParameter = "{ " +
-                    "\"name\": " + "\"" + name +"\""+
-                    " }";
+
+            JSONObject jsonParameter = new JSONObject();
+            jsonParameter.accumulate("name", name);
+
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
-            String response = NetworkDatabaseClient.post(connection, jsonParameter);
+            String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
             JSONObject resp = new JSONObject(response);
             return User.fromJSON(resp.getJSONObject("user"));
         } catch (IOException | JSONException e) {
@@ -160,7 +162,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
             throws IOException, DatabaseClientException {
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type",
-                "application/json");//TODO clarify
+                "application/json");
         connection.setRequestProperty("Content-Length",
                 Integer.toString(jsonParameter.getBytes().length));
         connection.setDoInput(true);//to retrieve result
