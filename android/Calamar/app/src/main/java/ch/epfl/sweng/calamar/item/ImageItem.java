@@ -24,6 +24,7 @@ public final class ImageItem extends Item {
     private final static Type ITEM_TYPE = Type.IMAGEITEM;
 
     private final Bitmap bitmap;
+    private final int hash;
 
     /**
      * Instantiates a new ImageItem with the following parameters
@@ -38,6 +39,7 @@ public final class ImageItem extends Item {
     public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, Bitmap bitmap) {
         super(ID, from, to, date.getTime(), condition);
         this.bitmap = bitmap;
+        hash = computeHash();
     }
 
     /**
@@ -52,6 +54,7 @@ public final class ImageItem extends Item {
     public ImageItem(int ID, User from, Recipient to, Date date, Bitmap bitmap) {
         super(ID, from, to, date.getTime());
         this.bitmap = bitmap;
+        hash = computeHash();
     }
 
     /**
@@ -121,14 +124,7 @@ public final class ImageItem extends Item {
      */
     @Override
     public int hashCode() {
-        if(bitmap == null) {
-            return 0;
-        }
-        else {
-            ByteArrayOutputStream blob = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 0, blob);
-            return super.hashCode() * 73 + Arrays.hashCode(blob.toByteArray());
-        }
+        return hash;
     }
 
     /**
@@ -152,6 +148,18 @@ public final class ImageItem extends Item {
         ByteArrayOutputStream blob = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, blob);
         return Base64.encodeToString(blob.toByteArray(), Base64.DEFAULT);
+    }
+
+    private int computeHash()
+    {
+        if(bitmap == null) {
+            return 0;
+        }
+        else {
+            ByteArrayOutputStream blob = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 0, blob);
+            return super.hashCode() * 73 + Arrays.hashCode(blob.toByteArray());
+        }
     }
 
     /**
