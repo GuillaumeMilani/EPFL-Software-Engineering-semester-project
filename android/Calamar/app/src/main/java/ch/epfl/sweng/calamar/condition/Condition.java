@@ -262,12 +262,12 @@ public abstract class Condition {
             {
                 FrameLayout view = (FrameLayout)(super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
-                LL.setOrientation(LinearLayout.HORIZONTAL);
+                LL.setOrientation(LinearLayout.VERTICAL);
                 TextView tv = new TextView(context);
                 tv.setText(context.getResources().getString(R.string.condition_and));
-                LL.addView(c1.getView(context));
-                LL.addView(tv);
-                LL.addView(c2.getView(context));
+                LL.addView(c1.getView(context), 0);
+                LL.addView(tv, 1);
+                LL.addView(c2.getView(context), 2);
                 view.addView(LL);
                 return view;
             }
@@ -319,12 +319,12 @@ public abstract class Condition {
             {
                 FrameLayout view = (FrameLayout)(super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
-                LL.setOrientation(LinearLayout.HORIZONTAL);
+                LL.setOrientation(LinearLayout.VERTICAL);
                 TextView tv = new TextView(context);
                 tv.setText(context.getResources().getString(R.string.condition_or));
-                LL.addView(c1.getView(context));
-                LL.addView(tv);
-                LL.addView(c2.getView(context));
+                LL.addView(c1.getView(context), 0);
+                LL.addView(tv, 1);
+                LL.addView(c2.getView(context), 2);
                 view.addView(LL);
                 return view;
             }
@@ -376,8 +376,8 @@ public abstract class Condition {
                 LL.setOrientation(LinearLayout.HORIZONTAL);
                 TextView tv = new TextView(context);
                 tv.setText(context.getResources().getString(R.string.condition_not));
-                LL.addView(tv);
-                LL.addView(c.getView(context));
+                LL.addView(tv, 0);
+                LL.addView(c.getView(context), 1);
                 view.addView(LL);
                 return view;
             }
