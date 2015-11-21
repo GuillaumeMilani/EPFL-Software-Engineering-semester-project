@@ -1,6 +1,9 @@
 package ch.epfl.sweng.calamar.condition;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -57,9 +60,25 @@ public abstract class Condition {
 
     public View getView(Context context)
     {
-        FrameLayout view = new FrameLayout(context);
-        //draw a rectangle around with color for true or false and add an observer in this Condition
-        return view;
+        return new FrameLayout(context) {
+            Paint paint = new Paint();
+
+            {
+                addObserver(new Observer() {
+                    @Override
+                    public void update(Condition condition) {
+                        invalidate();
+                    }
+                });
+            }
+
+            @Override
+            public void onDraw(Canvas canvas) {
+                paint.setColor(getValue() ? Color.GREEN : Color.RED);
+                paint.setStrokeWidth(3);
+                canvas.drawRect(0, 0, getWidth(), getHeight(), paint);
+            }
+        };
     }
 
 
