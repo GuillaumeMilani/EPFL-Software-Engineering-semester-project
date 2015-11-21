@@ -1,8 +1,11 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
+import android.view.View;
+import android.widget.ImageView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,6 +67,13 @@ public final class ImageItem extends Item {
     @Override
     public Type getType() {
         return ITEM_TYPE;
+    }
+
+    @Override
+    protected View getItemView(Context context) {
+        ImageView view = new ImageView(context);
+        view.setImageBitmap(bitmap);
+        return view;
     }
 
     /**
