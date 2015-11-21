@@ -12,7 +12,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -80,7 +79,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         refreshButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
 
-        databaseHandler = app.getDB();
+        databaseHandler = app.getDatabaseHandler();
 
         boolean offline = true;
         refresh(offline);
@@ -182,14 +181,10 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected void onPostExecute(List<Item> items) {
             if (items != null) {
-                new AddToDatabaseTask().execute(items.toArray(new Item[items.size()]));
+                databaseHandler.addItems(items);
                 adapter.add(items);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                if (!offline) {
-                    app.setLastItemsRefresh(new Date());
-                }
-
                 Toast.makeText(getApplicationContext(), R.string.chat_activity_refresh_message,
                         Toast.LENGTH_SHORT).show();
 
@@ -201,20 +196,10 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private class AddToDatabaseTask extends AsyncTask<Item, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Item... items) {
-            List<Item> toAdd = Arrays.asList(items);
-            databaseHandler.addItems(toAdd);
-            return null;
-        }
-    }
-
-    public void createItem(View v){
+    public void createItem(View v) {
         Intent intent = new Intent(this, CreateItemActivity.class);
-        intent.putExtra(RECIPIENT_EXTRA_ID,correspondent.getID());
-        intent.putExtra(RECIPIENT_EXTRA_NAME,correspondent.getName());
+        intent.putExtra(RECIPIENT_EXTRA_ID, correspondent.getID());
+        intent.putExtra(RECIPIENT_EXTRA_NAME, correspondent.getName());
         startActivity(intent);
     }
 }

@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -14,6 +15,8 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -22,13 +25,14 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.item.CreateItemActivity;
 import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.map.MapFragment;
-
+import ch.epfl.sweng.calamar.push.RegistrationIntentService;
 /**
  * Created by Guillaume on 12.11.2015.
  */
@@ -38,15 +42,47 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
+    //TODO Test if i can use the location architecture to check the google play services
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+
     // LogCat tag
     private static final String TAG = MainActivity.class.getSimpleName();
 
     // activity request codes
-    private static final int ERROR_RESOLUTION_REQUEST = 1001;
+    private static final int ERROR_CLIENT_REQUEST = 1001;
+    private static final int ERROR_REGISTRATION_REQUEST = 2001;
 
     // google api related stuff
     private boolean resolvingError;
 
+    private CalamarApplication app;
+
+
+    //TODO check activity lifecycle and pertinent action to make when entering new states
+    // regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
+    // etc...
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        // noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -64,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public void onConnectionSuspended(int arg0) {
-        CalamarApplication.getInstance().getGoogleApiClient().connect();
+        app.getGoogleApiClient().connect();
     }
 
     @Override
@@ -78,10 +114,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     + connectionResult.getErrorCode());
 
             try {
-                connectionResult.startResolutionForResult(this, ERROR_RESOLUTION_REQUEST);
+                connectionResult.startResolutionForResult(this, ERROR_CLIENT_REQUEST);
             } catch (IntentSender.SendIntentException e) {
                 // There was an error with the resolution intent. Try again.
-                CalamarApplication.getInstance().getGoogleApiClient().connect();
+                app.getGoogleApiClient().connect();
             }
         } else {
             resolvingError = true;
@@ -89,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     + connectionResult.getErrorCode());
 
             // show error dialog
-            showGoogleApiErrorDialog(connectionResult.getErrorCode());
+            showGoogleApiErrorDialog(connectionResult.getErrorCode(), ERROR_CLIENT_REQUEST);
         }
     }
     // *********************************************************************************************
@@ -97,13 +133,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case ERROR_RESOLUTION_REQUEST:
+            case ERROR_REGISTRATION_REQUEST :
+                switch (resultCode) {
+                    case Activity.RESULT_OK:
+                        //launch intent again
+                        Intent intent = new Intent(this, RegistrationIntentService.class);
+                        startService(intent);
+                        break;
+                    default:
+                        Log.e(MainActivity.TAG, "registration can't connect");
+                        finish();
+                }
+            case ERROR_CLIENT_REQUEST:
                 resolvingError = false;
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         // Make sure the app is not already connected or attempting to connect
                         GoogleApiClient googleApiClient =
-                                CalamarApplication.getInstance().getGoogleApiClient();
+                                app.getGoogleApiClient();
                         if (!googleApiClient.isConnecting() && !googleApiClient.isConnected()) {
                             googleApiClient.connect();
                         }
@@ -158,6 +205,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        app = CalamarApplication.getInstance();
+
         // Layout
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -170,21 +219,35 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         tabLayout.setupWithViewPager(viewPager);
 
         buildGoogleApiClient();  // will connect in onResume(), errors are handled in onConnectionFailed()
+
+        if (checkPlayServices()) {
+            // Start IntentService to register this application with GCM.
+            Intent intent = new Intent(this, RegistrationIntentService.class);
+            startService(intent);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         if (!resolvingError) {
-            CalamarApplication.getInstance().getGoogleApiClient().connect();
+            app.getGoogleApiClient().connect();
             // if errors, such as no google play apk, onConnectionFailed will handle the errors
         }
     }
 
     @Override
     protected void onStop() {
-        CalamarApplication.getInstance().getGoogleApiClient().disconnect();
+        // TODO when disconnect ??? client needs to be connected in CreateItemActivity
+        //app.getGoogleApiClient().disconnect();
         super.onStop();
+        app.getDatabaseHandler().closeDatabase();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        new applyPendingDatabaseOperationsTask();
     }
     // *********************************************************************************************
 
@@ -197,11 +260,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      *
      * @param errorCode , the error code returned by onConnectionFailed
      */
-    private void showGoogleApiErrorDialog(int errorCode) {
+    private void showGoogleApiErrorDialog(int errorCode,int errorType) {
         // retrieve dialog for errorCode, if user cancel finish activity,
         // we cannot do much more...google play apk must be present
         Dialog errorDialog = GoogleApiAvailability.getInstance().getErrorDialog(this, errorCode,
-                MainActivity.ERROR_RESOLUTION_REQUEST, new DialogInterface.OnCancelListener() {
+                 errorType, new DialogInterface.OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
                         Log.e(MainActivity.TAG, "error dialog cancelled");
@@ -227,12 +290,34 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * FusedLocationProviderAPI</a>
      */
     private synchronized void buildGoogleApiClient() {
-        CalamarApplication.getInstance().setGoogleApiClient(
-                new GoogleApiClient.Builder(CalamarApplication.getInstance())
+        app.setGoogleApiClient(
+                new GoogleApiClient.Builder(app)
                         .addApi(LocationServices.API)
                         .addConnectionCallbacks(this)
                         .addOnConnectionFailedListener(this).build());
         // TODO check issue #59
+    }
+
+    /**
+     * Verifies google play services availability on the device
+     */
+    //keeped just in case.., not used now, I go the other way by connecting and then eventually
+    //handle errors in onConnectionFailed
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailabilitySingleton = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(app);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailabilitySingleton.isUserResolvableError(resultCode)) {
+                showGoogleApiErrorDialog(resultCode,ERROR_REGISTRATION_REQUEST);
+            } else {
+                Log.e(TAG, "This device is not supported. play services unavailable " +
+                        "and automatic error resolution failed. error code : " + resultCode);
+                //show dialog using geterrordialog on singleton
+                finish();
+            }
+            return false;
+        }
+        return true;
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
@@ -264,8 +349,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+
     public void createItem(View v) {
         Intent intent = new Intent(this, CreateItemActivity.class);
         startActivity(intent);
+    }
+
+    private class applyPendingDatabaseOperationsTask extends AsyncTask<Void, Void, Void> {
+
+
+        @Override
+        protected Void doInBackground(Void... v) {
+            app.getDatabaseHandler().applyPendingOperations();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void v) {
+            app.setLastUsersRefresh(new Date());
+            app.setLastItemsRefresh(new Date());
+        }
     }
 }

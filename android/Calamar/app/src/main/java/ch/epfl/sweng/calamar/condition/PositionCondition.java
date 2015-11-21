@@ -34,6 +34,10 @@ public class PositionCondition extends Condition {
         return loc;
     }
 
+    public Location getLocation(){
+        return location;
+    }
+
     /**
      * construct a PositionCondition from a location and a radius
      * @param location
@@ -47,6 +51,7 @@ public class PositionCondition extends Condition {
 
             @Override
             public void update(Location newLocation) {
+
                 setValue(newLocation.distanceTo(This.location) < This.radius);
             }
         });
