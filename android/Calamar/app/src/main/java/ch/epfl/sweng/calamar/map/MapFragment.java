@@ -143,7 +143,15 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         getView().findViewById(R.id.addNewItemButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addItem();
+                addItem(); // TODO to delete when add item activity available
+            }
+        });
+
+        // REFRESH BUTTON
+        getView().findViewById(R.id.refreshButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addAllItemsToMap();
             }
         });
 
@@ -156,6 +164,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     public void onMapReady(GoogleMap map) {
         this.map = map;
         map.setMyLocationEnabled(true);
+        
         addAllItemsToMap();
     }
 
@@ -193,7 +202,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         l.setLatitude(gpsProvider.getLastLocation().getLatitude());
         l.setLongitude(gpsProvider.getLastLocation().getLongitude());
 
-        addItemToMap(new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l, 5), "Password : calamar42"));
+        Item item = new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l, 5), "Password : calamar42");
+        new SendItemTask(item).execute();
     }
 
     private void addAllItemsToMap() {
@@ -284,7 +294,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                             MAP_RADIUS);//TODO radius
 
                 } catch (DatabaseClientException e) {
-                    e.printStackTrace();
                     Log.e(MapFragment.TAG, e.getMessage());
                     return null;
                 }
@@ -308,5 +317,38 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             }
         }
 
+    }
+
+    /**
+     * Async task for sending an Item.
+     * TODO, to remove when add item activity...
+     */
+    private class SendItemTask extends AsyncTask<Void, Void, Item> {
+
+        private final Item item;
+
+        public SendItemTask(Item item) {
+            this.item = item;
+        }
+
+        @Override
+        protected Item doInBackground(Void... v) {
+            try {
+                return DatabaseClientLocator.getDatabaseClient().send(item);
+            } catch (DatabaseClientException e) {
+                Log.e(MapFragment.TAG, e.getMessage());
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Item item) {
+            if (item != null) {
+                // nothing, only to test refresh
+            } else {
+                Toast.makeText(getActivity(), getString(R.string.item_send_error),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

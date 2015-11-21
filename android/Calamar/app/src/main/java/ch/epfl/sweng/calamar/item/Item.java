@@ -109,6 +109,7 @@ public abstract class Item {
         json.accumulate("to", to.toJSON());
         json.accumulate("date", date);
         json.accumulate("condition", condition.toJSON());
+        //TODO add condition metadata
     }
 
     /**

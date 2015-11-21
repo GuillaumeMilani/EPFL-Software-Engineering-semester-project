@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -31,6 +32,7 @@ import ch.epfl.sweng.calamar.recipient.User;
  * This activity manages the chat between two users (or in a group)
  */
 public class ChatActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final String TAG = ChatActivity.class.getSimpleName();
     private EditText editText;
     private Button sendButton;
     private Button refreshButton;
@@ -128,7 +130,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             try {
                 return DatabaseClientLocator.getDatabaseClient().send(item);
             } catch (DatabaseClientException e) {
-                e.printStackTrace();
+                Log.e(ChatActivity.TAG, e.getMessage());
                 return null;
             }
         }
@@ -168,7 +170,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 try {
                     return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, new Date(app.getLastItemsRefresh()));
                 } catch (DatabaseClientException e) {
-                    e.printStackTrace();
+                    Log.e(ChatActivity.TAG, e.getMessage());
                     return null;
                 }
             }

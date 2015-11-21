@@ -209,16 +209,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         buildGoogleApiClient();  // will connect in onResume(), errors are handled in onConnectionFailed()
 
-        // TODO maybe whole process useless, register in onConnected
+        // TODO in fact whole process useless, let client check availability and resolve error.
+        // register in onConnected callback when we are sure play services are available.
+        // now can even be problematic, multiple "simultaneous" error dialog for same problem
         if (checkPlayServices()) {
             gcmRegisterApplication();
         }
-    }
-
-    private void gcmRegisterApplication() {
-        // Start IntentService to register this application with GCM.
-        Intent intent = new Intent(this, RegistrationIntentService.class);
-        startService(intent);
     }
 
     @Override
@@ -283,6 +279,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
         // show dialog
         errorDialog.show();
+    }
+
+    private void gcmRegisterApplication() {
+        // Start IntentService to register this application with GCM.
+        Intent intent = new Intent(this, RegistrationIntentService.class);
+        startService(intent);
     }
 
     /**
