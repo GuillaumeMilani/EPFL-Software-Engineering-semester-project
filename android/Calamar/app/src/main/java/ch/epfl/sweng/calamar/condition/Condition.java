@@ -373,7 +373,7 @@ public abstract class Condition {
             {
                 FrameLayout view = (FrameLayout)(super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
-                LL.setOrientation(LinearLayout.HORIZONTAL);
+                LL.setOrientation(LinearLayout.VERTICAL);
                 TextView tv = new TextView(context);
                 tv.setText(context.getResources().getString(R.string.condition_not));
                 LL.addView(tv, 0);
