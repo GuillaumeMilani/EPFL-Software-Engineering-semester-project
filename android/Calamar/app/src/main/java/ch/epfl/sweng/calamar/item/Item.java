@@ -27,8 +27,8 @@ public abstract class Item {
     private final Recipient to;
     private final long date; //posix date
     private final Condition condition;
-
-    public enum Type {SIMPLETEXTITEM}
+    
+    public enum Type {SIMPLETEXTITEM, IMAGEITEM}
 
     private Set<Item.Observer> observers = new HashSet<>();
 
@@ -136,6 +136,9 @@ public abstract class Item {
         switch (Type.valueOf(type)) {
             case SIMPLETEXTITEM:
                 item = SimpleTextItem.fromJSON(json);
+                break;
+            case IMAGEITEM:
+                item = ImageItem.fromJSON(json);
                 break;
             default:
                 throw new IllegalArgumentException("Unexpected Item type (" + type + ")");

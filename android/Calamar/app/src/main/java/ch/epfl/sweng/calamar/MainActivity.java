@@ -30,6 +30,7 @@ import java.util.List;
 import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.map.MapFragment;
+import ch.epfl.sweng.calamar.push.RegistrationIntentService;
 
 /**
  * Created by Guillaume on 12.11.2015.
@@ -44,9 +45,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final String TAG = MainActivity.class.getSimpleName();
 
     // activity request codes
-    private static final int ERROR_RESOLUTION_REQUEST = 1001;
-    //TODO Test if i can use the location architecture to check the google play services
-    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    private static final int ERROR_CLIENT_REQUEST = 1001;
+    private static final int ERROR_REGISTRATION_REQUEST = 2001;
 
     // google api related stuff
     private boolean resolvingError;
@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     + connectionResult.getErrorCode());
 
             try {
-                connectionResult.startResolutionForResult(this, ERROR_RESOLUTION_REQUEST);
+                connectionResult.startResolutionForResult(this, ERROR_CLIENT_REQUEST);
             } catch (IntentSender.SendIntentException e) {
                 // There was an error with the resolution intent. Try again.
                 app.getGoogleApiClient().connect();
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     + connectionResult.getErrorCode());
 
             // show error dialog
-            showGoogleApiErrorDialog(connectionResult.getErrorCode());
+            showGoogleApiErrorDialog(connectionResult.getErrorCode(), ERROR_CLIENT_REQUEST);
         }
     }
     // *********************************************************************************************
@@ -129,7 +129,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case ERROR_RESOLUTION_REQUEST:
+            case ERROR_REGISTRATION_REQUEST :
+                switch (resultCode) {
+                    case Activity.RESULT_OK:
+                        //launch intent again
+                        Intent intent = new Intent(this, RegistrationIntentService.class);
+                        startService(intent);
+                        break;
+                    default:
+                        Log.e(MainActivity.TAG, "registration can't connect");
+                        finish();
+                }
+            case ERROR_CLIENT_REQUEST:
                 resolvingError = false;
                 switch (resultCode) {
                     case Activity.RESULT_OK:
@@ -204,6 +215,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         tabLayout.setupWithViewPager(viewPager);
 
         buildGoogleApiClient();  // will connect in onResume(), errors are handled in onConnectionFailed()
+
+        if (checkPlayServices()) {
+            // Start IntentService to register this application with GCM.
+            Intent intent = new Intent(this, RegistrationIntentService.class);
+            startService(intent);
+        }
     }
 
     @Override
@@ -238,11 +255,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      *
      * @param errorCode , the error code returned by onConnectionFailed
      */
-    private void showGoogleApiErrorDialog(int errorCode) {
+    private void showGoogleApiErrorDialog(int errorCode, int errorType) {
         // retrieve dialog for errorCode, if user cancel, finish activity,
+
         // we cannot do much more...google play apk must be present
         Dialog errorDialog = GoogleApiAvailability.getInstance().getErrorDialog(this, errorCode,
-                MainActivity.ERROR_RESOLUTION_REQUEST, new DialogInterface.OnCancelListener() {
+                 errorType, new DialogInterface.OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
                         Log.e(MainActivity.TAG, "error dialog cancelled");
@@ -276,6 +294,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // TODO check issue #59
     }
 
+    /**
+     * Verifies google play services availability on the device
+     */
+    //keeped just in case.., not used now, I go the other way by connecting and then eventually
+    //handle errors in onConnectionFailed
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailabilitySingleton = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(app);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailabilitySingleton.isUserResolvableError(resultCode)) {
+                showGoogleApiErrorDialog(resultCode,ERROR_REGISTRATION_REQUEST);
+            } else {
+                Log.e(TAG, "This device is not supported. play services unavailable " +
+                        "and automatic error resolution failed. error code : " + resultCode);
+                //show dialog using geterrordialog on singleton
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
         private final List<String> mFragmentTitleList = new ArrayList<>();
@@ -304,29 +344,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             return mFragmentTitleList.get(position);
         }
 
-        //    /**
-//     * Verifies google play services availability on the device
-//     */
-//    //keeped just in case.., not used now, I go the other way by connecting and then eventually
-//    //handle errors in onConnectionFailed
-//    private boolean checkPlayServices() {
-//        GoogleApiAvailability apiAvailabilitySingleton = GoogleApiAvailability.getInstance();
-//        int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(app);
-//        if (resultCode != ConnectionResult.SUCCESS) {
-//            if (apiAvailabilitySingleton.isUserResolvableError(resultCode)) {
-//                apiAvailabilitySingleton.getErrorDialog(this, resultCode,
-//                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
-//
-//            } else {
-//                Log.e(TAG, "This device is not supported. play services unavailable " +
-//                        "and automatic error resolution failed. error code : " + resultCode);
-//                //show dialog using geterrordialog on singleton
-//                finish();
-//            }
-//            return false;
-//        }
-//        return true;
-//    }
 
     }
 
