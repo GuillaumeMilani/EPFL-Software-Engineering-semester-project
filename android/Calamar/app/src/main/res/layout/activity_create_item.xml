@@ -17,7 +17,7 @@
         android:paddingEnd="0dp"
         android:paddingLeft="12dp"
         android:paddingRight="0dp"
-        android:paddingStart="12dp"
+        android:padding="12dp"
         android:paddingTop="12dp"
         android:singleLine="false"
         android:text="@string/create_new_item_title"
