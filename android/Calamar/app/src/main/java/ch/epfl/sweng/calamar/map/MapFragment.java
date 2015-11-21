@@ -55,6 +55,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
 
     private Map<Item,Marker> markers;
+    private List<Item> items;
+
 
     private GoogleMap map; // Might be null if Google Play services APK is not available.
     // however google play services are checked at app startup...and
@@ -66,8 +68,10 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     private final GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
         @Override
         public void update(Location newLocation) {
-            assert map != null :
-                    "map should be initialized and ready before accessed by location updater";
+            if(null == map) {
+                throw new IllegalStateException(
+                        "map should be initialized and ready before accessed by location updater");
+            }
             double latitude = newLocation.getLatitude();
             double longitude = newLocation.getLongitude();
             LatLng myLoc = new LatLng(latitude, longitude);
@@ -102,7 +106,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             }
         }
     };
-
 
 
     public MapFragment() {
@@ -148,8 +151,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     public void onMapReady(GoogleMap map) {
         this.map = map;
         map.setMyLocationEnabled(true);
-        setUpGPS(); // register to the GPSProvider location updates
         addAllItemsToMap();
+        setUpGPS(); // register to the GPSProvider location updates
     }
 
     @Override
@@ -174,7 +177,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         //TODO : add a real item
         User bob = new User(1, "bob");
         User alice = new User(2, "alice");
-        Location l = new Location("Calamar");
+        Location l = new Location(TAG);
         //TODO : Be sure that the location is correct
         gpsProvider.getLastLocation().getLatitude();
         l.setLatitude(gpsProvider.getLastLocation().getLatitude());
@@ -184,7 +187,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     }
 
     private void addAllItemsToMap() {
-        if(null != map) {
+        if (null != map) {
             LatLng latlng = map.getCameraPosition().target;
             Location loc = new Location(TAG);
             loc.setLatitude(latlng.latitude);
