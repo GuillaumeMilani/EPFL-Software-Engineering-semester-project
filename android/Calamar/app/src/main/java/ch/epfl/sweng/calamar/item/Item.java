@@ -69,8 +69,8 @@ public abstract class Item {
     {
         LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
-        view.addView(getItemView(context));
-        condition.getView(context);
+        view.addView(getItemView(context), 0);
+        view.addView(condition.getView(context), 1);
         return view;
     }
 
