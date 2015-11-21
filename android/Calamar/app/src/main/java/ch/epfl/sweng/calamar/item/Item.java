@@ -29,9 +29,8 @@ public abstract class Item {
     private final Condition condition;
 
     public enum Type {SIMPLETEXTITEM}
-    //TODO date d'expiration ?
 
-    private Set<Observer> observers = new HashSet<>();
+    private Set<Item.Observer> observers = new HashSet<>();
 
 
     private final Condition.Observer conditionObserver = new Condition.Observer() {
@@ -51,7 +50,7 @@ public abstract class Item {
         this.from = from; //User is immutable
         this.to = to;     //Recipient is immutable
         this.date = date;
-        this.condition = condition;
+        this.condition = condition; //TODO Condition is not immutable...
 
         condition.addObserver(conditionObserver);
     }

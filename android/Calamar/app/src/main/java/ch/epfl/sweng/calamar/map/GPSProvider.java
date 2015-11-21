@@ -94,6 +94,8 @@ public final class GPSProvider implements LocationListener
      */
     public Location getLastLocation() {
         //TODO mybe check lastupdatetime and return null if too old
+        //use get last location of underlying fusedlocation provider + make
+        // al checks in gps demo
         return lastLocation;
     }
 

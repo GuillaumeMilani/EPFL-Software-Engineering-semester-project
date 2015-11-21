@@ -40,14 +40,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
-    //TODO Test if i can use the location architecture to check the google play services
-    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-
     // LogCat tag
     private static final String TAG = MainActivity.class.getSimpleName();
 
     // activity request codes
     private static final int ERROR_RESOLUTION_REQUEST = 1001;
+    //TODO Test if i can use the location architecture to check the google play services
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
     // google api related stuff
     private boolean resolvingError;
@@ -240,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * @param errorCode , the error code returned by onConnectionFailed
      */
     private void showGoogleApiErrorDialog(int errorCode) {
-        // retrieve dialog for errorCode, if user cancel finish activity,
+        // retrieve dialog for errorCode, if user cancel, finish activity,
         // we cannot do much more...google play apk must be present
         Dialog errorDialog = GoogleApiAvailability.getInstance().getErrorDialog(this, errorCode,
                 MainActivity.ERROR_RESOLUTION_REQUEST, new DialogInterface.OnCancelListener() {

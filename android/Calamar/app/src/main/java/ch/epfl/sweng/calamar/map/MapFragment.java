@@ -47,7 +47,7 @@ import static ch.epfl.sweng.calamar.item.Item.Type.SIMPLETEXTITEM;
 public class MapFragment extends android.support.v4.app.Fragment implements OnMapReadyCallback {
 
     public static final String TAG = MapFragment.class.getSimpleName();
-    private static final long MAP_RADIUS = 25;
+    private static final long MAP_RADIUS = 1000;
 
     //TODO : add two buttons begin checks stop checks
     // that will : checklocation settings + startlocation updates
@@ -82,7 +82,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
 
 
-    // The condition get updated when the location change and if the value(true/false) of the
+    // The condition is updated when the location change and if the value(true/false) of the
     // condition change -> The item is updated, if all are true
     // -> we get updated and update the value of the marker on the map.
     private final Item.Observer itemObserver = new Item.Observer() {
@@ -128,6 +128,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     {
         super.onCreateView(inflater, container, savedInstanceState);
         markers = new HashMap<>();
+        items = new ArrayList<>();
 
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_map, container, false);
@@ -137,6 +138,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     public void onResume() {
         super.onResume();
 
+        // ADD ITEM BUTTON
         getView().findViewById(R.id.addNewItemButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -145,24 +147,26 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         });
 
         setUpMapIfNeeded(); // if needed, onMapReady is called with the map
+        setUpGPS(); // register to the GPSProvider location updates
     }
 
+    // map setup here :
     @Override
     public void onMapReady(GoogleMap map) {
         this.map = map;
         map.setMyLocationEnabled(true);
         addAllItemsToMap();
-        setUpGPS(); // register to the GPSProvider location updates
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        gpsProvider.stopLocationUpdates();
+
         //TODO
         // think about when should we start stop locationUpdates
         // on user demand ? via buttons, adds interaction and "user control"
         // or on create / stop ??
-        // gpsProvider.stopLocationUpdates();
     }
     // *********************************************************************************************
 
@@ -197,7 +201,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     }
 
     /**
-     * Add all item to the googleMap, and fill the map markers
+     * Add an item to the googleMap, and fill the map markers
      */
     private void addItemToMap(Item i) {
         //TODO : WRONG, we have to change this once the issue #56 is solved.
@@ -243,11 +247,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         }
     }
 
-    /**
-     * This is where we can add markers or lines, add listeners or move the camera.
-     * <p>
-     * This should only be called once and when we are sure that {@link #map} is not null.
-     */
     private void setUpGPS() {
         gpsProvider = GPSProvider.getInstance();
         gpsProvider.addObserver(gpsObserver);
@@ -255,7 +254,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     }
 
     /**
-     * Async task for refreshing / getting new messages.
+     * Async task for refreshing / getting new localized items.
      */
     private class RefreshTask extends AsyncTask<Void, Void, List<Item>> {
 
@@ -277,6 +276,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                             //I think it can make sense ..
                             nearLocation,
                             MAP_RADIUS);//TODO radius
+
                 } catch (DatabaseClientException e) {
                     e.printStackTrace();
                     return null;
@@ -287,7 +287,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         protected void onPostExecute(List<Item> items) {
             if (items != null) {
 
-                //TODO local db ?
                 for(Item item : items){
                     addItemToMap(item);
                 }
