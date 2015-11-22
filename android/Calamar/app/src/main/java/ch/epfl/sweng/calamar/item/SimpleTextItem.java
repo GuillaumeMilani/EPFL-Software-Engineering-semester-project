@@ -32,7 +32,7 @@ public final class SimpleTextItem extends Item {
      * @param date      the creation/posting date of the Item
      * @param message   the content (text message)
      * @param condition the condition
-     * @see Item#Item(int, User, Recipient, long)
+     * @see Item#Item(int, User, Recipient, long, Condition)
      */
 
     public SimpleTextItem(int ID, User from, Recipient to, Date date, Condition condition, String message) {
@@ -57,6 +57,13 @@ public final class SimpleTextItem extends Item {
     @Override
     public Type getType() {
         return ITEM_TYPE;
+    }
+
+    @Override
+    protected View getItemView(Context context) {
+        TextView res = new TextView(context);
+        res.setText(message);
+        return res;
     }
 
     /**
@@ -110,6 +117,12 @@ public final class SimpleTextItem extends Item {
         return super.equals(that) && that.message.equals(message);
     }
 
+
+    /**
+     * Deprecated
+     * @param context
+     * @return
+     */
     public View getCompleteView(Context context){
 
         LinearLayout layout = (LinearLayout)super.getCompleteView(context);

@@ -9,6 +9,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Marker;
+import android.content.Context;
+import android.view.View;
+import android.widget.LinearLayout;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,7 +41,7 @@ public abstract class Item {
     private final long date; //posix date
     private final Condition condition;
 
-    public enum Type {SIMPLETEXTITEM}
+    public enum Type {SIMPLETEXTITEM, IMAGEITEM}
     //TODO date d'expiration ?
 
     private Set<Observer> observers = new HashSet<>();
@@ -72,6 +75,37 @@ public abstract class Item {
 
     public abstract Type getType();
 
+    protected abstract View getItemView(Context context);
+
+    public View getView(Context context)
+    {
+        LinearLayout view = new LinearLayout(context);
+        view.setOrientation(LinearLayout.VERTICAL);
+        view.addView(getItemView(context), 0);
+        view.addView(condition.getView(context), 1);
+        return view;
+    }
+
+
+    /**
+     * Deprecated
+     *
+     * @param context
+     * @return
+     */
+    public View getCompleteView(Context context){
+
+        LinearLayout layout = new LinearLayout(context);
+        layout.setOrientation(LinearLayout.HORIZONTAL);
+
+        //TODO : Use getView of conditions.
+        TextView condition = new TextView(context);
+        condition.setText(context.getString(R.string.item_details_conditions));
+        layout.addView(condition);
+
+        return layout;
+    }
+
     /**
      * @return the 'condition' field of the Item
      */
@@ -102,19 +136,6 @@ public abstract class Item {
 
     public int getID() {
         return ID;
-    }
-
-    public View getCompleteView(Context context){
-
-        LinearLayout layout = new LinearLayout(context);
-        layout.setOrientation(LinearLayout.HORIZONTAL);
-
-        //TODO : Use getView of conditions.
-        TextView condition = new TextView(context);
-        condition.setText(context.getString(R.string.item_details_conditions));
-        layout.addView(condition);
-
-        return layout;
     }
 
     /**
@@ -160,6 +181,9 @@ public abstract class Item {
         switch (Type.valueOf(type)) {
             case SIMPLETEXTITEM:
                 item = SimpleTextItem.fromJSON(json);
+                break;
+            case IMAGEITEM:
+                item = ImageItem.fromJSON(json);
                 break;
             default:
                 throw new IllegalArgumentException("Unexpected Item type (" + type + ")");
@@ -215,8 +239,13 @@ public abstract class Item {
             from = User.fromJSON(o.getJSONObject("from"));
             to = Recipient.fromJSON(o.getJSONObject("to"));
             date = o.getLong("date");
-            condition = Condition.trueCondition();
-            //condition = Condition.fromJSON(o.getJSONObject("condition"));
+            //TODO to delete when server ready to send true condition when there is no condition
+            // and replace by just fromJSON etc..
+            if(o.has("condition")) {
+                condition = Condition.fromJSON(o.getJSONObject("condition"));
+            } else {
+                condition = Condition.trueCondition();
+            }
             return this;
         }
     }
