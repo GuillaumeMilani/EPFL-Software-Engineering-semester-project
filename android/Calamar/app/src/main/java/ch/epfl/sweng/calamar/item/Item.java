@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar.item;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -77,30 +78,67 @@ public abstract class Item {
 
     protected abstract View getItemView(Context context);
 
-    public View getView(Context context)
-    {
-        LinearLayout view = (LinearLayout)getPreView(context);
 
+    /**
+     * Get the complete view of the item. ( With condition(s) )
+     *
+     * @param context
+     * @return the view of the item.
+     */
+    public View getView(final Context context)
+    {
+        final LinearLayout view = (LinearLayout)getPreView(context);
+
+        setConditionView(view,context);
+
+        //When the condition is okay, we update the item description
+        final Condition.Observer previewConditionObserver = new Condition.Observer() {
+            @Override
+            public void update(Condition condition) {
+                view.removeAllViews();
+                setItemView(view, context);
+                setConditionView(view,context);
+            }
+        };
+
+        condition.addObserver(previewConditionObserver);
+        //TODO : When to remove this observer ?
+        
+        return view;
+    }
+
+    /**
+     * Get a simple pre view of the item
+     *
+     * @param context
+     * @return the preview of the item
+     */
+    public View getPreView(final Context context){
+        final LinearLayout view = new LinearLayout(context);
+        view.setOrientation(LinearLayout.VERTICAL);
+        setItemView(view, context);
+
+        return view;
+    }
+
+    private void setItemView(View v, Context context){
+        LinearLayout preview = (LinearLayout)v;
+        if(condition.getValue()){
+            preview.addView(getItemView(context), 0);
+        } else {
+            TextView lockMessage = new TextView(context);
+            lockMessage.setText(R.string.item_is_locked_getview);
+            preview.addView(lockMessage, 0);
+        }
+    }
+
+    private void setConditionView(View v, Context context){
+        LinearLayout view = (LinearLayout)v;
         TextView titleCondition = new TextView(context);
         titleCondition.setText(R.string.item_getView_condition_title);
         titleCondition.setTextSize(25);
         view.addView(titleCondition,1);
         view.addView(condition.getView(context), 2);
-        return view;
-    }
-
-    public View getPreView(Context context){
-        LinearLayout view = new LinearLayout(context);
-        view.setOrientation(LinearLayout.VERTICAL);
-        //TODO : Update the message if the condition switch to true ?
-        if(condition.getValue()){
-            view.addView(getItemView(context), 0);
-        } else {
-            TextView lockMessage = new TextView(context);
-            lockMessage.setText(R.string.item_is_locked_getview);
-            view.addView(lockMessage, 0);
-        }
-        return view;
     }
 
     /**
