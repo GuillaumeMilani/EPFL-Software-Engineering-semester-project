@@ -1,7 +1,8 @@
 package ch.epfl.sweng.calamar.item;
 
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Marker;
+import android.content.Context;
+import android.view.View;
+import android.widget.LinearLayout;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -61,6 +62,17 @@ public abstract class Item {
     }
 
     public abstract Type getType();
+
+    protected abstract View getItemView(Context context);
+
+    public View getView(Context context)
+    {
+        LinearLayout view = new LinearLayout(context);
+        view.setOrientation(LinearLayout.VERTICAL);
+        view.addView(getItemView(context), 0);
+        view.addView(condition.getView(context), 1);
+        return view;
+    }
 
     /**
      * @return the 'condition' field of the Item

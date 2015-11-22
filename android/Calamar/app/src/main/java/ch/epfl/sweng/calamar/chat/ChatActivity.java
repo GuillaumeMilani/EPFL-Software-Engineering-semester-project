@@ -91,7 +91,7 @@ public class ChatActivity extends AppCompatActivity {
         boolean offline = true;
         refresh(offline);
     }
-
+    
     /**
      * Gets all messages and display them
      */
