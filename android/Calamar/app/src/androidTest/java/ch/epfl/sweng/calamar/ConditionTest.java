@@ -1,12 +1,18 @@
 package ch.epfl.sweng.calamar;
 
+import android.location.Location;
+import android.test.ActivityInstrumentationTestCase2;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import ch.epfl.sweng.calamar.chat.ChatActivity;
 import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.condition.PositionCondition;
+import ch.epfl.sweng.calamar.map.GPSProvider;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -15,7 +21,11 @@ import static junit.framework.Assert.assertEquals;
  */
 
 @RunWith(JUnit4.class)
-public class ConditionTest {
+public class ConditionTest extends ActivityInstrumentationTestCase2<ChatActivity> {
+
+    ConditionTest() {
+        super(ChatActivity.class);
+    }
 
     /**
      * helps defining observers that test Condition
@@ -136,5 +146,25 @@ public class ConditionTest {
         o.assertAll(false, 1);
         a.set(false);
         o.assertAll(true, 2);
+    }
+
+    public class MockPositionCondition extends PositionCondition {
+        public MockPositionCondition(double latitude, double longitude, double radius)
+        {
+            super(latitude, longitude, radius);
+            MockGPSProvider.getInstance().addObserver(new GPSProvider.Observer() {
+
+                @Override
+                public void update(Location newLocation) {
+
+                    setValue(newLocation.distanceTo(getLocation()) < getRadius());
+                }
+            });
+        }
+    }
+
+    @Test
+    public void testPositionCondition() {
+        
     }
 }
