@@ -5,6 +5,7 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
@@ -19,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.MainActivity;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
@@ -31,6 +33,7 @@ public class CreateItemActivity extends AppCompatActivity {
 
     private static final String RECIPIENT_EXTRA_ID = "ID";
     private static final String RECIPIENT_EXTRA_NAME = "Name";
+    private static final String TAG = CreateItemActivity.class.getSimpleName();
     private Spinner contactsSpinner;
     private CheckBox privateCheck;
     private CheckBox locationCheck;
@@ -46,6 +49,7 @@ public class CreateItemActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_item);
+
         Intent intent = getIntent();
         privateCheck = (CheckBox) findViewById(R.id.privateCheck);
         locationCheck = (CheckBox) findViewById(R.id.locationCheck);
@@ -79,6 +83,10 @@ public class CreateItemActivity extends AppCompatActivity {
     }
 
     public void locationChecked(View v) {
+        // TODO timing exception, client may not be connected,
+        // similar problem can arise at multiple place, we need
+        // to design kind of protocol between the callbacks, to wait/disable UI/ re iterate action
+        // ...etc ...or any other clever idea....
         GPSProvider.getInstance().startLocationUpdates(this);
         currentLocation = GPSProvider.getInstance().getLastLocation();
         GPSProvider.getInstance().stopLocationUpdates();
@@ -157,7 +165,7 @@ public class CreateItemActivity extends AppCompatActivity {
             try {
                 return DatabaseClientLocator.getDatabaseClient().send(item);
             } catch (DatabaseClientException e) {
-                e.printStackTrace();
+                Log.e(CreateItemActivity.TAG, e.getMessage());
                 return null;
             }
         }

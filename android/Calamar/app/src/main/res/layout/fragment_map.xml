@@ -12,11 +12,12 @@
         tools:context=".MapsActivity"
         tools:layout="@layout/abc_screen_simple" />
 
+
     <Button
+        android:id="@+id/addNewItemButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/fragment_add_item_button"
-        android:id="@+id/addNewItemButton"
-        android:layout_gravity="end|top" />
+        android:layout_gravity="end|top"
+        android:text="@string/fragment_add_item_button" />
 
 </FrameLayout>

@@ -239,7 +239,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     protected void onStop() {
-        app.getGoogleApiClient().disconnect();
+        // TODO when disconnect ??? client needs to be connected in CreateItemActivity
+        //app.getGoogleApiClient().disconnect();
         super.onStop();
         app.getDatabaseHandler().closeDatabase();
     }
@@ -347,8 +348,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         public CharSequence getPageTitle(int position) {
             return mFragmentTitleList.get(position);
         }
+    }
 
 
+    public void createItem(View v) {
+        Intent intent = new Intent(this, CreateItemActivity.class);
+        startActivity(intent);
     }
 
     private class applyPendingDatabaseOperationsTask extends AsyncTask<Void, Void, Void> {
@@ -365,11 +370,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             app.setLastUsersRefresh(new Date());
             app.setLastItemsRefresh(new Date());
         }
-    }
-
-    public void createItem(View v) {
-        Intent intent = new Intent(this, CreateItemActivity.class);
-        startActivity(intent);
     }
 }
 
