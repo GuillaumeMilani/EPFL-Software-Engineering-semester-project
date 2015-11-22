@@ -2,25 +2,31 @@ package ch.epfl.sweng.calamar.item;
 
 import android.content.Intent;
 import android.location.Location;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.ipaulpro.afilechooser.utils.FileUtils;
+
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
-import ch.epfl.sweng.calamar.MainActivity;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
@@ -31,31 +37,33 @@ import ch.epfl.sweng.calamar.recipient.User;
 
 public class CreateItemActivity extends AppCompatActivity {
 
+    private static final int PICK_FILE_REQUEST = 1;
     private static final String RECIPIENT_EXTRA_ID = "ID";
     private static final String RECIPIENT_EXTRA_NAME = "Name";
     private static final String TAG = CreateItemActivity.class.getSimpleName();
+    private Set<String> imageExt;
     private Spinner contactsSpinner;
     private CheckBox privateCheck;
     private CheckBox locationCheck;
     private EditText message;
     private File file;
     private List<Recipient> contacts;
-    private List<String> contactsName;
     private Location currentLocation;
     private RadioGroup timeGroup;
     private CheckBox timeCheck;
+    private Button browseButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_item);
 
-        Intent intent = getIntent();
         privateCheck = (CheckBox) findViewById(R.id.privateCheck);
         locationCheck = (CheckBox) findViewById(R.id.locationCheck);
         message = (EditText) findViewById(R.id.createItemActivity_messageText);
+
         contacts = CalamarApplication.getInstance().getDatabaseHandler().getAllRecipients();
-        contactsName = new ArrayList<>();
+        List<String> contactsName = new ArrayList<>();
         for (Recipient r : contacts) {
             contactsName.add(r.getName());
         }
@@ -63,9 +71,12 @@ public class CreateItemActivity extends AppCompatActivity {
         contactsSpinner.setVisibility(View.INVISIBLE);
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, contactsName);
         contactsSpinner.setAdapter(spinnerAdapter);
+
         timeCheck = (CheckBox) findViewById(R.id.timeCheck);
         timeGroup = (RadioGroup) findViewById(R.id.timeGroup);
         timeGroup.setVisibility(View.INVISIBLE);
+
+        Intent intent = getIntent();
         final int id = intent.getIntExtra(RECIPIENT_EXTRA_ID, -1);
         if (id != -1) {
             final String name = intent.getStringExtra(RECIPIENT_EXTRA_NAME);
@@ -73,13 +84,43 @@ public class CreateItemActivity extends AppCompatActivity {
             privateCheck.setChecked(true);
             contactsSpinner.setSelection(contacts.indexOf(new User(id, name)));
         }
+        browseButton = (Button) findViewById(R.id.selectFileButton);
+
+        final String[] imgExt = {"png", "PNG", "jpg", "jpeg", "JPG", "JPEG", "bmp", "BMP"};
+        imageExt = new HashSet<>(Arrays.asList(imgExt));
         file = null;
         currentLocation = null;
     }
 
     //Button listeners ; Not a big fan of methods having to be public
     public void startFilePicker(View v) {
-        //TODO filepicker activity
+        Intent target = FileUtils.createGetContentIntent();
+        Intent intent = Intent.createChooser(target, getString(R.string.choose_file));
+        startActivityForResult(Intent.createChooser(intent,
+                getString(R.string.select_file_title)), PICK_FILE_REQUEST);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PICK_FILE_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                if (data != null) {
+                    Uri fileUri = data.getData();
+                    String path = FileUtils.getPath(this, fileUri);
+                    if (path != null) {
+                        file = new File(path);
+                        if (file.getName().length() > 15) {
+                            String text = file.getName().substring(0, 15) + "...";
+                            browseButton.setText(text);
+                        } else {
+                            browseButton.setText(file.getName());
+                        }
+                    } else {
+                        Toast.makeText(this, R.string.select_local_file, Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }
     }
 
     public void locationChecked(View v) {
@@ -96,7 +137,7 @@ public class CreateItemActivity extends AppCompatActivity {
         if (privateCheck.isChecked()) {
             contactsSpinner.setVisibility(View.VISIBLE);
         } else {
-            timeGroup.setVisibility(View.INVISIBLE);
+            contactsSpinner.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -109,17 +150,17 @@ public class CreateItemActivity extends AppCompatActivity {
     }
 
     public void createAndSend(View v) {
-        Item.Builder toSendBuilder = null;
+        Item.Builder toSendBuilder;
         if (file != null) {
             String name = file.getName();
             int extIndex = name.lastIndexOf('.');
             String ext = extIndex > 0 ? name.substring(extIndex + 1) : "";
-            if (ext.equals("png") || ext.equals("jpg") || ext.equals("bmp")
-                    || ext.equals("PNG") || ext.equals("JPG") || ext.equals("jpeg")
-                    || ext.equals("JPEG")) {
-                //TODO add image
+            if (imageExt.contains(ext)) {
+                toSendBuilder = new ImageItem.Builder().setImage(file);
+            } else {
+                Toast.makeText(this, R.string.create_item_select_type_file, Toast.LENGTH_SHORT).show();
+                return;
             }
-            //TODO add audio/others
         } else {
             toSendBuilder = new SimpleTextItem.Builder();
         }

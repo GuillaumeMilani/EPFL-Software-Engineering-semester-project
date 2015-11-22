@@ -108,10 +108,13 @@
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.scottyab/secure-preferences-lib/0.1.4/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/net.zetetic/android-database-sqlcipher/3.3.1-2/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/incremental" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/jniLibs" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/manifests" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/pre-dexed" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/res" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/rs" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/symbols" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/transforms" />
       <excludeFolder url="file://$MODULE_DIR$/build/outputs" />
       <excludeFolder url="file://$MODULE_DIR$/build/tmp" />
     </content>
@@ -168,5 +171,6 @@
     <orderEntry type="library" exported="" name="aes-crypto-0.0.4" level="project" />
     <orderEntry type="library" exported="" name="play-services-panorama-8.3.0" level="project" />
     <orderEntry type="library" exported="" name="secure-preferences-lib-0.1.4" level="project" />
+    <orderEntry type="module" module-name="aFileChooser" exported="" />
   </component>
 </module>

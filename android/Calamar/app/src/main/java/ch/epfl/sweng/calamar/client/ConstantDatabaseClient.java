@@ -38,7 +38,7 @@ public class ConstantDatabaseClient implements DatabaseClient {
 
     @Override
     public Item send(Item item) throws DatabaseClientException {
-        return new SimpleTextItem(123,alice,bob,new Date(),"Hello");
+        return item;
     }
 
     @Override
