@@ -34,6 +34,7 @@
     <string name="condition_or">or</string>
     <string name="condition_not">not</string>
     <string name="condition_position">tu dois être ici!</string>
+    <string name="item_getView_condition_title">Condition(s)</string>
 
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

@@ -60,6 +60,12 @@ public abstract class Condition {
 
     public View getView(Context context)
     {
+        FrameLayout layout = new FrameLayout(context);
+        layout.setBackgroundColor(getValue() ? Color.GREEN : Color.RED);
+        return layout;
+
+        //TODO : Try to make it work to see if it's better looking
+        /*
         return new FrameLayout(context) {
             Paint paint = new Paint();
 
@@ -76,9 +82,9 @@ public abstract class Condition {
             public void onDraw(Canvas canvas) {
                 paint.setColor(getValue() ? Color.GREEN : Color.RED);
                 paint.setStrokeWidth(3);
-                canvas.drawRect(0, 0, getWidth(), getHeight(), paint);
+                canvas.drawRect(3, 3, getWidth()-3, getHeight()-3, paint);
             }
-        };
+        };*/
     }
 
 

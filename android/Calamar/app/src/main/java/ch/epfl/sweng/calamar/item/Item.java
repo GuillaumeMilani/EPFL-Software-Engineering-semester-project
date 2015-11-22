@@ -82,7 +82,11 @@ public abstract class Item {
         LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
         view.addView(getItemView(context), 0);
-        view.addView(condition.getView(context), 1);
+        TextView titleCondition = new TextView(context);
+        titleCondition.setText(R.string.item_getView_condition_title);
+        titleCondition.setTextSize(25);
+        view.addView(titleCondition,1);
+        view.addView(condition.getView(context), 2);
         return view;
     }
 
