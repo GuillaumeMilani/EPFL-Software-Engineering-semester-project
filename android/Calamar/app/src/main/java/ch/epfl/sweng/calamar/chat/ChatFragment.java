@@ -61,7 +61,8 @@ public class ChatFragment extends android.support.v4.app.Fragment {
         getContacts();
 
         actualUserTextView = (TextView) getView().findViewById(R.id.actualUserName);
-        setActualUser();
+       //TODO see if useful
+       // setActualUser();
 
         contactsView = (ListView) getView().findViewById(R.id.contactsList);
         contactsView.setSelector(R.drawable.list_selector);
@@ -110,22 +111,17 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     /**
      * Return the actual user of the app.
      */
-    private void setActualUser() {
+    public  void setActualUser() {
         //TODO : Remove when you use a real device.
-        app.setCurrentUserID(11);
-        app.setCurrentUserName("calamaremulator@gmail.com");
-
-        if (app.getCurrentUserID() == -1) {
-            String name = null;
-            //Get google account email
-            AccountManager manager = AccountManager.get(getActivity());
-            Account[] list = manager.getAccountsByType("com.google");
-            if (list.length > 0) {
-                name = list[0].name;
-            }
-            new createNewUserTask(name, getActivity()).execute();
+        //TODO : here include the change from the choosen account
+        if(!app.getCurrentUserName().equals("")) {
+            new createNewUserTask(app.getCurrentUserName(), getActivity()).execute();
+            actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
         }
-        actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
+        else
+        {
+            //TODO discuss what we do if the user doesn't have an account
+        }
     }
 
     private void getContacts() {

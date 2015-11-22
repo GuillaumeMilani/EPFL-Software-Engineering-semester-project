@@ -356,6 +356,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Intent intent = new Intent(this, RegistrationIntentService.class);
             startService(intent);
         }
+
+        try {
+            ViewPagerAdapter adapter = (ViewPagerAdapter) viewPager.getAdapter();
+            ChatFragment chatFragment = (ChatFragment) adapter.getItem(1);;
+            chatFragment.setActualUser();
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG,"Couldn't update the chat");
+        }
+
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {

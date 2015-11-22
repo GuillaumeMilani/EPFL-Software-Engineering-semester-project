@@ -109,10 +109,8 @@ public class ChatUsersListActivity extends AppCompatActivity {
      */
     private void setActualUser() {
         //TODO : Remove when you use a real device.
-        // if the user was correctly authenticated
-        if(!app.getCurrentUserName().equals("")) {
-            //app.setCurrentUserID(11);
-            //app.setCurrentUserName("calamaremulator@gmail.com");
+            app.setCurrentUserID(11);
+            app.setCurrentUserName("calamaremulator@gmail.com");
             //app.resetPreferences();
 
             /*
@@ -126,14 +124,8 @@ public class ChatUsersListActivity extends AppCompatActivity {
                 }
                 new createNewUserTask(name, this).execute();
             }*/
-            Log.i("User","User name is " + app.getCurrentUserName());
+
             actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
-        }
-        else
-        {
-            //TODO discuss what we do if the user doesn't use an account
-            Log.e("User","Current user not set");
-        }
     }
 
     private void getContacts() {
