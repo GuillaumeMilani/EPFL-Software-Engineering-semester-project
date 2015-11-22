@@ -117,30 +117,6 @@ public final class SimpleTextItem extends Item {
         return super.equals(that) && that.message.equals(message);
     }
 
-
-    /**
-     * Deprecated
-     * @param context
-     * @return
-     */
-    public View getCompleteView(Context context){
-
-        LinearLayout layout = (LinearLayout)super.getCompleteView(context);
-
-        //TODO : Use getView of items.
-        TextView title = new TextView(context);
-        title.setText(R.string.itemDetailsSimpleTextItemTitle);
-
-        TextView text = new TextView(context);
-
-        text.setText(message);
-        
-        layout.addView(title);
-        layout.addView(text);
-
-        return layout;
-    }
-
     /**
      * hash the SimpleTextItem
      *

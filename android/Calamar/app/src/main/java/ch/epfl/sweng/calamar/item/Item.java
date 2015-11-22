@@ -86,24 +86,11 @@ public abstract class Item {
         return view;
     }
 
-
-    /**
-     * Deprecated
-     *
-     * @param context
-     * @return
-     */
-    public View getCompleteView(Context context){
-
-        LinearLayout layout = new LinearLayout(context);
-        layout.setOrientation(LinearLayout.HORIZONTAL);
-
-        //TODO : Use getView of conditions.
-        TextView condition = new TextView(context);
-        condition.setText(context.getString(R.string.item_details_conditions));
-        layout.addView(condition);
-
-        return layout;
+    public View getPreView(Context context){
+        LinearLayout view = new LinearLayout(context);
+        view.setOrientation(LinearLayout.VERTICAL);
+        view.addView(getItemView(context));
+        return view;
     }
 
     /**

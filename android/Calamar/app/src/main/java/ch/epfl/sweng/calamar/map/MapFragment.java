@@ -49,8 +49,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     //TODO : manage activity lifecycle : start stop location updates when not needed, plus many potential problems
 
 
+    //TODO : Use a bidirectional map ?
     private Map<Item,Marker> markers;
-
     private Map<Marker,Item> itemFromMarkers;
 
     private GoogleMap map; // Might be null if Google Play services APK is not available.
@@ -152,7 +152,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                     }
                 });
 
-                itemDescription.setView(item.getCompleteView(getActivity()));
+                itemDescription.setView(item.getView(getActivity()));
 
                 itemDescription.show();
 

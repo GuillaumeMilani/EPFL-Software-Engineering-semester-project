@@ -101,10 +101,9 @@ public class ChatActivity extends AppCompatActivity {
                     }
                 });
 
-                itemDescription.setView(item.getCompleteView(ChatActivity.this));
+                itemDescription.setView(item.getView(ChatActivity.this));
 
                 itemDescription.show();
-
             }
         });
 
