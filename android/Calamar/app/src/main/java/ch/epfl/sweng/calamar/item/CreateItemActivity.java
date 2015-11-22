@@ -145,7 +145,7 @@ public class CreateItemActivity extends AppCompatActivity {
         toSendBuilder.setFrom(CalamarApplication.getInstance().getCurrentUser());
         toSendBuilder.setDate(new Date().getTime());
         Item toSend = toSendBuilder.build();
-        new SendItemTask(toSend);
+        new SendItemTask(toSend).execute();
         this.finish();
     }
 
