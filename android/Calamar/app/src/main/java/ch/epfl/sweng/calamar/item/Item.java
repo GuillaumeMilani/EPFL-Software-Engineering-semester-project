@@ -79,9 +79,8 @@ public abstract class Item {
 
     public View getView(Context context)
     {
-        LinearLayout view = new LinearLayout(context);
-        view.setOrientation(LinearLayout.VERTICAL);
-        view.addView(getItemView(context), 0);
+        LinearLayout view = (LinearLayout)getPreView(context);
+
         TextView titleCondition = new TextView(context);
         titleCondition.setText(R.string.item_getView_condition_title);
         titleCondition.setTextSize(25);
@@ -93,7 +92,14 @@ public abstract class Item {
     public View getPreView(Context context){
         LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
-        view.addView(getItemView(context));
+        //TODO : Update the message if the condition switch to true ?
+        if(condition.getValue()){
+            view.addView(getItemView(context), 0);
+        } else {
+            TextView lockMessage = new TextView(context);
+            lockMessage.setText(R.string.item_is_locked_getview);
+            view.addView(lockMessage, 0);
+        }
         return view;
     }
 
