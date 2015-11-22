@@ -5,6 +5,8 @@ import android.support.test.runner.AndroidJUnit4;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.ListView;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

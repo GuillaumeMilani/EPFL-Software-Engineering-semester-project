@@ -10,5 +10,5 @@ public interface RegistrationClient {
      *
      * @param token the token to send
      */
-    void send(String token) throws RegisterClientException;
+    void send(String token,String userName) throws RegisterClientException;
 }

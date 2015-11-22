@@ -1,9 +1,15 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.content.Context;
+import android.view.View;
+import android.widget.LinearLayout;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -23,9 +29,20 @@ public abstract class Item {
     private final long date; //posix date
     private final Condition condition;
 
-    public enum Type {SIMPLETEXTITEM}
+    public enum Type {SIMPLETEXTITEM, IMAGEITEM}
     //TODO date d'expiration ?
 
+    private Set<Observer> observers = new HashSet<>();
+
+
+    private final Condition.Observer conditionObserver = new Condition.Observer() {
+        @Override
+        public void update(Condition condition) {
+            for(Observer o : observers){
+                o.update(Item.this);
+            }
+        }
+    };
 
     protected Item(int ID, User from, Recipient to, long date, Condition condition) {
         if (null == from || null == to || null == condition) {
@@ -36,6 +53,8 @@ public abstract class Item {
         this.to = to;     //Recipient is immutable
         this.date = date;
         this.condition = condition;
+
+        condition.addObserver(conditionObserver);
     }
 
     protected Item(int ID, User from, Recipient to, long date) {
@@ -43,6 +62,17 @@ public abstract class Item {
     }
 
     public abstract Type getType();
+
+    protected abstract View getItemView(Context context);
+
+    public View getView(Context context)
+    {
+        LinearLayout view = new LinearLayout(context);
+        view.setOrientation(LinearLayout.VERTICAL);
+        view.addView(getItemView(context), 0);
+        view.addView(condition.getView(context), 1);
+        return view;
+    }
 
     /**
      * @return the 'condition' field of the Item
@@ -116,9 +146,12 @@ public abstract class Item {
         }
         Item item;
         String type = json.getString("type");
-        switch (type) {
-            case "SIMPLETEXTITEM":
+        switch (Type.valueOf(type)) {
+            case SIMPLETEXTITEM:
                 item = SimpleTextItem.fromJSON(json);
+                break;
+            case IMAGEITEM:
+                item = ImageItem.fromJSON(json);
                 break;
             default:
                 throw new IllegalArgumentException("Unexpected Item type (" + type + ")");
@@ -174,9 +207,26 @@ public abstract class Item {
             from = User.fromJSON(o.getJSONObject("from"));
             to = Recipient.fromJSON(o.getJSONObject("to"));
             date = o.getLong("date");
-            condition = Condition.trueCondition();
-            //condition = Condition.fromJSON(o.getJSONObject("condition"));
+            //TODO to delete when server ready to send true condition when there is no condition
+            // and replace by just fromJSON etc..
+            if(o.has("condition")) {
+                condition = Condition.fromJSON(o.getJSONObject("condition"));
+            } else {
+                condition = Condition.trueCondition();
+            }
             return this;
         }
+    }
+
+    public void addObserver(Item.Observer observer) {
+        this.observers.add(observer);
+    }
+
+    public boolean removeObserver(Item.Observer observer) {
+        return this.observers.remove(observer);
+    }
+
+    public abstract static class Observer {
+        public abstract void update(Item item);
     }
 }

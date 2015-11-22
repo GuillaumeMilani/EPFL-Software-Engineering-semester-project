@@ -29,6 +29,7 @@ public class MainActivity extends BaseActivity {
 
     // LogCat tag
     private static final String TAG = MainActivity.class.getSimpleName();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +53,7 @@ public class MainActivity extends BaseActivity {
         adapter.addFragment(new ChatFragment(), "Chat");
         viewPager.setAdapter(adapter);
     }
+
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();

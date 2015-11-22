@@ -30,7 +30,8 @@ import ch.epfl.sweng.calamar.recipient.User;
 /**
  * This activity manages the chat between two users (or in a group)
  */
-public class ChatActivity extends BaseActivity implements View.OnClickListener {
+
+public class ChatActivity extends BaseActivity {
     private EditText editText;
     private Button sendButton;
     private Button refreshButton;
@@ -63,8 +64,22 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         correspondent = new User(correspondentID, correspondentName);
 
         editText = (EditText) findViewById(R.id.messageEdit);
+
         sendButton = (Button) findViewById(R.id.chatSendButton);
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendTextItem();
+            }
+        });
+
         refreshButton = (Button) findViewById(R.id.refreshButton);
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                refresh(false);
+            }
+        });
 
         messagesHistory = new ArrayList<>();
         messagesContainer = (ListView) findViewById(R.id.messagesContainer);
@@ -74,26 +89,12 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         TextView recipient = (TextView) findViewById(R.id.recipientLabel);
         recipient.setText(correspondent.getName());
 
-        refreshButton.setOnClickListener(this);
-        sendButton.setOnClickListener(this);
-
         databaseHandler = app.getDatabaseHandler();
 
         boolean offline = true;
         refresh(offline);
     }
-
-    @Override
-    public void onClick(View v) {
-        if (v.getId() == R.id.chatSendButton) {
-            sendTextItem();
-        } else if (v.getId() == R.id.refreshButton) {
-            refresh(false);
-        } else {
-            throw new IllegalArgumentException("Got an unexpected view Id in Onclick");
-        }
-    }
-
+    
     /**
      * Gets all messages and display them
      */
