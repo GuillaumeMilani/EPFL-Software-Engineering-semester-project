@@ -48,6 +48,7 @@ public class PositionCondition extends Condition {
     {
         this.location = location;
         this.radius = radius;
+        setValue(GPSProvider.getInstance().getLastLocation().distanceTo(getLocation()) < getRadius());
         GPSProvider.getInstance().addObserver(new GPSProvider.Observer() {
 
             @Override

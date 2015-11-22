@@ -23,7 +23,7 @@ import static junit.framework.Assert.assertEquals;
 @RunWith(JUnit4.class)
 public class ConditionTest extends ActivityInstrumentationTestCase2<ChatActivity> {
 
-    ConditionTest() {
+    public ConditionTest() {
         super(ChatActivity.class);
     }
 
@@ -163,8 +163,42 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<ChatActivity
         }
     }
 
+    public static Location makeLocation(double latitude, double longitude)
+    {
+        Location loc = new Location("calamarTestingTeam");
+        loc.setLatitude(latitude);
+        loc.setLongitude(longitude);
+        return loc;
+    }
+
     @Test
-    public void testPositionCondition() {
-        
+    public void testPositionCondition() throws InterruptedException {
+        MockGPSProvider gps = MockGPSProvider.getInstance();
+        gps.startLocationUpdates(getActivity());
+        // BC
+        gps.setMockLocation(makeLocation(46.518568, 6.561926));
+        Thread.sleep(5000);
+        // ~ Rolex
+        MockPositionCondition c1 = new MockPositionCondition(46.518388, 6.568313, 20);
+        MockPositionCondition c2 = new MockPositionCondition(46.518568, 6.561926, 20);
+        TO o1 = new TO(c1);
+        TO o2 = new TO(c2);
+        o1.assertAll(false, 0);
+        o2.assertAll(true, 0);
+        // Amphimax
+        gps.setMockLocation(makeLocation(46.521783, 6.575507));
+        Thread.sleep(5000);
+        o1.assertAll(false, 0);
+        o2.assertAll(false, 1);
+        // in the Rolex
+        gps.setMockLocation(makeLocation(46.518313, 6.567804));
+        Thread.sleep(5000);
+        o1.assertAll(true, 1);
+        o2.assertAll(false, 1);
+        // back to BC
+        gps.setMockLocation(makeLocation(46.518568, 6.561926));
+        Thread.sleep(5000);
+        o1.assertAll(false, 2);
+        o2.assertAll(true, 2);
     }
 }
