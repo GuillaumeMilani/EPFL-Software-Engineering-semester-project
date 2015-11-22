@@ -21,10 +21,10 @@ import static junit.framework.Assert.assertEquals;
  */
 
 @RunWith(JUnit4.class)
-public class ConditionTest extends ActivityInstrumentationTestCase2<ChatActivity> {
+public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity> {
 
     public ConditionTest() {
-        super(ChatActivity.class);
+        super(MainActivity.class);
     }
 
     /**
