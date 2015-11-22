@@ -41,7 +41,6 @@
         android:id="@+id/newContact"
         android:layout_alignParentTop="true"
         android:layout_alignEnd="@+id/contactsList"
-        android:layout_alignRight="@+id/contactsList"
-        android:onClick="onClick" />
+        android:layout_alignRight="@+id/contactsList" />
 
 </RelativeLayout>
