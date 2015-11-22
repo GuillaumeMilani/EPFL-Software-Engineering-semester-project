@@ -50,7 +50,7 @@ public class CreateItemActivity extends AppCompatActivity {
         privateCheck = (CheckBox) findViewById(R.id.privateCheck);
         locationCheck = (CheckBox) findViewById(R.id.locationCheck);
         message = (EditText) findViewById(R.id.createItemActivity_messageText);
-        contacts = CalamarApplication.getInstance().getDB().getAllRecipients();
+        contacts = CalamarApplication.getInstance().getDatabaseHandler().getAllRecipients();
         contactsName = new ArrayList<>();
         for (Recipient r : contacts) {
             contactsName.add(r.getName());
@@ -165,7 +165,7 @@ public class CreateItemActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Item item) {
             if (item != null) {
-                CalamarApplication.getInstance().getDB().addItem(item);
+                CalamarApplication.getInstance().getDatabaseHandler().addItem(item);
                 Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getApplicationContext(), getString(R.string.item_send_error),

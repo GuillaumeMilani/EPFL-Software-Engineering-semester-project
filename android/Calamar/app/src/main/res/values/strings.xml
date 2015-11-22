@@ -41,7 +41,11 @@
     <string name="create_button_text">Create</string>
     <string name="item_create_invalid">An item must either have a text, a file, or both.</string>
     <string name="item_sent_successful">Item sent</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="condition_true">true</string>
+    <string name="condition_false">false</string>
+    <string name="condition_and">and</string>
+    <string name="condition_or">or</string>
+    <string name="condition_not">not</string>
+    <string name="condition_position">tu dois être ici!</string>
+    <string name="fragment_add_item_button">Add</string>
 </resources>

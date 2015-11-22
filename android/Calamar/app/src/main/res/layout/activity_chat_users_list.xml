@@ -43,7 +43,6 @@
         android:layout_alignEnd="@+id/contactsList"
         android:layout_alignParentTop="true"
         android:layout_alignRight="@+id/contactsList"
-        android:onClick="onClick"
         android:text="@string/add_user_text" />
 
     <android.support.design.widget.FloatingActionButton

@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -28,7 +29,7 @@ import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
 
-public class ChatUsersListActivity extends AppCompatActivity implements View.OnClickListener {
+public class ChatUsersListActivity extends AppCompatActivity {
 
     public final static String EXTRA_CORRESPONDENT_NAME = "ch.epfl.sweng.calamar.CORRESPONDENT_NAME";
     public final static String EXTRA_CORRESPONDENT_ID = "ch.epfl.sweng.calamar.CORRESPONDENT_ID";
@@ -37,6 +38,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
     private List<Recipient> contacts;
     private ChatUsersListAdapter adapter;
     private TextView actualUserTextView;
+    private Button newContact;
 
     private CalamarApplication app;
 
@@ -55,6 +57,14 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
         actualUserTextView = (TextView) findViewById(R.id.actualUserName);
         setActualUser();
 
+        newContact = (Button) findViewById(R.id.newContact);
+        newContact.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addNewContact();
+            }
+        });
+
         contactsView = (ListView) findViewById(R.id.contactsList);
         contactsView.setSelector(R.drawable.list_selector);
         adapter = new ChatUsersListAdapter(this, contacts);
@@ -72,15 +82,6 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
             }
         });
         contactsView.setSelection(0);
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (v.getId() == R.id.newContact) {
-            addNewContact();
-        } else {
-            throw new IllegalArgumentException(getString(R.string.on_click_error));
-        }
     }
 
     /**
@@ -127,7 +128,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
     }
 
     private void getContacts() {
-        contacts.addAll(app.getDB().getAllRecipients());
+        contacts.addAll(app.getDatabaseHandler().getAllRecipients());
     }
 
     private void addNewContact() {
@@ -144,7 +145,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
      */
     private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
         private String name = null;
-        private Context context;
+        private final Context context;
 
         public createNewUserTask(String name, Context context) {
             this.name = name;
@@ -196,7 +197,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
     private class retrieveUserTask extends AsyncTask<Void, Void, User> {
 
         private String name = null;
-        private Context context;
+        private final Context context;
 
         public retrieveUserTask(String name, Context context) {
             this.name = name;
@@ -220,7 +221,7 @@ public class ChatUsersListActivity extends AppCompatActivity implements View.OnC
                 contacts.add(newUser);
                 adapter.notifyDataSetChanged();
                 //Add in memory
-                app.getDB().addRecipient(newUser);
+                app.getDatabaseHandler().addRecipient(newUser);
             } else {
                 AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
                 newUserAlert.setTitle(R.string.add_new_contact_impossible);
