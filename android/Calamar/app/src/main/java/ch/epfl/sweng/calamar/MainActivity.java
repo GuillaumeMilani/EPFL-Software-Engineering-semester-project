@@ -1,7 +1,9 @@
 package ch.epfl.sweng.calamar;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -17,6 +19,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -50,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     // activity request codes
     private static final int ERROR_CLIENT_REQUEST = 1001;
     private static final int ERROR_REGISTRATION_REQUEST = 2001;
+    private static final int ACCOUNT_CHOOSEN = 3001;
 
     // google api related stuff
     private boolean resolvingError;
@@ -159,7 +163,30 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         finish();//TODO maybe refine ?
                 }
                 break;
+            case ACCOUNT_CHOOSEN :
+                switch (resultCode) {
+                    case Activity.RESULT_OK:
+                        // get account name
+                        String  accountName = data.getExtras().getString(AccountManager.KEY_ACCOUNT_NAME);
+                        Log.i(TAG, accountName);
+                        app.setCurrentUserName(accountName);
 
+                        // Show toast
+                        Context context = getApplicationContext();
+                        CharSequence text = "Connected as " + accountName;
+                        int duration = Toast.LENGTH_SHORT;
+
+                        Toast toast = Toast.makeText(context, text, duration);
+                        toast.show();
+
+                        afterAccountAuthentification();
+                        break;
+                    default:
+                        Log.e(MainActivity.TAG,"Didn't choose an account");
+                        finish();
+                }
+
+                break;
             case GPSProvider.CHECK_SETTINGS_REQUEST:
                 switch (resultCode) {
                     case Activity.RESULT_OK:
@@ -219,11 +246,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         buildGoogleApiClient();  // will connect in onResume(), errors are handled in onConnectionFailed()
 
-        if (checkPlayServices()) {
-            // Start IntentService to register this application with GCM.
-            Intent intent = new Intent(this, RegistrationIntentService.class);
-            startService(intent);
-        }
+        //choose account dialog
+        Intent accountIntent = AccountManager.newChooseAccountIntent(null, null,
+                new String[] {"com.google"}, true, null, null,
+                null, null);
+        startActivityForResult(accountIntent,ACCOUNT_CHOOSEN);
     }
 
     @Override
@@ -316,6 +343,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             return false;
         }
         return true;
+    }
+
+    /**
+     * Called after the account was authenticated
+     */
+    private void afterAccountAuthentification()
+    {
+        // token generation
+        if (checkPlayServices()) {
+            // Start IntentService to register this application with GCM.
+            Intent intent = new Intent(this, RegistrationIntentService.class);
+            startService(intent);
+        }
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
