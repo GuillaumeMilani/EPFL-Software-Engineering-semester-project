@@ -4,9 +4,12 @@ package ch.epfl.sweng.calamar.map;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,10 +34,7 @@ import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
-import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
-
-import static ch.epfl.sweng.calamar.item.Item.Type.SIMPLETEXTITEM;
 
 
 /**
@@ -82,13 +82,15 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         @Override
         public void update(Item item) {
             Marker updatedMarker = markers.get(item);
+            Bitmap icon;
             if(item.getCondition().getValue()) {
                 updatedMarker.setTitle("Unlocked");
-                updatedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                icon =  BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.unlock);
             } else {
                 updatedMarker.setTitle("Locked");
-                updatedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                icon =  BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.lock);
             }
+            updatedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(icon));
         }
     };
 
@@ -190,8 +192,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         gpsProvider.getLastLocation().getLatitude();
         l.setLatitude(gpsProvider.getLastLocation().getLatitude());
         l.setLongitude(gpsProvider.getLastLocation().getLongitude());
-
-        addItemToMap(new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l, 5), "Password : calamar42"));
+        
+        addItemToMap(new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l, 100), "Password : calamar42"));
     }
 
     private void addAllItemToMap(){
@@ -216,6 +218,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                     .position(new LatLng(l.getLatitude(), l.getLongitude()));
 
         marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+        marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.lock));
 
         marker.title("Locked");
 
@@ -225,7 +228,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
         Marker finalMarker = map.addMarker(marker);
 
-        markers.put(i,finalMarker);
+        markers.put(i, finalMarker);
         itemFromMarkers.put(finalMarker,i);
     }
 
