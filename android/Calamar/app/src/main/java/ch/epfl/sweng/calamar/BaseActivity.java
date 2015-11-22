@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -8,6 +9,7 @@ import android.content.IntentSender;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -25,6 +27,7 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
 
     // activity request codes
     private static final int ERROR_RESOLUTION_REQUEST = 1001;
+    private static final int REQUEST_CODE_PICK_ACCOUNT = 1002;
 
     // google api related stuff
     private boolean resolvingError;
@@ -114,7 +117,7 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case ERROR_RESOLUTION_REQUEST | PLAY_SERVICES_RESOLUTION_REQUEST:
+            case ERROR_RESOLUTION_REQUEST:
                 resolvingError = false;
                 switch (resultCode) {
                     case Activity.RESULT_OK:
@@ -129,6 +132,20 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
                         Log.e(TAG, "google API client definitely can't connect...");
                         finish();//TODO maybe refine ?
                 }
+                break;
+            //TODO code 1002 http://www.androiddesignpatterns.com/2013/01/google-play-services-setup.html
+            case REQUEST_CODE_PICK_ACCOUNT:
+                /*
+                if (resultCode == RESULT_OK) {
+                    String accountName = data.getStringExtra(
+                            AccountManager.KEY_ACCOUNT_NAME);
+                    AccountUtils.setAccountName(this, accountName);
+                } else if (resultCode == RESULT_CANCELED) {
+                    Toast.makeText(this, "This application requires a Google account.",
+                            Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+                */
                 break;
             default:
                 throw new IllegalStateException("onActivityResult : unknown request ! ");
