@@ -159,12 +159,14 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
     @Test
     public void testPositionCondition() throws InterruptedException {
         GPSProvider gps = GPSProvider.getInstance();
+        gps.mockModeEnable();
         gps.startLocationUpdates(getActivity());
         // BC
         gps.setMockLocation(makeLocation(46.518568, 6.561926));
         Thread.sleep(5000);
         // ~ Rolex
         PositionCondition c1 = new PositionCondition(46.518388, 6.568313, 20);
+        // ~ BC
         PositionCondition c2 = new PositionCondition(46.518568, 6.561926, 20);
         TO o1 = new TO(c1);
         TO o2 = new TO(c2);
@@ -185,5 +187,7 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
         Thread.sleep(5000);
         o1.assertAll(false, 2);
         o2.assertAll(true, 2);
+
+        gps.mockModeDisable();
     }
 }
