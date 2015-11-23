@@ -1,6 +1,5 @@
 package ch.epfl.sweng.calamar;
 
-import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.ActivityInstrumentationTestCase2;
@@ -44,13 +43,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
         DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
         CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
     }
-
-
-    @Test(expected = NoMatchingViewException.class)
-    public void testNoMatchingView() {
-        onView(withId(R.id.messageEdit)).check(matches(withText("")));
-    }
-
+    
     /**
      * Test that we have a send button.
      */
