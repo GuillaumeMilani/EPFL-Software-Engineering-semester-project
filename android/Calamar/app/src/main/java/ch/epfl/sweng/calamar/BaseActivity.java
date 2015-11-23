@@ -1,6 +1,5 @@
 package ch.epfl.sweng.calamar;
 
-import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -9,12 +8,15 @@ import android.content.IntentSender;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.Toast;
+import android.view.View;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+
+import ch.epfl.sweng.calamar.item.CreateItemActivity;
+import ch.epfl.sweng.calamar.push.RegistrationIntentService;
 
 public class BaseActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private CalamarApplication app;
@@ -53,6 +55,11 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
         if (!app.isGoogleApiClientCreated()) {
             buildGoogleApiClient();
         }  // will connect in onResume(), errors are handled in onConnectionFailed()
+        if (checkPlayServices()) {
+            // Start IntentService to register this application with GCM.
+            Intent intent = new Intent(this, RegistrationIntentService.class);
+            startService(intent);
+        }
     }
 
     @Override
@@ -199,27 +206,32 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
-//    /**
-//     * Verifies google play services availability on the device
-//     */
-//    //keeped just in case.., not used now, I go the other way by connecting and then eventually
-//    //handle errors in onConnectionFailed
-//    private boolean checkPlayServices() {
-//        GoogleApiAvailability apiAvailabilitySingleton = GoogleApiAvailability.getInstance();
-//        int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(app);
-//        if (resultCode != ConnectionResult.SUCCESS) {
-//            if (apiAvailabilitySingleton.isUserResolvableError(resultCode)) {
-//                apiAvailabilitySingleton.getErrorDialog(this, resultCode,
-//                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
-//
-//            } else {
-//                Log.e(TAG, "This device is not supported. play services unavailable " +
-//                        "and automatic error resolution failed. error code : " + resultCode);
-//                //show dialog using geterrordialog on singleton
-//                finish();
-//            }
-//            return false;
-//        }
-//        return true;
-//    }
+    /**
+     * Verifies google play services availability on the device
+     */
+    //keeped just in case.., not used now, I go the other way by connecting and then eventually
+    //handle errors in onConnectionFailed
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailabilitySingleton = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(app);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailabilitySingleton.isUserResolvableError(resultCode)) {
+                apiAvailabilitySingleton.getErrorDialog(this, resultCode,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+
+            } else {
+                Log.e(TAG, "This device is not supported. play services unavailable " +
+                        "and automatic error resolution failed. error code : " + resultCode);
+                //show dialog using geterrordialog on singleton
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    public void createItem(View v) {
+        Intent intent = new Intent(this, CreateItemActivity.class);
+        startActivity(intent);
+    }
 }

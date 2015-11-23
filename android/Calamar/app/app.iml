@@ -171,5 +171,6 @@
     <orderEntry type="library" exported="" name="aes-crypto-0.0.4" level="project" />
     <orderEntry type="library" exported="" name="play-services-panorama-8.3.0" level="project" />
     <orderEntry type="library" exported="" name="secure-preferences-lib-0.1.4" level="project" />
+    <orderEntry type="module" module-name="aFileChooser" exported="" />
   </component>
 </module>

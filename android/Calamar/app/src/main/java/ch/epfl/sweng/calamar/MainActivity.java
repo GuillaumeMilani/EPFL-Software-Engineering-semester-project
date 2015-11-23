@@ -30,6 +30,17 @@ public class MainActivity extends BaseActivity {
     // LogCat tag
     private static final String TAG = MainActivity.class.getSimpleName();
 
+
+    // *********************************************************************************************
+    // ACTIVITY LIFECYCLE CALLBACKS
+    // https://developer.android.com/training/basics/activity-lifecycle/starting.html
+    // even better :
+    // https://stackoverflow.com/questions/12203651/why-is-onresume-called-when-an-activity-starts
+    //
+    // every time screen is rotated, activity is destroyed/recreated :
+    // https://stackoverflow.com/questions/7618703/activity-lifecycle-oncreate-called-on-every-re-orientation
+    // maybe prevent this ...
+    //
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,7 +56,9 @@ public class MainActivity extends BaseActivity {
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
+
     }
+
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -53,7 +66,6 @@ public class MainActivity extends BaseActivity {
         adapter.addFragment(new ChatFragment(), "Chat");
         viewPager.setAdapter(adapter);
     }
-
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
@@ -82,6 +94,7 @@ public class MainActivity extends BaseActivity {
         public CharSequence getPageTitle(int position) {
             return mFragmentTitleList.get(position);
         }
-
     }
+
 }
+

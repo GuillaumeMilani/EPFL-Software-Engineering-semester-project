@@ -135,10 +135,10 @@ public final class SimpleTextItem extends Item {
      *
      * @see Item.Builder
      */
-    public static class Builder extends Item.Builder {
+    protected static class Builder extends Item.Builder {
         private String message = "default message";
 
-        public Builder parse(JSONObject json) throws JSONException {
+        protected Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString("type");
             if (!type.equals(SimpleTextItem.ITEM_TYPE.name())) {
@@ -148,8 +148,12 @@ public final class SimpleTextItem extends Item {
             return this;
         }
 
-        public SimpleTextItem build() {
+        protected SimpleTextItem build() {
             return new SimpleTextItem(super.ID, super.from, super.to, new Date(super.date), super.condition, message);
+        }
+
+        protected void setMessage(String message) {
+            this.message = message;
         }
     }
 }
