@@ -148,21 +148,6 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
         o.assertAll(true, 2);
     }
 
-    public class MockPositionCondition extends PositionCondition {
-        public MockPositionCondition(double latitude, double longitude, double radius)
-        {
-            super(latitude, longitude, radius);
-            MockGPSProvider.getInstance().addObserver(new GPSProvider.Observer() {
-
-                @Override
-                public void update(Location newLocation) {
-
-                    setValue(newLocation.distanceTo(getLocation()) < getRadius());
-                }
-            });
-        }
-    }
-
     public static Location makeLocation(double latitude, double longitude)
     {
         Location loc = new Location("calamarTestingTeam");
@@ -173,14 +158,14 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
 
     @Test
     public void testPositionCondition() throws InterruptedException {
-        MockGPSProvider gps = MockGPSProvider.getInstance();
+        GPSProvider gps = GPSProvider.getInstance();
         gps.startLocationUpdates(getActivity());
         // BC
         gps.setMockLocation(makeLocation(46.518568, 6.561926));
         Thread.sleep(5000);
         // ~ Rolex
-        MockPositionCondition c1 = new MockPositionCondition(46.518388, 6.568313, 20);
-        MockPositionCondition c2 = new MockPositionCondition(46.518568, 6.561926, 20);
+        PositionCondition c1 = new PositionCondition(46.518388, 6.568313, 20);
+        PositionCondition c2 = new PositionCondition(46.518568, 6.561926, 20);
         TO o1 = new TO(c1);
         TO o2 = new TO(c2);
         o1.assertAll(false, 0);
