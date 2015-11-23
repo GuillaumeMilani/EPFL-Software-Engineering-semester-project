@@ -40,6 +40,7 @@
                 <data android:mimeType="*/*" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".chat.ChatActivity"
             android:label="@string/title_activity_chat"
@@ -65,6 +66,18 @@
             android:name=".item.CreateItemActivity"
             android:label="@string/title_activity_create_item"
             android:theme="@style/AppTheme.NoActionBar" />
+
+        <provider
+            android:name="com.ianhanniballake.localstorage.LocalStorageProvider"
+            android:authorities="com.ianhanniballake.localstorage.documents"
+            android:enabled="@bool/use_provider"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
 
         <meta-data
             android:name="com.google.android.gms.version"
