@@ -17,6 +17,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -28,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.chat.ChatFragment;
+import ch.epfl.sweng.calamar.item.CreateItemActivity;
 import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.map.MapFragment;
 import ch.epfl.sweng.calamar.push.RegistrationIntentService;
@@ -132,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case ERROR_REGISTRATION_REQUEST :
+            case ERROR_REGISTRATION_REQUEST:
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         //launch intent again
@@ -237,7 +239,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     protected void onStop() {
-        app.getGoogleApiClient().disconnect();
+        // TODO when disconnect ??? client needs to be connected in CreateItemActivity
+        //app.getGoogleApiClient().disconnect();
         super.onStop();
         app.getDatabaseHandler().closeDatabase();
     }
@@ -258,11 +261,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      *
      * @param errorCode , the error code returned by onConnectionFailed
      */
-    private void showGoogleApiErrorDialog(int errorCode,int errorType) {
+    private void showGoogleApiErrorDialog(int errorCode, int errorType) {
         // retrieve dialog for errorCode, if user cancel finish activity,
         // we cannot do much more...google play apk must be present
         Dialog errorDialog = GoogleApiAvailability.getInstance().getErrorDialog(this, errorCode,
-                 errorType, new DialogInterface.OnCancelListener() {
+                errorType, new DialogInterface.OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
                         Log.e(MainActivity.TAG, "error dialog cancelled");
@@ -306,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(app);
         if (resultCode != ConnectionResult.SUCCESS) {
             if (apiAvailabilitySingleton.isUserResolvableError(resultCode)) {
-                showGoogleApiErrorDialog(resultCode,ERROR_REGISTRATION_REQUEST);
+                showGoogleApiErrorDialog(resultCode, ERROR_REGISTRATION_REQUEST);
             } else {
                 Log.e(TAG, "This device is not supported. play services unavailable " +
                         "and automatic error resolution failed. error code : " + resultCode);
@@ -345,8 +348,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         public CharSequence getPageTitle(int position) {
             return mFragmentTitleList.get(position);
         }
+    }
 
 
+    public void createItem(View v) {
+        Intent intent = new Intent(this, CreateItemActivity.class);
+        startActivity(intent);
     }
 
     private class applyPendingDatabaseOperationsTask extends AsyncTask<Void, Void, Void> {
@@ -365,3 +372,4 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 }
+

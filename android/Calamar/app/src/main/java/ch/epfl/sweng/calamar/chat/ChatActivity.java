@@ -20,6 +20,7 @@ import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
+import ch.epfl.sweng.calamar.item.CreateItemActivity;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -30,7 +31,12 @@ import ch.epfl.sweng.calamar.recipient.User;
 /**
  * This activity manages the chat between two users (or in a group)
  */
+
 public class ChatActivity extends AppCompatActivity {
+
+    private static final String RECIPIENT_EXTRA_ID = "ID";
+    private static final String RECIPIENT_EXTRA_NAME = "Name";
+
     private EditText editText;
     private Button sendButton;
     private Button refreshButton;
@@ -91,7 +97,7 @@ public class ChatActivity extends AppCompatActivity {
         boolean offline = true;
         refresh(offline);
     }
-    
+
     /**
      * Gets all messages and display them
      */
@@ -192,4 +198,10 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
+    public void createItem(View v) {
+        Intent intent = new Intent(this, CreateItemActivity.class);
+        intent.putExtra(RECIPIENT_EXTRA_ID, correspondent.getID());
+        intent.putExtra(RECIPIENT_EXTRA_NAME, correspondent.getName());
+        startActivity(intent);
+    }
 }

@@ -105,8 +105,10 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     // *********************************************************************************************
     // map fragment lifecycle callbacks
     // https://developer.android.com/guide/components/fragments.html
+
     /**
      * Replaces the "onCreate" method from an Activity
+     *
      * @param inflater
      * @param container
      * @param savedInstanceState
@@ -114,8 +116,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
+                             Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         markers = new HashMap<>();
 
