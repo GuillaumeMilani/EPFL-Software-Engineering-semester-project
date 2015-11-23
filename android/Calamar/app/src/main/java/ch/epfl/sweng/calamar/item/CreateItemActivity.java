@@ -5,7 +5,6 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -26,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
@@ -35,7 +35,7 @@ import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
 
-public class CreateItemActivity extends AppCompatActivity {
+public class CreateItemActivity extends BaseActivity {
 
     private static final int PICK_FILE_REQUEST = 1;
     private static final String RECIPIENT_EXTRA_ID = "ID";
