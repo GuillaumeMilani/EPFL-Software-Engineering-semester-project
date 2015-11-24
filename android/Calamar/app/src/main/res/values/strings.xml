@@ -47,9 +47,6 @@
     <string name="item_is_locked_getview">You have to fill the conditions to see the message !</string>
     <string name="item_details_conditions_title">Condition(s)</string>
     <string name="item_details_preview_title">Preview</string>
-
-    <string name="fragment_add_item_button">Add</string>
-    <string name="create_item_select_type_file">Please select an image file.</string>
     <string name="select_local_file">Please select a local file</string>
     <string name="choose_file">Choose a file</string>
     <string name="select_file_title">"Complete action using "</string>

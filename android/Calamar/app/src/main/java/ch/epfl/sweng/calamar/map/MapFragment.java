@@ -139,13 +139,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     public void onResume() {
         super.onResume();
 
-        getView().findViewById(R.id.addNewItemButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addItem();
-            }
-        });
-
         setUpMapIfNeeded(); // if needed, onMapReady is called with the map
     }
 
