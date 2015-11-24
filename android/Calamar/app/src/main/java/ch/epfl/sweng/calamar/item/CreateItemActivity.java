@@ -40,7 +40,9 @@ public class CreateItemActivity extends BaseActivity {
     private static final int PICK_FILE_REQUEST = 1;
     private static final String RECIPIENT_EXTRA_ID = "ID";
     private static final String RECIPIENT_EXTRA_NAME = "Name";
+
     private static final String TAG = CreateItemActivity.class.getSimpleName();
+
     private Set<String> imageExt;
     private Spinner contactsSpinner;
     private CheckBox privateCheck;
@@ -177,8 +179,7 @@ public class CreateItemActivity extends BaseActivity {
             Recipient to = contacts.get(contactsSpinner.getSelectedItemPosition());
             toSendBuilder.setTo(to);
         } else {
-            //TODO Public = null ? Not allowed by Item constructor at the moment
-            toSendBuilder.setTo(new User(0, "public"));
+            toSendBuilder.setTo(new User(User.PUBLIC_ID, User.PUBLIC_NAME));
         }
         if (locationCheck.isChecked()) {
             toSendBuilder.setCondition(new PositionCondition(currentLocation));
