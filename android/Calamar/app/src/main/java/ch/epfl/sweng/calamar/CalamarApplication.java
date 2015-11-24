@@ -1,18 +1,20 @@
 package ch.epfl.sweng.calamar;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.securepreferences.SecurePreferences;
 
-import java.util.Date;
-
 import ch.epfl.sweng.calamar.recipient.User;
 
-public final class CalamarApplication extends Application {
+public final class CalamarApplication extends Application implements Application.ActivityLifecycleCallbacks {
 
     //TODO Why volatile?
     private static volatile CalamarApplication instance;
@@ -30,6 +32,14 @@ public final class CalamarApplication extends Application {
     //https://developers.google.com/android/guides/api-client
     private GoogleApiClient googleApiClient = null;
 
+    //Used to check and do stuff if the app is on background -- not foolproof,
+    // there is no real good way to check that apparently, but seems to be working fine
+    private boolean onForeground = true;
+    private int resumed = 0;
+    private int paused = 0;
+    private Handler handler;
+    private final int WAITING_TIME = 500;
+
     /**
      * Returns the current instance of the application.
      *
@@ -44,16 +54,17 @@ public final class CalamarApplication extends Application {
 
     @SuppressLint("CommitPrefEdits")
     @Override
-    //TODO Clean method once things are decided
+    //TODO Clean method once things are decided / tested
     public void onCreate() {
         super.onCreate();
         User test = new User(1, "Bob");
         instance = this;
         sp = new SecurePreferences(this, test.getPassword(), "user_pref.xml");
         editor = sp.edit();
+        handler = new Handler();
         dbHandler = SQLiteDatabaseHandler.getInstance();
-        setLastItemsRefresh(new Date(0));
-        setLastUsersRefresh(new Date(0));
+        setLastItemsRefresh(0);
+        setLastUsersRefresh(0);
     }
 
 
@@ -69,10 +80,10 @@ public final class CalamarApplication extends Application {
     /**
      * Set the last time the application refreshed the users.
      *
-     * @param lastDate The date.
+     * @param lastTime The date.
      */
-    public void setLastUsersRefresh(Date lastDate) {
-        editor.putLong(LAST_USERS_REFRESH_SP, lastDate.getTime()).apply();
+    public void setLastUsersRefresh(long lastTime) {
+        editor.putLong(LAST_USERS_REFRESH_SP, lastTime).apply();
     }
 
     /**
@@ -87,10 +98,10 @@ public final class CalamarApplication extends Application {
     /**
      * Set the time the application last refreshed the items.
      *
-     * @param lastDate The date.
+     * @param lastTime The date.
      */
-    public void setLastItemsRefresh(Date lastDate) {
-        editor.putLong(LAST_ITEMS_REFRESH_SP, lastDate.getTime()).apply();
+    public void setLastItemsRefresh(long lastTime) {
+        editor.putLong(LAST_ITEMS_REFRESH_SP, lastTime).apply();
     }
 
     /**
@@ -165,14 +176,14 @@ public final class CalamarApplication extends Application {
      * Resets the lastItemsRefresh to 0
      */
     public void resetLastItemsRefresh() {
-        setLastItemsRefresh(new Date(0));
+        setLastItemsRefresh(0);
     }
 
     /**
      * Resets the lastUsersRefresh to 0
      */
     public void resetLastUsersRefresh() {
-        setLastUsersRefresh(new Date(0));
+        setLastUsersRefresh(0);
     }
 
     /**
@@ -204,6 +215,93 @@ public final class CalamarApplication extends Application {
             throw new IllegalStateException("getGoogleApiClient : google api client has not been created !");
         }
         return googleApiClient;
+    }
+
+    /**
+     * Tells if the google API client is created
+     *
+     * @return true if it is, false otherwise
+     */
+    public boolean isGoogleApiClientCreated() {
+        return googleApiClient != null;
+    }
+
+
+    //Used to check if app is in background (triggers database)
+    @Override
+    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+
+    }
+
+    @Override
+    public void onActivityStarted(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityResumed(Activity activity) {
+        ++resumed;
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isOnForeground()) {
+                    new ApplyPendingDatabaseOperationsTask().execute();
+                }
+            }
+        }, WAITING_TIME);
+    }
+
+    @Override
+    public void onActivityPaused(Activity activity) {
+        ++paused;
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isOnForeground()) {
+                    new ApplyPendingDatabaseOperationsTask().execute();
+                }
+            }
+        }, WAITING_TIME);
+    }
+
+    @Override
+    public void onActivityStopped(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+
+    }
+
+    @Override
+    public void onActivityDestroyed(Activity activity) {
+
+    }
+
+    private boolean isOnForeground() {
+        if (paused >= resumed && onForeground) {
+            onForeground = false;
+        } else if (resumed > paused && !onForeground) {
+            onForeground = true;
+        }
+        return onForeground;
+    }
+
+    private class ApplyPendingDatabaseOperationsTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... v) {
+            dbHandler.applyPendingOperations();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void v) {
+            long time = dbHandler.getLastUpdateTime();
+            instance.setLastUsersRefresh(time);
+            instance.setLastItemsRefresh(time);
+        }
     }
 
 

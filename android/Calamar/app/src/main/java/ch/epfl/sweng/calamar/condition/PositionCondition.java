@@ -20,6 +20,7 @@ import ch.epfl.sweng.calamar.map.GPSProvider;
 public class PositionCondition extends Condition {
 
     private final static String CONDITION_TYPE = "position";
+    private final static double DEFAULT_RADIUS = 20;
 
     private final Location location;
     private final double radius;
@@ -61,6 +62,10 @@ public class PositionCondition extends Condition {
                 setValue(newLocation.distanceTo(This.location) < This.radius);
             }
         });
+    }
+
+    public PositionCondition(Location location){
+        this(location,DEFAULT_RADIUS);
     }
 
     /**

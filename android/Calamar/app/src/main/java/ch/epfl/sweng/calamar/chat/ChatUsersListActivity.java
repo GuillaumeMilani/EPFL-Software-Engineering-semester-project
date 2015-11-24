@@ -1,7 +1,5 @@
 package ch.epfl.sweng.calamar.chat;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -10,8 +8,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -22,6 +18,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
@@ -29,7 +26,7 @@ import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
 
-public class ChatUsersListActivity extends AppCompatActivity {
+public class ChatUsersListActivity extends BaseActivity {
 
     public final static String EXTRA_CORRESPONDENT_NAME = "ch.epfl.sweng.calamar.CORRESPONDENT_NAME";
     public final static String EXTRA_CORRESPONDENT_ID = "ch.epfl.sweng.calamar.CORRESPONDENT_ID";
@@ -43,6 +40,8 @@ public class ChatUsersListActivity extends AppCompatActivity {
     private CalamarApplication app;
 
     private Dialog newContactAlertDialog;
+
+    private final String TAG = ChatUsersListActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

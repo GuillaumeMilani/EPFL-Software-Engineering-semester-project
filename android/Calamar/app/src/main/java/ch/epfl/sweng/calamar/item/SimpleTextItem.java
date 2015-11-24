@@ -74,7 +74,7 @@ public final class SimpleTextItem extends Item {
     @Override
     public void compose(JSONObject json) throws JSONException {
         super.compose(json);
-        json.accumulate("text", message);
+        json.accumulate("message", message);
         json.accumulate("type", ITEM_TYPE.name());
     }
 
@@ -126,8 +126,8 @@ public final class SimpleTextItem extends Item {
     }
 
     @Override
-    public String toString(){
-        return super.toString()+" message : "+message;
+    public String toString() {
+        return super.toString() + " message : " + message;
     }
 
     /**
@@ -135,21 +135,25 @@ public final class SimpleTextItem extends Item {
      *
      * @see Item.Builder
      */
-    public static class Builder extends Item.Builder {
+    protected static class Builder extends Item.Builder {
         private String message = "default message";
 
-        public Builder parse(JSONObject json) throws JSONException {
+        protected Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString("type");
             if (!type.equals(SimpleTextItem.ITEM_TYPE.name())) {
                 throw new IllegalArgumentException("expected " + SimpleTextItem.ITEM_TYPE.name() + " was : " + type);
             }
-            message = json.getString("text");
+            message = json.getString("message");
             return this;
         }
 
-        public SimpleTextItem build() {
+        protected SimpleTextItem build() {
             return new SimpleTextItem(super.ID, super.from, super.to, new Date(super.date), super.condition, message);
+        }
+
+        protected void setMessage(String message) {
+            this.message = message;
         }
     }
 }

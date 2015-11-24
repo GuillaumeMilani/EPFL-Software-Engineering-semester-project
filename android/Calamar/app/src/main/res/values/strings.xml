@@ -27,13 +27,29 @@
     <string name="show_chat_activity_button">show chat</string>
     <string name="action_settings">Settings</string>
     <string name="add_user_text">New</string>
+    <string name="title_activity_create_item">CreateItemActivity</string>
+    <string name="create_new_item_title">Create a new item</string>
+    <string name="new_item_text_hint">Enter a message (optional)</string>
+    <string name="select_button_text">Browse…</string>
+    <string name="select_file_text">File :</string>
+    <string name="till_radiobutton_text">Till</string>
+    <string name="at_radiobutton_text">At</string>
+    <string name="time_checkbutton_text">time</string>
+    <string name="location_checkbutton_text">location</string>
+    <string name="private_checkbutton_text">private</string>
+    <string name="preview_text">Preview :</string>
+    <string name="create_button_text">Create</string>
+    <string name="item_create_invalid">An item must either have a text, a file, or both.</string>
+    <string name="item_sent_successful">Item sent</string>
     <string name="condition_true">true</string>
     <string name="condition_false">false</string>
     <string name="condition_and">and</string>
     <string name="condition_or">or</string>
     <string name="condition_not">not</string>
     <string name="condition_position">tu dois être ici!</string>
-
-<!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="fragment_add_item_button">Add</string>
+    <string name="create_item_select_type_file">Please select an image file.</string>
+    <string name="select_local_file">Please select a local file</string>
+    <string name="choose_file">Choose a file</string>
+    <string name="select_file_title">"Complete action using "</string>
 </resources>
