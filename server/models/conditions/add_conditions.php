@@ -4,18 +4,18 @@
 * Add a condition into the database
 * TODO : Better management of the type
 */
-function add_conditions($condition)
+function add_condition($condition)
 {
 	global $pdo;
 	
 	$query = $pdo->prepare('INSERT INTO `tb_condition` (`ID`, `condition`) VALUES (NULL, :condition)');
-	$query->bindParam(':condition',$condition, PDO::PARAM_STR);
+	$query->bindParam(':condition',$condition['condition'], PDO::PARAM_STR);
 	try {
 		$query->execute();
 		return $pdo->lastInsertId();
 	} catch (Exception $e) {
 		http_response_code(500);
-		die("Error : database");
+		die("Error : database in condition insertion");
 	}
 
 }

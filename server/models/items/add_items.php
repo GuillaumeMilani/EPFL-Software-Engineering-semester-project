@@ -11,7 +11,6 @@ function add_items($from,$to,$date,$type,$type_data,$condition_id)
 	$from = (int) $from;
 	$to = (int) $to;
 	$date = (int) $date;
-	$condition_id = (int) $condition_id;
 	
 	$query = $pdo->prepare('INSERT INTO `tb_item` (`ID`, `from`, `to`, `date`, `condition`) VALUES (NULL, :from, :to, :date, :condition)');
 	$query->bindParam(':to',$to,PDO::PARAM_INT);
@@ -29,7 +28,7 @@ function add_items($from,$to,$date,$type,$type_data,$condition_id)
 		}
 	} catch (Exception $e) {
 		http_response_code(500);
-		die("Error : database");
+		die("Error : database in item insertion");
 	}
 
 }
