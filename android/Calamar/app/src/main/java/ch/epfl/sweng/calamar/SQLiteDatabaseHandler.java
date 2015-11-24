@@ -104,7 +104,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 + ITEMS_KEY_TIME + " INTEGER NOT NULL,"
                 + ITEMS_KEY_CONDITION + " TEXT NOT NULL, "
                 + ITEMS_KEY_TEXT + " TEXT, "
-                + ITEMS_KEY_DATA + " TEXT, "
+                + ITEMS_KEY_DATA + " BLOB, "
                 + ITEMS_KEY_NAME + " TEXT)";
         db.execSQL(createMessagesTable);
         final String createRecipientsTable = "CREATE TABLE " + RECIPIENTS_TABLE + " ("
@@ -873,10 +873,13 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());
-        if (item.getType() == Item.Type.FILEITEM || item.getType() == Item.Type.IMAGEITEM) {
-            values.put(ITEMS_KEY_DATA, FileItem.byteArrayToString(((FileItem) item).getData()));
+        if (item.getType() == Item.Type.SIMPLETEXTITEM) {
+            values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());
+        } else if (item.getType() == Item.Type.FILEITEM || item.getType() == Item.Type.IMAGEITEM) {
+            values.put(ITEMS_KEY_DATA, ((FileItem) item).getData());
             values.put(ITEMS_KEY_NAME, ((FileItem) item).getName());
+        } else {
+            throw new IllegalArgumentException("Unknown item type");
         }
         return values;
     }
@@ -899,19 +902,15 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             e.printStackTrace();
         }
         String text = cursor.getString(6);
+        byte[] data = cursor.getBlob(7);
+        String name = cursor.getString(8);
         switch (type) {
             case SIMPLETEXTITEM:
                 return new SimpleTextItem(id, from, to, time, condition, text);
             case FILEITEM:
-                String strData = cursor.getString(7);
-                byte[] data = FileItem.stringToByteArray(strData);
-                String name = cursor.getString(8);
                 return new FileItem(id, from, to, time, condition, data, name);
             case IMAGEITEM:
-                String imStrData = cursor.getString(7);
-                byte[] imData = FileItem.stringToByteArray(imStrData);
-                String imName = cursor.getString(8);
-                return new ImageItem(id, from, to, time, condition, imData, imName);
+                return new ImageItem(id, from, to, time, condition, data, name);
             default:
                 throw new UnsupportedOperationException("Unexpected Item type");
         }
