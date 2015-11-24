@@ -3,6 +3,8 @@ package ch.epfl.sweng.calamar.client;
 import android.location.Location;
 import android.util.Log;
 
+import com.google.android.gms.maps.model.VisibleRegion;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,6 +29,7 @@ import ch.epfl.sweng.calamar.item.Item;
  */
 public class NetworkDatabaseClient implements DatabaseClient {
 
+    private static final String TAG = NetworkDatabaseClient.class.getSimpleName();
     private final String serverUrl;
     private final NetworkProvider networkProvider;
     private final static int HTTP_SUCCESS_START = 200;
@@ -45,18 +48,18 @@ public class NetworkDatabaseClient implements DatabaseClient {
     }
 
     @Override
-    public List<Item> getAllItems(Recipient recipient, Date from, Location nearLocation, long radius)
+    public List<Item> getAllItems(Recipient recipient, Date from, VisibleRegion visibleRegion)
             throws DatabaseClientException
     {
-        if (null == nearLocation) {
-            throw new IllegalArgumentException("getAllItems: nearLocation is null");
+        if (null == visibleRegion) {
+            throw new IllegalArgumentException("getAllItems: visibleRegion is null");
         }
-        return getItems(recipient, from, nearLocation, radius);
+        return getItems(recipient, from, visibleRegion);
     }
 
     @Override
     public List<Item> getAllItems(Recipient recipient, Date from) throws DatabaseClientException {
-        return getItems(recipient, from, null, 0);
+        return getItems(recipient, from, null);
     }
 
     @Override
@@ -65,8 +68,10 @@ public class NetworkDatabaseClient implements DatabaseClient {
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.SEND_PATH);
             String jsonParameter = item.toJSON().toString();
+            //Log.v(NetworkDatabaseClient.TAG, jsonParameter);
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter);
+            //Log.v(NetworkDatabaseClient.TAG, response);
             return Item.fromJSON(new JSONObject(response));
         } catch (IOException | JSONException e) {
             throw new DatabaseClientException(e);
@@ -117,7 +122,9 @@ public class NetworkDatabaseClient implements DatabaseClient {
         }
     }
 
-    private List<Item> getItems(Recipient recipient, Date from, Location nearLocation, long radius) throws DatabaseClientException {
+    private List<Item> getItems(Recipient recipient, Date from, VisibleRegion visibleRegion)
+            throws DatabaseClientException
+    {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_PATH);
@@ -126,15 +133,21 @@ public class NetworkDatabaseClient implements DatabaseClient {
             jsonParameter.accumulate("recipient", recipient.toJSON().toString());
             jsonParameter.accumulate("lastRefresh", from.getTime());
 
-            if(nearLocation != null) {
-                jsonParameter.accumulate("latitude", nearLocation.getLatitude());
-                jsonParameter.accumulate("longitude", nearLocation.getLongitude());
-                jsonParameter.accumulate("radius", radius);
+            if(visibleRegion != null) {
+                double left = visibleRegion.latLngBounds.southwest.longitude;
+                double top = visibleRegion.latLngBounds.northeast.latitude;
+                double right = visibleRegion.latLngBounds.northeast.longitude;
+                double bottom = visibleRegion.latLngBounds.southwest.latitude;
+                jsonParameter.accumulate("longitudeMin", left < right ? left : right);
+                jsonParameter.accumulate("latitudeMin", top < bottom ? top : bottom);
+                jsonParameter.accumulate("longitudeMax", left < right ? right : left);
+                jsonParameter.accumulate("latitudeMax", top < bottom ? bottom : top);
             }
 
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
+            //Log.v(TAG, jsonParameter.toString());
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
-
+            Log.v(TAG, response);
             return NetworkDatabaseClient.itemsFromJSON(response);
         } catch (IOException | JSONException e) {
             throw new DatabaseClientException(e);

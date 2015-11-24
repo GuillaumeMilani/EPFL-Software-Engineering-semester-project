@@ -2,6 +2,8 @@ package ch.epfl.sweng.calamar.client;
 
 import android.location.Location;
 
+import com.google.android.gms.maps.model.VisibleRegion;
+
 import java.util.Date;
 import java.util.List;
 
@@ -20,11 +22,11 @@ public interface DatabaseClient {
      *
      * @param recipient the items we want must have recipient in their destination field
      * @param from      the items have been sent after from
-     * @param nearLocation the position around which we want to retrieve the localized item
-     * @param radius the square "radius" around <i>nearLocation</i>
+     * @param visibleRegion the square visible region of the map
      * @return a list of {@link Item items}
      */
-    List<Item> getAllItems(Recipient recipient, Date from, Location nearLocation, long radius) throws DatabaseClientException;
+    List<Item> getAllItems(Recipient recipient, Date from, VisibleRegion visibleRegion)
+            throws DatabaseClientException;
 
 
     /**
