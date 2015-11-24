@@ -16,7 +16,7 @@ function get_item_with_location($recipient, $last_refresh, $latitude, $longitude
 			AND pos.ID = mtd.ID
 			AND mtd.ID = cnd.ID
 			AND itm.condition = cnd.ID
-			AND	itm.to = :to
+			AND	(itm.to = :to OR itm.to = NULL)
     		AND itm.date > :last_refresh
 			AND itm.ID = txt.ID');
 	
@@ -33,7 +33,9 @@ function get_item_with_location($recipient, $last_refresh, $latitude, $longitude
 	// Fill the "from" and "to" columns with the users data instead of their ID
 	while ($data = $res->fetch()) {
 		$data['from'] = get_user($data['from']);
-		$data['to'] = get_user($data['to']);
+		if (isset($data['to'])) {
+			$data['to'] = get_user($data['to']);
+		}
 		$ret[] = $data;
 	}
 	
@@ -76,7 +78,7 @@ function get_items($recipient, $last_refresh, $get_content = false) {
 	}
 	$res = $pdo->prepare('SELECT *, "simpleText" as "type"
     		FROM '.$table.' as itm
-    		WHERE itm.to = :to
+    		WHERE (itm.to = :to OR itm.to = NULL)
     		AND itm.date > :last_refresh');
 	
 	$res->bindParam(':to', $recipient['ID'], PDO::PARAM_INT);
@@ -88,7 +90,9 @@ function get_items($recipient, $last_refresh, $get_content = false) {
 	// Fill the "from" and "to" columns with the users data instead of their ID
 	while ($data = $res->fetch()) {
 		$data['from'] = get_user($data['from']);
-		$data['to'] = get_user($data['to']);
+		if (isset($data['to'])) {
+			$data['to'] = get_user($data['to']);
+		}
 		$ret[] = $data;
 	}
 	

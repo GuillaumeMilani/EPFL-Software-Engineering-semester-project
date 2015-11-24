@@ -77,8 +77,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_item` (
   `ID` INT NOT NULL AUTO_INCREMENT,
-  `from` INT NULL,
-  `to` INT NOT NULL,
+  `from` INT NOT NULL,
+  `to` INT NULL,
   `date` MEDIUMTEXT NOT NULL,
   `condition` INT NULL,
   PRIMARY KEY (`ID`) ,
