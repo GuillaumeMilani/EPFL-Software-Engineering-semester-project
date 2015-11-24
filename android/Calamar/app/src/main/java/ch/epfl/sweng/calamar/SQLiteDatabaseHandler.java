@@ -889,7 +889,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         int id = cursor.getInt(1);
         User from = (User) getRecipient(cursor.getInt(2));
         Recipient to = getRecipient(cursor.getInt(3));
-        Date time = new Date(cursor.getInt(4));
+        Date time = new Date(cursor.getLong(4));
         Condition condition = null;
         try {
             condition = Condition.fromJSON(new JSONObject(cursor.getString(5)));

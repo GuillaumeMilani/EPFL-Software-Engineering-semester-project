@@ -768,7 +768,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         dbHandler.applyPendingOperations();
         assertEquals(dbHandler.getItem(testImage.getID()), testImage);
         checkLastTime(testImage.getDate().getTime());
-        ImageItem updated = new ImageItem(testImage.getID(), new User(5, "bla"), new User(6, "blo"), new Date(), Condition.falseCondition(), updatedTestContent, "File");
+        ImageItem updated = new ImageItem(testImage.getID(), new User(5, "bla"), new User(6, "blo"), new Date(1000), Condition.falseCondition(), updatedTestContent, "File");
         dbHandler.updateItem(updated);
         assertEquals(dbHandler.getItem(testImage.getID()), updated);
         dbHandler.applyPendingOperations();
