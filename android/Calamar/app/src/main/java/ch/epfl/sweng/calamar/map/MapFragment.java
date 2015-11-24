@@ -12,6 +12,7 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -172,8 +173,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     public void onMapReady(GoogleMap map) {
         this.map = map;
         map.setMyLocationEnabled(true);
-        
-        addAllItemsInRegionToMap();
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
@@ -213,6 +212,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             }
         });
 
+        addAllItemsInRegionToMap();
     }
 
 
