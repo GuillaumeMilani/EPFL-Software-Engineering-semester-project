@@ -1,16 +1,30 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.app.Dialog;
+import android.content.Context;
+import android.support.v4.content.ContextCompat;
+import android.text.Layout;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Marker;
 import android.content.Context;
 import android.view.View;
 import android.widget.LinearLayout;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
+import java.awt.font.TextAttribute;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
@@ -29,6 +43,8 @@ public abstract class Item {
     private final long date; //posix date
     private final Condition condition;
     
+
+
     public enum Type {SIMPLETEXTITEM, IMAGEITEM}
 
     private Set<Item.Observer> observers = new HashSet<>();
@@ -64,12 +80,56 @@ public abstract class Item {
 
     protected abstract View getItemView(Context context);
 
-    public View getView(Context context)
+
+    /**
+     * Get the complete view of the item. ( With condition(s) )
+     *
+     * @param context
+     * @return the view of the item.
+     */
+    public View getView(final Context context)
     {
-        LinearLayout view = new LinearLayout(context);
+        //Inflate a basic layout
+        LayoutInflater li = LayoutInflater.from(context);
+        View baseView = li.inflate(R.layout.item_details_base_layout, null);
+
+        //FIll the layout
+        TextView dateText = (TextView)baseView.findViewById(R.id.ItemDetailsDate);
+        dateText.setText((new Date(date)).toString());
+
+        TextView fromText = (TextView)baseView.findViewById(R.id.ItemDetailsUserFrom);
+        fromText.setText(from.toString());
+
+        TextView toText = (TextView)baseView.findViewById(R.id.ItemDetailsUserTo);
+        toText.setText(to.toString());
+
+        LinearLayout previewLayout = (LinearLayout)baseView.findViewById(R.id.ItemDetailsItemPreview);
+        previewLayout.addView(getPreView(context));
+
+        LinearLayout conditionLayout = (LinearLayout)baseView.findViewById(R.id.ItemDetailsConditionLayout);
+        conditionLayout.addView(condition.getView(context));
+
+        return baseView;
+    }
+
+    /**
+     * Get a simple pre view of the item
+     *
+     * @param context
+     * @return the preview of the item
+     */
+    public View getPreView(final Context context){
+        final LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
-        view.addView(getItemView(context), 0);
-        view.addView(condition.getView(context), 1);
+
+        if(condition.getValue()){
+            view.addView(getItemView(context), 0);
+        } else {
+            TextView lockMessage = new TextView(context);
+            lockMessage.setText(R.string.item_is_locked_getview);
+            view.addView(lockMessage, 0);
+        }
+
         return view;
     }
 
