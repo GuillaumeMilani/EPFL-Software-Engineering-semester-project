@@ -8,6 +8,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -112,6 +113,14 @@ public class PositionCondition extends Condition {
     }
 
     @Override
+    public JSONArray getMetadata()throws JSONException {
+        JSONArray array = new JSONArray();
+        JSONObject jObject = new JSONObject();
+        compose(jObject);
+        array.put(jObject);
+        return array;
+    }
+
     public View getView(Context context)
     {
         FrameLayout view = (FrameLayout)(super.getView(context));

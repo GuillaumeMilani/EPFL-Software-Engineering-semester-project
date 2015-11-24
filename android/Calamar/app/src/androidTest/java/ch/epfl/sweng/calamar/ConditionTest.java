@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -7,8 +8,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.condition.PositionCondition;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * Created by pierre on 11/6/15.
@@ -137,4 +140,61 @@ public class ConditionTest {
         a.set(false);
         o.assertAll(true, 2);
     }
+
+    /*
+    @Test
+    public void testMetadataTrueCondition() throws JSONException {
+        Condition a = Condition.trueCondition();
+        JSONArray ja = new JSONArray();
+        assertEquals(ja, a.getMetadata());
+    }
+
+    @Test
+    public void testMetadataPositionCondition() throws JSONException {
+        Condition pc = new PositionCondition(123.4, 432.1, 10);
+        JSONObject jo = new JSONObject();
+        jo.accumulate("type", "position");
+        jo.accumulate("latitude", 123.4);
+        jo.accumulate("longitude", 432.1);
+        jo.accumulate("radius", 10);
+        JSONArray ja = (new JSONArray()).put(jo);
+        assertEquals(ja.toString(), pc.getMetadata().toString());
+    }
+
+    @Test
+    public void testMetadataMultiplePositionCondition() throws JSONException {
+        Condition pc1 = new PositionCondition(123.4, 432.1, 10);
+        Condition pc2 = new PositionCondition(432.1, 123.4, 20);
+        Condition pc1AndPc2 = Condition.and(pc1, pc2);
+        JSONObject jo1 = new JSONObject();
+        jo1.accumulate("type", "position");
+        jo1.accumulate("latitude", 123.4);
+        jo1.accumulate("longitude", 432.1);
+        jo1.accumulate("radius", 10);
+        JSONObject jo2 = new JSONObject();
+        jo2.accumulate("type", "position");
+        jo2.accumulate("latitude", 432.1);
+        jo2.accumulate("longitude", 123.4);
+        jo2.accumulate("radius", 20);
+        JSONArray ja = new JSONArray();
+        ja.put(jo1);
+        ja.put(jo2);
+        assertEquals(ja.toString(), pc1AndPc2.getMetadata().toString());
+    }
+
+    @Test
+    public void testToJSONMetadata() throws JSONException {
+        Condition pc1 = new PositionCondition(123.4, 432.1, 10);
+        JSONObject jo1 = new JSONObject();
+        jo1.accumulate("type", "position");
+        jo1.accumulate("latitude", 123.4);
+        jo1.accumulate("longitude", 432.1);
+        jo1.accumulate("radius", 10);
+        JSONArray ja = new JSONArray();
+        ja.put(jo1);
+        jo1.accumulate("metadata", ja);
+
+        assertEquals(jo1.toString(), pc1.toJSON().toString());
+    }
+    */
 }

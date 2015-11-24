@@ -1,6 +1,6 @@
 <?php
-include_once('include/utils.inc.php');
-include_once('include/functions.php');
+include_once('utils/utils.php');
+include_once('utils/functions.php');
 
 if (@$_GET['action'] == 'add') { // add a new user
 	include_once('controllers/users/add_user.php');

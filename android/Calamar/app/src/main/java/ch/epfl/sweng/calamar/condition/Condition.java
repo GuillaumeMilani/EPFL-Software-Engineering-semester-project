@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar.condition;
 
+import org.json.JSONArray;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -25,6 +26,17 @@ public abstract class Condition {
     private Boolean value = false;
     private final Set<Observer> observers = new HashSet<>();
 
+    private static JSONArray concatArray(JSONArray... arrays)
+            throws JSONException {
+        JSONArray result = new JSONArray();
+        for (JSONArray array : arrays) {
+            for (int i = 0; i < array.length(); i++) {
+                result.put(array.get(i));
+            }
+        }
+        return result;
+    }
+
     /**
      * compose this Condition in the json object
      *
@@ -42,6 +54,7 @@ public abstract class Condition {
     public JSONObject toJSON() throws JSONException {
         JSONObject ret = new JSONObject();
         this.compose(ret);
+        ret.accumulate("metadata", getMetadata());
         return ret;
     }
 
@@ -99,6 +112,8 @@ public abstract class Condition {
     public boolean getValue() {
         return value;
     }
+
+    public JSONArray getMetadata() throws JSONException { return new JSONArray(); }
 
     /**
      * create a Condition from a JSONObject
@@ -258,6 +273,7 @@ public abstract class Condition {
             }
 
             @Override
+            public JSONArray getMetadata() throws JSONException { return concatArray(c1.getMetadata(), c2.getMetadata()); }
             public View getView(Context context)
             {
                 FrameLayout view = (FrameLayout)(super.getView(context));
@@ -315,6 +331,8 @@ public abstract class Condition {
             }
 
             @Override
+            public JSONArray getMetadata() throws JSONException { return concatArray(c1.getMetadata(), c2.getMetadata()); }
+
             public View getView(Context context)
             {
                 FrameLayout view = (FrameLayout)(super.getView(context));
@@ -367,6 +385,8 @@ public abstract class Condition {
             public String type() {
                 return "not";
             }
+
+            // TODO How to deal metadata with not operator ?
 
             @Override
             public View getView(Context context)

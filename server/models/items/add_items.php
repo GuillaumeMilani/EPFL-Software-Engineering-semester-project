@@ -4,7 +4,7 @@
 * Add an item into the database
 * TODO : Better management of the type
 */
-function add_items($from,$to,$date,$type,$type_data)
+function add_items($from,$to,$date,$type,$type_data,$condition_id)
 {
 	global $pdo;
 	
@@ -12,10 +12,11 @@ function add_items($from,$to,$date,$type,$type_data)
 	$to = (int) $to;
 	$date = (int) $date;
 	
-	$query = $pdo->prepare('INSERT INTO `tb_item` (`ID`, `from`, `to`, `date`) VALUES (NULL, :from, :to, :date)');
+	$query = $pdo->prepare('INSERT INTO `tb_item` (`ID`, `from`, `to`, `date`, `condition`) VALUES (NULL, :from, :to, :date, :condition)');
 	$query->bindParam(':to',$to,PDO::PARAM_INT);
 	$query->bindParam(':from',$from,PDO::PARAM_INT);
 	$query->bindParam(':date',$date, PDO::PARAM_INT);
+	$query->bindParam(':condition', $condition_id, PDO::PARAM_INT);
 	try {
 		if($query->execute() == true)
 		{
@@ -27,7 +28,7 @@ function add_items($from,$to,$date,$type,$type_data)
 		}
 	} catch (Exception $e) {
 		http_response_code(500);
-		die("Error : database");
+		die("Error : database in item insertion");
 	}
 
 }
