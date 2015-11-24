@@ -68,22 +68,5 @@
         android:nestedScrollingEnabled="false"
         android:text="@string/refresh_button" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/create_item_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_gravity="end|bottom"
-        android:clickable="true"
-        android:onClick="createItem"
-        android:scaleType="center"
-        android:src="@drawable/ic_add_circle_outline_black_48dp"
-        app:backgroundTint="@android:color/white"
-        app:borderWidth="0dp"
-        app:fabSize="normal"
-        app:layout_anchor="@id/messageEdit"
-        app:layout_anchorGravity="bottom|right|end" />
-
 
 </RelativeLayout>
