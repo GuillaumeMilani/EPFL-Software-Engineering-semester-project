@@ -8,9 +8,8 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.zip.DataFormatException;
+import java.util.Date;
 
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -24,11 +23,36 @@ public class FileItem extends Item {
     private final byte[] data;
     private final int hash;
 
-    protected FileItem(int ID, User from, Recipient to, long date, Condition condition, byte[] data, String name) throws IOException {
+    public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String name) {
         super(ID, from, to, date, condition);
+        this.data = Compresser.compress(data.clone());
+        this.name = name;
+        hash = computeHash();
+    }
+
+    public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String name) {
+        super(ID, from, to, date);
         this.name = name;
         this.data = Compresser.compress(data.clone());
         hash = computeHash();
+    }
+
+    /**
+     * Returns the copy of the data of the file.
+     *
+     * @return a byte array
+     */
+    public byte[] getData() {
+        return data.clone();
+    }
+
+    /**
+     * Returns the name of the file
+     *
+     * @return name
+     */
+    public String getName() {
+        return name;
     }
 
     @Override
@@ -50,22 +74,23 @@ public class FileItem extends Item {
         return ret;
     }
 
-    public static FileItem fromJSON(JSONObject json) throws JSONException, IOException, DataFormatException {
+    public static FileItem fromJSON(JSONObject json) throws JSONException {
         return new FileItem.Builder().parse(json).build();
     }
 
     @Override
     public void compose(JSONObject object) throws JSONException {
         super.compose(object);
-        object.accumulate("data", arrayToString(data));
+        object.accumulate("data", byteArrayToString(data));
         object.accumulate("name", name);
+        object.accumulate("type", ITEM_TYPE.name());
     }
 
-    private static String arrayToString(byte[] data) {
+    public static String byteArrayToString(byte[] data) {
         return Base64.encodeToString(data, Base64.DEFAULT);
     }
 
-    private static byte[] stringToArray(String str) {
+    public static byte[] stringToByteArray(String str) {
         return Base64.decode(str, Base64.DEFAULT);
     }
 
@@ -96,24 +121,29 @@ public class FileItem extends Item {
         }
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + ", filename : " + name;
+    }
+
     protected static class Builder extends Item.Builder {
 
-        private byte[] data;
-        private String name;
+        protected byte[] data;
+        protected String name;
 
         @Override
-        protected FileItem build() throws IOException {
+        protected FileItem build() {
             return new FileItem(super.ID, super.from, super.to, super.date, super.condition, data, name);
         }
 
         @Override
-        protected FileItem.Builder parse(JSONObject json) throws JSONException, IOException, DataFormatException {
+        protected FileItem.Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString("type");
-            if (!type.equals(FileItem.ITEM_TYPE.name())) {
+            if (!(type.equals(FileItem.ITEM_TYPE.name()) || type.equals(ImageItem.ITEM_TYPE.name()))) {
                 throw new IllegalArgumentException("expected " + FileItem.ITEM_TYPE.name() + " was : " + type);
             }
-            data = Compresser.decompress(stringToArray(json.getString("data")));
+            data = Compresser.decompress(stringToByteArray(json.getString("data")));
             name = json.getString("name");
             return this;
         }
@@ -124,7 +154,7 @@ public class FileItem extends Item {
         }
 
         protected FileItem.Builder setData(String str) {
-            this.data = stringToArray(str);
+            this.data = stringToByteArray(str);
             return this;
         }
 

@@ -7,11 +7,9 @@ import android.widget.LinearLayout;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.zip.DataFormatException;
 
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -28,7 +26,7 @@ public abstract class Item {
     private final int ID;
     private final User from;
     private final Recipient to;
-    private final long date; //posix date
+    private final Date date; //posix date
     private final Condition condition;
 
     public enum Type {SIMPLETEXTITEM, IMAGEITEM, FILEITEM}
@@ -46,7 +44,7 @@ public abstract class Item {
         }
     };
 
-    protected Item(int ID, User from, Recipient to, long date, Condition condition) {
+    protected Item(int ID, User from, Recipient to, Date date, Condition condition) {
         if (null == from || null == to || null == condition) {
             throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' cannot be null");
         }
@@ -59,7 +57,7 @@ public abstract class Item {
         condition.addObserver(conditionObserver);
     }
 
-    protected Item(int ID, User from, Recipient to, long date) {
+    protected Item(int ID, User from, Recipient to, Date date) {
         this(ID, from, to, date, Condition.trueCondition());
     }
 
@@ -100,7 +98,7 @@ public abstract class Item {
      * @return the creation/posting date of the Item
      */
     public Date getDate() {
-        return new Date(this.date);
+        return date;
     }
 
     public int getID() {
@@ -121,7 +119,7 @@ public abstract class Item {
         json.accumulate("ID", ID);
         json.accumulate("from", from.toJSON());
         json.accumulate("to", to.toJSON());
-        json.accumulate("date", date);
+        json.accumulate("date", date.getTime());
         json.accumulate("condition", condition.toJSON());
     }
 
@@ -141,7 +139,7 @@ public abstract class Item {
      * @return a {@link Item item} parsed from the JSONObject
      * @throws JSONException
      */
-    public static Item fromJSON(JSONObject json) throws JSONException, IllegalArgumentException, IOException, DataFormatException {
+    public static Item fromJSON(JSONObject json) throws JSONException, IllegalArgumentException {
         if (null == json || json.isNull("type")) {
             throw new IllegalArgumentException("malformed json, either null or no 'type' value");
         }
@@ -176,7 +174,7 @@ public abstract class Item {
         if (!(o instanceof Item)) return false;
         Item that = (Item) o;
         return that.ID == ID && that.from.equals(from) && that.to.equals(to) &&
-                that.date == date && this.getType().equals(that.getType()) && this.condition.equals(that.condition);
+                that.date.getTime() == date.getTime() && this.condition.equals(that.condition);
     }
 
     /**
@@ -186,12 +184,12 @@ public abstract class Item {
      */
     @Override
     public int hashCode() {
-        return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date) * 479;
+        return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date.getTime()) * 479;
     }
 
     @Override
     public String toString() {
-        return "id : " + ID + " , from : (" + from + ") , to : (" + to + ") , at : " + new Date(date);
+        return "id : " + ID + " , from : (" + from + ") , to : (" + to + ") , at : " + date;
     }
 
     /**
@@ -203,14 +201,14 @@ public abstract class Item {
         protected int ID;
         protected User from;
         protected Recipient to;
-        protected long date;
+        protected Date date;
         protected Condition condition = Condition.trueCondition();
 
-        protected Builder parse(JSONObject o) throws JSONException, IOException, DataFormatException {
+        protected Builder parse(JSONObject o) throws JSONException {
             ID = o.getInt("ID");
             from = User.fromJSON(o.getJSONObject("from"));
             to = Recipient.fromJSON(o.getJSONObject("to"));
-            date = o.getLong("date");
+            date = new Date(o.getLong("date"));
             //TODO to delete when server ready to send true condition when there is no condition
             // and replace by just fromJSON etc..
             if (o.has("condition")) {
@@ -237,6 +235,11 @@ public abstract class Item {
         }
 
         protected Builder setDate(long date) {
+            this.date = new Date(date);
+            return this;
+        }
+
+        protected Builder setDate(Date date) {
             this.date = date;
             return this;
         }
@@ -246,7 +249,7 @@ public abstract class Item {
             return this;
         }
 
-        protected abstract Item build() throws IOException;
+        protected abstract Item build();
     }
 
     public void addObserver(Item.Observer observer) {

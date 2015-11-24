@@ -8,10 +8,10 @@ import java.util.zip.Inflater;
 
 public class Compresser {
 
-    public static byte[] compress(byte[] data) throws IOException {
+    public static byte[] compress(byte[] data) {
 
         Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION);
-        
+
         deflater.setInput(data);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
@@ -20,22 +20,26 @@ public class Compresser {
 
         byte[] buffer = new byte[1024];
 
-        while (!deflater.finished()) {
+        try {
+            while (!deflater.finished()) {
 
-            int count = deflater.deflate(buffer); // returns the generated code... index
+                int count = deflater.deflate(buffer); // returns the generated code... index
 
-            outputStream.write(buffer, 0, count);
+                outputStream.write(buffer, 0, count);
 
+            }
+            deflater.end();
+
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        deflater.end();
-
-        outputStream.close();
 
         return outputStream.toByteArray();
 
     }
 
-    public static byte[] decompress(byte[] data) throws IOException, DataFormatException {
+    public static byte[] decompress(byte[] data) {
 
         Inflater inflater = new Inflater();
 
@@ -45,17 +49,22 @@ public class Compresser {
 
         byte[] buffer = new byte[1024];
 
-        while (!inflater.finished()) {
+        try {
+            while (!inflater.finished()) {
 
-            int count = inflater.inflate(buffer);
+                int count = inflater.inflate(buffer);
 
-            outputStream.write(buffer, 0, count);
+                outputStream.write(buffer, 0, count);
 
+            }
+
+            outputStream.close();
+
+            return outputStream.toByteArray();
+        } catch (IOException | DataFormatException e) {
+            e.printStackTrace();
         }
-
-        outputStream.close();
-
-        return outputStream.toByteArray();
+        return null;
 
     }
 

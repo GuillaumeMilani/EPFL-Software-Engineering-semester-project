@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.ipaulpro.afilechooser.utils.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -149,7 +150,7 @@ public class CreateItemActivity extends BaseActivity {
         }
     }
 
-    public void createAndSend(View v) {
+    public void createAndSend(View v) throws IOException {
         Item.Builder toSendBuilder;
         if (file != null) {
             String name = file.getName();

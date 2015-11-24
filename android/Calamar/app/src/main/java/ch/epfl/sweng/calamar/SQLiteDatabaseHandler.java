@@ -85,8 +85,8 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         this.pendingRecipients = new HashMap<>();
         this.pendingItems = new HashMap<>();
         this.FULL_PLACEHOLDERS = createPlaceholders(MAX_PLACEHOLDERS_COUNT);
-        lastItemTime = app.getLastItemsRefresh();
-        lastUpdateTime = app.getLastItemsRefresh();
+        lastItemTime = app.getLastItemsRefresh().getTime();
+        lastUpdateTime = app.getLastItemsRefresh().getTime();
 
     }
 
