@@ -5,11 +5,14 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.location.Location;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -71,6 +74,10 @@ public abstract class Condition {
     }
 
     public abstract String type();
+
+    public Location getLocation() {
+        throw new UnsupportedOperationException("the condition does NOT have any position");
+    }
 
     public View getView(Context context)
     {
@@ -285,7 +292,15 @@ public abstract class Condition {
             }
 
             @Override
-            public JSONArray getMetadata() throws JSONException { return concatArray(c1.getMetadata(), c2.getMetadata()); }
+            public Location getLocation() {
+                return Condition.getLocation(c1, c2);
+            }
+
+            @Override
+            public JSONArray getMetadata() throws JSONException {
+                return concatArray(c1.getMetadata(), c2.getMetadata());
+            }
+
             public View getView(Context context)
             {
                 LinearLayout view = (LinearLayout)(super.getView(context));
@@ -343,7 +358,14 @@ public abstract class Condition {
             }
 
             @Override
-            public JSONArray getMetadata() throws JSONException { return concatArray(c1.getMetadata(), c2.getMetadata()); }
+            public Location getLocation() {
+                return Condition.getLocation(c1, c2);
+            }
+
+            @Override
+            public JSONArray getMetadata() throws JSONException {
+                return concatArray(c1.getMetadata(), c2.getMetadata());
+            }
 
             public View getView(Context context)
             {
@@ -399,6 +421,16 @@ public abstract class Condition {
             }
 
             // TODO How to deal metadata with not operator ?
+            // ==> nothing to do, no ?
+            @Override
+            public JSONArray getMetadata() throws JSONException {
+                return c.getMetadata();
+            }
+
+            @Override
+            public Location getLocation() {
+                return c.getLocation();
+            }
 
             @Override
             public View getView(Context context)
@@ -434,6 +466,14 @@ public abstract class Condition {
 
     public boolean removeObserver(Condition.Observer observer) {
         return this.observers.remove(observer);
+    }
+
+    private static Location getLocation(Condition c1, Condition c2) {
+        try {
+            return c1.getLocation();
+        } catch (UnsupportedOperationException e) {
+            return c2.getLocation(); // if c2 hasn't any location -> default throw exception
+        }
     }
 
     public abstract static class Observer {

@@ -8,6 +8,8 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,6 +44,7 @@ public class PositionCondition extends Condition {
         return loc;
     }
 
+    @Override
     public Location getLocation(){
         return location;
     }
@@ -66,7 +69,7 @@ public class PositionCondition extends Condition {
     }
 
     public PositionCondition(Location location){
-        this(location,DEFAULT_RADIUS);
+        this(location, DEFAULT_RADIUS);
     }
 
     /**
