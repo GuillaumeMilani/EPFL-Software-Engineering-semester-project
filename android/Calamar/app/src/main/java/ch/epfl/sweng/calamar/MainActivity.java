@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -31,6 +33,8 @@ import java.util.Date;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.chat.ChatFragment;
+import ch.epfl.sweng.calamar.client.DatabaseClientException;
+import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.map.MapFragment;
 import ch.epfl.sweng.calamar.push.RegistrationIntentService;
@@ -171,15 +175,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         Log.i(TAG, accountName);
                         app.setCurrentUserName(accountName);
 
-                        // Show toast
-                        Context context = getApplicationContext();
-                        CharSequence text = "Connected as " + accountName;
-                        int duration = Toast.LENGTH_SHORT;
-
-                        Toast toast = Toast.makeText(context, text, duration);
-                        toast.show();
-
-                        afterAccountAuthentification();
+                        afterAccountAuthentication();
                         break;
                     default:
                         Log.e(MainActivity.TAG,"Didn't choose an account");
@@ -348,8 +344,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     /**
      * Called after the account was authenticated
      */
-    private void afterAccountAuthentification()
+    private void afterAccountAuthentication()
     {
+       new createNewUserTask(app.getCurrentUserName(),this).execute();
+
         // token generation
         if (checkPlayServices()) {
             // Start IntentService to register this application with GCM.
@@ -413,6 +411,54 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         protected void onPostExecute(Void v) {
             app.setLastUsersRefresh(new Date());
             app.setLastItemsRefresh(new Date());
+        }
+    }
+
+
+    /**
+     * Async task for sending a message.
+     */
+    private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
+        private String name = null;
+        private Context context;
+
+        public createNewUserTask(String name, Context context) {
+            this.name = name;
+            this.context = context;
+        }
+
+        @Override
+        protected Integer doInBackground(Void... v) {
+            try {
+                //Get the device id.
+                return DatabaseClientLocator.getDatabaseClient().newUser(name, Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
+            } catch (DatabaseClientException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Integer id) {
+            if (id != null) {
+                app.setCurrentUserID(id);
+                // Show toast
+                Context context = getApplicationContext();
+                CharSequence text = "Connected as " + name;
+                int duration = Toast.LENGTH_SHORT;
+
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
+            } else {
+                AlertDialog.Builder newUser = new AlertDialog.Builder(context);
+                newUser.setTitle(R.string.new_account_creation_fail);
+                newUser.setPositiveButton(R.string.new_account_creation_retry, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        new createNewUserTask(name, context).execute();
+                    }
+                });
+                newUser.show();
+            }
         }
     }
 }

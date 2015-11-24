@@ -112,15 +112,12 @@ public class ChatFragment extends android.support.v4.app.Fragment {
      * Return the actual user of the app.
      */
     public  void setActualUser() {
-        //TODO : Remove when you use a real device.
-        //TODO : here include the change from the choosen account
         if(!app.getCurrentUserName().equals("")) {
-            new createNewUserTask(app.getCurrentUserName(), getActivity()).execute();
             actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
         }
         else
         {
-            //TODO discuss what we do if the user doesn't have an account
+            getActivity().finish();
         }
     }
 
@@ -148,57 +145,6 @@ public class ChatFragment extends android.support.v4.app.Fragment {
         });
         newContactAlertDialog.show();
     }
-
-    /**
-     * Async task for sending a message.
-     */
-    private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
-        private String name = null;
-        private Context context;
-
-        public createNewUserTask(String name, Context context) {
-            this.name = name;
-            this.context = context;
-        }
-
-        @Override
-        protected Integer doInBackground(Void... v) {
-            try {
-                //Get the device id.
-                return DatabaseClientLocator.getDatabaseClient().newUser(name, Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
-            } catch (DatabaseClientException e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Integer id) {
-            if (id != null) {
-                app.setCurrentUserID(id);
-                app.setCurrentUserName(name);
-                actualUserTextView.setText("Actual user : " + name);
-                AlertDialog.Builder newUser = new AlertDialog.Builder(context);
-                newUser.setTitle(getString(R.string.new_account_creation_success) + name);
-                newUser.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        //OK
-                    }
-                });
-                newUser.show();
-            } else {
-                AlertDialog.Builder newUser = new AlertDialog.Builder(context);
-                newUser.setTitle(R.string.new_account_creation_fail);
-                newUser.setPositiveButton(R.string.new_account_creation_retry, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        new createNewUserTask(name, context).execute();
-                    }
-                });
-                newUser.show();
-            }
-        }
-    }
-
 
     /**
      * Async task for retrieving a new user.
