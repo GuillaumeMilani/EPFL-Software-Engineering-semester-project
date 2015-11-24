@@ -118,7 +118,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Placeholder table for view `view_text_message`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `view_text_message` (`ID` INT, `from` INT, `to` INT, `date` INT, `text` INT);
+CREATE TABLE IF NOT EXISTS `view_text_message` (`ID` INT, `from` INT, `to` INT, `date` INT, `condition` INT, `text` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `mydb`.`view_user`
@@ -132,7 +132,7 @@ DROP TABLE IF EXISTS `view_text_message`;
 
 CREATE OR REPLACE VIEW `view_text_message` AS
 SELECT 
-    itm.ID, itm.from, itm.to, itm.date, txt.text
+    itm.ID, itm.from, itm.to, itm.date, itm.condition, txt.text
 FROM tb_item itm, tb_item_text txt WHERE itm.id = txt.id;
 
 -- -----------------------------------------------------
