@@ -1,13 +1,22 @@
 package ch.epfl.sweng.calamar.map;
 
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
+import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -29,10 +38,7 @@ import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
-import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
-
-import static ch.epfl.sweng.calamar.item.Item.Type.SIMPLETEXTITEM;
 
 
 /**
@@ -47,7 +53,9 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     //TODO : manage activity lifecycle : start stop location updates when not needed, plus many potential problems
 
 
+    //TODO : Use a bidirectional map ?
     private Map<Item,Marker> markers;
+    private Map<Marker,Item> itemFromMarkers;
 
     private GoogleMap map; // Might be null if Google Play services APK is not available.
     // however google play services are checked at app startup...and
@@ -78,25 +86,30 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         @Override
         public void update(Item item) {
             Marker updatedMarker = markers.get(item);
+            Bitmap icon;
             if(item.getCondition().getValue()) {
-                //TODO : Maybe better to let the item display himself ? ( issue #91 )
-                switch (item.getType()) {
-                    case SIMPLETEXTITEM:
-                        SimpleTextItem textItem = (SimpleTextItem)item;
-                        updatedMarker.setTitle(textItem.getMessage());
-                        updatedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unexpected Item type (" + item.getType() + ")");
-                }
+                updatedMarker.setTitle("Unlocked");
+                icon =  BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.unlock);
             } else {
                 updatedMarker.setTitle("Locked");
-                updatedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                icon =  BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.lock);
             }
+            updatedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(icon));
         }
     };
 
+    private LinearLayout detailsViewDialog;
 
+    //When the condition is okay, we update the item description
+    private Item.Observer detailsItemObserver = new Item.Observer() {
+        @Override
+        public void update(Item item) {
+            //Update the dialog with the new view.
+            View itemView = item.getView(getContext());
+            detailsViewDialog.removeAllViews();
+            detailsViewDialog.addView(itemView);
+        }
+    };
 
     public MapFragment() {
         // Required empty public constructor
@@ -119,6 +132,10 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         markers = new HashMap<>();
+        itemFromMarkers = new HashMap<>();
+
+        detailsViewDialog = new LinearLayout(getActivity());
+        detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
 
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_map, container, false);
@@ -142,6 +159,45 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     public void onMapReady(GoogleMap map) {
         this.map = map;
         map.setMyLocationEnabled(true);
+        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                final Item item = itemFromMarkers.get(marker);
+
+                AlertDialog.Builder itemDescription = new AlertDialog.Builder(getActivity());
+                itemDescription.setTitle(R.string.item_details_alertDialog_title);
+
+                itemDescription.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        item.removeObserver(detailsItemObserver);
+                    }
+                });
+
+                //OnCancel is called when we press the back button.
+                itemDescription.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        item.removeObserver(detailsItemObserver);
+                    }
+                });
+
+                //Create a new view
+                detailsViewDialog = new LinearLayout(getActivity());
+                detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
+
+                detailsViewDialog.addView(item.getView(getActivity()));
+
+
+                itemDescription.setView(detailsViewDialog);
+
+                item.addObserver(detailsItemObserver);
+
+                itemDescription.show();
+
+                return false;
+            }
+        });
+
         addAllItemToMap();
         setUpGPS(); // register to the GPSProvider location updates
     }
@@ -173,8 +229,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         gpsProvider.getLastLocation().getLatitude();
         l.setLatitude(gpsProvider.getLastLocation().getLatitude());
         l.setLongitude(gpsProvider.getLastLocation().getLongitude());
-
-        addItemToMap(new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l, 5), "Password : calamar42"));
+        
+        addItemToMap(new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l, 100), "Password : calamar42"));
     }
 
     private void addAllItemToMap(){
@@ -199,6 +255,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                     .position(new LatLng(l.getLatitude(), l.getLongitude()));
 
         marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+        marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.lock));
 
         marker.title("Locked");
 
@@ -206,8 +263,10 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
         i.addObserver(itemObserver);
 
-        markers.put(i,map.addMarker(marker));
+        Marker finalMarker = map.addMarker(marker);
 
+        markers.put(i, finalMarker);
+        itemFromMarkers.put(finalMarker,i);
     }
 
     /**

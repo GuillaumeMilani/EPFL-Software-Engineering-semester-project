@@ -1,9 +1,12 @@
 package ch.epfl.sweng.calamar.chat;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -91,6 +94,27 @@ public class ChatActivity extends BaseActivity {
         adapter = new ChatAdapter(this, messagesHistory);
         messagesContainer.setAdapter(adapter);
 
+        messagesContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                Item item = messagesHistory.get(position);
+
+                AlertDialog.Builder itemDescription = new AlertDialog.Builder(ChatActivity.this);
+                itemDescription.setTitle(R.string.item_details_alertDialog_title);
+
+                itemDescription.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        //OK
+                    }
+                });
+
+                itemDescription.setView(item.getView(ChatActivity.this));
+
+                itemDescription.show();
+            }
+        });
+
         TextView recipient = (TextView) findViewById(R.id.recipientLabel);
         recipient.setText(correspondent.getName());
 
@@ -145,6 +169,7 @@ public class ChatActivity extends BaseActivity {
         protected void onPostExecute(Item item) {
             if (item != null) {
                 adapter.add(item);
+                messagesHistory.add(item);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 databaseHandler.addItem(item);
@@ -187,6 +212,8 @@ public class ChatActivity extends BaseActivity {
             if (items != null) {
                 databaseHandler.addItems(items);
                 adapter.add(items);
+                messagesHistory.addAll(items);
+
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 Toast.makeText(getApplicationContext(), R.string.chat_activity_refresh_message,
