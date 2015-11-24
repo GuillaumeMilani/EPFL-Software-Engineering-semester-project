@@ -42,6 +42,8 @@ public abstract class Item {
     private final long date; //posix date
     private final Condition condition;
 
+
+
     public enum Type {SIMPLETEXTITEM, IMAGEITEM}
     //TODO date d'expiration ?
 
@@ -89,21 +91,12 @@ public abstract class Item {
     {
         final LinearLayout view = (LinearLayout)getPreView(context);
 
-        setConditionView(view,context);
+        TextView titleCondition = new TextView(context);
+        titleCondition.setText(R.string.item_getView_condition_title);
+        titleCondition.setTextSize(25);
+        view.addView(titleCondition,1);
+        view.addView(condition.getView(context), 2);
 
-        //When the condition is okay, we update the item description
-        final Condition.Observer previewConditionObserver = new Condition.Observer() {
-            @Override
-            public void update(Condition condition) {
-                view.removeAllViews();
-                setItemView(view, context);
-                setConditionView(view,context);
-            }
-        };
-
-        condition.addObserver(previewConditionObserver);
-        //TODO : When to remove this observer ?
-        
         return view;
     }
 
@@ -116,29 +109,16 @@ public abstract class Item {
     public View getPreView(final Context context){
         final LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
-        setItemView(view, context);
 
-        return view;
-    }
-
-    private void setItemView(View v, Context context){
-        LinearLayout preview = (LinearLayout)v;
         if(condition.getValue()){
-            preview.addView(getItemView(context), 0);
+            view.addView(getItemView(context), 0);
         } else {
             TextView lockMessage = new TextView(context);
             lockMessage.setText(R.string.item_is_locked_getview);
-            preview.addView(lockMessage, 0);
+            view.addView(lockMessage, 0);
         }
-    }
 
-    private void setConditionView(View v, Context context){
-        LinearLayout view = (LinearLayout)v;
-        TextView titleCondition = new TextView(context);
-        titleCondition.setText(R.string.item_getView_condition_title);
-        titleCondition.setTextSize(25);
-        view.addView(titleCondition,1);
-        view.addView(condition.getView(context), 2);
+        return view;
     }
 
     /**

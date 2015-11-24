@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar.map;
 
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
@@ -13,6 +14,9 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -94,7 +98,18 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         }
     };
 
+    private LinearLayout detailsViewDialog;
 
+    //When the condition is okay, we update the item description
+    private Item.Observer detailsItemObserver = new Item.Observer() {
+        @Override
+        public void update(Item item) {
+            //Update the dialog with the new view.
+            View itemView = item.getView(getContext());
+            detailsViewDialog.removeAllViews();
+            detailsViewDialog.addView(itemView);
+        }
+    };
 
     public MapFragment() {
         // Required empty public constructor
@@ -117,6 +132,9 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         super.onCreateView(inflater, container, savedInstanceState);
         markers = new HashMap<>();
         itemFromMarkers = new HashMap<>();
+
+        detailsViewDialog = new LinearLayout(getActivity());
+        detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
 
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_map, container, false);
@@ -143,24 +161,42 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                Item item = itemFromMarkers.get(marker);
+                final Item item = itemFromMarkers.get(marker);
 
                 AlertDialog.Builder itemDescription = new AlertDialog.Builder(getActivity());
                 itemDescription.setTitle(R.string.item_details_alertDialog_title);
 
                 itemDescription.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        //OK
+                        item.removeObserver(detailsItemObserver);
                     }
                 });
 
-                itemDescription.setView(item.getView(getActivity()));
+                //OnCancel is called when we press the back button.
+                itemDescription.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        item.removeObserver(detailsItemObserver);
+                    }
+                });
+
+                //Create a new view
+                detailsViewDialog = new LinearLayout(getActivity());
+                detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
+
+                detailsViewDialog.addView(item.getView(getActivity()));
+
+
+                itemDescription.setView(detailsViewDialog);
+
+                item.addObserver(detailsItemObserver);
 
                 itemDescription.show();
 
                 return false;
             }
         });
+
         addAllItemToMap();
         setUpGPS(); // register to the GPSProvider location updates
     }
