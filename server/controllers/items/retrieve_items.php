@@ -12,7 +12,7 @@ if ($post_content == null) {
 
 $params_array = json_decode($post_content, true);
 
-if (isset($params_array['latitude']) && isset($params_array['longitude'])) {
+if (isset($params_array['latitude']) && isset($params_array['longitude']) && isset($params_array['radius'])) {
 	$items = get_item_with_location($params_array['recipient'], $params_array['lastRefresh'], $params_array['latitude'], $params_array['longitude'], $params_array['radius']);
 } else {
 	$items = get_items($params_array['recipient'], $params_array['lastRefresh']);

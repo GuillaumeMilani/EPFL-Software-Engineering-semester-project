@@ -44,16 +44,13 @@ if ($condition['type'] == "true") {
 	}
 }
 
-// add the data into the db
-$result = add_items($from['ID'],$to['ID'],$date,$type,$item,$condition_id);
-
-if($result)
-{
-	http_response_code(201);
-	echo json_encode(array("type" => $type, "from" => $from, "to" => $to, "date" => $date, "condition" => $condition));
-}
-else
-{
+$result;
+try {
+	// add the data into the db
+	$result = add_items($from['ID'],$to['ID'],$date,$type,$item,$condition_id);
+} catch (Exception $e) {
 	http_response_code(500);
-	die("Error : database");
+	die("Error : database in item creation ".$e->getMessage());
 }
+	http_response_code(201);
+	echo json_encode(array("ID" => $result, "type" => $type, "from" => $from, "to" => $to, "date" => $date, "message" => $item, "condition" => json_decode($condition)));

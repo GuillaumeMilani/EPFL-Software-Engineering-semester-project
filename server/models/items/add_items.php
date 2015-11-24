@@ -20,20 +20,9 @@ function add_items($from,$to,$date,$type,$type_data,$condition_id)
 	$query->bindParam(':from',$from,PDO::PARAM_INT);
 	$query->bindParam(':date',$date, PDO::PARAM_INT);
 	$query->bindParam(':condition', $condition_id, PDO::PARAM_INT);
-	try {
-		if($query->execute() == true)
-		{
-			return add_items_text($pdo->lastInsertId(),$type_data);
-		}
-		else
-		{
-			return false;
-		}
-	} catch (Exception $e) {
-		http_response_code(500);
-		die("Error : database in item insertion");
-	}
-
+	$query->execute();
+	
+	return add_items_text($pdo->lastInsertId(),$type_data);
 }
 /**
 *	Add an item of type text into the database
@@ -42,10 +31,12 @@ function add_items_text($ID,$text)
 {
 	global $pdo;
 	
-	$id = (int) $ID;
+	$ID = (int) $ID;
 	
 	$query = $pdo->prepare('INSERT INTO `tb_item_text` (`ID`, `text`) VALUES (:id, :text)');
 	$query->bindParam(':id',$ID,PDO::PARAM_INT);
 	$query->bindParam(':text',$text,PDO::PARAM_STR);
-	return $query->execute();
+	$query->execute();
+	
+	return $ID;
 }
