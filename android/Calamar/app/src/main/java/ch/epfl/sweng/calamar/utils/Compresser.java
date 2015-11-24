@@ -9,12 +9,10 @@ import java.util.zip.Inflater;
 
 public class Compresser {
 
-    private static final byte header1 = 0x78;
-    private static final byte header2 = (byte) 0xDA;
-    private static final byte footer1 = 0x17;
-    private static final byte footer2 = 0x37;
-    private static final byte footer3 = 0x67;
-    private static final byte footer4 = (byte) 0xa7;
+    private static final int BUFFER_SIZE = 1024;
+    private static final byte HEADER_1 = 0x78;
+    private static final byte HEADER_2 = (byte) 0xDA;
+    private static final byte[] FOOTER = {0x10, 0x23, 0x47, 0x12, 0x45, (byte) 0xa7, (byte) 0xd3, (byte) 0xef, (byte) 0xaa, (byte) 0xfa, 0x02, 0x21, 0x33, 0x22};
 
     public static byte[] compress(byte[] data) {
 
@@ -29,7 +27,7 @@ public class Compresser {
 
             deflater.finish();
 
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[BUFFER_SIZE];
 
             try {
                 while (!deflater.finished()) {
@@ -48,12 +46,9 @@ public class Compresser {
 
             //Set footer
             byte[] result = outputStream.toByteArray();
-            byte[] toReturn = new byte[result.length + 4];
+            byte[] toReturn = new byte[result.length + FOOTER.length];
             System.arraycopy(result, 0, toReturn, 0, result.length);
-            toReturn[toReturn.length - 4] = footer1;
-            toReturn[toReturn.length - 3] = footer2;
-            toReturn[toReturn.length - 2] = footer3;
-            toReturn[toReturn.length - 1] = footer4;
+            System.arraycopy(FOOTER, 0, toReturn, toReturn.length - FOOTER.length, FOOTER.length);
             return toReturn;
         }
     }
@@ -61,15 +56,15 @@ public class Compresser {
     public static byte[] decompress(byte[] data) {
 
         if (isCompressed(data)) {
-            Arrays.copyOf(data, data.length - 4);
+            byte[] toDecode = Arrays.copyOf(data, data.length - FOOTER.length);
 
             Inflater inflater = new Inflater();
 
-            inflater.setInput(data);
+            inflater.setInput(toDecode);
 
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream(toDecode.length);
 
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[BUFFER_SIZE];
 
             try {
                 while (!inflater.finished()) {
@@ -94,9 +89,12 @@ public class Compresser {
     }
 
     private static boolean isCompressed(byte[] data) {
-        return (data[data.length - 1] == footer4 && data[data.length - 2] == footer3
-                && data[data.length - 3] == footer2 && data[data.length - 4] == footer1
-                && data[0] == header1 && data[1] == header2);
+        if (data.length < FOOTER.length + 2) {
+            return false;
+        } else {
+            byte[] dataFooter = Arrays.copyOfRange(data, data.length - FOOTER.length, data.length);
+            return (Arrays.equals(dataFooter, FOOTER) && data[0] == HEADER_1 && data[1] == HEADER_2);
+        }
     }
 
 }
