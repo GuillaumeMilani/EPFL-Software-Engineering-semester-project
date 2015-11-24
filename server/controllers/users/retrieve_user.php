@@ -22,6 +22,6 @@ else
 	    echo format_array($response);
 	} catch (Exception $e) {
 	    http_response_code(500);
-	    echo format_array(array('error' => e->getMessage()));
+	    echo format_array(array('error' => $e->getMessage()));
 	}
 }

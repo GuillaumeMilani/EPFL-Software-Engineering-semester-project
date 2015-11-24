@@ -246,8 +246,8 @@ public abstract class Item {
     }
 
     @Override
-    public String toString(){
-        return "id : "+ID+" , from : ("+from+") , to : ("+to+") , at : "+new Date(date);
+    public String toString() {
+        return "id : " + ID + " , from : (" + from + ") , to : (" + to + ") , at : " + new Date(date);
     }
 
     /**
@@ -255,14 +255,14 @@ public abstract class Item {
      * is used by the child builders (in {@link SimpleTextItem} or...) to build the "Item
      * part of the object". currently only used to parse JSON (little overkill..but ..)
      */
-    protected static class Builder {
+    protected abstract static class Builder {
         protected int ID;
         protected User from;
         protected Recipient to;
         protected long date;
-        protected Condition condition;
+        protected Condition condition=Condition.trueCondition();
 
-        public Builder parse(JSONObject o) throws JSONException {
+        protected Builder parse(JSONObject o) throws JSONException {
             ID = o.getInt("ID");
             from = User.fromJSON(o.getJSONObject("from"));
             to = Recipient.fromJSON(o.getJSONObject("to"));
@@ -276,6 +276,28 @@ public abstract class Item {
             }
             return this;
         }
+
+        protected void setID(int ID) {
+            this.ID = ID;
+        }
+
+        protected void setFrom(User from) {
+            this.from = from;
+        }
+
+        protected void setTo(Recipient to) {
+            this.to = to;
+        }
+
+        protected void setDate(long date) {
+            this.date = date;
+        }
+
+        protected void setCondition(Condition condition) {
+            this.condition = condition;
+        }
+
+        protected abstract Item build();
     }
 
     public void addObserver(Item.Observer observer) {

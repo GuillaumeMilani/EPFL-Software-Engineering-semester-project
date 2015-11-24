@@ -8,6 +8,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,6 +21,7 @@ import ch.epfl.sweng.calamar.map.GPSProvider;
 public class PositionCondition extends Condition {
 
     private final static String CONDITION_TYPE = "position";
+    private final static double DEFAULT_RADIUS = 20;
 
     private final Location location;
     private final double radius;
@@ -61,6 +63,10 @@ public class PositionCondition extends Condition {
                 setValue(newLocation.distanceTo(This.location) < This.radius);
             }
         });
+    }
+
+    public PositionCondition(Location location){
+        this(location,DEFAULT_RADIUS);
     }
 
     /**
@@ -107,6 +113,14 @@ public class PositionCondition extends Condition {
     }
 
     @Override
+    public JSONArray getMetadata()throws JSONException {
+        JSONArray array = new JSONArray();
+        JSONObject jObject = new JSONObject();
+        compose(jObject);
+        array.put(jObject);
+        return array;
+    }
+
     public View getView(Context context)
     {
         LinearLayout view = (LinearLayout)(super.getView(context));

@@ -48,6 +48,8 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         dbHandler.deleteAllRecipients();
         app.setCurrentUserID(testUser.getID());
         app.setCurrentUserName(testUser.getName());
+        app.setLastItemsRefresh(0);
+        app.setLastUsersRefresh(0);
     }
 
     public SQLiteDatabaseHandlerTest() {
@@ -714,6 +716,47 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         assertTrue(dbHandler.getAllRecipients().isEmpty());
     }
 
+    @Test
+    public void testLastUpdateTimeAlwaysApplying() {
+        checkLastTime(0);
+        Item item = new SimpleTextItem(1, new User(1, ""), new User(2, ""), new Date(1000), "");
+        dbHandler.addItem(item);
+        checkLastTime(0);
+        dbHandler.applyPendingOperations();
+        checkLastTime(1000);
+        Item item2 = new SimpleTextItem(2, new User(2, ""), new User(3, ""), new Date(0), "");
+        dbHandler.addItem(item2);
+        checkLastTime(1000);
+        dbHandler.applyPendingOperations();
+        checkLastTime(1000);
+        Item item3 = new SimpleTextItem(3, new User(3, ""), new User(1, ""), new Date(1001), "");
+        dbHandler.updateItem(item3);
+        checkLastTime(1000);
+        dbHandler.applyPendingOperations();
+        checkLastTime(1001);
+    }
+
+    @Test
+    public void testLastUpdateTime() {
+        checkLastTime(0);
+        Item item = new SimpleTextItem(1, new User(1, ""), new User(2, ""), new Date(1000), "");
+        dbHandler.addItem(item);
+        checkLastTime(0);
+        Item item2 = new SimpleTextItem(2, new User(2, ""), new User(3, ""), new Date(0), "");
+        dbHandler.addItem(item2);
+        checkLastTime(0);
+        Item item3 = new SimpleTextItem(3, new User(3, ""), new User(1, ""), new Date(1001), "");
+        dbHandler.updateItem(item3);
+        checkLastTime(0);
+        dbHandler.applyPendingOperations();
+        checkLastTime(1001);
+    }
+
+    @Ignore
+    private void checkLastTime(long time) {
+        assertEquals(dbHandler.getLastUpdateTime(), time);
+    }
+
     @Ignore
     private SimpleTextItem createDummyItem(int i, boolean update) {
         if (update) {
@@ -750,6 +793,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         clearDB();
         app.getDatabaseHandler().closeDatabase();
         app.resetPreferences();
+        dbHandler.resetLastUpdateTime();
     }
 
     @Ignore

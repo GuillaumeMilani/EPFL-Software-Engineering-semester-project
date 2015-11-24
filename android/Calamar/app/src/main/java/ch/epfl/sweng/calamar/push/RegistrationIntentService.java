@@ -1,12 +1,22 @@
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
- * <p/>
+ * <<<<<<< HEAD:android/Calamar/app/src/main/java/ch/epfl/sweng/calamar/RegistrationIntentService.java
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p/>
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
+ * <p>
+ * =======
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * >>>>>>> dc774c0b4e22aff9aa7e58950946e847eb05e6d8:android/Calamar/app/src/main/java/ch/epfl/sweng/calamar/push/RegistrationIntentService.java
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +40,6 @@ import com.google.android.gms.iid.InstanceID;
 
 import java.io.IOException;
 
-import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DefaultNetworkProvider;
 
@@ -85,7 +94,7 @@ public class RegistrationIntentService extends IntentService {
 
     /**
      * Persist registration to third-party servers.
-     *
+     * <p>
      * Modify this method to associate the user's GCM registration token with any server-side account
      * maintained by your application.
      *
@@ -96,12 +105,12 @@ public class RegistrationIntentService extends IntentService {
         NetworkRegistrationClient client = new NetworkRegistrationClient("HTTP://calamar.japan-impact.ch", new DefaultNetworkProvider());
         try {
             //TODO would be better if we can be sure that getCurrentUserName, give us a real user
-           // client.send(token,CalamarApplication.getInstance().getCurrentUserName());
+            // client.send(token,CalamarApplication.getInstance().getCurrentUserName());
             //Get google account email
             AccountManager manager = AccountManager.get(this);
             Account[] list = manager.getAccountsByType("com.google");
-            client.send(token,list[0].name);
-            Log.i(TAG,"(token,name) is (" + token +","+ list[0].name+")");
+            client.send(token, list[0].name);
+            Log.i(TAG, "(token,name) is (" + token + "," + list[0].name + ")");
         } catch (RegisterClientException e) {
             e.printStackTrace();
             Log.e("Token", "couldn't reach the server");

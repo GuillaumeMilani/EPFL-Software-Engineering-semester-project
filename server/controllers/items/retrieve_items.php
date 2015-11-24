@@ -12,8 +12,11 @@ if ($post_content == null) {
 
 $params_array = json_decode($post_content, true);
 
-$items = get_items($params_array['recipient'], $params_array['lastRefresh']);
-
+if (isset($params_array['latitude']) && isset($params_array['longitude'])) {
+	$items = get_item_with_location($params_array['recipient'], $params_array['lastRefresh'], $params_array['latitude'], $params_array['longitude'], $params_array['radius']);
+} else {
+	$items = get_items($params_array['recipient'], $params_array['lastRefresh']);
+}
 echo json_encode($items, JSON_NUMERIC_CHECK);
 
 // We don't use the views for the moment (would contain only an "echo")

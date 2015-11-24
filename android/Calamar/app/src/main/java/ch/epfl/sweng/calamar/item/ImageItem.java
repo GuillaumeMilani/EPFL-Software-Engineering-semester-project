@@ -11,7 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.Charset;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -31,12 +31,13 @@ public final class ImageItem extends Item {
 
     /**
      * Instantiates a new ImageItem with the following parameters
-     * @param ID the id
-     * @param from the 'from' field of the Item (sender)
-     * @param to the 'to' field of the Item (recipient)
-     * @param date the creation/posting date of the Item
+     *
+     * @param ID        the id
+     * @param from      the 'from' field of the Item (sender)
+     * @param to        the 'to' field of the Item (recipient)
+     * @param date      the creation/posting date of the Item
      * @param condition the content (text message)
-     * @param bitmap the image
+     * @param bitmap    the image
      * @see Item#Item(int, User, Recipient, long, Condition)
      */
     public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, Bitmap bitmap) {
@@ -47,10 +48,11 @@ public final class ImageItem extends Item {
 
     /**
      * Instantiates a new ImageItem with the following parameters (condition will be always true)
-     * @param ID the id
-     * @param from the 'from' field of the Item (sender)
-     * @param to the 'to' field of the Item (recipient)
-     * @param date the creation/posting date of the Item
+     *
+     * @param ID     the id
+     * @param from   the 'from' field of the Item (sender)
+     * @param to     the 'to' field of the Item (recipient)
+     * @param date   the creation/posting date of the Item
      * @param bitmap the image
      * @see Item#Item(int, User, Recipient, long)
      */
@@ -62,6 +64,7 @@ public final class ImageItem extends Item {
 
     /**
      * gets type of this ImageItem (always return IMAGEITEM
+     *
      * @return IMAGEITEM
      */
     @Override
@@ -139,33 +142,31 @@ public final class ImageItem extends Item {
 
     /**
      * used to transform a string (containing an array of bytes representing the png image) to a bitmap
+     *
      * @param str png image as byte[]
      * @return bitmap corresponding to given byte[] input
      */
-    public static Bitmap string2Bitmap(String str)
-    {
+    public static Bitmap string2Bitmap(String str) {
         byte[] bytes2 = Base64.decode(str, Base64.DEFAULT);
         return BitmapFactory.decodeByteArray(bytes2, 0, bytes2.length);
     }
 
     /**
      * used to transform a bitmap to a string containing an array of bytes representing the png image
+     *
      * @param bitmap the bitmap to convert
      * @return string representation as array of byte in png format
      */
-    public static String bitmap2String(Bitmap bitmap)
-    {
+    public static String bitmap2String(Bitmap bitmap) {
         ByteArrayOutputStream blob = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, blob);
         return Base64.encodeToString(blob.toByteArray(), Base64.DEFAULT);
     }
 
-    private int computeHash()
-    {
-        if(bitmap == null) {
+    private int computeHash() {
+        if (bitmap == null) {
             return 0;
-        }
-        else {
+        } else {
             ByteArrayOutputStream blob = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.PNG, 0, blob);
             return super.hashCode() * 73 + Arrays.hashCode(blob.toByteArray());
@@ -188,6 +189,13 @@ public final class ImageItem extends Item {
                 throw new IllegalArgumentException("expected " + ImageItem.ITEM_TYPE.name() + " was : " + type);
             }
             bitmap = string2Bitmap(json.getString("image"));
+            return this;
+        }
+
+        public Builder setImage(File f) {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            bitmap = BitmapFactory.decodeFile(f.getPath(), options);
             return this;
         }
 
