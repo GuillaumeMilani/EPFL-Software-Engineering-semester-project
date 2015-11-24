@@ -18,7 +18,9 @@ import com.google.android.gms.location.LocationServices;
 import ch.epfl.sweng.calamar.item.CreateItemActivity;
 import ch.epfl.sweng.calamar.push.RegistrationIntentService;
 
-public class BaseActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class BaseActivity extends AppCompatActivity
+        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
+{
     private CalamarApplication app;
 
     // LogCat tag
@@ -27,9 +29,6 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
     // activity request codes
     private static final int ERROR_RESOLUTION_REQUEST = 1001;
     private static final int REQUEST_CODE_PICK_ACCOUNT = 1002;
-
-    //TODO Test if i can use the location architecture to check the google play services
-    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
     // google api related stuff
     private boolean resolvingError;
@@ -78,7 +77,9 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onStop();
         app.getGoogleApiClient().disconnect();
     }
+    // *********************************************************************************************
 
+    // *********************************************************************************************
     // GOOGLE API CLIENT CALLBACKS METHODS
     @Override
     public void onConnected(Bundle arg0) {
@@ -117,6 +118,7 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
             showGoogleApiErrorDialog(connectionResult.getErrorCode());
         }
     }
+    // *********************************************************************************************
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
