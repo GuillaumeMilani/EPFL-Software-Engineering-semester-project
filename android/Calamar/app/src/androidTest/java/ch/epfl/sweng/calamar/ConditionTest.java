@@ -2,6 +2,8 @@ package ch.epfl.sweng.calamar;
 
 import android.location.Location;
 import android.test.ActivityInstrumentationTestCase2;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Ignore;
@@ -153,9 +155,10 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
         return loc;
     }
 
+    //TODO: missing google play services Ignore while not fixed (position condition visually works)
+
     @Ignore
     public void testPositionCondition() throws InterruptedException {
-        //TODO: missing google play services Ignore while not fixed (position condition visually works)
         GPSProvider gps = GPSProvider.getInstance();
         gps.startLocationUpdates(getActivity());
         // BC
@@ -186,15 +189,15 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
         o2.assertAll(true, 2);
     }
 
-    /*
-    @Test
+
+    @Ignore
     public void testMetadataTrueCondition() throws JSONException {
         Condition a = Condition.trueCondition();
         JSONArray ja = new JSONArray();
         assertEquals(ja, a.getMetadata());
     }
 
-    @Test
+    @Ignore
     public void testMetadataPositionCondition() throws JSONException {
         Condition pc = new PositionCondition(123.4, 432.1, 10);
         JSONObject jo = new JSONObject();
@@ -206,7 +209,7 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
         assertEquals(ja.toString(), pc.getMetadata().toString());
     }
 
-    @Test
+    @Ignore
     public void testMetadataMultiplePositionCondition() throws JSONException {
         Condition pc1 = new PositionCondition(123.4, 432.1, 10);
         Condition pc2 = new PositionCondition(432.1, 123.4, 20);
@@ -227,7 +230,7 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
         assertEquals(ja.toString(), pc1AndPc2.getMetadata().toString());
     }
 
-    @Test
+    @Ignore
     public void testToJSONMetadata() throws JSONException {
         Condition pc1 = new PositionCondition(123.4, 432.1, 10);
         JSONObject jo1 = new JSONObject();
@@ -241,5 +244,4 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
 
         assertEquals(jo1.toString(), pc1.toJSON().toString());
     }
-    */
 }
