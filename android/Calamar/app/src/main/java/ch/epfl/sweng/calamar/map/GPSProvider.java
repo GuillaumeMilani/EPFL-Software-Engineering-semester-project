@@ -38,7 +38,7 @@ public final class GPSProvider implements LocationListener
     // location
     private Location lastLocation;
     private Date lastUpdateTime;
-    private LocationRequest locationRequest;
+    private LocationRequest locationRequest = createLocationRequest();
 
     private final GoogleApiClient googleApiClient;
 
@@ -130,8 +130,6 @@ public final class GPSProvider implements LocationListener
         // get the GoogleApi client,
         // creation plus play services availability checks are done in MainActivity at app startup
         googleApiClient = CalamarApplication.getInstance().getGoogleApiClient();
-        // creates the location request
-        createLocationRequest();
     }
 
     /**
@@ -197,9 +195,9 @@ public final class GPSProvider implements LocationListener
     /**
      * Creates location request
      * */
-    private void createLocationRequest() {
+    private LocationRequest createLocationRequest() {
         // TODO tweak constants
-        locationRequest = new LocationRequest();
+        LocationRequest locationRequest = new LocationRequest();
 
         // preferred rate in milliseconds. location updates may be faster than this rate if another
         // app is receiving updates at a faster rate, or slower than this rate,
@@ -222,6 +220,8 @@ public final class GPSProvider implements LocationListener
         // and a fast update interval of 5 seconds, causes the fused location provider to return
         // location updates that are accurate to within a few feet.
         // This approach is appropriate for mapping apps that display the location in real time.
+
+        return locationRequest;
     }
 
     /**
