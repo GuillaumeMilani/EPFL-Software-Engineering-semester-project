@@ -29,7 +29,7 @@ public class FileAndImageItemTest {
     private static final int testId = 1;
 
     @Rule
-    public TemporaryFolder testFolder = new TemporaryFolder();
+    public final TemporaryFolder testFolder = new TemporaryFolder();
 
     @Test
     public void testSetFileAndSetData() throws IOException {

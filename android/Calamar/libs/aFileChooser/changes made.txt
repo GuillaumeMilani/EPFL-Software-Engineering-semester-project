@@ -4,3 +4,9 @@ Changes build SDK from 19 to 23
 Adds translatable=false to internal storage /values/strings.xml
 Changes minApi from 7 to 16
 Adds toByteArray in FileUtils
+Changes onAttach(Activity activity) to onAttach(Context context) in FileListFragment (=>deprecated)
+Remove public from onFileSelected in interface CallBacks in FileListFragment (redundant)
+Simplify if statement in isLocal in FileUtils
+Adds final to BroadCastReceiver mStorageListener in FileChooserActivity
+Adds final to FileFilters in FileUtils
+Adds final to mPath in FileLoader

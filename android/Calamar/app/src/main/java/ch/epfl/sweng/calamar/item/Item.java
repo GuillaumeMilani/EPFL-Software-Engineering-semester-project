@@ -36,7 +36,7 @@ public abstract class Item {
     public enum Type {SIMPLETEXTITEM, IMAGEITEM, FILEITEM}
     //TODO date d'expiration ?
 
-    private Set<Observer> observers = new HashSet<>();
+    private final Set<Observer> observers = new HashSet<>();
 
 
     private final Condition.Observer conditionObserver = new Condition.Observer() {

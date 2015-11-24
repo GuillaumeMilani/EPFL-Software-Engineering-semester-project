@@ -39,8 +39,8 @@ import java.io.File;
 /**
  * Main Activity that handles the FileListFragments
  *
- * @version 2013-06-25
  * @author paulburke (ipaulpro)
+ * @version 2013-06-25
  */
 public class FileChooserActivity extends FragmentActivity implements
         OnBackStackChangedListener, FileListFragment.Callbacks {
@@ -52,7 +52,7 @@ public class FileChooserActivity extends FragmentActivity implements
     private static final boolean HAS_ACTIONBAR = Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB;
 
     private FragmentManager mFragmentManager;
-    private BroadcastReceiver mStorageListener = new BroadcastReceiver() {
+    private final BroadcastReceiver mStorageListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Toast.makeText(context, R.string.storage_removed, Toast.LENGTH_LONG).show();
