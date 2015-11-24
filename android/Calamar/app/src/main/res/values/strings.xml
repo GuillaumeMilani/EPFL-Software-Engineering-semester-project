@@ -28,8 +28,10 @@
     <string name="condition_and">and</string>
     <string name="condition_or">or</string>
     <string name="condition_not">not</string>
-    <string name="condition_position">tu dois être ici!</string>
+    <string name="condition_position">Go here !</string>
     <string name="item_getView_condition_title">Condition(s)</string>
     <string name="item_is_locked_getview">You have to fill the conditions to see the message !</string>
+    <string name="item_details_conditions_title">Condition(s)</string>
+    <string name="item_details_preview_title">Preview</string>
 
 </resources>

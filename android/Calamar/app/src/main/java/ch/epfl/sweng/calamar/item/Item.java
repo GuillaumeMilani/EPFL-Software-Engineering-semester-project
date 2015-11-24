@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.awt.font.TextAttribute;
 import java.util.Date;
@@ -89,15 +90,27 @@ public abstract class Item {
      */
     public View getView(final Context context)
     {
-        final LinearLayout view = (LinearLayout)getPreView(context);
+        //Inflate a basic layout
+        LayoutInflater li = LayoutInflater.from(context);
+        View baseView = li.inflate(R.layout.item_details_base_layout, null);
 
-        TextView titleCondition = new TextView(context);
-        titleCondition.setText(R.string.item_getView_condition_title);
-        titleCondition.setTextSize(25);
-        view.addView(titleCondition,1);
-        view.addView(condition.getView(context), 2);
+        //FIll the layout
+        TextView dateText = (TextView)baseView.findViewById(R.id.ItemDetailsDate);
+        dateText.setText((new Date(date)).toString());
 
-        return view;
+        TextView fromText = (TextView)baseView.findViewById(R.id.ItemDetailsUserFrom);
+        fromText.setText(from.toString());
+
+        TextView toText = (TextView)baseView.findViewById(R.id.ItemDetailsUserTo);
+        toText.setText(to.toString());
+
+        LinearLayout previewLayout = (LinearLayout)baseView.findViewById(R.id.ItemDetailsItemPreview);
+        previewLayout.addView(getPreView(context));
+
+        LinearLayout conditionLayout = (LinearLayout)baseView.findViewById(R.id.ItemDetailsConditonLayout);
+        conditionLayout.addView(condition.getView(context));
+
+        return baseView;
     }
 
     /**
