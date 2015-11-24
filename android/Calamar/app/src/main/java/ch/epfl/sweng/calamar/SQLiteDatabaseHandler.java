@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.Set;
 
 import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.item.FileItem;
+import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -41,7 +43,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static long lastUpdateTime;
     private static long lastItemTime;
 
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     private static final String DATABASE_NAME = "CalamarDB";
 
     private static final int MAX_PLACEHOLDERS_COUNT = 99;
@@ -55,7 +57,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static final String ITEMS_KEY_TIME = "time";
     private static final String ITEMS_KEY_CONDITION = "condition";
     private static final String ITEMS_KEY_TEXT = "text";
-    private static final String[] ITEMS_COLUMNS = {ITEMS_KEY_TYPE, ITEMS_KEY_ID, ITEMS_KEY_FROM, ITEMS_KEY_TO, ITEMS_KEY_TIME, ITEMS_KEY_CONDITION, ITEMS_KEY_TEXT};
+    private static final String ITEMS_KEY_DATA = "data";
+    private static final String ITEMS_KEY_NAME = "name";
+    private static final String[] ITEMS_COLUMNS = {ITEMS_KEY_TYPE, ITEMS_KEY_ID, ITEMS_KEY_FROM, ITEMS_KEY_TO, ITEMS_KEY_TIME, ITEMS_KEY_CONDITION, ITEMS_KEY_TEXT, ITEMS_KEY_DATA, ITEMS_KEY_NAME};
 
     private static final String RECIPIENTS_TABLE = "tb_Recipients";
     private static final String RECIPIENTS_KEY_ID = "id";
@@ -85,8 +89,8 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         this.pendingRecipients = new HashMap<>();
         this.pendingItems = new HashMap<>();
         this.FULL_PLACEHOLDERS = createPlaceholders(MAX_PLACEHOLDERS_COUNT);
-        lastItemTime = app.getLastItemsRefresh();
-        lastUpdateTime = app.getLastItemsRefresh();
+        lastItemTime = app.getLastItemsRefresh().getTime();
+        lastUpdateTime = app.getLastItemsRefresh().getTime();
 
     }
 
@@ -99,7 +103,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 + ITEMS_KEY_TO + " INTEGER NOT NULL,"
                 + ITEMS_KEY_TIME + " INTEGER NOT NULL,"
                 + ITEMS_KEY_CONDITION + " TEXT NOT NULL, "
-                + ITEMS_KEY_TEXT + " TEXT)";
+                + ITEMS_KEY_TEXT + " TEXT, "
+                + ITEMS_KEY_DATA + " TEXT, "
+                + ITEMS_KEY_NAME + " TEXT)";
         db.execSQL(createMessagesTable);
         final String createRecipientsTable = "CREATE TABLE " + RECIPIENTS_TABLE + " ("
                 + RECIPIENTS_KEY_ID + " INTEGER PRIMARY KEY NOT NULL,"
@@ -868,6 +874,10 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             e.printStackTrace();
         }
         values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());
+        if (item.getType() == Item.Type.FILEITEM || item.getType() == Item.Type.IMAGEITEM) {
+            values.put(ITEMS_KEY_DATA, FileItem.byteArrayToString(((FileItem) item).getData()));
+            values.put(ITEMS_KEY_NAME, ((FileItem) item).getName());
+        }
         return values;
     }
 
@@ -876,7 +886,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         try {
             type = Item.Type.valueOf(cursor.getString(0));
         } catch (IllegalArgumentException e) {
-            throw new UnsupportedOperationException("Only SimpleTextItem for now");
+            throw new UnsupportedOperationException("Unexpected Item type");
         }
         int id = cursor.getInt(1);
         User from = (User) getRecipient(cursor.getInt(2));
@@ -892,8 +902,18 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         switch (type) {
             case SIMPLETEXTITEM:
                 return new SimpleTextItem(id, from, to, time, condition, text);
+            case FILEITEM:
+                String strData = cursor.getString(7);
+                byte[] data = FileItem.stringToByteArray(strData);
+                String name = cursor.getString(8);
+                return new FileItem(id, from, to, time, condition, data, name);
+            case IMAGEITEM:
+                String imStrData = cursor.getString(7);
+                byte[] imData = FileItem.stringToByteArray(imStrData);
+                String imName = cursor.getString(8);
+                return new ImageItem(id, from, to, time, condition, imData, imName);
             default:
-                throw new UnsupportedOperationException("Only SimpleTextItem for now");
+                throw new UnsupportedOperationException("Unexpected Item type");
         }
     }
 

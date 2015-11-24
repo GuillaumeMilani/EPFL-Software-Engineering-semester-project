@@ -3,3 +3,4 @@ Creates a method getPathForKitKat and annotates it @TargetAPI(19) in FileUtils.j
 Changes build SDK from 19 to 23
 Adds translatable=false to internal storage /values/strings.xml
 Changes minApi from 7 to 16
+Adds toByteArray in FileUtils
