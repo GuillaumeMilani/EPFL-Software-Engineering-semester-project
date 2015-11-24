@@ -40,8 +40,8 @@ public final class ImageItem extends Item {
      * @param bitmap    the image
      * @see Item#Item(int, User, Recipient, long, Condition)
      */
-    public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, Bitmap bitmap) {
-        super(ID, from, to, date.getTime(), condition);
+    public ImageItem(int ID, User from, Recipient to, long date, Condition condition, Bitmap bitmap) {
+        super(ID, from, to, date, condition);
         this.bitmap = bitmap;
         hash = computeHash();
     }
@@ -200,7 +200,7 @@ public final class ImageItem extends Item {
         }
 
         public ImageItem build() {
-            return new ImageItem(super.ID, super.from, super.to, new Date(super.date), super.condition, bitmap);
+            return new ImageItem(super.ID, super.from, super.to, super.date, super.condition, bitmap);
         }
     }
 }

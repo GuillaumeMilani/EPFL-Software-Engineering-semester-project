@@ -7,9 +7,11 @@ import android.widget.LinearLayout;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.zip.DataFormatException;
 
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -29,7 +31,7 @@ public abstract class Item {
     private final long date; //posix date
     private final Condition condition;
 
-    public enum Type {SIMPLETEXTITEM, IMAGEITEM}
+    public enum Type {SIMPLETEXTITEM, IMAGEITEM, FILEITEM}
     //TODO date d'expiration ?
 
     private Set<Observer> observers = new HashSet<>();
@@ -38,7 +40,7 @@ public abstract class Item {
     private final Condition.Observer conditionObserver = new Condition.Observer() {
         @Override
         public void update(Condition condition) {
-            for(Observer o : observers){
+            for (Observer o : observers) {
                 o.update(Item.this);
             }
         }
@@ -65,8 +67,7 @@ public abstract class Item {
 
     protected abstract View getItemView(Context context);
 
-    public View getView(Context context)
-    {
+    public View getView(Context context) {
         LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
         view.addView(getItemView(context), 0);
@@ -140,7 +141,7 @@ public abstract class Item {
      * @return a {@link Item item} parsed from the JSONObject
      * @throws JSONException
      */
-    public static Item fromJSON(JSONObject json) throws JSONException, IllegalArgumentException {
+    public static Item fromJSON(JSONObject json) throws JSONException, IllegalArgumentException, IOException, DataFormatException {
         if (null == json || json.isNull("type")) {
             throw new IllegalArgumentException("malformed json, either null or no 'type' value");
         }
@@ -152,6 +153,9 @@ public abstract class Item {
                 break;
             case IMAGEITEM:
                 item = ImageItem.fromJSON(json);
+                break;
+            case FILEITEM:
+                item = FileItem.fromJSON(json);
                 break;
             default:
                 throw new IllegalArgumentException("Unexpected Item type (" + type + ")");
@@ -200,16 +204,16 @@ public abstract class Item {
         protected User from;
         protected Recipient to;
         protected long date;
-        protected Condition condition=Condition.trueCondition();
+        protected Condition condition = Condition.trueCondition();
 
-        protected Builder parse(JSONObject o) throws JSONException {
+        protected Builder parse(JSONObject o) throws JSONException, IOException, DataFormatException {
             ID = o.getInt("ID");
             from = User.fromJSON(o.getJSONObject("from"));
             to = Recipient.fromJSON(o.getJSONObject("to"));
             date = o.getLong("date");
             //TODO to delete when server ready to send true condition when there is no condition
             // and replace by just fromJSON etc..
-            if(o.has("condition")) {
+            if (o.has("condition")) {
                 condition = Condition.fromJSON(o.getJSONObject("condition"));
             } else {
                 condition = Condition.trueCondition();
@@ -217,27 +221,32 @@ public abstract class Item {
             return this;
         }
 
-        protected void setID(int ID) {
+        protected Builder setID(int ID) {
             this.ID = ID;
+            return this;
         }
 
-        protected void setFrom(User from) {
+        protected Builder setFrom(User from) {
             this.from = from;
+            return this;
         }
 
-        protected void setTo(Recipient to) {
+        protected Builder setTo(Recipient to) {
             this.to = to;
+            return this;
         }
 
-        protected void setDate(long date) {
+        protected Builder setDate(long date) {
             this.date = date;
+            return this;
         }
 
-        protected void setCondition(Condition condition) {
+        protected Builder setCondition(Condition condition) {
             this.condition = condition;
+            return this;
         }
 
-        protected abstract Item build();
+        protected abstract Item build() throws IOException;
     }
 
     public void addObserver(Item.Observer observer) {
