@@ -63,7 +63,7 @@ public class PositionCondition extends Condition {
             @Override
             public void update(Location newLocation) {
 
-                setValue(newLocation.distanceTo(getLocation()) < getRadius());
+                setValue(getLocation().distanceTo(newLocation) < getRadius());
             }
         });
     }
