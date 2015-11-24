@@ -48,21 +48,24 @@ public class ParsingTest {
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x49, (byte) 0x45,
             (byte) 0x4e, (byte) 0x44, (byte) 0xae, (byte) 0x42, (byte) 0x60, (byte) 0x82};
 
+    private final User testUser1 = new User(69, "Jean Luc");
+    private final User testUser2 = new User(666, "Albert Danton");
+
     @Test
     public void testUserParsing() throws JSONException {
-        helperRecipientParsing(new User(69, "Jean Luc"));
-        helperRecipientParsing(new User(666, "Albert Danton"));
+        helperRecipientParsing(testUser1);
+        helperRecipientParsing(testUser2);
     }
 
     @Test
     public void testSimpleTextItemParsing() throws JSONException {
-        helperItemParsing(new SimpleTextItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), testDate, Condition.falseCondition(), "hey, How are you ?"));
-        helperItemParsing(new SimpleTextItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), testDate, Condition.trueCondition(), "hey, How are you ?"));
+        helperItemParsing(new SimpleTextItem(42, testUser1, testUser2, testDate, Condition.falseCondition(), "hey, How are you ?"));
+        helperItemParsing(new SimpleTextItem(42, testUser1, testUser2, testDate, Condition.trueCondition(), "hey, How are you ?"));
     }
 
     @Test
     public void testImageItemParsing() throws JSONException {
-        helperItemParsing(new ImageItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), testDate, Condition.trueCondition(), testContent, "ImageItem"));
+        helperItemParsing(new ImageItem(42, testUser1, testUser2, testDate, Condition.trueCondition(), testContent, "ImageItem"));
     }
 
     @Test
@@ -73,7 +76,7 @@ public class ParsingTest {
 
     @Test
     public void testFileItemParsing() throws JSONException {
-        helperItemParsing(new FileItem(42, new User(69, "Jean Luc"), new User(666, "Albert Danton"), testDate, Condition.trueCondition(), testContent, "FileItem"));
+        helperItemParsing(new FileItem(42, testUser1, testUser2, testDate, Condition.trueCondition(), testContent, "FileItem"));
     }
 
     @Test

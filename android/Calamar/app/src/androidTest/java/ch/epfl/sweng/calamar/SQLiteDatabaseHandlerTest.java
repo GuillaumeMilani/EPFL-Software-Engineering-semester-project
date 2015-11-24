@@ -760,8 +760,6 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     @Ignore
     private SimpleTextItem createDummyItem(int i, boolean update) {
         if (update) {
-            Item item = new SimpleTextItem(i, new User(1, ""), new User(2, ""), new Date(1), "bla");
-            System.out.println(item.getType());
             return new SimpleTextItem(i, new User(1, ""), new User(2, ""), new Date(1), "bla");
         } else {
             return new SimpleTextItem(i, new User(0, ""), new User(1, ""), new Date(0), "");
