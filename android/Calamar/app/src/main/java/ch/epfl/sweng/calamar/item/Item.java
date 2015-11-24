@@ -107,7 +107,7 @@ public abstract class Item {
         LinearLayout previewLayout = (LinearLayout)baseView.findViewById(R.id.ItemDetailsItemPreview);
         previewLayout.addView(getPreView(context));
 
-        LinearLayout conditionLayout = (LinearLayout)baseView.findViewById(R.id.ItemDetailsConditonLayout);
+        LinearLayout conditionLayout = (LinearLayout)baseView.findViewById(R.id.ItemDetailsConditionLayout);
         conditionLayout.addView(condition.getView(context));
 
         return baseView;
