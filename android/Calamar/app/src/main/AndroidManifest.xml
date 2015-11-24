@@ -62,16 +62,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-<<<<<<< HEAD
-=======
 
->>>>>>> dc774c0b4e22aff9aa7e58950946e847eb05e6d8
         <activity
             android:name=".BaseActivity"
             android:label="Base"
             android:theme="@style/AppTheme.NoActionBar" />
-<<<<<<< HEAD
-=======
 
         <activity
             android:name=".item.CreateItemActivity"
@@ -89,7 +84,6 @@
                 <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
             </intent-filter>
         </provider>
->>>>>>> dc774c0b4e22aff9aa7e58950946e847eb05e6d8
 
         <meta-data
             android:name="com.google.android.gms.version"
@@ -109,11 +103,7 @@
             </intent-filter>
         </receiver>
         <service
-<<<<<<< HEAD
-            android:name="ch.epfl.sweng.calamar.RegistrationGcmListenerService"
-=======
             android:name=".push.RegistrationGcmListenerService"
->>>>>>> dc774c0b4e22aff9aa7e58950946e847eb05e6d8
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
@@ -130,11 +120,7 @@
         </service>
         <!-- [END instanceId_listener] -->
         <service
-<<<<<<< HEAD
-            android:name="ch.epfl.sweng.calamar.RegistrationIntentService"
-=======
             android:name=".push.RegistrationIntentService"
->>>>>>> dc774c0b4e22aff9aa7e58950946e847eb05e6d8
             android:exported="false" />
     </application>
 

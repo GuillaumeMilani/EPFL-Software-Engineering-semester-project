@@ -203,6 +203,11 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
+    /**
+     * Launches an activity allowing the user to create an item
+     *
+     * @param v The + button
+     */
     public void createItem(View v) {
         Intent intent = new Intent(this, CreateItemActivity.class);
         startActivity(intent);
