@@ -122,7 +122,7 @@ public class FileItem extends Item {
         if (data == null) {
             return 0;
         } else {
-            return super.hashCode() * 73 + Arrays.hashCode(data);
+            return super.hashCode() * 73 + Arrays.hashCode(data) * 107 + name.hashCode();
         }
     }
 

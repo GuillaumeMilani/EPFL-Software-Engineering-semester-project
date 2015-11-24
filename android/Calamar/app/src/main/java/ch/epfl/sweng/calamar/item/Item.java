@@ -232,7 +232,7 @@ public abstract class Item {
      */
     @Override
     public int hashCode() {
-        return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date.getTime()) * 479;
+        return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date.getTime()) * 479 + condition.hashCode() * 503;
     }
 
     @Override
