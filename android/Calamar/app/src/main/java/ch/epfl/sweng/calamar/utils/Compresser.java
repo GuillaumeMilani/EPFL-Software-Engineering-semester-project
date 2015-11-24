@@ -7,6 +7,9 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+/**
+ * Utilitary class used to compress and decompress byte arrays of data using the native zlib implementation of java
+ */
 public class Compresser {
 
     private static final int BUFFER_SIZE = 1024;
@@ -14,6 +17,12 @@ public class Compresser {
     private static final byte HEADER_2 = (byte) 0xDA;
     private static final byte[] FOOTER = {0x10, 0x23, 0x47, 0x12, 0x45, (byte) 0xa7, (byte) 0xd3, (byte) 0xef, (byte) 0xaa, (byte) 0xfa, 0x02, 0x21, 0x33, 0x22};
 
+    /**
+     * Compresses the data if it is not already compressed
+     *
+     * @param data The data to be compressed
+     * @return The compressed data, or the original data if it is already compressed
+     */
     public static byte[] compress(byte[] data) {
 
         if (isCompressed(data)) {
@@ -53,6 +62,12 @@ public class Compresser {
         }
     }
 
+    /**
+     * Decompresses the data if it is compressed
+     *
+     * @param data the data to be decompressed
+     * @return The decompressed data, or the original data if it is not compressed
+     */
     public static byte[] decompress(byte[] data) {
 
         if (isCompressed(data)) {
