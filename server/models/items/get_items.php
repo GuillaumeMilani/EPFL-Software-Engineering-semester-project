@@ -1,6 +1,6 @@
 <?php
 
-function get_item_with_location($recipient, $last_refresh, $latitude, $longitude, $radius) {
+function get_item_with_location($recipient, $last_refresh, $latitude_min, $latitude_max, $longitude_min, $longitude_max) {
 	global $pdo;
 	
 	$res = $pdo->prepare('
@@ -19,17 +19,12 @@ function get_item_with_location($recipient, $last_refresh, $latitude, $longitude
 			AND	(itm.to = :to OR itm.to IS NULL)
     		AND itm.date > :last_refresh
 			AND itm.ID = txt.ID');
-	$kmToLatFactor = 1/110.574; 
-	$kmToLongFactor = 1/(111.320); // *cos($latitude));
-	$latMin = $latitude -  $kmToLatFactor * $radius; // $latitude - $radius;
-	$latMax = $latitude + $kmToLatFactor * $radius;
-	$longMax = $longitude +  $kmToLongFactor * $radius;
-	$longMin = $longitude - $kmToLongFactor * $radius;
+	
 	$recipient_id = $recipient['ID'];
-	$res->bindParam(':latitude_min', $latMin, PDO::PARAM_STR);
-	$res->bindParam(':latitude_max', $latMax, PDO::PARAM_STR);
-	$res->bindParam(':longitude_min', $longMin, PDO::PARAM_STR);
-	$res->bindParam(':longitude_max', $longMax, PDO::PARAM_STR);
+	$res->bindParam(':latitude_min', $latitude_min, PDO::PARAM_STR);
+	$res->bindParam(':latitude_max', $latitude_max, PDO::PARAM_STR);
+	$res->bindParam(':longitude_min', $longitude_min, PDO::PARAM_STR);
+	$res->bindParam(':longitude_max', $longitude_max, PDO::PARAM_STR);
 	$res->bindParam(':to', $recipient_id, PDO::PARAM_INT);
 	$res->bindParam(':last_refresh', $last_refresh, PDO::PARAM_STR);
 	$res->execute();
