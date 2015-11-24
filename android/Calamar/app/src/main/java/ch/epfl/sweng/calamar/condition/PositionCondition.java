@@ -1,10 +1,17 @@
 package ch.epfl.sweng.calamar.condition;
 
+import android.content.Context;
 import android.location.Location;
+import android.view.View;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.map.GPSProvider;
 
 /**
@@ -13,6 +20,7 @@ import ch.epfl.sweng.calamar.map.GPSProvider;
 public class PositionCondition extends Condition {
 
     private final static String CONDITION_TYPE = "position";
+    private final static double DEFAULT_RADIUS = 20;
 
     private final Location location;
     private final double radius;
@@ -56,6 +64,10 @@ public class PositionCondition extends Condition {
         });
     }
 
+    public PositionCondition(Location location){
+        this(location,DEFAULT_RADIUS);
+    }
+
     /**
      * construct a PositionCondition from a latitude, a longitude and a radius
      * @param latitude
@@ -97,6 +109,16 @@ public class PositionCondition extends Condition {
         if ( !(o instanceof PositionCondition) ) return false;
         PositionCondition that = (PositionCondition)o;
         return super.equals(that) && location.equals(that.location) && radius == that.radius;
+    }
+
+    @Override
+    public View getView(Context context)
+    {
+        FrameLayout view = (FrameLayout)(super.getView(context));
+        Button button = new Button(context);
+        button.setText(context.getResources().getString(R.string.condition_position));
+        view.addView(button);
+        return view;
     }
 
     /**
