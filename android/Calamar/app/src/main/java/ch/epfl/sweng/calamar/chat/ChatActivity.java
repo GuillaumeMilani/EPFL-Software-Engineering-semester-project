@@ -3,7 +3,6 @@ package ch.epfl.sweng.calamar.chat;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
@@ -32,7 +32,7 @@ import ch.epfl.sweng.calamar.recipient.User;
  * This activity manages the chat between two users (or in a group)
  */
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends BaseActivity {
 
     private static final String RECIPIENT_EXTRA_ID = "ID";
     private static final String RECIPIENT_EXTRA_NAME = "Name";
@@ -49,6 +49,8 @@ public class ChatActivity extends AppCompatActivity {
     private SQLiteDatabaseHandler databaseHandler;
 
     private CalamarApplication app;
+
+    private final String TAG = ChatActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -186,8 +186,8 @@ public abstract class Item {
     }
 
     @Override
-    public String toString(){
-        return "id : "+ID+" , from : ("+from+") , to : ("+to+") , at : "+new Date(date);
+    public String toString() {
+        return "id : " + ID + " , from : (" + from + ") , to : (" + to + ") , at : " + new Date(date);
     }
 
     /**

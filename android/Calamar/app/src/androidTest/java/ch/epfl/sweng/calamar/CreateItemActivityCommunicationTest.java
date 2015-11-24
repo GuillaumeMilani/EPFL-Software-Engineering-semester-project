@@ -21,6 +21,7 @@ import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.User;
 
+import static android.support.test.espresso.Espresso.closeSoftKeyboard;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
@@ -52,6 +53,7 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
         ArgumentCaptor<Item> argument = ArgumentCaptor.forClass(Item.class);
 
         onView(withId(R.id.createItemActivity_messageText)).perform(typeText(HELLO_ALICE));
+        closeSoftKeyboard();
         onView(withId(R.id.createButton)).perform(click());
 
         verify(client).send(argument.capture());
