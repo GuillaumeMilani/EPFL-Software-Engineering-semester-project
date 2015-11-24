@@ -7,7 +7,7 @@ $data = get_post_JSON();
 
 // extract decoded data
 if (isset($data['message']) && isset($data['type']) && isset($data['from']) && isset($data['to']) && isset($data['condition'])) {
-		$item = $data['message'];
+		$message = $data['message'];
 		$type = $data['type'];
 		$from = $data['from'];
 		$to = $data['to'];
@@ -47,10 +47,10 @@ if ($condition['type'] == "true") {
 $result;
 try {
 	// add the data into the db
-	$result = add_items($from['ID'],$to['ID'],$date,$type,$item,$condition_id);
+	$result = add_items($from['ID'],$to['ID'],$date,$type,$message,$condition_id);
 } catch (Exception $e) {
 	http_response_code(500);
 	die("Error : database in item creation ".$e->getMessage());
 }
 	http_response_code(201);
-	echo json_encode(array("ID" => $result, "type" => $type, "from" => $from, "to" => $to, "date" => $date, "message" => $item, "condition" => json_decode($condition)));
+	echo json_encode(array("ID" => $result, "type" => $type, "from" => $from, "to" => $to, "date" => $date, "message" => $message, "condition" => json_decode($condition), "message" => $message));

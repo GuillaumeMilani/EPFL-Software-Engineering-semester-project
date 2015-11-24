@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS `tb_item` (
   `to` INT NULL,
   `date` MEDIUMTEXT NOT NULL,
   `condition` INT NULL,
+  `message` LONGTEXT NULL,
   PRIMARY KEY (`ID`) ,
   CONSTRAINT `ct_from`
     FOREIGN KEY (`from`)
@@ -109,7 +110,6 @@ CREATE INDEX `idx_to_item` ON `tb_item` (`to` ASC)  ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tb_item_text` (
   `ID` INT NOT NULL,
-  `text` LONGTEXT NULL,
   PRIMARY KEY (`ID`) ,
   CONSTRAINT `ct_id_item_text`
     FOREIGN KEY (`ID`)

@@ -5,7 +5,7 @@ function get_item_with_location($recipient, $last_refresh, $latitude, $longitude
 	
 	$res = $pdo->prepare('
 			SELECT DISTINCT
-				itm.`ID`, itm.`from`, itm.`to`, itm.`date`, cnd.`condition`, txt.`text`, "simpleText" as "type"
+				itm.`ID`, itm.`from`, itm.`to`, itm.`date`, cnd.`condition`, itm.`message`, "SIMPLETEXTITEM" as "type"
     		FROM 
 				tb_item as itm, tb_item_text as txt, tb_condition as cnd, tb_metadata as mtd, tb_metadata_position as pos
 			WHERE
@@ -14,15 +14,17 @@ function get_item_with_location($recipient, $last_refresh, $latitude, $longitude
 			AND pos.longitude <= :longitude_max
 			AND pos.longitude >= :longitude_min
 			AND pos.ID = mtd.ID
-			AND mtd.ID = cnd.ID
+			AND mtd.condition = cnd.ID
 			AND itm.condition = cnd.ID
-			AND	(itm.to = :to OR itm.to = NULL)
+			AND	(itm.to = :to OR itm.to IS NULL)
     		AND itm.date > :last_refresh
 			AND itm.ID = txt.ID');
-	$latMin = $latitude - $radius;
-	$latMax = $latitude + $radius;
-	$longMax = $longitude - $radius;
-	$longMin = $longitude + $radius;
+	$kmToLatFactor = 1/110.574; 
+	$kmToLongFactor = 1/(111.320); // *cos($latitude));
+	$latMin = $latitude -  $kmToLatFactor * $radius; // $latitude - $radius;
+	$latMax = $latitude + $kmToLatFactor * $radius;
+	$longMax = $longitude +  $kmToLongFactor * $radius;
+	$longMin = $longitude - $kmToLongFactor * $radius;
 	$recipient_id = $recipient['ID'];
 	$res->bindParam(':latitude_min', $latMin, PDO::PARAM_STR);
 	$res->bindParam(':latitude_max', $latMax, PDO::PARAM_STR);
@@ -72,6 +74,7 @@ function get_user($user_id) {
  * @param posix_time $last_refresh
  * @return array of items (indexed by column name)
  */
+// DEPRECATED, UPDATE IF NEEDED
 function get_items($recipient, $last_refresh, $get_content = false) {
 	global $pdo;
 	
@@ -80,7 +83,7 @@ function get_items($recipient, $last_refresh, $get_content = false) {
 	} else {
 		$table = "tb_item";
 	}
-	$res = $pdo->prepare('SELECT *, "simpleText" as "type"
+	$res = $pdo->prepare('SELECT *, "SIMPLETEXTITEM" as "type"
     		FROM '.$table.' as itm
     		WHERE (itm.to = :to OR itm.to = NULL)
     		AND itm.date > :last_refresh');
@@ -104,5 +107,5 @@ function get_items($recipient, $last_refresh, $get_content = false) {
 }
 
 function get_items_with_content($recipient, $last_refresh) {
-	get_items($recipient, $last_refresh, true);
+	return get_items($recipient, $last_refresh, true);
 }
