@@ -1,7 +1,8 @@
 package ch.epfl.sweng.calamar.item;
 
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Marker;
+import android.content.Context;
+import android.view.View;
+import android.widget.LinearLayout;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -61,6 +62,17 @@ public abstract class Item {
     }
 
     public abstract Type getType();
+
+    protected abstract View getItemView(Context context);
+
+    public View getView(Context context)
+    {
+        LinearLayout view = new LinearLayout(context);
+        view.setOrientation(LinearLayout.VERTICAL);
+        view.addView(getItemView(context), 0);
+        view.addView(condition.getView(context), 1);
+        return view;
+    }
 
     /**
      * @return the 'condition' field of the Item
@@ -174,8 +186,8 @@ public abstract class Item {
     }
 
     @Override
-    public String toString(){
-        return "id : "+ID+" , from : ("+from+") , to : ("+to+") , at : "+new Date(date);
+    public String toString() {
+        return "id : " + ID + " , from : (" + from + ") , to : (" + to + ") , at : " + new Date(date);
     }
 
     /**
@@ -183,14 +195,14 @@ public abstract class Item {
      * is used by the child builders (in {@link SimpleTextItem} or...) to build the "Item
      * part of the object". currently only used to parse JSON (little overkill..but ..)
      */
-    protected static class Builder {
+    protected abstract static class Builder {
         protected int ID;
         protected User from;
         protected Recipient to;
         protected long date;
-        protected Condition condition;
+        protected Condition condition=Condition.trueCondition();
 
-        public Builder parse(JSONObject o) throws JSONException {
+        protected Builder parse(JSONObject o) throws JSONException {
             ID = o.getInt("ID");
             from = User.fromJSON(o.getJSONObject("from"));
             to = Recipient.fromJSON(o.getJSONObject("to"));
@@ -204,6 +216,28 @@ public abstract class Item {
             }
             return this;
         }
+
+        protected void setID(int ID) {
+            this.ID = ID;
+        }
+
+        protected void setFrom(User from) {
+            this.from = from;
+        }
+
+        protected void setTo(Recipient to) {
+            this.to = to;
+        }
+
+        protected void setDate(long date) {
+            this.date = date;
+        }
+
+        protected void setCondition(Condition condition) {
+            this.condition = condition;
+        }
+
+        protected abstract Item build();
     }
 
     public void addObserver(Item.Observer observer) {

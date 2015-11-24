@@ -10,8 +10,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.util.Date;
-
 @RunWith(JUnit4.class)
 public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplication> {
 
@@ -21,7 +19,7 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
 
     private final String testUsername = "test";
     private final int testID = 0;
-    private final Date testDate = new Date(100);
+    private final long testTime = 100;
 
     private String curUsername = "";
     private int curUserID = 0;
@@ -71,26 +69,26 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
     @Test
     public void testSetLastItemsRefresh() {
         app.resetPreferences();
-        app.setLastItemsRefresh(testDate);
-        assertEquals(testDate.getTime(), app.getLastItemsRefresh());
+        app.setLastItemsRefresh(testTime);
+        assertEquals(testTime, app.getLastItemsRefresh());
         app.resetPreferences();
     }
 
     @Test
     public void testSetLastUsersRefresh() {
         app.resetPreferences();
-        app.setLastUsersRefresh(testDate);
-        assertEquals(testDate.getTime(), app.getLastUsersRefresh());
+        app.setLastUsersRefresh(testTime);
+        assertEquals(testTime, app.getLastUsersRefresh());
         app.resetPreferences();
     }
 
     @Test
     public void testResets() {
         app.resetPreferences();
-        app.setLastUsersRefresh(testDate);
+        app.setLastUsersRefresh(testTime);
         app.resetLastUsersRefresh();
         assertEquals(defaultLastRefresh, app.getLastUsersRefresh());
-        app.setLastItemsRefresh(testDate);
+        app.setLastItemsRefresh(testTime);
         app.resetLastItemsRefresh();
         assertEquals(defaultLastRefresh, app.getLastItemsRefresh());
         app.setCurrentUserName(testUsername);

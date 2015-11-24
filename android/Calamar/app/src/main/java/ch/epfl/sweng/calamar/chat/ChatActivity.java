@@ -3,7 +3,6 @@ package ch.epfl.sweng.calamar.chat;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,11 +14,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
+import ch.epfl.sweng.calamar.item.CreateItemActivity;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -30,7 +31,12 @@ import ch.epfl.sweng.calamar.recipient.User;
 /**
  * This activity manages the chat between two users (or in a group)
  */
-public class ChatActivity extends AppCompatActivity {
+
+public class ChatActivity extends BaseActivity {
+
+    private static final String RECIPIENT_EXTRA_ID = "ID";
+    private static final String RECIPIENT_EXTRA_NAME = "Name";
+
     private EditText editText;
     private Button sendButton;
     private Button refreshButton;
@@ -43,6 +49,8 @@ public class ChatActivity extends AppCompatActivity {
     private SQLiteDatabaseHandler databaseHandler;
 
     private CalamarApplication app;
+
+    private final String TAG = ChatActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -192,4 +200,10 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
+    public void createItem(View v) {
+        Intent intent = new Intent(this, CreateItemActivity.class);
+        intent.putExtra(RECIPIENT_EXTRA_ID, correspondent.getID());
+        intent.putExtra(RECIPIENT_EXTRA_NAME, correspondent.getName());
+        startActivity(intent);
+    }
 }

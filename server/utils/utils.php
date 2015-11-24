@@ -9,3 +9,17 @@
     	http_response_code(500);
     	die("Database error : ".$e->getMessage());
     }
+    
+    function get_post_JSON() {
+	    // Retrieve post data
+	    $content = urldecode(file_get_contents('php://input'));
+	    // decode the json
+	    $data = json_decode($content, true);
+	    //check if there is an error
+	    if($data == null)
+	    {
+	    	http_response_code(400);
+	    	die("Error : json data not found");
+	    }
+	    return $data;
+    }
