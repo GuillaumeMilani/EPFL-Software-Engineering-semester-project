@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import ch.epfl.sweng.calamar.BuildConfig;
 import ch.epfl.sweng.calamar.CalamarApplication;
 
 
@@ -39,7 +40,6 @@ public final class GPSProvider implements LocationListener
     private Location lastLocation;
     private Date lastUpdateTime;
     private LocationRequest locationRequest = createLocationRequest();
-    private boolean mockMode = false;
 
     private final GoogleApiClient googleApiClient;
 
@@ -127,16 +127,8 @@ public final class GPSProvider implements LocationListener
         return this.observers.remove(observer);
     }
 
-    public void mockModeEnable() {
-        mockMode = true;
-    }
-
-    public void mockModeDisable() {
-        mockMode = false;
-    }
-
     public void setMockLocation(Location location) {
-        if(mockMode) {
+        if(BuildConfig.DEBUG) {
             LocationServices.FusedLocationApi.setMockMode(googleApiClient, true);
             LocationServices.FusedLocationApi.setMockLocation(googleApiClient, location);
         } else {

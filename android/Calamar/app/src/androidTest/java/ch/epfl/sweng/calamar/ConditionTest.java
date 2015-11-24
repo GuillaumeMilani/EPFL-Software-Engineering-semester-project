@@ -160,7 +160,6 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
     public void testPositionCondition() throws InterruptedException {
         //TODO: missing google play services should really handle it ASAP
         GPSProvider gps = GPSProvider.getInstance();
-        gps.mockModeEnable();
         gps.startLocationUpdates(getActivity());
         // BC
         gps.setMockLocation(makeLocation(46.518568, 6.561926));
@@ -188,7 +187,5 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
         Thread.sleep(5000);
         o1.assertAll(false, 2);
         o2.assertAll(true, 2);
-
-        gps.mockModeDisable();
     }
 }
