@@ -37,6 +37,8 @@ public class ChatActivity extends BaseActivity {
 
     private static final String RECIPIENT_EXTRA_ID = "ID";
     private static final String RECIPIENT_EXTRA_NAME = "Name";
+    private static final String TAG = ChatActivity.class.getSimpleName();
+
 
     private EditText editText;
     private Button sendButton;
@@ -51,7 +53,6 @@ public class ChatActivity extends BaseActivity {
 
     private CalamarApplication app;
 
-    private final String TAG = ChatActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

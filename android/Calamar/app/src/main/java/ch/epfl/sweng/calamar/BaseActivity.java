@@ -24,7 +24,7 @@ public class BaseActivity extends AppCompatActivity
     private CalamarApplication app;
 
     // LogCat tag
-    private final String TAG = BaseActivity.class.getSimpleName();
+    private static final String TAG = BaseActivity.class.getSimpleName();
 
     // activity request codes
     private static final int ERROR_RESOLUTION_REQUEST = 1001;
