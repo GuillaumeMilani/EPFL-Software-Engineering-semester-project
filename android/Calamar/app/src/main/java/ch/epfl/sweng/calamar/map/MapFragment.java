@@ -19,10 +19,10 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.VisibleRegion;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,10 +35,6 @@ import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
-import ch.epfl.sweng.calamar.recipient.Recipient;
-import ch.epfl.sweng.calamar.recipient.User;
-
-import static ch.epfl.sweng.calamar.item.Item.Type.SIMPLETEXTITEM;
 
 
 /**
@@ -47,7 +43,7 @@ import static ch.epfl.sweng.calamar.item.Item.Type.SIMPLETEXTITEM;
 public class MapFragment extends android.support.v4.app.Fragment implements OnMapReadyCallback {
 
     public static final String TAG = MapFragment.class.getSimpleName();
-    private static final long MAP_RADIUS = 1000;
+    private static final long MAP_RADIUS = 4000;  // [km]
 
     //TODO : add two buttons begin checks stop checks
     // that will : checklocation settings + startlocation updates
@@ -144,7 +140,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         getView().findViewById(R.id.refreshButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addAllItemsToMap();
+                addAllItemsInRegionToMap();
             }
         });
 
@@ -158,7 +154,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         this.map = map;
         map.setMyLocationEnabled(true);
         
-        addAllItemsToMap();
+        addAllItemsInRegionToMap();
     }
 
 
@@ -178,34 +174,10 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     }
     // *********************************************************************************************
 
-
-    /**
-     * Call by fragment_map.xml
-     *
-     * TOTO : To remove once pull request 90 is ready.
-     *
-     */
-    public void addItem() {
-        //TODO : add a real item
-        User bob = new User(1, "bob");
-        User alice = new User(2, "alice");
-        Location l = new Location(TAG);
-        //TODO : Be sure that the location is correct
-        gpsProvider.getLastLocation().getLatitude();
-        l.setLatitude(gpsProvider.getLastLocation().getLatitude());
-        l.setLongitude(gpsProvider.getLastLocation().getLongitude());
-
-        Item item = new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l, 5), "Password : calamar42");
-        new SendItemTask(item).execute();
-    }
-
-    private void addAllItemsToMap() {
+    private void addAllItemsInRegionToMap() {
         if (null != map) {
-            LatLng latlng = map.getCameraPosition().target;
-            Location loc = new Location(TAG);
-            loc.setLatitude(latlng.latitude);
-            loc.setLongitude(latlng.longitude);
-            new RefreshTask(loc).execute();
+            VisibleRegion visibleRegion = map.getProjection().getVisibleRegion();
+            new RefreshTask(visibleRegion).execute();
         } else throw new IllegalStateException("map not ready when refresh");
     }
 
@@ -229,7 +201,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
         i.addObserver(itemObserver);
 
-        markers.put(i,map.addMarker(marker));
+        markers.put(i, map.addMarker(marker));
     }
 
     /**
@@ -267,24 +239,27 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      */
     private class RefreshTask extends AsyncTask<Void, Void, List<Item>> {
 
-        private final Location nearLocation;
+        private final VisibleRegion visibleRegion;
 
-        public RefreshTask(Location nearLocation) {
-            this.nearLocation = nearLocation;
+        public RefreshTask(VisibleRegion visibleRegion) {
+            if (null == visibleRegion) {
+                throw new IllegalArgumentException("RefreshTask: visibleRegion is null");
+            }
+            this.visibleRegion = visibleRegion;
         }
 
         @Override
         protected List<Item> doInBackground(Void... v) {
                 try {
+
                     return DatabaseClientLocator.getDatabaseClient().getAllItems(
                             CalamarApplication.getInstance().getCurrentUser(),
                             new Date(0), //TODO need to ask others what are we going to do with the local database
-                                         //lastrefresh and etc...
+                            //lastrefresh and etc...
                             //or we don't store them in local db and everytime we refresh we flush the map
                             //before re adding all the items in visible range
                             //I think it can make sense ..
-                            nearLocation,
-                            MAP_RADIUS);//TODO radius
+                            visibleRegion);
 
                 } catch (DatabaseClientException e) {
                     Log.e(MapFragment.TAG, e.getMessage());
@@ -301,47 +276,17 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                 }
 
                 Log.i(MapFragment.TAG, "map refreshed");
+
+                // TODO WTF nullPointerException sometimes, check getContext before using it
                 Toast.makeText(getContext(), R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();
 
             } else {
+                Log.e(MapFragment.TAG, "unable to refresh");
                 Toast.makeText(getContext(), R.string.unable_to_refresh_message,
                         Toast.LENGTH_SHORT).show();
             }
         }
 
-    }
-
-    /**
-     * Async task for sending an Item.
-     * TODO, to remove when add item activity...
-     */
-    private class SendItemTask extends AsyncTask<Void, Void, Item> {
-
-        private final Item item;
-
-        public SendItemTask(Item item) {
-            this.item = item;
-        }
-
-        @Override
-        protected Item doInBackground(Void... v) {
-            try {
-                return DatabaseClientLocator.getDatabaseClient().send(item);
-            } catch (DatabaseClientException e) {
-                Log.e(MapFragment.TAG, e.getMessage());
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Item item) {
-            if (item != null) {
-                // nothing, only to test refresh
-            } else {
-                Toast.makeText(getActivity(), getString(R.string.item_send_error),
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 }
