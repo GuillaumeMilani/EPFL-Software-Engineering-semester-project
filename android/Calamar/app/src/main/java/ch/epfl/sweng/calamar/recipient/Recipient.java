@@ -84,11 +84,7 @@ public abstract class Recipient {
      * @throws JSONException
      */
     public static Recipient fromJSON(JSONObject json) throws JSONException {
-        if (null == json) {
-            return new User(User.PUBLIC_ID, User.PUBLIC_NAME);
-        }
-
-        if (json.isNull("type")) {
+        if (null == json || json.isNull("type")) {
             throw new IllegalArgumentException("malformed json, either null or no 'type' value");
         }
         Recipient ret;

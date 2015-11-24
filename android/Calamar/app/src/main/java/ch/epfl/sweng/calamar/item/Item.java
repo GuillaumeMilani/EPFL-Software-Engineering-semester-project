@@ -205,15 +205,21 @@ public abstract class Item {
         protected Builder parse(JSONObject o) throws JSONException {
             ID = o.getInt("ID");
             from = User.fromJSON(o.getJSONObject("from"));
-            to = Recipient.fromJSON(o.getJSONObject("to"));
-            date = o.getLong("date");
-            //TODO to delete when server ready to send true condition when there is no condition
-            // and replace by just fromJSON etc..
-            if(o.has("condition")) {
-                condition = Condition.fromJSON(o.getJSONObject("condition"));
+            if (o.isNull("to")) {
+                to = new User(User.PUBLIC_ID, User.PUBLIC_NAME);
             } else {
-                condition = Condition.trueCondition();
+                to = Recipient.fromJSON(o.getJSONObject("to"));
             }
+
+            date = o.getLong("date");
+//            //TODO to delete when server ready to send true condition when there is no condition
+//            // and replace by just fromJSON etc..
+//            if(o.has("condition")) {
+                condition = Condition.fromJSON(new JSONObject(o.getString("condition")));
+                //condition = Condition.fromJSON(o.getJSONObject("condition"));
+//            } else {
+//                condition = Condition.trueCondition();
+//            }
             return this;
         }
 
