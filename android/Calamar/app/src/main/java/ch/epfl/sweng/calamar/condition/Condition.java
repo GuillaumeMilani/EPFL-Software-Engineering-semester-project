@@ -1,19 +1,30 @@
 package ch.epfl.sweng.calamar.condition;
 
 import org.json.JSONArray;
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashSet;
 import java.util.Set;
 
+import ch.epfl.sweng.calamar.R;
+
 /**
  * Created by pierre on 10/27/15.
  */
 public abstract class Condition {
 
-    private Boolean value = null;
-    private Set<Observer> observers = new HashSet<>();
+    private Boolean value = false;
+    private final Set<Observer> observers = new HashSet<>();
 
     private static JSONArray concatArray(JSONArray... arrays)
             throws JSONException {
@@ -60,6 +71,29 @@ public abstract class Condition {
 
     public abstract String type();
 
+    public View getView(Context context)
+    {
+        return new FrameLayout(context) {
+            Paint paint = new Paint();
+
+            {
+                addObserver(new Observer() {
+                    @Override
+                    public void update(Condition condition) {
+                        invalidate();
+                    }
+                });
+            }
+
+            @Override
+            public void onDraw(Canvas canvas) {
+                paint.setColor(getValue() ? Color.GREEN : Color.RED);
+                paint.setStrokeWidth(3);
+                canvas.drawRect(0, 0, getWidth(), getHeight(), paint);
+            }
+        };
+    }
+
 
     /**
      * set a value for this condition. If newValue differs from old, notify observers
@@ -70,7 +104,7 @@ public abstract class Condition {
         if (value != newValue) {
             value = newValue;
             for (Observer o : observers) {
-                o.update();
+                o.update(this);
             }
         }
     }
@@ -145,6 +179,16 @@ public abstract class Condition {
             public String type() {
                 return "true";
             }
+
+            @Override
+            public View getView(Context context)
+            {
+                FrameLayout view = (FrameLayout)(super.getView(context));
+                TextView tv = new TextView(context);
+                tv.setText(context.getResources().getString(R.string.condition_true));
+                view.addView(tv);
+                return view;
+            }
         };
     }
 
@@ -174,6 +218,16 @@ public abstract class Condition {
             public String type() {
                 return "false";
             }
+
+            @Override
+            public View getView(Context context)
+            {
+                FrameLayout view = (FrameLayout)(super.getView(context));
+                TextView tv = new TextView(context);
+                tv.setText(context.getResources().getString(R.string.condition_false));
+                view.addView(tv);
+                return view;
+            }
         };
     }
 
@@ -192,7 +246,7 @@ public abstract class Condition {
                 Condition.Observer o = new Observer() {
 
                     @Override
-                    public void update() {
+                    public void update(Condition c) {
                         setValue(c1.value && c2.value);
                     }
                 };
@@ -220,6 +274,19 @@ public abstract class Condition {
 
             @Override
             public JSONArray getMetadata() throws JSONException { return concatArray(c1.getMetadata(), c2.getMetadata()); }
+            public View getView(Context context)
+            {
+                FrameLayout view = (FrameLayout)(super.getView(context));
+                LinearLayout LL = new LinearLayout(context);
+                LL.setOrientation(LinearLayout.VERTICAL);
+                TextView tv = new TextView(context);
+                tv.setText(context.getResources().getString(R.string.condition_and));
+                LL.addView(c1.getView(context), 0);
+                LL.addView(tv, 1);
+                LL.addView(c2.getView(context), 2);
+                view.addView(LL);
+                return view;
+            }
         };
     }
 
@@ -238,7 +305,7 @@ public abstract class Condition {
                 Condition.Observer o = new Observer() {
 
                     @Override
-                    public void update() {
+                    public void update(Condition c) {
                         setValue(c1.value || c2.value);
                     }
                 };
@@ -265,6 +332,20 @@ public abstract class Condition {
 
             @Override
             public JSONArray getMetadata() throws JSONException { return concatArray(c1.getMetadata(), c2.getMetadata()); }
+
+            public View getView(Context context)
+            {
+                FrameLayout view = (FrameLayout)(super.getView(context));
+                LinearLayout LL = new LinearLayout(context);
+                LL.setOrientation(LinearLayout.VERTICAL);
+                TextView tv = new TextView(context);
+                tv.setText(context.getResources().getString(R.string.condition_or));
+                LL.addView(c1.getView(context), 0);
+                LL.addView(tv, 1);
+                LL.addView(c2.getView(context), 2);
+                view.addView(LL);
+                return view;
+            }
         };
     }
 
@@ -282,7 +363,7 @@ public abstract class Condition {
                 Condition.Observer o = new Observer() {
 
                     @Override
-                    public void update() {
+                    public void update(Condition c) {
                         setValue(!c.value);
                     }
                 };
@@ -306,6 +387,20 @@ public abstract class Condition {
             }
 
             // TODO How to deal metadata with not operator ?
+
+            @Override
+            public View getView(Context context)
+            {
+                FrameLayout view = (FrameLayout)(super.getView(context));
+                LinearLayout LL = new LinearLayout(context);
+                LL.setOrientation(LinearLayout.VERTICAL);
+                TextView tv = new TextView(context);
+                tv.setText(context.getResources().getString(R.string.condition_not));
+                LL.addView(tv, 0);
+                LL.addView(c.getView(context), 1);
+                view.addView(LL);
+                return view;
+            }
         };
     }
 
@@ -330,6 +425,6 @@ public abstract class Condition {
     }
 
     public abstract static class Observer {
-        public abstract void update();
+        public abstract void update(Condition condition);
     }
 }

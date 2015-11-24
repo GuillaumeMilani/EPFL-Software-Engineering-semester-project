@@ -63,7 +63,7 @@ public class ChatUsersListAdapter extends BaseAdapter {
     /**
      * Creates a ViewHolder containing the name of the user, and one LinearLayout containing it.
      *
-     * @param v The view holding those values
+     * @param v The itemView holding those values
      * @return The newly created ViewHolder
      */
     private ViewHolder createViewHolder(View v) {

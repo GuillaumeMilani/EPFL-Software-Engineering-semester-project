@@ -11,7 +11,6 @@ import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.chat.ChatUsersListActivity;
 import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClient;
@@ -39,10 +38,10 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
         super(ChatUsersListActivity.class);
     }
 
-    CalamarApplication  app;
+    CalamarApplication app;
 
-    private Recipient bob = new User(1, "bob");
-    private Recipient alice = new User(2, "alice");
+    private final Recipient bob = new User(1, "bob");
+    private final Recipient alice = new User(2, "alice");
 
     @Override
     @Before
@@ -67,11 +66,11 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
      */
     @Test
     public void testDisplayContactIsEmptyWhenNoContact() {
-        app.getDB().deleteAllRecipients();
+        app.getDatabaseHandler().deleteAllRecipients();
 
         getActivity();
 
-        ListView list = (ListView)getActivity().findViewById(R.id.contactsList);
+        ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
         assertEquals(list.getCount(), 0);
     }
 
@@ -80,17 +79,17 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
      */
     @Test
     public void testDisplayTwoContact() {
-        app.getDB().deleteAllRecipients();
-        app.getDB().addRecipient(bob);
-        app.getDB().addRecipient(alice);
+        app.getDatabaseHandler().deleteAllRecipients();
+        app.getDatabaseHandler().addRecipient(bob);
+        app.getDatabaseHandler().addRecipient(alice);
 
         getActivity();
 
-        ListView list = (ListView)getActivity().findViewById(R.id.contactsList);
+        ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
 
         assertEquals(list.getCount(), 2);
 
-        app.getDB().deleteAllRecipients();
+        app.getDatabaseHandler().deleteAllRecipients();
     }
 
     /**
@@ -98,7 +97,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
      */
     @Test
     public void testCreateContactCanBeCancelled() {
-        app.getDB().deleteAllRecipients();
+        app.getDatabaseHandler().deleteAllRecipients();
 
         getActivity();
 
@@ -112,20 +111,20 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
      */
     @Test
     public void testCreateContactIsCorrectlyCreated() {
-        app.getDB().deleteAllRecipients();
+        app.getDatabaseHandler().deleteAllRecipients();
 
         DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
 
         getActivity();
 
-        ListView list = (ListView)getActivity().findViewById(R.id.contactsList);
+        ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
         final int before = list.getCount();
 
         onView(withId(R.id.newContact)).perform(click());
 
         onView(withText("Add")).perform(click());
 
-        assertEquals(before + 1,list.getCount());
+        assertEquals(before + 1, list.getCount());
     }
 
     /**
@@ -133,7 +132,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
      */
     @Test
     public void testCreateContactSendCorrectParameter() throws DatabaseClientException {
-        app.getDB().deleteAllRecipients();
+        app.getDatabaseHandler().deleteAllRecipients();
 
         DatabaseClient client = Mockito.mock(ConstantDatabaseClient.class);
         DatabaseClientLocator.setDatabaseClient(client);
@@ -150,7 +149,7 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
 
         verify(client).findUserByName(argument.capture());
 
-        assertEquals("calamar@gmail.com",argument.getValue());
+        assertEquals("calamar@gmail.com", argument.getValue());
     }
 
 }
