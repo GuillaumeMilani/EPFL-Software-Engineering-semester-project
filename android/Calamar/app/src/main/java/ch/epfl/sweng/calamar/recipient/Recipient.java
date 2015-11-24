@@ -84,7 +84,11 @@ public abstract class Recipient {
      * @throws JSONException
      */
     public static Recipient fromJSON(JSONObject json) throws JSONException {
-        if (null == json || json.isNull("type")) {
+        if (null == json) {
+            return new User(User.PUBLIC_ID, User.PUBLIC_NAME);
+        }
+
+        if (json.isNull("type")) {
             throw new IllegalArgumentException("malformed json, either null or no 'type' value");
         }
         Recipient ret;
@@ -93,8 +97,7 @@ public abstract class Recipient {
             case "user":
                 ret = User.fromJSON(json);
                 break;
-            case "group":
-            case "public":
+            //case "group":
             default:
                 throw new IllegalArgumentException("Unexpected Recipient type (" + type + ")");
         }
