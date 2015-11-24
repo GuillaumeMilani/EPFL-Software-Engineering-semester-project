@@ -157,7 +157,7 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
 
     //TODO: missing google play services Ignore while not fixed (position condition visually works)
 
-    @Ignore
+    @Test
     public void testPositionCondition() throws InterruptedException {
         GPSProvider gps = GPSProvider.getInstance();
         gps.startLocationUpdates(getActivity());
@@ -190,14 +190,14 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
     }
 
 
-    @Ignore
+    @Test
     public void testMetadataTrueCondition() throws JSONException {
         Condition a = Condition.trueCondition();
         JSONArray ja = new JSONArray();
         assertEquals(ja, a.getMetadata());
     }
 
-    @Ignore
+    @Test
     public void testMetadataPositionCondition() throws JSONException {
         Condition pc = new PositionCondition(123.4, 432.1, 10);
         JSONObject jo = new JSONObject();
@@ -209,7 +209,7 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
         assertEquals(ja.toString(), pc.getMetadata().toString());
     }
 
-    @Ignore
+    @Test
     public void testMetadataMultiplePositionCondition() throws JSONException {
         Condition pc1 = new PositionCondition(123.4, 432.1, 10);
         Condition pc2 = new PositionCondition(432.1, 123.4, 20);
@@ -230,7 +230,7 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
         assertEquals(ja.toString(), pc1AndPc2.getMetadata().toString());
     }
 
-    @Ignore
+    @Test
     public void testToJSONMetadata() throws JSONException {
         Condition pc1 = new PositionCondition(123.4, 432.1, 10);
         JSONObject jo1 = new JSONObject();
