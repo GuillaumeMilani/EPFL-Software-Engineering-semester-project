@@ -10,9 +10,8 @@ public class Compresser {
 
     public static byte[] compress(byte[] data) throws IOException {
 
-        Deflater deflater = new Deflater();
-        deflater.setLevel(Deflater.BEST_COMPRESSION);
-
+        Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION);
+        
         deflater.setInput(data);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
@@ -28,6 +27,7 @@ public class Compresser {
             outputStream.write(buffer, 0, count);
 
         }
+        deflater.end();
 
         outputStream.close();
 
