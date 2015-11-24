@@ -744,11 +744,8 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     public void testFileItem() {
         checkLastTime(0);
         dbHandler.addItem(testFile);
-        System.out.println("Original : " + new String(testFile.getData()));
-        System.out.println("New : " + new String((((FileItem) dbHandler.getItem(testFile.getID())).getData())));
         assertEquals(dbHandler.getItem(testFile.getID()), testFile);
         dbHandler.applyPendingOperations();
-        System.out.println("New2 : " + new String((((FileItem) dbHandler.getItem(testFile.getID())).getData())));
         assertEquals(dbHandler.getItem(testFile.getID()), testFile);
         checkLastTime(testFile.getDate().getTime());
         FileItem updated = new FileItem(testFile.getID(), new User(5, "bla"), new User(6, "blo"), new Date(), Condition.falseCondition(), updatedTestContent, "File");

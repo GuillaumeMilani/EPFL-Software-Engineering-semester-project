@@ -86,16 +86,16 @@ public class FileItem extends Item {
     @Override
     public void compose(JSONObject object) throws JSONException {
         super.compose(object);
-        object.accumulate("data", byteArrayToString(data));
+        object.accumulate("data", byteArrayToBase64String(data));
         object.accumulate("name", name);
         object.accumulate("type", ITEM_TYPE.name());
     }
 
-    public static String byteArrayToString(byte[] data) {
+    public static String byteArrayToBase64String(byte[] data) {
         return Base64.encodeToString(data, Base64.DEFAULT);
     }
 
-    public static byte[] stringToByteArray(String str) {
+    public static byte[] base64StringToByteArray(String str) {
         return Base64.decode(str, Base64.DEFAULT);
     }
 
@@ -148,7 +148,7 @@ public class FileItem extends Item {
             if (!(type.equals(FileItem.ITEM_TYPE.name()) || type.equals(ImageItem.ITEM_TYPE.name()))) {
                 throw new IllegalArgumentException("expected " + FileItem.ITEM_TYPE.name() + " was : " + type);
             }
-            data = Compresser.decompress(stringToByteArray(json.getString("data")));
+            data = Compresser.decompress(base64StringToByteArray(json.getString("data")));
             name = json.getString("name");
             return this;
         }

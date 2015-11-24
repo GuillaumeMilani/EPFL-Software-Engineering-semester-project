@@ -336,8 +336,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 cursor.close();
             }
         }
-        updateGetItemsFromPending(items, toUpdate);
-        return Sorter.sortItemList(new ArrayList<>(items));
+        return Sorter.sortItemList(new ArrayList<>(updateGetItemsFromPending(items, toUpdate)));
     }
 
     /**
@@ -397,8 +396,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             cursor.close();
         }
-        updateGetItemsFromPending(items, toUpdate);
-        return Sorter.sortItemList(new ArrayList<>(items));
+        return Sorter.sortItemList(new ArrayList<>(updateGetItemsFromPending(items, toUpdate)));
     }
 
     /**
@@ -439,8 +437,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             cursor.close();
         }
-        updateGetItemsFromPending(items, toUpdate);
-        return Sorter.sortItemList(new ArrayList<>(items));
+        return Sorter.sortItemList(new ArrayList<>(updateGetItemsFromPending(items, toUpdate)));
     }
 
     /**
@@ -628,8 +625,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 cursor.close();
             }
         }
-        updateGetRecipientsFromPending(recipients, toUpdate);
-        return Sorter.sortRecipientList(new ArrayList<>(recipients));
+        return Sorter.sortRecipientList(new ArrayList<>(updateGetRecipientsFromPending(recipients, toUpdate)));
     }
 
     /**
@@ -670,8 +666,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             cursor.close();
         }
-        updateGetRecipientsFromPending(recipients, toUpdate);
-        return Sorter.sortRecipientList(new ArrayList<>(recipients));
+        return Sorter.sortRecipientList(new ArrayList<>(updateGetRecipientsFromPending(recipients, toUpdate)));
     }
 
     /**
@@ -973,42 +968,46 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         }
     }
 
-    private void updateGetItemsFromPending(Set<Item> items, Set<Item> toUpdate) {
+    private Set<Item> updateGetItemsFromPending(Set<Item> items, Set<Item> toUpdate) {
+        Set<Item> itemsCopy = new HashSet<>(items);
         if (toUpdate.size() < items.size()) {
             for (Item i : toUpdate) {
                 if (items.contains(i)) {
-                    items.remove(i);
-                    items.add(i);
+                    itemsCopy.remove(i);
+                    itemsCopy.add(i);
                 }
             }
         } else {
             for (Item i : items) {
                 Pair<Operation, Item> fromPending = pendingItems.get(i.getID());
                 if (fromPending != null && fromPending.getLeft() == Operation.UPDATE) {
-                    items.remove(i);
-                    items.add(fromPending.getRight());
+                    itemsCopy.remove(i);
+                    itemsCopy.add(fromPending.getRight());
                 }
             }
         }
+        return itemsCopy;
     }
 
-    private void updateGetRecipientsFromPending(Set<Recipient> recipients, Set<Recipient> toUpdate) {
+    private Set<Recipient> updateGetRecipientsFromPending(Set<Recipient> recipients, Set<Recipient> toUpdate) {
+        Set<Recipient> recipientsCopy = new HashSet<>(recipients);
         if (toUpdate.size() < recipients.size()) {
             for (Recipient i : toUpdate) {
                 if (recipients.contains(i)) {
-                    recipients.remove(i);
-                    recipients.add(i);
+                    recipientsCopy.remove(i);
+                    recipientsCopy.add(i);
                 }
             }
         } else {
             for (Recipient i : recipients) {
                 Pair<Operation, Recipient> fromPending = pendingRecipients.get(i.getID());
                 if (fromPending != null && fromPending.getLeft() == Operation.UPDATE) {
-                    recipients.remove(i);
-                    recipients.add(fromPending.getRight());
+                    recipientsCopy.remove(i);
+                    recipientsCopy.add(fromPending.getRight());
                 }
             }
         }
+        return recipientsCopy;
     }
 
     private String createPlaceholders(int length) {
