@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar;
 
+
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -8,15 +9,18 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.map.MapFragment;
 
-public class MainActivity extends BaseActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+/**
+ * Created by Guillaume on 12.11.2015.
+ */
+
+public class MainActivity extends BaseActivity {
+
 
     // Tabs related stuff
     private Toolbar toolbar;
@@ -25,13 +29,6 @@ public class MainActivity extends BaseActivity implements GoogleApiClient.Connec
 
     // LogCat tag
     private static final String TAG = MainActivity.class.getSimpleName();
-
-    private void setupViewPager(ViewPager viewPager) {
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new MapFragment(), "Map");
-        adapter.addFragment(new ChatFragment(), "Chat");
-        viewPager.setAdapter(adapter);
-    }
 
 
     // *********************************************************************************************
@@ -44,9 +41,6 @@ public class MainActivity extends BaseActivity implements GoogleApiClient.Connec
     // https://stackoverflow.com/questions/7618703/activity-lifecycle-oncreate-called-on-every-re-orientation
     // maybe prevent this ...
     //
-    //TODO check activity lifecycle and pertinent action to make when entering new states
-    // regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
-    // etc...
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,9 +56,16 @@ public class MainActivity extends BaseActivity implements GoogleApiClient.Connec
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
+
     }
 
-    // *********************************************************************************************
+
+    private void setupViewPager(ViewPager viewPager) {
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter.addFragment(new MapFragment(), "Map");
+        adapter.addFragment(new ChatFragment(), "Chat");
+        viewPager.setAdapter(adapter);
+    }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
@@ -94,6 +95,6 @@ public class MainActivity extends BaseActivity implements GoogleApiClient.Connec
             return mFragmentTitleList.get(position);
         }
     }
-}
 
+}
 

@@ -34,6 +34,8 @@ import static org.mockito.Mockito.verify;
 @RunWith(JUnit4.class)
 public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCase2<ChatActivity> {
 
+    private final String ALICE = "Alice";
+    private final String MESSAGE = "Hello " + ALICE + " !";
 
     public ChatActivityCommunicationTest() {
         super(ChatActivity.class);
@@ -56,7 +58,7 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
         DatabaseClient client = Mockito.mock(ConstantDatabaseClient.class);
         DatabaseClientLocator.setDatabaseClient(client);
         Intent conversation = new Intent();
-        conversation.putExtra(ChatFragment.EXTRA_CORRESPONDENT_NAME, "Alice");
+        conversation.putExtra(ChatFragment.EXTRA_CORRESPONDENT_NAME, ALICE);
         conversation.putExtra(ChatFragment.EXTRA_CORRESPONDENT_ID, 1);
         setActivityIntent(conversation);
         getActivity();
@@ -64,18 +66,15 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
         //The argument captor capture the argument that the activity give to the send method.
         ArgumentCaptor<Item> argument = ArgumentCaptor.forClass(Item.class);
 
-        onView(withId(R.id.messageEdit)).perform(typeText("Hello Alice !"));
+        onView(withId(R.id.messageEdit)).perform(typeText(MESSAGE));
         onView(withId(R.id.chatSendButton)).perform(click());
 
         verify(client).send(argument.capture());
 
-        assertEquals(argument.getValue().getTo().getName(), "Alice");
+        assertEquals(argument.getValue().getTo().getName(), ALICE);
         //Test the text of the message
-        SimpleTextItem expected = new SimpleTextItem(1, argument.getValue().getFrom(), argument.getValue().getTo(), argument.getValue().getDate(), "Hello Alice !");
+        SimpleTextItem expected = new SimpleTextItem(1, argument.getValue().getFrom(), argument.getValue().getTo(), argument.getValue().getDate(), MESSAGE);
         assertEquals(argument.getValue(), expected);
-
-        //Test the name of the correspondent.
-        assertEquals("Alice", argument.getValue().getTo().getName());
 
     }
 

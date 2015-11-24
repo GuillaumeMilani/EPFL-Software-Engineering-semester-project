@@ -8,11 +8,15 @@ import android.content.IntentSender;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+
+import ch.epfl.sweng.calamar.item.CreateItemActivity;
+import ch.epfl.sweng.calamar.push.RegistrationIntentService;
 
 public class BaseActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private CalamarApplication app;
@@ -22,6 +26,7 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
 
     // activity request codes
     private static final int ERROR_RESOLUTION_REQUEST = 1001;
+    private static final int REQUEST_CODE_PICK_ACCOUNT = 1002;
 
     //TODO Test if i can use the location architecture to check the google play services
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
@@ -29,11 +34,27 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
     // google api related stuff
     private boolean resolvingError;
 
+    // *********************************************************************************************
+    // ACTIVITY LIFECYCLE CALLBACKS
+    // https://developer.android.com/training/basics/activity-lifecycle/starting.html
+    // even better :
+    // https://stackoverflow.com/questions/12203651/why-is-onresume-called-when-an-activity-starts
+    //
+    // every time screen is rotated, activity is destroyed/recreated :
+    // https://stackoverflow.com/questions/7618703/activity-lifecycle-oncreate-called-on-every-re-orientation
+    // maybe prevent this ...
+    //
+    //TODO check activity lifecycle and pertinent action to make when entering new states
+    // regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
+    // etc...
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         app = CalamarApplication.getInstance();
-        buildGoogleApiClient();  // will connect in onResume(), errors are handled in onConnectionFailed()
+        if (!app.isGoogleApiClientCreated()) {
+            buildGoogleApiClient();
+        }  // will connect in onResume(), errors are handled in onConnectionFailed()
     }
 
     @Override
@@ -62,6 +83,8 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onConnected(Bundle arg0) {
         Log.i(TAG, "google API client connected");
+        Intent intent = new Intent(this, RegistrationIntentService.class);
+        startService(intent);
     }
 
     @Override
@@ -113,6 +136,20 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
                         Log.e(TAG, "google API client definitely can't connect...");
                         finish();//TODO maybe refine ?
                 }
+                break;
+            //TODO code 1002 http://www.androiddesignpatterns.com/2013/01/google-play-services-setup.html
+            case REQUEST_CODE_PICK_ACCOUNT:
+                /*
+                if (resultCode == RESULT_OK) {
+                    String accountName = data.getStringExtra(
+                            AccountManager.KEY_ACCOUNT_NAME);
+                    AccountUtils.setAccountName(this, accountName);
+                } else if (resultCode == RESULT_CANCELED) {
+                    Toast.makeText(this, "This application requires a Google account.",
+                            Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+                */
                 break;
             default:
                 throw new IllegalStateException("onActivityResult : unknown request ! ");
@@ -166,27 +203,8 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
-    /**
-     * Verifies google play services availability on the device
-     */
-    //keeped just in case.., not used now, I go the other way by connecting and then eventually
-    //handle errors in onConnectionFailed
-    private boolean checkPlayServices() {
-        GoogleApiAvailability apiAvailabilitySingleton = GoogleApiAvailability.getInstance();
-        int resultCode = apiAvailabilitySingleton.isGooglePlayServicesAvailable(CalamarApplication.getInstance());
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (apiAvailabilitySingleton.isUserResolvableError(resultCode)) {
-                apiAvailabilitySingleton.getErrorDialog(this, resultCode,
-                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
-
-            } else {
-                Log.e(TAG, "This device is not supported. play services unavailable " +
-                        "and automatic error resolution failed. error code : " + resultCode);
-                //show dialog using geterrordialog on singleton
-                finish();
-            }
-            return false;
-        }
-        return true;
+    public void createItem(View v) {
+        Intent intent = new Intent(this, CreateItemActivity.class);
+        startActivity(intent);
     }
 }

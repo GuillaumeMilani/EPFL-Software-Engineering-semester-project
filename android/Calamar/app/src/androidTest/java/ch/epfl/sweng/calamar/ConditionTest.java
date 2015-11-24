@@ -24,7 +24,7 @@ public class ConditionTest {
     class TO extends Condition.Observer {
 
         private int triggered = 0;
-        private Condition c;
+        private final Condition c;
 
         TO(Condition c) {
             this.c = c;
@@ -32,7 +32,7 @@ public class ConditionTest {
         }
 
         @Override
-        public void update() {
+        public void update(Condition c) {
             triggered++;
         }
 

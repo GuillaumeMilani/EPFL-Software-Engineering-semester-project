@@ -24,6 +24,23 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <activity
+            android:name="com.ipaulpro.afilechooser.FileChooserActivity"
+            android:enabled="@bool/use_activity"
+            android:exported="true"
+            android:icon="@drawable/ic_chooser"
+            android:label="@string/choose_file">
+            <intent-filter>
+                <action android:name="android.intent.action.GET_CONTENT" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.OPENABLE" />
+
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".chat.ChatActivity"
             android:label="@string/title_activity_chat"
@@ -45,10 +62,34 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+<<<<<<< HEAD
+=======
+
+>>>>>>> dc774c0b4e22aff9aa7e58950946e847eb05e6d8
         <activity
             android:name=".BaseActivity"
             android:label="Base"
             android:theme="@style/AppTheme.NoActionBar" />
+<<<<<<< HEAD
+=======
+
+        <activity
+            android:name=".item.CreateItemActivity"
+            android:label="@string/title_activity_create_item"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <provider
+            android:name="com.ianhanniballake.localstorage.LocalStorageProvider"
+            android:authorities="com.ianhanniballake.localstorage.documents"
+            android:enabled="@bool/use_provider"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+>>>>>>> dc774c0b4e22aff9aa7e58950946e847eb05e6d8
 
         <meta-data
             android:name="com.google.android.gms.version"
@@ -56,6 +97,7 @@
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="@string/google_maps_key" />
+
         <!-- [START gcm_receiver] -->
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"
@@ -67,7 +109,11 @@
             </intent-filter>
         </receiver>
         <service
+<<<<<<< HEAD
             android:name="ch.epfl.sweng.calamar.RegistrationGcmListenerService"
+=======
+            android:name=".push.RegistrationGcmListenerService"
+>>>>>>> dc774c0b4e22aff9aa7e58950946e847eb05e6d8
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
@@ -76,7 +122,7 @@
         <!-- [END gcm_listener] -->
         <!-- [START instanceId_listener] -->
         <service
-            android:name="ch.epfl.sweng.calamar.CalamarInstanceIDListenerService"
+            android:name=".push.CalamarInstanceIDListenerService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.gms.iid.InstanceID" />
@@ -84,7 +130,11 @@
         </service>
         <!-- [END instanceId_listener] -->
         <service
+<<<<<<< HEAD
             android:name="ch.epfl.sweng.calamar.RegistrationIntentService"
+=======
+            android:name=".push.RegistrationIntentService"
+>>>>>>> dc774c0b4e22aff9aa7e58950946e847eb05e6d8
             android:exported="false" />
     </application>
 

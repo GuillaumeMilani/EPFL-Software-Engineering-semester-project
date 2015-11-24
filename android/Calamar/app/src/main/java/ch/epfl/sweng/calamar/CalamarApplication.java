@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -11,15 +12,13 @@ import android.util.Log;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.securepreferences.SecurePreferences;
 
-import java.util.Date;
-
 import ch.epfl.sweng.calamar.recipient.User;
 
 public final class CalamarApplication extends Application implements Application.ActivityLifecycleCallbacks {
 
     //TODO Why volatile?
     private static volatile CalamarApplication instance;
-    private SQLiteDatabaseHandler db;
+    private SQLiteDatabaseHandler dbHandler;
     private SharedPreferences sp;
     private SharedPreferences.Editor editor;
 
@@ -33,11 +32,13 @@ public final class CalamarApplication extends Application implements Application
     //https://developers.google.com/android/guides/api-client
     private GoogleApiClient googleApiClient = null;
 
-    //Used to check and do stuff if the app is on background -- not foolproof, there is no real good way apparently
+    //Used to check and do stuff if the app is on background -- not foolproof,
+    // there is no real good way to check that apparently, but seems to be working fine
     private boolean onForeground = true;
     private int resumed = 0;
     private int paused = 0;
     private Handler handler;
+    private final int WAITING_TIME = 500;
 
     /**
      * Returns the current instance of the application.
@@ -53,35 +54,36 @@ public final class CalamarApplication extends Application implements Application
 
     @SuppressLint("CommitPrefEdits")
     @Override
-    //TODO Clean method once things are decided
+    //TODO Clean method once things are decided / tested
     public void onCreate() {
         super.onCreate();
         User test = new User(1, "Bob");
         instance = this;
         sp = new SecurePreferences(this, test.getPassword(), "user_pref.xml");
         editor = sp.edit();
-        db = SQLiteDatabaseHandler.getInstance();
         handler = new Handler();
-        setLastItemsRefresh(new Date(0));
-        setLastUsersRefresh(new Date(0));
+        dbHandler = SQLiteDatabaseHandler.getInstance();
+        setLastItemsRefresh(0);
+        setLastUsersRefresh(0);
     }
+
 
     /**
      * Get the database containing the recipients and the items.
      *
      * @return the database
      */
-    public SQLiteDatabaseHandler getDB() {
-        return db;
+    public SQLiteDatabaseHandler getDatabaseHandler() {
+        return dbHandler;
     }
 
     /**
      * Set the last time the application refreshed the users.
      *
-     * @param lastDate The date.
+     * @param lastTime The date.
      */
-    public void setLastUsersRefresh(Date lastDate) {
-        editor.putLong(LAST_USERS_REFRESH_SP, lastDate.getTime()).apply();
+    public void setLastUsersRefresh(long lastTime) {
+        editor.putLong(LAST_USERS_REFRESH_SP, lastTime).apply();
     }
 
     /**
@@ -96,10 +98,10 @@ public final class CalamarApplication extends Application implements Application
     /**
      * Set the time the application last refreshed the items.
      *
-     * @param lastDate The date.
+     * @param lastTime The date.
      */
-    public void setLastItemsRefresh(Date lastDate) {
-        editor.putLong(LAST_ITEMS_REFRESH_SP, lastDate.getTime()).apply();
+    public void setLastItemsRefresh(long lastTime) {
+        editor.putLong(LAST_ITEMS_REFRESH_SP, lastTime).apply();
     }
 
     /**
@@ -174,14 +176,14 @@ public final class CalamarApplication extends Application implements Application
      * Resets the lastItemsRefresh to 0
      */
     public void resetLastItemsRefresh() {
-        setLastItemsRefresh(new Date(0));
+        setLastItemsRefresh(0);
     }
 
     /**
      * Resets the lastUsersRefresh to 0
      */
     public void resetLastUsersRefresh() {
-        setLastUsersRefresh(new Date(0));
+        setLastUsersRefresh(0);
     }
 
     /**
@@ -215,6 +217,15 @@ public final class CalamarApplication extends Application implements Application
         return googleApiClient;
     }
 
+    /**
+     * Tells if the google API client is created
+     *
+     * @return true if it is, false otherwise
+     */
+    public boolean isGoogleApiClientCreated() {
+        return googleApiClient != null;
+    }
+
 
     //Used to check if app is in background (triggers database)
     @Override
@@ -233,11 +244,11 @@ public final class CalamarApplication extends Application implements Application
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (isOnForeground()) {
-                    //TODO db.applyPendingOperations() once improve_database is merged;
+                if (!isOnForeground()) {
+                    new ApplyPendingDatabaseOperationsTask().execute();
                 }
             }
-        }, 500);
+        }, WAITING_TIME);
     }
 
     @Override
@@ -246,11 +257,11 @@ public final class CalamarApplication extends Application implements Application
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (isOnForeground()) {
-                    //TODO same as above;
+                if (!isOnForeground()) {
+                    new ApplyPendingDatabaseOperationsTask().execute();
                 }
             }
-        }, 500);
+        }, WAITING_TIME);
     }
 
     @Override
@@ -275,6 +286,22 @@ public final class CalamarApplication extends Application implements Application
             onForeground = true;
         }
         return onForeground;
+    }
+
+    private class ApplyPendingDatabaseOperationsTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... v) {
+            dbHandler.applyPendingOperations();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void v) {
+            long time = dbHandler.getLastUpdateTime();
+            instance.setLastUsersRefresh(time);
+            instance.setLastItemsRefresh(time);
+        }
     }
 
 

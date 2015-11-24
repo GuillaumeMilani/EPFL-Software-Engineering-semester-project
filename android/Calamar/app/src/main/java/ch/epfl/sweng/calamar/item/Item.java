@@ -1,9 +1,15 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.content.Context;
+import android.view.View;
+import android.widget.LinearLayout;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -23,9 +29,20 @@ public abstract class Item {
     private final long date; //posix date
     private final Condition condition;
 
-    public enum Type {SIMPLETEXTITEM}
+    public enum Type {SIMPLETEXTITEM, IMAGEITEM}
     //TODO date d'expiration ?
 
+    private Set<Observer> observers = new HashSet<>();
+
+
+    private final Condition.Observer conditionObserver = new Condition.Observer() {
+        @Override
+        public void update(Condition condition) {
+            for(Observer o : observers){
+                o.update(Item.this);
+            }
+        }
+    };
 
     protected Item(int ID, User from, Recipient to, long date, Condition condition) {
         if (null == from || null == to || null == condition) {
@@ -36,6 +53,8 @@ public abstract class Item {
         this.to = to;     //Recipient is immutable
         this.date = date;
         this.condition = condition;
+
+        condition.addObserver(conditionObserver);
     }
 
     protected Item(int ID, User from, Recipient to, long date) {
@@ -43,6 +62,17 @@ public abstract class Item {
     }
 
     public abstract Type getType();
+
+    protected abstract View getItemView(Context context);
+
+    public View getView(Context context)
+    {
+        LinearLayout view = new LinearLayout(context);
+        view.setOrientation(LinearLayout.VERTICAL);
+        view.addView(getItemView(context), 0);
+        view.addView(condition.getView(context), 1);
+        return view;
+    }
 
     /**
      * @return the 'condition' field of the Item
@@ -116,9 +146,12 @@ public abstract class Item {
         }
         Item item;
         String type = json.getString("type");
-        switch (type) {
-            case "SIMPLETEXTITEM":
+        switch (Type.valueOf(type)) {
+            case SIMPLETEXTITEM:
                 item = SimpleTextItem.fromJSON(json);
+                break;
+            case IMAGEITEM:
+                item = ImageItem.fromJSON(json);
                 break;
             default:
                 throw new IllegalArgumentException("Unexpected Item type (" + type + ")");
@@ -152,26 +185,70 @@ public abstract class Item {
         return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date) * 479;
     }
 
+    @Override
+    public String toString() {
+        return "id : " + ID + " , from : (" + from + ") , to : (" + to + ") , at : " + new Date(date);
+    }
+
     /**
      * A Builder for {@link Item}, has no build() method since Item isn't instantiable,
      * is used by the child builders (in {@link SimpleTextItem} or...) to build the "Item
      * part of the object". currently only used to parse JSON (little overkill..but ..)
      */
-    protected static class Builder {
+    protected abstract static class Builder {
         protected int ID;
         protected User from;
         protected Recipient to;
         protected long date;
-        protected Condition condition;
+        protected Condition condition=Condition.trueCondition();
 
-        public Builder parse(JSONObject o) throws JSONException {
+        protected Builder parse(JSONObject o) throws JSONException {
             ID = o.getInt("ID");
             from = User.fromJSON(o.getJSONObject("from"));
             to = Recipient.fromJSON(o.getJSONObject("to"));
             date = o.getLong("date");
-            condition = Condition.trueCondition();
-            //condition = Condition.fromJSON(o.getJSONObject("condition"));
+            //TODO to delete when server ready to send true condition when there is no condition
+            // and replace by just fromJSON etc..
+            if(o.has("condition")) {
+                condition = Condition.fromJSON(o.getJSONObject("condition"));
+            } else {
+                condition = Condition.trueCondition();
+            }
             return this;
         }
+
+        protected void setID(int ID) {
+            this.ID = ID;
+        }
+
+        protected void setFrom(User from) {
+            this.from = from;
+        }
+
+        protected void setTo(Recipient to) {
+            this.to = to;
+        }
+
+        protected void setDate(long date) {
+            this.date = date;
+        }
+
+        protected void setCondition(Condition condition) {
+            this.condition = condition;
+        }
+
+        protected abstract Item build();
+    }
+
+    public void addObserver(Item.Observer observer) {
+        this.observers.add(observer);
+    }
+
+    public boolean removeObserver(Item.Observer observer) {
+        return this.observers.remove(observer);
+    }
+
+    public abstract static class Observer {
+        public abstract void update(Item item);
     }
 }
