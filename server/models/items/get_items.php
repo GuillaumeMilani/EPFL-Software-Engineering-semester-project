@@ -3,13 +3,16 @@
 function get_item_with_location($recipient, $last_refresh, $latitude, $longitude, $radius) {
 	global $pdo;
 	
-	$res = $pdo->prepare('SELECT 
+	$res = $pdo->prepare('
+			SELECT DISTINCT
 				itm.`ID`, itm.`from`, itm.`to`, itm.`date`, cnd.`condition`, txt.`text`, "simpleText" as "type"
     		FROM 
 				tb_item as itm, tb_item_text as txt, tb_condition as cnd, tb_metadata as mtd, tb_metadata_position as pos
-    		WHERE
-				pos.latitude <= :latitude
-			AND pos.longitude <= :longitude
+			WHERE
+				pos.latitude <= :latitude_max
+			AND pos.latitude >= :latitude_min
+			AND pos.longitude <= :longitude_max
+			AND pos.longitude >= :longitude_min
 			AND pos.ID = mtd.ID
 			AND mtd.ID = cnd.ID
 			AND itm.condition = cnd.ID
@@ -17,8 +20,10 @@ function get_item_with_location($recipient, $last_refresh, $latitude, $longitude
     		AND itm.date > :last_refresh
 			AND itm.ID = txt.ID');
 	
-	$res->bindParam(':latitude', $latitude, PDO::PARAM_STR);
-	$res->bindParam(':longitude', $latitude, PDO::PARAM_STR);
+	$res->bindParam(':latitude_min', $latitude - $radius, PDO::PARAM_STR);
+	$res->bindParam(':latitude_max', $latitude + $radius, PDO::PARAM_STR);
+	$res->bindParam(':longitude_min', $latitude - $radius, PDO::PARAM_STR);
+	$res->bindParam(':longitude_max', $latitude + $radius, PDO::PARAM_STR);
 	$res->bindParam(':to', $recipient['ID'], PDO::PARAM_INT);
 	$res->bindParam(':last_refresh', $last_refresh, PDO::PARAM_STR);
 	$res->execute();
@@ -61,13 +66,18 @@ function get_user($user_id) {
  * @param posix_time $last_refresh
  * @return array of items (indexed by column name)
  */
-function get_items($recipient, $last_refresh) {
+function get_items($recipient, $last_refresh, $get_content = false) {
 	global $pdo;
 	
+	if ($get_content) {
+		$table = "view_text_message";
+	} else {
+		$table = "tb_item";
+	}
 	$res = $pdo->prepare('SELECT *, "simpleText" as "type"
-    		FROM view_text_message as msg
-    		WHERE msg.to = :to
-    		AND msg.date > :last_refresh');
+    		FROM '.$table.' as itm
+    		WHERE itm.to = :to
+    		AND itm.date > :last_refresh');
 	
 	$res->bindParam(':to', $recipient['ID'], PDO::PARAM_INT);
 	$res->bindParam(':last_refresh', $last_refresh, PDO::PARAM_STR);
@@ -83,4 +93,8 @@ function get_items($recipient, $last_refresh) {
 	}
 	
 	return $ret;
+}
+
+function get_items_with_content($recipient, $last_refresh) {
+	get_items($recipient, $last_refresh, true);
 }
