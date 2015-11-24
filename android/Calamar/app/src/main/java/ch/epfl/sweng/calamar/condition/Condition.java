@@ -1,19 +1,14 @@
 package ch.epfl.sweng.calamar.condition;
 
-import org.json.JSONArray;
 import android.content.Context;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.location.Location;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.gms.maps.model.LatLng;
-
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -75,7 +70,11 @@ public abstract class Condition {
 
     public abstract String type();
 
-    public Location getLocation() {
+    /**
+     * @return the location in the condition if any
+     * @throws UnsupportedOperationException if the condition has no condition
+     */
+    public Location getLocation() throws UnsupportedOperationException {
         throw new UnsupportedOperationException("the condition does NOT have any position");
     }
 
