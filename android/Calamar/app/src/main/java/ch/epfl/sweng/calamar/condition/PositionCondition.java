@@ -4,9 +4,7 @@ import android.content.Context;
 import android.location.Location;
 import android.view.View;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,8 +40,14 @@ public class PositionCondition extends Condition {
         return loc;
     }
 
+    @Override
     public Location getLocation(){
         return location;
+    }
+
+    @Override
+    public boolean hasLocation() {
+        return true;
     }
 
     /**
@@ -66,7 +70,7 @@ public class PositionCondition extends Condition {
     }
 
     public PositionCondition(Location location){
-        this(location,DEFAULT_RADIUS);
+        this(location, DEFAULT_RADIUS);
     }
 
     /**
