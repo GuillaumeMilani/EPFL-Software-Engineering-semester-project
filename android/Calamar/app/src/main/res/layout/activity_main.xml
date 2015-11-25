@@ -50,4 +50,5 @@
         app:fabSize="normal"
         app:layout_anchor="@id/viewpager"
         app:layout_anchorGravity="bottom|right|end" />
+
 </android.support.design.widget.CoordinatorLayout>

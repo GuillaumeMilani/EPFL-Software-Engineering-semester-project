@@ -58,7 +58,7 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
 
         verify(client).send(argument.capture());
 
-        SimpleTextItem expected = new SimpleTextItem(0, argument.getValue().getFrom(), new User(0, "public"), argument.getValue().getDate(), HELLO_ALICE);
+        SimpleTextItem expected = new SimpleTextItem(0, argument.getValue().getFrom(), new User(-1, "public"), argument.getValue().getDate(), HELLO_ALICE);
         assertEquals(argument.getValue(), expected);
     }
 

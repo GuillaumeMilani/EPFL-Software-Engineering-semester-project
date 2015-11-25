@@ -2,21 +2,16 @@ package ch.epfl.sweng.calamar.map;
 
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -54,8 +49,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
 
     //TODO : Use a bidirectional map ?
-    private Map<Item,Marker> markers;
-    private Map<Marker,Item> itemFromMarkers;
+    private Map<Item, Marker> markers;
+    private Map<Marker, Item> itemFromMarkers;
 
     private GoogleMap map; // Might be null if Google Play services APK is not available.
     // however google play services are checked at app startup...and
@@ -78,7 +73,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     };
 
 
-
     // The condition get updated when the location change and if the value(true/false) of the
     // condition change -> The item is updated, if all are true
     // -> we get updated and update the value of the marker on the map.
@@ -87,12 +81,12 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         public void update(Item item) {
             Marker updatedMarker = markers.get(item);
             Bitmap icon;
-            if(item.getCondition().getValue()) {
+            if (item.getCondition().getValue()) {
                 updatedMarker.setTitle("Unlocked");
-                icon =  BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.unlock);
+                icon = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.unlock);
             } else {
                 updatedMarker.setTitle("Locked");
-                icon =  BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.lock);
+                icon = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.lock);
             }
             updatedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(icon));
         }
@@ -101,7 +95,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     private LinearLayout detailsViewDialog;
 
     //When the condition is okay, we update the item description
-    private Item.Observer detailsItemObserver = new Item.Observer() {
+    private final Item.Observer detailsItemObserver = new Item.Observer() {
         @Override
         public void update(Item item) {
             //Update the dialog with the new view.
@@ -144,13 +138,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     @Override
     public void onResume() {
         super.onResume();
-
-        getView().findViewById(R.id.addNewItemButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addItem();
-            }
-        });
 
         setUpMapIfNeeded(); // if needed, onMapReady is called with the map
     }
@@ -216,9 +203,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
     /**
      * Call by fragment_map.xml
-     *
+     * <p/>
      * TOTO : To remove once pull request 90 is ready.
-     *
      */
     public void addItem() {
         //TODO : add a real item
@@ -229,14 +215,14 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         gpsProvider.getLastLocation().getLatitude();
         l.setLatitude(gpsProvider.getLastLocation().getLatitude());
         l.setLongitude(gpsProvider.getLastLocation().getLongitude());
-        
+
         addItemToMap(new SimpleTextItem(10, bob, alice, new Date(), new PositionCondition(l, 100), "Password : calamar42"));
     }
 
-    private void addAllItemToMap(){
+    private void addAllItemToMap() {
         List<Item> item = getItemToDisplay();
 
-        for(Item i : item){
+        for (Item i : item) {
             addItemToMap(i);
         }
 
@@ -247,12 +233,12 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      */
     private void addItemToMap(Item i) {
         //TODO : WRONG, we have to change this once the issue #56 is solved.
-        PositionCondition pos = (PositionCondition)i.getCondition();
+        PositionCondition pos = (PositionCondition) i.getCondition();
 
         Location l = pos.getLocation();
 
         MarkerOptions marker = new MarkerOptions()
-                    .position(new LatLng(l.getLatitude(), l.getLongitude()));
+                .position(new LatLng(l.getLatitude(), l.getLongitude()));
 
         marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
         marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.lock));
@@ -266,7 +252,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         Marker finalMarker = map.addMarker(marker);
 
         markers.put(i, finalMarker);
-        itemFromMarkers.put(finalMarker,i);
+        itemFromMarkers.put(finalMarker, i);
     }
 
     /**
@@ -293,11 +279,11 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
      * installed) and the map has not already been instantiated.. This will ensure that we only ever
      * call {@link #setUpGPS()} once when {@link #map} is not null.
-     * <p>
+     * <p/>
      * If it isn't installed {@link SupportMapFragment} (and
      * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
      * install/update the Google Play services APK on their device.
-     * <p>
+     * <p/>
      * A user can return to this FragmentActivity after following the prompt and correctly
      * installing/updating/enabling the Google Play services. Since the FragmentActivity may not
      * have been completely destroyed during this process (it is likely that it would only be
@@ -315,7 +301,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
     /**
      * This is where we can add markers or lines, add listeners or move the camera.
-     * <p>
+     * <p/>
      * This should only be called once and when we are sure that {@link #map} is not null.
      */
     private void setUpGPS() {

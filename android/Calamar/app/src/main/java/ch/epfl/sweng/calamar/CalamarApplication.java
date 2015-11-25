@@ -12,6 +12,8 @@ import android.util.Log;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.securepreferences.SecurePreferences;
 
+import java.util.Date;
+
 import ch.epfl.sweng.calamar.recipient.User;
 
 public final class CalamarApplication extends Application implements Application.ActivityLifecycleCallbacks {
@@ -86,13 +88,17 @@ public final class CalamarApplication extends Application implements Application
         editor.putLong(LAST_USERS_REFRESH_SP, lastTime).apply();
     }
 
+    public void setLastUsersRefresh(Date lastTime) {
+        setLastUsersRefresh(lastTime.getTime());
+    }
+
     /**
      * Get the last time the application refreshed the users.
      *
-     * @return the long corresponding to the date.
+     * @return the date.
      */
-    public long getLastUsersRefresh() {
-        return sp.getLong(LAST_USERS_REFRESH_SP, 0);
+    public Date getLastUsersRefresh() {
+        return new Date(sp.getLong(LAST_USERS_REFRESH_SP, 0));
     }
 
     /**
@@ -104,13 +110,17 @@ public final class CalamarApplication extends Application implements Application
         editor.putLong(LAST_ITEMS_REFRESH_SP, lastTime).apply();
     }
 
+    public void setLastItemsRefresh(Date date) {
+        setLastItemsRefresh(date.getTime());
+    }
+
     /**
-     * Returns the long corresponding to the last time the application refreshed the items.
+     * Returns the date corresponding to the last time the application refreshed the items.
      *
-     * @return the date as a long
+     * @return the date
      */
-    public long getLastItemsRefresh() {
-        return sp.getLong(LAST_ITEMS_REFRESH_SP, 0);
+    public Date getLastItemsRefresh() {
+        return new Date(sp.getLong(LAST_ITEMS_REFRESH_SP, 0));
     }
 
     /**

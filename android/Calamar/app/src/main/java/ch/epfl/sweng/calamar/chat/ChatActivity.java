@@ -199,7 +199,7 @@ public class ChatActivity extends BaseActivity {
                 return databaseHandler.getItemsForContact(correspondent);
             } else {
                 try {
-                    return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, new Date(app.getLastItemsRefresh()));
+                    return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, app.getLastItemsRefresh());
                 } catch (DatabaseClientException e) {
                     e.printStackTrace();
                     return null;

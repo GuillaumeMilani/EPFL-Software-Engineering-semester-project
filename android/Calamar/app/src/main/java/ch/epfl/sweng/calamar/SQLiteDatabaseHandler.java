@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.Set;
 
 import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.item.FileItem;
+import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -41,7 +43,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static long lastUpdateTime;
     private static long lastItemTime;
 
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     private static final String DATABASE_NAME = "CalamarDB";
 
     private static final int MAX_PLACEHOLDERS_COUNT = 99;
@@ -55,7 +57,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static final String ITEMS_KEY_TIME = "time";
     private static final String ITEMS_KEY_CONDITION = "condition";
     private static final String ITEMS_KEY_TEXT = "text";
-    private static final String[] ITEMS_COLUMNS = {ITEMS_KEY_TYPE, ITEMS_KEY_ID, ITEMS_KEY_FROM, ITEMS_KEY_TO, ITEMS_KEY_TIME, ITEMS_KEY_CONDITION, ITEMS_KEY_TEXT};
+    private static final String ITEMS_KEY_DATA = "data";
+    private static final String ITEMS_KEY_NAME = "name";
+    private static final String[] ITEMS_COLUMNS = {ITEMS_KEY_TYPE, ITEMS_KEY_ID, ITEMS_KEY_FROM, ITEMS_KEY_TO, ITEMS_KEY_TIME, ITEMS_KEY_CONDITION, ITEMS_KEY_TEXT, ITEMS_KEY_DATA, ITEMS_KEY_NAME};
 
     private static final String RECIPIENTS_TABLE = "tb_Recipients";
     private static final String RECIPIENTS_KEY_ID = "id";
@@ -85,8 +89,8 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         this.pendingRecipients = new HashMap<>();
         this.pendingItems = new HashMap<>();
         this.FULL_PLACEHOLDERS = createPlaceholders(MAX_PLACEHOLDERS_COUNT);
-        lastItemTime = app.getLastItemsRefresh();
-        lastUpdateTime = app.getLastItemsRefresh();
+        lastItemTime = app.getLastItemsRefresh().getTime();
+        lastUpdateTime = app.getLastItemsRefresh().getTime();
 
     }
 
@@ -99,7 +103,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 + ITEMS_KEY_TO + " INTEGER NOT NULL,"
                 + ITEMS_KEY_TIME + " INTEGER NOT NULL,"
                 + ITEMS_KEY_CONDITION + " TEXT NOT NULL, "
-                + ITEMS_KEY_TEXT + " TEXT)";
+                + ITEMS_KEY_TEXT + " TEXT, "
+                + ITEMS_KEY_DATA + " BLOB, "
+                + ITEMS_KEY_NAME + " TEXT)";
         db.execSQL(createMessagesTable);
         final String createRecipientsTable = "CREATE TABLE " + RECIPIENTS_TABLE + " ("
                 + RECIPIENTS_KEY_ID + " INTEGER PRIMARY KEY NOT NULL,"
@@ -330,8 +336,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 cursor.close();
             }
         }
-        updateGetItemsFromPending(items, toUpdate);
-        return Sorter.sortItemList(new ArrayList<>(items));
+        return Sorter.sortItemList(new ArrayList<>(updateGetItemsFromPending(items, toUpdate)));
     }
 
     /**
@@ -391,8 +396,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             cursor.close();
         }
-        updateGetItemsFromPending(items, toUpdate);
-        return Sorter.sortItemList(new ArrayList<>(items));
+        return Sorter.sortItemList(new ArrayList<>(updateGetItemsFromPending(items, toUpdate)));
     }
 
     /**
@@ -433,8 +437,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             cursor.close();
         }
-        updateGetItemsFromPending(items, toUpdate);
-        return Sorter.sortItemList(new ArrayList<>(items));
+        return Sorter.sortItemList(new ArrayList<>(updateGetItemsFromPending(items, toUpdate)));
     }
 
     /**
@@ -622,8 +625,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 cursor.close();
             }
         }
-        updateGetRecipientsFromPending(recipients, toUpdate);
-        return Sorter.sortRecipientList(new ArrayList<>(recipients));
+        return Sorter.sortRecipientList(new ArrayList<>(updateGetRecipientsFromPending(recipients, toUpdate)));
     }
 
     /**
@@ -664,8 +666,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             cursor.close();
         }
-        updateGetRecipientsFromPending(recipients, toUpdate);
-        return Sorter.sortRecipientList(new ArrayList<>(recipients));
+        return Sorter.sortRecipientList(new ArrayList<>(updateGetRecipientsFromPending(recipients, toUpdate)));
     }
 
     /**
@@ -867,7 +868,14 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());
+        if (item.getType() == Item.Type.SIMPLETEXTITEM) {
+            values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());
+        } else if (item.getType() == Item.Type.FILEITEM || item.getType() == Item.Type.IMAGEITEM) {
+            values.put(ITEMS_KEY_DATA, ((FileItem) item).getData());
+            values.put(ITEMS_KEY_NAME, ((FileItem) item).getName());
+        } else {
+            throw new IllegalArgumentException("Unknown item type");
+        }
         return values;
     }
 
@@ -876,12 +884,12 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         try {
             type = Item.Type.valueOf(cursor.getString(0));
         } catch (IllegalArgumentException e) {
-            throw new UnsupportedOperationException("Only SimpleTextItem for now");
+            throw new UnsupportedOperationException("Unexpected Item type");
         }
         int id = cursor.getInt(1);
         User from = (User) getRecipient(cursor.getInt(2));
         Recipient to = getRecipient(cursor.getInt(3));
-        Date time = new Date(cursor.getInt(4));
+        Date time = new Date(cursor.getLong(4));
         Condition condition = null;
         try {
             condition = Condition.fromJSON(new JSONObject(cursor.getString(5)));
@@ -889,11 +897,17 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             e.printStackTrace();
         }
         String text = cursor.getString(6);
+        byte[] data = cursor.getBlob(7);
+        String name = cursor.getString(8);
         switch (type) {
             case SIMPLETEXTITEM:
                 return new SimpleTextItem(id, from, to, time, condition, text);
+            case FILEITEM:
+                return new FileItem(id, from, to, time, condition, data, name);
+            case IMAGEITEM:
+                return new ImageItem(id, from, to, time, condition, data, name);
             default:
-                throw new UnsupportedOperationException("Only SimpleTextItem for now");
+                throw new UnsupportedOperationException("Unexpected Item type");
         }
     }
 
@@ -954,42 +968,46 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         }
     }
 
-    private void updateGetItemsFromPending(Set<Item> items, Set<Item> toUpdate) {
+    private Set<Item> updateGetItemsFromPending(Set<Item> items, Set<Item> toUpdate) {
+        Set<Item> itemsCopy = new HashSet<>(items);
         if (toUpdate.size() < items.size()) {
             for (Item i : toUpdate) {
                 if (items.contains(i)) {
-                    items.remove(i);
-                    items.add(i);
+                    itemsCopy.remove(i);
+                    itemsCopy.add(i);
                 }
             }
         } else {
             for (Item i : items) {
                 Pair<Operation, Item> fromPending = pendingItems.get(i.getID());
                 if (fromPending != null && fromPending.getLeft() == Operation.UPDATE) {
-                    items.remove(i);
-                    items.add(fromPending.getRight());
+                    itemsCopy.remove(i);
+                    itemsCopy.add(fromPending.getRight());
                 }
             }
         }
+        return itemsCopy;
     }
 
-    private void updateGetRecipientsFromPending(Set<Recipient> recipients, Set<Recipient> toUpdate) {
+    private Set<Recipient> updateGetRecipientsFromPending(Set<Recipient> recipients, Set<Recipient> toUpdate) {
+        Set<Recipient> recipientsCopy = new HashSet<>(recipients);
         if (toUpdate.size() < recipients.size()) {
             for (Recipient i : toUpdate) {
                 if (recipients.contains(i)) {
-                    recipients.remove(i);
-                    recipients.add(i);
+                    recipientsCopy.remove(i);
+                    recipientsCopy.add(i);
                 }
             }
         } else {
             for (Recipient i : recipients) {
                 Pair<Operation, Recipient> fromPending = pendingRecipients.get(i.getID());
                 if (fromPending != null && fromPending.getLeft() == Operation.UPDATE) {
-                    recipients.remove(i);
-                    recipients.add(fromPending.getRight());
+                    recipientsCopy.remove(i);
+                    recipientsCopy.add(fromPending.getRight());
                 }
             }
         }
+        return recipientsCopy;
     }
 
     private String createPlaceholders(int length) {

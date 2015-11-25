@@ -10,16 +10,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.util.Date;
+
 @RunWith(JUnit4.class)
 public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplication> {
 
     private final String defaultUsername = "";
     private final int defaultID = -1;
-    private final long defaultLastRefresh = 0;
+    private final Date defaultLastRefresh = new Date(0);
 
     private final String testUsername = "test";
     private final int testID = 0;
-    private final long testTime = 100;
+    private final Date testTime = new Date(100);
 
     private String curUsername = "";
     private int curUserID = 0;

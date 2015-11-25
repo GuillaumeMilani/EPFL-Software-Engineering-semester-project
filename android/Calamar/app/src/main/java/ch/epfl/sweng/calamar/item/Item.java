@@ -1,29 +1,18 @@
 package ch.epfl.sweng.calamar.item;
 
-import android.app.Dialog;
 import android.content.Context;
-import android.support.v4.content.ContextCompat;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Marker;
-import android.content.Context;
-import android.view.View;
-import android.widget.LinearLayout;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
-import java.awt.font.TextAttribute;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -40,27 +29,26 @@ public abstract class Item {
     private final int ID;
     private final User from;
     private final Recipient to;
-    private final long date; //posix date
+    private final Date date; //posix date
     private final Condition condition;
 
 
-
-    public enum Type {SIMPLETEXTITEM, IMAGEITEM}
+    public enum Type {SIMPLETEXTITEM, IMAGEITEM, FILEITEM}
     //TODO date d'expiration ?
 
-    private Set<Observer> observers = new HashSet<>();
+    private final Set<Observer> observers = new HashSet<>();
 
 
     private final Condition.Observer conditionObserver = new Condition.Observer() {
         @Override
         public void update(Condition condition) {
-            for(Observer o : observers){
+            for (Observer o : observers) {
                 o.update(Item.this);
             }
         }
     };
 
-    protected Item(int ID, User from, Recipient to, long date, Condition condition) {
+    protected Item(int ID, User from, Recipient to, Date date, Condition condition) {
         if (null == from || null == to || null == condition) {
             throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' cannot be null");
         }
@@ -73,7 +61,7 @@ public abstract class Item {
         condition.addObserver(conditionObserver);
     }
 
-    protected Item(int ID, User from, Recipient to, long date) {
+    protected Item(int ID, User from, Recipient to, Date date) {
         this(ID, from, to, date, Condition.trueCondition());
     }
 
@@ -88,26 +76,25 @@ public abstract class Item {
      * @param context
      * @return the view of the item.
      */
-    public View getView(final Context context)
-    {
+    public View getView(final Context context) {
         //Inflate a basic layout
         LayoutInflater li = LayoutInflater.from(context);
         View baseView = li.inflate(R.layout.item_details_base_layout, null);
 
         //FIll the layout
-        TextView dateText = (TextView)baseView.findViewById(R.id.ItemDetailsDate);
-        dateText.setText((new Date(date)).toString());
+        TextView dateText = (TextView) baseView.findViewById(R.id.ItemDetailsDate);
+        dateText.setText(date.toString());
 
-        TextView fromText = (TextView)baseView.findViewById(R.id.ItemDetailsUserFrom);
+        TextView fromText = (TextView) baseView.findViewById(R.id.ItemDetailsUserFrom);
         fromText.setText(from.toString());
 
-        TextView toText = (TextView)baseView.findViewById(R.id.ItemDetailsUserTo);
+        TextView toText = (TextView) baseView.findViewById(R.id.ItemDetailsUserTo);
         toText.setText(to.toString());
 
-        LinearLayout previewLayout = (LinearLayout)baseView.findViewById(R.id.ItemDetailsItemPreview);
+        LinearLayout previewLayout = (LinearLayout) baseView.findViewById(R.id.ItemDetailsItemPreview);
         previewLayout.addView(getPreView(context));
 
-        LinearLayout conditionLayout = (LinearLayout)baseView.findViewById(R.id.ItemDetailsConditionLayout);
+        LinearLayout conditionLayout = (LinearLayout) baseView.findViewById(R.id.ItemDetailsConditionLayout);
         conditionLayout.addView(condition.getView(context));
 
         return baseView;
@@ -119,11 +106,11 @@ public abstract class Item {
      * @param context
      * @return the preview of the item
      */
-    public View getPreView(final Context context){
+    public View getPreView(final Context context) {
         final LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
 
-        if(condition.getValue()){
+        if (condition.getValue()) {
             view.addView(getItemView(context), 0);
         } else {
             TextView lockMessage = new TextView(context);
@@ -159,7 +146,7 @@ public abstract class Item {
      * @return the creation/posting date of the Item
      */
     public Date getDate() {
-        return new Date(this.date);
+        return date;
     }
 
     public int getID() {
@@ -180,7 +167,7 @@ public abstract class Item {
         json.accumulate("ID", ID);
         json.accumulate("from", from.toJSON());
         json.accumulate("to", to.toJSON());
-        json.accumulate("date", date);
+        json.accumulate("date", date.getTime());
         json.accumulate("condition", condition.toJSON());
     }
 
@@ -213,6 +200,9 @@ public abstract class Item {
             case IMAGEITEM:
                 item = ImageItem.fromJSON(json);
                 break;
+            case FILEITEM:
+                item = FileItem.fromJSON(json);
+                break;
             default:
                 throw new IllegalArgumentException("Unexpected Item type (" + type + ")");
         }
@@ -232,7 +222,7 @@ public abstract class Item {
         if (!(o instanceof Item)) return false;
         Item that = (Item) o;
         return that.ID == ID && that.from.equals(from) && that.to.equals(to) &&
-                that.date == date && this.getType().equals(that.getType()) && this.condition.equals(that.condition);
+                that.date.getTime() == date.getTime() && this.condition.equals(that.condition);
     }
 
     /**
@@ -242,12 +232,12 @@ public abstract class Item {
      */
     @Override
     public int hashCode() {
-        return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date) * 479;
+        return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date.getTime()) * 479 + condition.hashCode() * 503;
     }
 
     @Override
     public String toString() {
-        return "id : " + ID + " , from : (" + from + ") , to : (" + to + ") , at : " + new Date(date);
+        return "id : " + ID + " , from : (" + from + ") , to : (" + to + ") , at : " + date;
     }
 
     /**
@@ -259,17 +249,17 @@ public abstract class Item {
         protected int ID;
         protected User from;
         protected Recipient to;
-        protected long date;
-        protected Condition condition=Condition.trueCondition();
+        protected Date date;
+        protected Condition condition = Condition.trueCondition();
 
         protected Builder parse(JSONObject o) throws JSONException {
             ID = o.getInt("ID");
             from = User.fromJSON(o.getJSONObject("from"));
             to = Recipient.fromJSON(o.getJSONObject("to"));
-            date = o.getLong("date");
+            date = new Date(o.getLong("date"));
             //TODO to delete when server ready to send true condition when there is no condition
             // and replace by just fromJSON etc..
-            if(o.has("condition")) {
+            if (o.has("condition")) {
                 condition = Condition.fromJSON(o.getJSONObject("condition"));
             } else {
                 condition = Condition.trueCondition();
@@ -277,24 +267,34 @@ public abstract class Item {
             return this;
         }
 
-        protected void setID(int ID) {
+        protected Builder setID(int ID) {
             this.ID = ID;
+            return this;
         }
 
-        protected void setFrom(User from) {
+        protected Builder setFrom(User from) {
             this.from = from;
+            return this;
         }
 
-        protected void setTo(Recipient to) {
+        protected Builder setTo(Recipient to) {
             this.to = to;
+            return this;
         }
 
-        protected void setDate(long date) {
+        protected Builder setDate(long date) {
+            this.date = new Date(date);
+            return this;
+        }
+
+        protected Builder setDate(Date date) {
             this.date = date;
+            return this;
         }
 
-        protected void setCondition(Condition condition) {
+        protected Builder setCondition(Condition condition) {
             this.condition = condition;
+            return this;
         }
 
         protected abstract Item build();

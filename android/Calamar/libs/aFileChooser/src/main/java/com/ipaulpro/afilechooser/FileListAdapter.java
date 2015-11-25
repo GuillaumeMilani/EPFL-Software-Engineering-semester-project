@@ -29,9 +29,9 @@ import java.util.List;
 
 /**
  * List adapter for Files.
- * 
- * @version 2013-12-11
+ *
  * @author paulburke (ipaulpro)
+ * @version 2013-12-11
  */
 public class FileListAdapter extends BaseAdapter {
 
@@ -40,7 +40,7 @@ public class FileListAdapter extends BaseAdapter {
 
     private final LayoutInflater mInflater;
 
-    private List<File> mData = new ArrayList<File>();
+    private List<File> mData = new ArrayList<>();
 
     public FileListAdapter(Context context) {
         mInflater = LayoutInflater.from(context);

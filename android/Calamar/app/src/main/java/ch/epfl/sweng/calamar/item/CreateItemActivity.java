@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.ipaulpro.afilechooser.utils.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -149,17 +150,16 @@ public class CreateItemActivity extends BaseActivity {
         }
     }
 
-    public void createAndSend(View v) {
+    public void createAndSend(View v) throws IOException {
         Item.Builder toSendBuilder;
         if (file != null) {
             String name = file.getName();
             int extIndex = name.lastIndexOf('.');
             String ext = extIndex > 0 ? name.substring(extIndex + 1) : "";
             if (imageExt.contains(ext)) {
-                toSendBuilder = new ImageItem.Builder().setImage(file);
+                toSendBuilder = new ImageItem.Builder().setFile(file);
             } else {
-                Toast.makeText(this, R.string.create_item_select_type_file, Toast.LENGTH_SHORT).show();
-                return;
+                toSendBuilder = new FileItem.Builder().setFile(file);
             }
         } else {
             toSendBuilder = new SimpleTextItem.Builder();
@@ -174,11 +174,15 @@ public class CreateItemActivity extends BaseActivity {
             }
         }
         if (privateCheck.isChecked()) {
-            Recipient to = contacts.get(contactsSpinner.getSelectedItemPosition());
-            toSendBuilder.setTo(to);
+            int contactPosition = contactsSpinner.getSelectedItemPosition();
+            if (contactPosition != -1) {
+                Recipient to = contacts.get(contactsSpinner.getSelectedItemPosition());
+                toSendBuilder.setTo(to);
+            } else {
+                toSendBuilder.setTo(new User(-1, "public"));
+            }
         } else {
-            //TODO Public = null ? Not allowed by Item constructor at the moment
-            toSendBuilder.setTo(new User(0, "public"));
+            toSendBuilder.setTo(new User(-1, "public"));
         }
         if (locationCheck.isChecked()) {
             toSendBuilder.setCondition(new PositionCondition(currentLocation));

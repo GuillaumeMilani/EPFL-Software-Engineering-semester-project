@@ -36,6 +36,9 @@ import com.ianhanniballake.localstorage.LocalStorageProvider;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.Comparator;
 
@@ -87,10 +90,7 @@ public class FileUtils {
      * @return Whether the URI is a local one.
      */
     public static boolean isLocal(String url) {
-        if (url != null && !url.startsWith("http://") && !url.startsWith("https://")) {
-            return true;
-        }
-        return false;
+        return url != null && !url.startsWith("http://") && !url.startsWith("https://");
     }
 
     /**
@@ -272,7 +272,7 @@ public class FileUtils {
 
         final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
         if (isKitKat) {
-            getPathForKitKat(context, uri);
+            return getPathForKitKat(context, uri);
         }
 
         // MediaStore (and general)
@@ -483,7 +483,7 @@ public class FileUtils {
      *
      * @author paulburke
      */
-    public static Comparator<File> sComparator = new Comparator<File>() {
+    public static final Comparator<File> sComparator = new Comparator<File>() {
         @Override
         public int compare(File f1, File f2) {
             // Sort alphabetically by lower case, which is much cleaner
@@ -497,7 +497,7 @@ public class FileUtils {
      *
      * @author paulburke
      */
-    public static FileFilter sFileFilter = new FileFilter() {
+    public static final FileFilter sFileFilter = new FileFilter() {
         @Override
         public boolean accept(File file) {
             final String fileName = file.getName();
@@ -511,7 +511,7 @@ public class FileUtils {
      *
      * @author paulburke
      */
-    public static FileFilter sDirFilter = new FileFilter() {
+    public static final FileFilter sDirFilter = new FileFilter() {
         @Override
         public boolean accept(File file) {
             final String fileName = file.getName();
@@ -534,5 +534,29 @@ public class FileUtils {
         // Only return URIs that can be opened with ContentResolver
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         return intent;
+    }
+
+    /**
+     * Transform the content of the file to a ByteArray
+     *
+     * @param f the file
+     * @return a byte array
+     * @throws IOException if there is a problem reading the file
+     */
+    public static byte[] toByteArray(File f) throws IOException {
+        byte[] data = new byte[(int) f.length()];
+        InputStream fileStream = null;
+        try {
+            fileStream = new FileInputStream(f);
+            if (fileStream.read(data) == -1) {
+                throw new IOException(
+                        "EOF reached while trying to read the whole file");
+            }
+        } finally {
+            if (fileStream != null) {
+                fileStream.close();
+            }
+        }
+        return data;
     }
 }

@@ -29,31 +29,31 @@ import java.util.List;
 
 /**
  * Loader that returns a list of Files in a given file path.
- * 
- * @version 2013-12-11
+ *
  * @author paulburke (ipaulpro)
+ * @version 2013-12-11
  */
 public class FileLoader extends AsyncTaskLoader<List<File>> {
 
-	private static final int FILE_OBSERVER_MASK = FileObserver.CREATE
-			| FileObserver.DELETE | FileObserver.DELETE_SELF
-			| FileObserver.MOVED_FROM | FileObserver.MOVED_TO
-			| FileObserver.MODIFY | FileObserver.MOVE_SELF;
+    private static final int FILE_OBSERVER_MASK = FileObserver.CREATE
+            | FileObserver.DELETE | FileObserver.DELETE_SELF
+            | FileObserver.MOVED_FROM | FileObserver.MOVED_TO
+            | FileObserver.MODIFY | FileObserver.MOVE_SELF;
 
-	private FileObserver mFileObserver;
+    private FileObserver mFileObserver;
 
-	private List<File> mData;
-	private String mPath;
+    private List<File> mData;
+    private final String mPath;
 
-	public FileLoader(Context context, String path) {
-		super(context);
-		this.mPath = path;
-	}
+    public FileLoader(Context context, String path) {
+        super(context);
+        this.mPath = path;
+    }
 
-	@Override
-	public List<File> loadInBackground() {
+    @Override
+    public List<File> loadInBackground() {
 
-        ArrayList<File> list = new ArrayList<File>();
+        ArrayList<File> list = new ArrayList<>();
 
         // Current directory File instance
         final File pathDir = new File(mPath);
@@ -64,8 +64,7 @@ public class FileLoader extends AsyncTaskLoader<List<File>> {
             // Sort the folders alphabetically
             Arrays.sort(dirs, FileUtils.sComparator);
             // Add each folder to the File list for the list adapter
-            for (File dir : dirs)
-                list.add(dir);
+            list.addAll(Arrays.asList(dirs));
         }
 
         // List file in this directory with the file filter
@@ -74,76 +73,75 @@ public class FileLoader extends AsyncTaskLoader<List<File>> {
             // Sort the files alphabetically
             Arrays.sort(files, FileUtils.sComparator);
             // Add each file to the File list for the list adapter
-            for (File file : files)
-                list.add(file);
+            list.addAll(Arrays.asList(files));
         }
 
         return list;
-	}
+    }
 
-	@Override
-	public void deliverResult(List<File> data) {
-		if (isReset()) {
-			onReleaseResources(data);
-			return;
-		}
+    @Override
+    public void deliverResult(List<File> data) {
+        if (isReset()) {
+            onReleaseResources(data);
+            return;
+        }
 
-		List<File> oldData = mData;
-		mData = data;
+        List<File> oldData = mData;
+        mData = data;
 
-		if (isStarted())
-			super.deliverResult(data);
+        if (isStarted())
+            super.deliverResult(data);
 
-		if (oldData != null && oldData != data)
-			onReleaseResources(oldData);
-	}
+        if (oldData != null && oldData != data)
+            onReleaseResources(oldData);
+    }
 
-	@Override
-	protected void onStartLoading() {
-		if (mData != null)
-			deliverResult(mData);
+    @Override
+    protected void onStartLoading() {
+        if (mData != null)
+            deliverResult(mData);
 
-		if (mFileObserver == null) {
-			mFileObserver = new FileObserver(mPath, FILE_OBSERVER_MASK) {
-				@Override
-				public void onEvent(int event, String path) {
-					onContentChanged();
-				}
-			};
-		}
-		mFileObserver.startWatching();
+        if (mFileObserver == null) {
+            mFileObserver = new FileObserver(mPath, FILE_OBSERVER_MASK) {
+                @Override
+                public void onEvent(int event, String path) {
+                    onContentChanged();
+                }
+            };
+        }
+        mFileObserver.startWatching();
 
-		if (takeContentChanged() || mData == null)
-			forceLoad();
-	}
+        if (takeContentChanged() || mData == null)
+            forceLoad();
+    }
 
-	@Override
-	protected void onStopLoading() {
-		cancelLoad();
-	}
+    @Override
+    protected void onStopLoading() {
+        cancelLoad();
+    }
 
-	@Override
-	protected void onReset() {
-		onStopLoading();
+    @Override
+    protected void onReset() {
+        onStopLoading();
 
-		if (mData != null) {
-			onReleaseResources(mData);
-			mData = null;
-		}
-	}
+        if (mData != null) {
+            onReleaseResources(mData);
+            mData = null;
+        }
+    }
 
-	@Override
-	public void onCanceled(List<File> data) {
-		super.onCanceled(data);
+    @Override
+    public void onCanceled(List<File> data) {
+        super.onCanceled(data);
 
-		onReleaseResources(data);
-	}
+        onReleaseResources(data);
+    }
 
-	protected void onReleaseResources(List<File> data) {
+    protected void onReleaseResources(List<File> data) {
 
-		if (mFileObserver != null) {
-			mFileObserver.stopWatching();
-			mFileObserver = null;
-		}
-	}
+        if (mFileObserver != null) {
+            mFileObserver.stopWatching();
+            mFileObserver = null;
+        }
+    }
 }

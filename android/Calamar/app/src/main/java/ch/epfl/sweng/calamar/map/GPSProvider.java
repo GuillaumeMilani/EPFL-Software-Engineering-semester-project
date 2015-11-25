@@ -38,7 +38,7 @@ public final class GPSProvider implements LocationListener
     // location
     private Location lastLocation;
     private Date lastUpdateTime;
-    private LocationRequest locationRequest = createLocationRequest();
+    private final LocationRequest locationRequest = createLocationRequest();
 
     private final GoogleApiClient googleApiClient;
 
