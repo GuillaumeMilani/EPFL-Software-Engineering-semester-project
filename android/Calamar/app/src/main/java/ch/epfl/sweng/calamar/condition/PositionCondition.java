@@ -25,28 +25,6 @@ public class PositionCondition extends Condition {
     private final double radius;
 
     /**
-     * make a Location from its latitude and longitude
-     * @param latitude
-     * @param longitude
-     * @return Location in this place
-     */
-    protected static Location makeLocation(double latitude, double longitude)
-    {
-        Location loc = new Location("calamarTeam");
-        loc.setLatitude(latitude);
-        loc.setLongitude(longitude);
-        return loc;
-    }
-
-    public Location getLocation(){
-        return location;
-    }
-
-    public double getRadius(){
-        return radius;
-    }
-
-    /**
      * construct a PositionCondition from a location and a radius
      *
      * @param location
@@ -100,6 +78,10 @@ public class PositionCondition extends Condition {
     @Override
     public Location getLocation() {
         return location;
+    }
+
+    public double getRadius(){
+        return radius;
     }
 
     @Override
