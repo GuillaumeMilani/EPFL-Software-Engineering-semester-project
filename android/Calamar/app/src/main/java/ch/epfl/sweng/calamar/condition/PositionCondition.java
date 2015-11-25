@@ -23,8 +23,6 @@ public class PositionCondition extends Condition {
     private final Location location;
     private final double radius;
 
-    private final PositionCondition This = this;
-
     /**
      * construct a PositionCondition from a location and a radius
      *
@@ -35,11 +33,11 @@ public class PositionCondition extends Condition {
         this.location = location;
         this.radius = radius;
         GPSProvider.getInstance().addObserver(new GPSProvider.Observer() {
-
             @Override
             public void update(Location newLocation) {
 
-                setValue(newLocation.distanceTo(This.location) < This.radius);
+                setValue(newLocation.distanceTo(PositionCondition.this.location) <
+                        PositionCondition.this.radius);
             }
         });
     }
