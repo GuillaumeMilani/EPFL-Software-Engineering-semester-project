@@ -1,5 +1,7 @@
 package ch.epfl.sweng.calamar;
 
+import android.location.Location;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -76,7 +78,7 @@ public class ConditionTest {
         }
 
         @Override
-        public String type() {
+        public String getType() {
             return "test";
         }
     }
@@ -136,6 +138,40 @@ public class ConditionTest {
         o.assertAll(false, 1);
         a.set(false);
         o.assertAll(true, 2);
+    }
+
+    @Test
+    public void testGetLocationOnCondition() {
+        // setup
+        Location loc = new Location("test");
+        loc.setLatitude(69);
+        loc.setLongitude(42);
+
+        Location loc2 = new Location("test");
+        loc2.setLatitude(78);
+        loc2.setLongitude(93);
+
+        PositionCondition posCond = new PositionCondition(loc);
+        PositionCondition posCond2 = new PositionCondition(loc2);
+
+        // simple
+        assertEquals(loc, posCond.getLocation());
+
+        // and
+        Condition and1 = Condition.and(Condition.trueCondition(), posCond);
+        Condition and2 = Condition.and(posCond, Condition.falseCondition());
+        Condition and3 = Condition.and(posCond, posCond2);
+
+        assertEquals(loc, and1.getLocation());
+        assertEquals(loc, and2.getLocation());
+        assertTrue(and3.getLocation().equals(loc) || and3.getLocation().equals(loc2));
+
+        // or
+        Condition or1 = Condition.or(Condition.trueCondition(), posCond);
+        Condition or2 = Condition.or(posCond, Condition.falseCondition());
+
+        assertEquals(loc, and1.getLocation());
+        assertEquals(loc, and2.getLocation());
     }
 
     /*
