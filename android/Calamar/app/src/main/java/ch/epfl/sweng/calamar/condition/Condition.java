@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -73,6 +74,17 @@ public abstract class Condition {
 
     public View getView(Context context)
     {
+        LinearLayout layout = new LinearLayout(context);
+        layout.setGravity(Gravity.CENTER_HORIZONTAL);
+        //TODO : Add padding ?
+        // Good, but when we have and(and(c1,c2),c3), c3 is not in the right place.
+        //layout.setPadding(10,10,10,10);
+
+        layout.setBackgroundColor(getValue() ? Color.rgb(0,155,0) : Color.rgb(155,0,0));
+        return layout;
+
+        //TODO : Try to make it work to see if it's better looking
+        /*
         return new FrameLayout(context) {
             Paint paint = new Paint();
 
@@ -89,9 +101,9 @@ public abstract class Condition {
             public void onDraw(Canvas canvas) {
                 paint.setColor(getValue() ? Color.GREEN : Color.RED);
                 paint.setStrokeWidth(3);
-                canvas.drawRect(0, 0, getWidth(), getHeight(), paint);
+                canvas.drawRect(3, 3, getWidth()-3, getHeight()-3, paint);
             }
-        };
+        };*/
     }
 
 
@@ -183,7 +195,7 @@ public abstract class Condition {
             @Override
             public View getView(Context context)
             {
-                FrameLayout view = (FrameLayout)(super.getView(context));
+                LinearLayout view = (LinearLayout)(super.getView(context));
                 TextView tv = new TextView(context);
                 tv.setText(context.getResources().getString(R.string.condition_true));
                 view.addView(tv);
@@ -222,7 +234,7 @@ public abstract class Condition {
             @Override
             public View getView(Context context)
             {
-                FrameLayout view = (FrameLayout)(super.getView(context));
+                LinearLayout view = (LinearLayout)(super.getView(context));
                 TextView tv = new TextView(context);
                 tv.setText(context.getResources().getString(R.string.condition_false));
                 view.addView(tv);
@@ -276,7 +288,7 @@ public abstract class Condition {
             public JSONArray getMetadata() throws JSONException { return concatArray(c1.getMetadata(), c2.getMetadata()); }
             public View getView(Context context)
             {
-                FrameLayout view = (FrameLayout)(super.getView(context));
+                LinearLayout view = (LinearLayout)(super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
                 LL.setOrientation(LinearLayout.VERTICAL);
                 TextView tv = new TextView(context);
@@ -335,7 +347,7 @@ public abstract class Condition {
 
             public View getView(Context context)
             {
-                FrameLayout view = (FrameLayout)(super.getView(context));
+                LinearLayout view = (LinearLayout)(super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
                 LL.setOrientation(LinearLayout.VERTICAL);
                 TextView tv = new TextView(context);
@@ -391,7 +403,7 @@ public abstract class Condition {
             @Override
             public View getView(Context context)
             {
-                FrameLayout view = (FrameLayout)(super.getView(context));
+                LinearLayout view = (LinearLayout)(super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
                 LL.setOrientation(LinearLayout.VERTICAL);
                 TextView tv = new TextView(context);

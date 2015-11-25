@@ -126,7 +126,7 @@ public class PositionCondition extends Condition {
 
     public View getView(Context context)
     {
-        FrameLayout view = (FrameLayout)(super.getView(context));
+        LinearLayout view = (LinearLayout)(super.getView(context));
         Button button = new Button(context);
         button.setText(context.getResources().getString(R.string.condition_position));
         view.addView(button);
