@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
 
     public final static String EXTRA_CORRESPONDENT_NAME = "ch.epfl.sweng.calamar.CORRESPONDENT_NAME";
     public final static String EXTRA_CORRESPONDENT_ID = "ch.epfl.sweng.calamar.CORRESPONDENT_ID";
+    private static final String TAG = ChatFragment.class.getSimpleName();
 
     private ListView contactsView;
     private List<Recipient> contacts;
@@ -153,7 +155,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
      */
     private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
         private String name = null;
-        private Context context;
+        private final Context context;
 
         public createNewUserTask(String name, Context context) {
             this.name = name;
@@ -166,7 +168,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
                 //Get the device id.
                 return DatabaseClientLocator.getDatabaseClient().newUser(name, Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
             } catch (DatabaseClientException e) {
-                e.printStackTrace();
+                Log.e(ChatFragment.TAG, e.getMessage());
                 return null;
             }
         }
@@ -205,7 +207,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     private class retrieveUserTask extends AsyncTask<Void, Void, User> {
 
         private String name = null;
-        private Context context;
+        private final Context context;
 
         public retrieveUserTask(String name, Context context) {
             this.name = name;
@@ -217,7 +219,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
             try {
                 return DatabaseClientLocator.getDatabaseClient().findUserByName(name);
             } catch (DatabaseClientException e) {
-                e.printStackTrace();
+                Log.e(ChatFragment.TAG, e.getMessage());
                 return null;
             }
         }

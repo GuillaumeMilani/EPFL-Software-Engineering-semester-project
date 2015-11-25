@@ -1,16 +1,14 @@
 package ch.epfl.sweng.calamar.condition;
 
-import org.json.JSONArray;
 import android.content.Context;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
+import android.location.Location;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -72,15 +70,30 @@ public abstract class Condition {
 
     public abstract String type();
 
-    public View getView(Context context)
-    {
+
+    /**
+     * @return the location in the condition if any
+     * @throws UnsupportedOperationException if {@link #hasLocation} returns false
+     */
+    public Location getLocation() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("the condition does NOT have any position");
+    }
+
+    /**
+     * @return true if condition contains at least one location, false otherwise
+     */
+    public boolean hasLocation() {
+        return false;
+    }
+
+    public View getView(Context context) {
         LinearLayout layout = new LinearLayout(context);
         layout.setGravity(Gravity.CENTER_HORIZONTAL);
         //TODO : Add padding ?
         // Good, but when we have and(and(c1,c2),c3), c3 is not in the right place.
         //layout.setPadding(10,10,10,10);
 
-        layout.setBackgroundColor(getValue() ? Color.rgb(0,155,0) : Color.rgb(155,0,0));
+        layout.setBackgroundColor(getValue() ? Color.rgb(0, 155, 0) : Color.rgb(155, 0, 0));
         return layout;
 
         //TODO : Try to make it work to see if it's better looking
@@ -125,7 +138,9 @@ public abstract class Condition {
         return value;
     }
 
-    public JSONArray getMetadata() throws JSONException { return new JSONArray(); }
+    public JSONArray getMetadata() throws JSONException {
+        return new JSONArray();
+    }
 
     /**
      * create a Condition from a JSONObject
@@ -193,9 +208,8 @@ public abstract class Condition {
             }
 
             @Override
-            public View getView(Context context)
-            {
-                LinearLayout view = (LinearLayout)(super.getView(context));
+            public View getView(Context context) {
+                LinearLayout view = (LinearLayout) (super.getView(context));
                 TextView tv = new TextView(context);
                 tv.setText(context.getResources().getString(R.string.condition_true));
                 view.addView(tv);
@@ -232,9 +246,8 @@ public abstract class Condition {
             }
 
             @Override
-            public View getView(Context context)
-            {
-                LinearLayout view = (LinearLayout)(super.getView(context));
+            public View getView(Context context) {
+                LinearLayout view = (LinearLayout) (super.getView(context));
                 TextView tv = new TextView(context);
                 tv.setText(context.getResources().getString(R.string.condition_false));
                 view.addView(tv);
@@ -285,10 +298,24 @@ public abstract class Condition {
             }
 
             @Override
-            public JSONArray getMetadata() throws JSONException { return concatArray(c1.getMetadata(), c2.getMetadata()); }
-            public View getView(Context context)
-            {
-                LinearLayout view = (LinearLayout)(super.getView(context));
+
+            public Location getLocation() {
+                return Condition.getLocation(c1, c2);
+            }
+
+            @Override
+            public boolean hasLocation() {
+                return c1.hasLocation() || c2.hasLocation();
+            }
+
+            @Override
+            public JSONArray getMetadata() throws JSONException {
+                return concatArray(c1.getMetadata(), c2.getMetadata());
+            }
+
+            @Override
+            public View getView(Context context) {
+                LinearLayout view = (LinearLayout) (super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
                 LL.setOrientation(LinearLayout.VERTICAL);
                 TextView tv = new TextView(context);
@@ -343,11 +370,22 @@ public abstract class Condition {
             }
 
             @Override
-            public JSONArray getMetadata() throws JSONException { return concatArray(c1.getMetadata(), c2.getMetadata()); }
+            public Location getLocation() {
+                return Condition.getLocation(c1, c2);
+            }
 
-            public View getView(Context context)
-            {
-                LinearLayout view = (LinearLayout)(super.getView(context));
+            @Override
+            public boolean hasLocation() {
+                return c1.hasLocation() || c2.hasLocation();
+            }
+
+            @Override
+            public JSONArray getMetadata() throws JSONException {
+                return concatArray(c1.getMetadata(), c2.getMetadata());
+            }
+
+            public View getView(Context context) {
+                LinearLayout view = (LinearLayout) (super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
                 LL.setOrientation(LinearLayout.VERTICAL);
                 TextView tv = new TextView(context);
@@ -399,11 +437,25 @@ public abstract class Condition {
             }
 
             // TODO How to deal metadata with not operator ?
+            // ==> nothing to do, no ?
+            @Override
+            public JSONArray getMetadata() throws JSONException {
+                return c.getMetadata();
+            }
 
             @Override
-            public View getView(Context context)
-            {
-                LinearLayout view = (LinearLayout)(super.getView(context));
+            public Location getLocation() {
+                return c.getLocation();
+            }
+
+            @Override
+            public boolean hasLocation() {
+                return c.hasLocation();
+            }
+
+            @Override
+            public View getView(Context context) {
+                LinearLayout view = (LinearLayout) (super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
                 LL.setOrientation(LinearLayout.VERTICAL);
                 TextView tv = new TextView(context);
@@ -434,6 +486,13 @@ public abstract class Condition {
 
     public boolean removeObserver(Condition.Observer observer) {
         return this.observers.remove(observer);
+    }
+
+    private static Location getLocation(Condition c1, Condition c2) {
+        if (c1.hasLocation()) {
+            return c1.getLocation();
+        }
+        return c2.getLocation(); // if c2 hasn't any location -> default throw exception
     }
 
     public abstract static class Observer {

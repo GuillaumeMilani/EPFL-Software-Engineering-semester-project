@@ -1,5 +1,9 @@
 package ch.epfl.sweng.calamar.client;
 
+import android.location.Location;
+
+import com.google.android.gms.maps.model.VisibleRegion;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -21,15 +25,14 @@ public class ConstantDatabaseClient implements DatabaseClient {
     private final Item itemTo = new SimpleTextItem(1, bob, alice, new Date(1445198510), "Hello Alice, it's Bob !");
 
     @Override
-    public List<Item> getAllItems(Recipient recipient, Date from) throws DatabaseClientException {
-        List<Item> items = new ArrayList<>();
-        items.add(itemFrom);
-        items.add(itemTo);
-        return items;
+    public List<Item> getAllItems(Recipient recipient, Date from, VisibleRegion visibleRegion)
+            throws DatabaseClientException
+    {
+        return getAllItems(null, null);
     }
 
     @Override
-    public List<Item> getAllItems(Recipient recipient) throws DatabaseClientException {
+    public List<Item> getAllItems(Recipient recipient, Date from) throws DatabaseClientException {
         List<Item> items = new ArrayList<>();
         items.add(itemFrom);
         items.add(itemTo);
