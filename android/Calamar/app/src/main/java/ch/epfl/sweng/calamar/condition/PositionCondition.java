@@ -89,7 +89,8 @@ public class PositionCondition extends Condition {
      * @param json jsonObject to put this in
      * @throws JSONException
      */
-    @Override
+    @Override // WARNING, if modified maintain TestCondPosition, DIRTY copy paste to work around
+    // problem of google api client in tests // TODO check way to test without that kind of ugly things
     protected void compose(JSONObject json) throws JSONException {
         json.accumulate("type", getType().name());
         json.accumulate("latitude", location.getLatitude());
@@ -115,7 +116,8 @@ public class PositionCondition extends Condition {
         return super.equals(that) && location.equals(that.location) && radius == that.radius;
     }
 
-    @Override
+    @Override // WARNING, if modified maintain TestCondPosition, DIRTY copy paste to work around
+              // problem of google api client in tests // TODO check way to test without that kind of ugly things
     public JSONArray getMetadata() throws JSONException {
         JSONArray array = new JSONArray();
         JSONObject jObject = new JSONObject();

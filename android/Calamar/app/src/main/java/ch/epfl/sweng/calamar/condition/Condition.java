@@ -25,7 +25,7 @@ public abstract class Condition {
     // TODO make tostring usable ^^
 
     public enum Type {POSITIONCONDITION, TRUECONDITION, FALSECONDITION,
-        ANDCONDITION, ORCONDITION, NOTCONDITION}
+        ANDCONDITION, ORCONDITION, NOTCONDITION, TESTCONDITION}
 
     private Boolean value = false;
     private final Set<Observer> observers = new HashSet<>();
