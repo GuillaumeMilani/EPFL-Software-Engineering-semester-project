@@ -260,7 +260,7 @@ public abstract class Item {
                 to = Recipient.fromJSON(o.getJSONObject("to"));
             }
 
-            date = o.getLong("date");
+            date = new Date(o.getLong("date"));
             condition = Condition.fromJSON(new JSONObject(o.getString("condition")));
 
             return this;

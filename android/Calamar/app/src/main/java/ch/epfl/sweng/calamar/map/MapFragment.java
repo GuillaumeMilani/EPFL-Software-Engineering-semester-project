@@ -13,8 +13,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -26,7 +26,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.VisibleRegion;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -37,9 +36,7 @@ import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.condition.Condition;
-import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.item.Item;
-import ch.epfl.sweng.calamar.item.SimpleTextItem;
 
 /**
  * A simple {@link Fragment} subclass holding the calamar map !.
@@ -150,9 +147,13 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
         // REFRESH BUTTON
         getView().findViewById(R.id.refreshButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 addAllItemsInRegionToMap();
-        setUpMapIfNeeded(); // if needed, onMapReady is called with the map
-        setUpGPS(); // register to the GPSProvider location updates
+            }
+        });
+        setUpMapIfNeeded();
+        setUpGPS();
     }
 
     // map setup here :
@@ -223,7 +224,9 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         if (null != map) {
             VisibleRegion visibleRegion = map.getProjection().getVisibleRegion();
             new RefreshTask(visibleRegion).execute();
-        } else throw new IllegalStateException("map not ready when refresh");
+        } else {
+            throw new IllegalStateException("map not ready when refresh");
+        }
         
     }
 
@@ -247,7 +250,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
             Marker finalMarker = map.addMarker(marker);
             markers.put(i, finalMarker);
-        itemFromMarkers.put(finalMarker, i);
+            itemFromMarkers.put(finalMarker, i);
         }
     }
 
