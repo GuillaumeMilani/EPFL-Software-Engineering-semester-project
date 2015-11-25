@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -39,6 +40,8 @@ public class ChatActivity extends BaseActivity {
 
     private static final String RECIPIENT_EXTRA_ID = "ID";
     private static final String RECIPIENT_EXTRA_NAME = "Name";
+    private static final String TAG = ChatActivity.class.getSimpleName();
+
 
     private EditText editText;
     private Button sendButton;
@@ -53,7 +56,6 @@ public class ChatActivity extends BaseActivity {
 
     private CalamarApplication app;
 
-    private final String TAG = ChatActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,7 +162,7 @@ public class ChatActivity extends BaseActivity {
             try {
                 return DatabaseClientLocator.getDatabaseClient().send(item);
             } catch (DatabaseClientException e) {
-                e.printStackTrace();
+                Log.e(ChatActivity.TAG, e.getMessage());
                 return null;
             }
         }
@@ -201,7 +203,7 @@ public class ChatActivity extends BaseActivity {
                 try {
                     return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, app.getLastItemsRefresh());
                 } catch (DatabaseClientException e) {
-                    e.printStackTrace();
+                    Log.e(ChatActivity.TAG, e.getMessage());
                     return null;
                 }
             }
@@ -216,11 +218,11 @@ public class ChatActivity extends BaseActivity {
 
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                Toast.makeText(getApplicationContext(), R.string.chat_activity_refresh_message,
+                Toast.makeText(getApplicationContext(), R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();
 
             } else {
-                Toast.makeText(getApplicationContext(), R.string.chat_activity_unable_to_refresh,
+                Toast.makeText(getApplicationContext(), R.string.unable_to_refresh_message,
                         Toast.LENGTH_SHORT).show();
             }
         }

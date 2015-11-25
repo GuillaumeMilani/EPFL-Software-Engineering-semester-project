@@ -93,8 +93,7 @@ public abstract class Recipient {
             case "user":
                 ret = User.fromJSON(json);
                 break;
-            case "group":
-            case "public":
+            //case "group":
             default:
                 throw new IllegalArgumentException("Unexpected Recipient type (" + type + ")");
         }

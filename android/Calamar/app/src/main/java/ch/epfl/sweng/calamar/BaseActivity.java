@@ -23,7 +23,7 @@ public class BaseActivity extends AppCompatActivity
     private CalamarApplication app;
 
     // LogCat tag
-    private final String TAG = BaseActivity.class.getSimpleName();
+    private static final String TAG = BaseActivity.class.getSimpleName();
 
     // activity request codes
     private static final int ERROR_RESOLUTION_REQUEST = 1001;
@@ -59,8 +59,13 @@ public class BaseActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         app.onActivityResumed(this);
-        if (!resolvingError) {
-            app.getGoogleApiClient().connect();
+
+        GoogleApiClient googleApiClient = app.getGoogleApiClient();
+        if (!resolvingError &&
+                !googleApiClient.isConnected() &&
+                !googleApiClient.isConnecting())
+        {
+            googleApiClient.connect();
             // if errors, such as no google play apk, onConnectionFailed will handle the errors
         }
     }
@@ -73,8 +78,11 @@ public class BaseActivity extends AppCompatActivity
 
     @Override
     protected void onStop() {
+        GoogleApiClient googleApiClient = app.getGoogleApiClient();
+        if(googleApiClient.isConnected()) {
+            googleApiClient.disconnect();
+        }
         super.onStop();
-        app.getGoogleApiClient().disconnect();
     }
     // *********************************************************************************************
 
