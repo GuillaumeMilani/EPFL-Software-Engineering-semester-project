@@ -181,7 +181,6 @@ public abstract class Item {
         json.accumulate("to", to.toJSON());
         json.accumulate("date", date);
         json.accumulate("condition", condition.toJSON());
-        //TODO add condition metadata
     }
 
     /**
@@ -272,14 +271,8 @@ public abstract class Item {
             }
 
             date = o.getLong("date");
-//            //TODO to delete when server ready to send true condition when there is no condition
-//            // and replace by just fromJSON etc..
-//            if(o.has("condition")) {
-                condition = Condition.fromJSON(new JSONObject(o.getString("condition")));
-                //condition = Condition.fromJSON(o.getJSONObject("condition"));
-//            } else {
-//                condition = Condition.trueCondition();
-//            }
+            condition = Condition.fromJSON(new JSONObject(o.getString("condition")));
+
             return this;
         }
 

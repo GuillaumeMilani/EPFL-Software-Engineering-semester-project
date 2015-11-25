@@ -52,7 +52,6 @@ import ch.epfl.sweng.calamar.item.SimpleTextItem;
 public class MapFragment extends android.support.v4.app.Fragment implements OnMapReadyCallback {
 
     public static final String TAG = MapFragment.class.getSimpleName();
-    private static final long MAP_RADIUS = 4000;  // [km]
 
     //TODO : add two buttons begin checks stop checks
     // that will : checklocation settings + startlocation updates
@@ -62,7 +61,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
     //TODO : Use a bidirectional map ?
     private Map<Item,Marker> markers;
-    private List<Item> items;
+    // TODO : Create a set of items to avoid diplaying the same items multiple time
     private Map<Marker,Item> itemFromMarkers;
 
 
@@ -142,7 +141,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         markers = new HashMap<>();
-        items = new ArrayList<>();
         itemFromMarkers = new HashMap<>();
 
         detailsViewDialog = new LinearLayout(getActivity());
@@ -244,26 +242,24 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      * Add an item to the googleMap, and fill the map markers
      */
     private void addItemToMap(Item i) {
-        //TODO : WRONG, we have to change this once the issue #56 is solved.
-        PositionCondition pos = (PositionCondition)i.getCondition();
-
-        Location l = pos.getLocation();
-
-        MarkerOptions marker = new MarkerOptions()
-                    .position(new LatLng(l.getLatitude(), l.getLongitude()));
-
-        marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
-        marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.lock));
-
-        marker.title("Locked");
-
         Condition condition = i.getCondition();
+        if (condition.hasLocation()) {
+            Location location = condition.getLocation();
 
-        i.addObserver(itemObserver);
+            MarkerOptions marker = new MarkerOptions()
+                    .position(new LatLng(location.getLatitude(), location.getLongitude()));
 
-        Marker finalMarker = map.addMarker(marker);
-        markers.put(i, finalMarker);
-        itemFromMarkers.put(finalMarker,i);
+            marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+            marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.lock));
+
+            marker.title("Locked");
+
+            i.addObserver(itemObserver);
+
+            Marker finalMarker = map.addMarker(marker);
+            markers.put(i, finalMarker);
+            itemFromMarkers.put(finalMarker,i);
+        }
     }
 
     /**
