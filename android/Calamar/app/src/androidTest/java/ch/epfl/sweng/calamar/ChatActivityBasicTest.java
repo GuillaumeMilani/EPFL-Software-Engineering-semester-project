@@ -21,6 +21,7 @@ import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.not;
 
 /**
  * Test for the chat activity
@@ -104,4 +105,17 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
         assertEquals(list.getCount(), before + 1);
     }
 
+    /**
+     * Test that item details are shown when we click on a message.
+     */
+    @Test
+    public void testItemDetailsAreShownAndCanBeRemoved() {
+        onView(withId(R.id.refreshButton)).perform(click());
+        onView(withText("Hello Bob, it's Alice !")).perform(click());
+
+        onView(withText("Item description"));
+        // We test the content of the view in ItemsViewTests
+        onView(withText("OK")).perform(click());
+        not(onView(withText("Item description")));
+    }
 }
