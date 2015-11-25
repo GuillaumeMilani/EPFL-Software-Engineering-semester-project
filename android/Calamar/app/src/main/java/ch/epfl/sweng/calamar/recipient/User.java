@@ -9,6 +9,8 @@ import org.json.JSONObject;
  */
 public final class User extends Recipient {
     private final static String RECIPIENT_TYPE = "user";
+    public static final int PUBLIC_ID = -1;
+    public static final String PUBLIC_NAME = "Public";
 
     /**
      * Instantiates a new User with <i>ID</i> and <i>name</i>

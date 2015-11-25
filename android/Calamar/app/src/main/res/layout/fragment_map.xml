@@ -12,4 +12,10 @@
         tools:context=".MapsActivity"
         tools:layout="@layout/abc_screen_simple" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/refresh_button"
+        android:id="@+id/refreshButton"
+        android:layout_gravity="left|top" />
 </FrameLayout>

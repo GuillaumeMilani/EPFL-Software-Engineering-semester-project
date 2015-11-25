@@ -21,15 +21,14 @@ import ch.epfl.sweng.calamar.map.MapFragment;
 
 public class MainActivity extends BaseActivity {
 
-
     // Tabs related stuff
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
-    // LogCat tag
-    private static final String TAG = MainActivity.class.getSimpleName();
-
+    //TODO check activity lifecycle and pertinent action to make when entering new states
+    // regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
+    // etc...
 
     // *********************************************************************************************
     // ACTIVITY LIFECYCLE CALLBACKS
@@ -58,7 +57,7 @@ public class MainActivity extends BaseActivity {
         tabLayout.setupWithViewPager(viewPager);
 
     }
-
+    // *********************************************************************************************
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());

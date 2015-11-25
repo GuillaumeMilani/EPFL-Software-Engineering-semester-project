@@ -9,13 +9,13 @@ function add_condition($condition)
 	global $pdo;
 	
 	$query = $pdo->prepare('INSERT INTO `tb_condition` (`ID`, `condition`) VALUES (NULL, :condition)');
-	$query->bindParam(':condition',$condition['condition'], PDO::PARAM_STR);
+	$query->bindParam(':condition',$condition, PDO::PARAM_STR);
 	try {
 		$query->execute();
 		return $pdo->lastInsertId();
 	} catch (Exception $e) {
 		http_response_code(500);
-		die("Error : database in condition insertion");
+		die("Error : database in add condition ".$e->getMessage());
 	}
 
 }
@@ -33,7 +33,7 @@ function add_metadata_position($condition_id,$latitude,$longitude,$radius)
 		$query = $pdo->prepare('INSERT INTO `tb_metadata_position` 
 				(`ID`, `latitude`, `longitude`, `radius`) VALUES 
 				(:id, :latitude, :longitude, :radius)');
-		$query->bindParam(':id',$id,PDO::PARAM_INT);
+		$query->bindParam(':id',$ID,PDO::PARAM_INT);
 		$query->bindParam(':latitude',$latitude,PDO::PARAM_STR);
 		$query->bindParam(':longitude',$longitude,PDO::PARAM_STR);
 		$query->bindParam(':radius',$radius,PDO::PARAM_STR);
@@ -41,7 +41,7 @@ function add_metadata_position($condition_id,$latitude,$longitude,$radius)
 		return $query->execute();
 	} catch (Exception $e) {
 		http_response_code(500);
-		die("Error : database");
+		die("Error : database in add metadata position ".$e->getMessage());
 	}
 }
 
@@ -52,9 +52,9 @@ function add_metadata($condition_id) {
 		$query = $pdo->prepare('INSERT INTO `tb_metadata` (`ID`, `condition`) VALUES (NULL, :condition)');
 		$query->bindParam(':condition',$condition_id,PDO::PARAM_INT);
 		$query->execute();
-		return $query->lastInsertId();
+		return $pdo->lastInsertId();
 	} catch (Exception $e) {
 		http_response_code(500);
-		die("Error : database");
+		die("Error : database in add metadata ".$e->getMessage());
 	}
 }

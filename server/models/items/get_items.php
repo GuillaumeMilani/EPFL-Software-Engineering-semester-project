@@ -1,11 +1,11 @@
 <?php
 
-function get_item_with_location($recipient, $last_refresh, $latitude, $longitude, $radius) {
+function get_item_with_location($recipient, $last_refresh, $latitude_min, $latitude_max, $longitude_min, $longitude_max) {
 	global $pdo;
 	
 	$res = $pdo->prepare('
 			SELECT DISTINCT
-				itm.`ID`, itm.`from`, itm.`to`, itm.`date`, cnd.`condition`, txt.`text`, "simpleText" as "type"
+				itm.`ID`, itm.`from`, itm.`to`, itm.`date`, cnd.`condition`, itm.`message`, "SIMPLETEXTITEM" as "type"
     		FROM 
 				tb_item as itm, tb_item_text as txt, tb_condition as cnd, tb_metadata as mtd, tb_metadata_position as pos
 			WHERE
@@ -14,17 +14,18 @@ function get_item_with_location($recipient, $last_refresh, $latitude, $longitude
 			AND pos.longitude <= :longitude_max
 			AND pos.longitude >= :longitude_min
 			AND pos.ID = mtd.ID
-			AND mtd.ID = cnd.ID
+			AND mtd.condition = cnd.ID
 			AND itm.condition = cnd.ID
-			AND	itm.to = :to
+			AND	(itm.to = :to OR itm.to IS NULL)
     		AND itm.date > :last_refresh
 			AND itm.ID = txt.ID');
 	
-	$res->bindParam(':latitude_min', $latitude - $radius, PDO::PARAM_STR);
-	$res->bindParam(':latitude_max', $latitude + $radius, PDO::PARAM_STR);
-	$res->bindParam(':longitude_min', $latitude - $radius, PDO::PARAM_STR);
-	$res->bindParam(':longitude_max', $latitude + $radius, PDO::PARAM_STR);
-	$res->bindParam(':to', $recipient['ID'], PDO::PARAM_INT);
+	$recipient_id = $recipient['ID'];
+	$res->bindParam(':latitude_min', $latitude_min, PDO::PARAM_STR);
+	$res->bindParam(':latitude_max', $latitude_max, PDO::PARAM_STR);
+	$res->bindParam(':longitude_min', $longitude_min, PDO::PARAM_STR);
+	$res->bindParam(':longitude_max', $longitude_max, PDO::PARAM_STR);
+	$res->bindParam(':to', $recipient_id, PDO::PARAM_INT);
 	$res->bindParam(':last_refresh', $last_refresh, PDO::PARAM_STR);
 	$res->execute();
 	
@@ -33,7 +34,9 @@ function get_item_with_location($recipient, $last_refresh, $latitude, $longitude
 	// Fill the "from" and "to" columns with the users data instead of their ID
 	while ($data = $res->fetch()) {
 		$data['from'] = get_user($data['from']);
-		$data['to'] = get_user($data['to']);
+		if (isset($data['to'])) {
+			$data['to'] = get_user($data['to']);
+		}
 		$ret[] = $data;
 	}
 	
@@ -66,6 +69,7 @@ function get_user($user_id) {
  * @param posix_time $last_refresh
  * @return array of items (indexed by column name)
  */
+// DEPRECATED, UPDATE IF NEEDED
 function get_items($recipient, $last_refresh, $get_content = false) {
 	global $pdo;
 	
@@ -74,9 +78,9 @@ function get_items($recipient, $last_refresh, $get_content = false) {
 	} else {
 		$table = "tb_item";
 	}
-	$res = $pdo->prepare('SELECT *, "simpleText" as "type"
+	$res = $pdo->prepare('SELECT *, "SIMPLETEXTITEM" as "type"
     		FROM '.$table.' as itm
-    		WHERE itm.to = :to
+    		WHERE (itm.to = :to OR itm.to = NULL)
     		AND itm.date > :last_refresh');
 	
 	$res->bindParam(':to', $recipient['ID'], PDO::PARAM_INT);
@@ -88,7 +92,9 @@ function get_items($recipient, $last_refresh, $get_content = false) {
 	// Fill the "from" and "to" columns with the users data instead of their ID
 	while ($data = $res->fetch()) {
 		$data['from'] = get_user($data['from']);
-		$data['to'] = get_user($data['to']);
+		if (isset($data['to'])) {
+			$data['to'] = get_user($data['to']);
+		}
 		$ret[] = $data;
 	}
 	
@@ -96,5 +102,5 @@ function get_items($recipient, $last_refresh, $get_content = false) {
 }
 
 function get_items_with_content($recipient, $last_refresh) {
-	get_items($recipient, $last_refresh, true);
+	return get_items($recipient, $last_refresh, true);
 }

@@ -84,8 +84,10 @@ public final class GPSProvider implements LocationListener
      *     If you only want to unsubscribe, please call {@link #removeObserver(Observer)}
      */
     public void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                googleApiClient, this);
+        if(googleApiClient.isConnected()) { // else call cause illegalstateexception
+            LocationServices.FusedLocationApi.removeLocationUpdates(
+                    googleApiClient, this);
+        } // TODO else ??? we need to think when we start / stop / connect / disconnect
     }
 
     /**
@@ -94,6 +96,8 @@ public final class GPSProvider implements LocationListener
      */
     public Location getLastLocation() {
         //TODO mybe check lastupdatetime and return null if too old
+        //use get last location of underlying fusedlocation provider + make
+        // al checks in gps demo
         return lastLocation;
     }
 
