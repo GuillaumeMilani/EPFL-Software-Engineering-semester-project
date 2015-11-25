@@ -72,10 +72,17 @@ public abstract class Condition {
 
     /**
      * @return the location in the condition if any
-     * @throws UnsupportedOperationException if the condition has no condition
+     * @throws UnsupportedOperationException if {@link #hasLocation} returns false
      */
     public Location getLocation() throws UnsupportedOperationException {
         throw new UnsupportedOperationException("the condition does NOT have any position");
+    }
+
+    /**
+     * @return true if condition contains at least one location, false otherwise
+     */
+    public boolean hasLocation() {
+        return false;
     }
 
     public View getView(Context context)
@@ -296,6 +303,11 @@ public abstract class Condition {
             }
 
             @Override
+            public boolean hasLocation() {
+                return c1.hasLocation() || c2.hasLocation();
+            }
+
+            @Override
             public JSONArray getMetadata() throws JSONException {
                 return concatArray(c1.getMetadata(), c2.getMetadata());
             }
@@ -359,6 +371,11 @@ public abstract class Condition {
             @Override
             public Location getLocation() {
                 return Condition.getLocation(c1, c2);
+            }
+
+            @Override
+            public boolean hasLocation() {
+                return c1.hasLocation() || c2.hasLocation();
             }
 
             @Override
@@ -432,6 +449,11 @@ public abstract class Condition {
             }
 
             @Override
+            public boolean hasLocation() {
+                return c.hasLocation();
+            }
+
+            @Override
             public View getView(Context context)
             {
                 LinearLayout view = (LinearLayout)(super.getView(context));
@@ -468,11 +490,10 @@ public abstract class Condition {
     }
 
     private static Location getLocation(Condition c1, Condition c2) {
-        try {
+        if(c1.hasLocation()) {
             return c1.getLocation();
-        } catch (UnsupportedOperationException e) {
-            return c2.getLocation(); // if c2 hasn't any location -> default throw exception
         }
+        return c2.getLocation(); // if c2 hasn't any location -> default throw exception
     }
 
     public abstract static class Observer {

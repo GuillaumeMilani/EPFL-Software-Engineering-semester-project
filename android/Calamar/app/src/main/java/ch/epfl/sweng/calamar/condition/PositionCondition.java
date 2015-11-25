@@ -45,6 +45,11 @@ public class PositionCondition extends Condition {
         return location;
     }
 
+    @Override
+    public boolean hasLocation() {
+        return true;
+    }
+
     /**
      * construct a PositionCondition from a location and a radius
      * @param location
