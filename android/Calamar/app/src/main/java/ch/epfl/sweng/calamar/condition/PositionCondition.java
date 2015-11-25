@@ -27,24 +27,6 @@ public class PositionCondition extends Condition {
     private final PositionCondition This = this;
 
     /**
-     * make a Location from its latitude and longitude
-     *
-     * @param latitude
-     * @param longitude
-     * @return Location in this place
-     */
-    private static Location makeLocation(double latitude, double longitude) {
-        Location loc = new Location("calamarTeam");
-        loc.setLatitude(latitude);
-        loc.setLongitude(longitude);
-        return loc;
-    }
-
-    public Location getLocation() {
-        return location;
-    }
-
-    /**
      * construct a PositionCondition from a location and a radius
      *
      * @param location
@@ -63,6 +45,7 @@ public class PositionCondition extends Condition {
         });
     }
 
+
     public PositionCondition(Location location) {
         this(location, DEFAULT_RADIUS);
     }
@@ -76,6 +59,31 @@ public class PositionCondition extends Condition {
      */
     public PositionCondition(double latitude, double longitude, double radius) {
         this(makeLocation(latitude, longitude), radius);
+    }
+
+    /**
+     * make a Location from its latitude and longitude
+     *
+     * @param latitude
+     * @param longitude
+     * @return Location in this place
+     */
+    private static Location makeLocation(double latitude, double longitude) {
+        Location loc = new Location("calamarTeam");
+        loc.setLatitude(latitude);
+        loc.setLongitude(longitude);
+        return loc;
+    }
+
+
+    @Override
+    public Location getLocation() {
+        return location;
+    }
+
+    @Override
+    public boolean hasLocation() {
+        return true;
     }
 
     /**
@@ -119,6 +127,7 @@ public class PositionCondition extends Condition {
         return array;
     }
 
+    @Override
     public View getView(Context context) {
         LinearLayout view = (LinearLayout) (super.getView(context));
         Button button = new Button(context);
@@ -149,6 +158,7 @@ public class PositionCondition extends Condition {
         private double latitude, longitude;
         private double radius;
 
+        @Override
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString("type");

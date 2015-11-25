@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar.condition;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.location.Location;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -68,6 +69,22 @@ public abstract class Condition {
     }
 
     public abstract String type();
+
+
+    /**
+     * @return the location in the condition if any
+     * @throws UnsupportedOperationException if {@link #hasLocation} returns false
+     */
+    public Location getLocation() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("the condition does NOT have any position");
+    }
+
+    /**
+     * @return true if condition contains at least one location, false otherwise
+     */
+    public boolean hasLocation() {
+        return false;
+    }
 
     public View getView(Context context) {
         LinearLayout layout = new LinearLayout(context);
@@ -281,10 +298,22 @@ public abstract class Condition {
             }
 
             @Override
+
+            public Location getLocation() {
+                return Condition.getLocation(c1, c2);
+            }
+
+            @Override
+            public boolean hasLocation() {
+                return c1.hasLocation() || c2.hasLocation();
+            }
+
+            @Override
             public JSONArray getMetadata() throws JSONException {
                 return concatArray(c1.getMetadata(), c2.getMetadata());
             }
 
+            @Override
             public View getView(Context context) {
                 LinearLayout view = (LinearLayout) (super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
@@ -338,6 +367,16 @@ public abstract class Condition {
             @Override
             public String type() {
                 return "or";
+            }
+
+            @Override
+            public Location getLocation() {
+                return Condition.getLocation(c1, c2);
+            }
+
+            @Override
+            public boolean hasLocation() {
+                return c1.hasLocation() || c2.hasLocation();
             }
 
             @Override
@@ -398,6 +437,21 @@ public abstract class Condition {
             }
 
             // TODO How to deal metadata with not operator ?
+            // ==> nothing to do, no ?
+            @Override
+            public JSONArray getMetadata() throws JSONException {
+                return c.getMetadata();
+            }
+
+            @Override
+            public Location getLocation() {
+                return c.getLocation();
+            }
+
+            @Override
+            public boolean hasLocation() {
+                return c.hasLocation();
+            }
 
             @Override
             public View getView(Context context) {
@@ -432,6 +486,13 @@ public abstract class Condition {
 
     public boolean removeObserver(Condition.Observer observer) {
         return this.observers.remove(observer);
+    }
+
+    private static Location getLocation(Condition c1, Condition c2) {
+        if (c1.hasLocation()) {
+            return c1.getLocation();
+        }
+        return c2.getLocation(); // if c2 hasn't any location -> default throw exception
     }
 
     public abstract static class Observer {
