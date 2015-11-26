@@ -74,19 +74,33 @@ public class StorageManager {
                 dbHandler.addItem(i);
                 break;
             case IMAGEITEM:
-                ImageItem image = (ImageItem) rePath(Compresser.compressDataForDatabase((ImageItem) i));
-                dbHandler.addItem(image);
-                if (image.getCondition().getValue()) {
-                    app.increaseImageCount();
-                    storeFile((FileItem) i);
+                ImageItem image;
+                if (!i.getFrom().equals(app.getCurrentUser())) {
+                    if (i.getCondition().getValue()) {
+                        image = (ImageItem) rePath(Compresser.compressDataForDatabase((ImageItem) i));
+                        app.increaseImageCount();
+                        dbHandler.addItem(image);
+                        storeFile((ImageItem) i);
+                    } else {
+                        dbHandler.addItem(i);
+                    }
+                } else {
+                    dbHandler.addItem(Compresser.compressDataForDatabase((ImageItem) i));
                 }
                 break;
             case FILEITEM:
-                FileItem file = rePath(Compresser.compressDataForDatabase((FileItem) i));
-                dbHandler.addItem(file);
-                if (file.getCondition().getValue()) {
-                    app.increaseFileCount();
-                    storeFile((FileItem) i);
+                FileItem file;
+                if (!i.getFrom().equals(app.getCurrentUser())) {
+                    if (i.getCondition().getValue()) {
+                        file = rePath(Compresser.compressDataForDatabase((FileItem) i));
+                        app.increaseFileCount();
+                        dbHandler.addItem(file);
+                        storeFile((FileItem) i);
+                    } else {
+                        dbHandler.addItem(i);
+                    }
+                } else {
+                    dbHandler.addItem(Compresser.compressDataForDatabase((FileItem) i));
                 }
                 break;
             default:
