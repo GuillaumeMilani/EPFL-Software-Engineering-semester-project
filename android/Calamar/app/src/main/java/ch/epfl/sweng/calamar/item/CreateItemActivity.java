@@ -165,9 +165,10 @@ public class CreateItemActivity extends BaseActivity {
                 // TODO ConcurrentModificationException
                 // because set modified during notify iteration
                 // normally solved now, but wait and see
+                GPSProvider.getInstance().stopLocationUpdates();
             }
         });
-        GPSProvider.getInstance().stopLocationUpdates();
+
     }
 
     public void privateChecked(View v) {
