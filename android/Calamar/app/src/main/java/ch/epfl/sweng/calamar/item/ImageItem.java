@@ -24,7 +24,7 @@ public final class ImageItem extends FileItem {
 
     protected final static Type ITEM_TYPE = Type.IMAGEITEM;
 
-    private final Bitmap bitmap;
+    //TODO Create bitmap only when necessary ?
 
     /**
      * Instantiates a new ImageItem with the following parameters
@@ -34,27 +34,25 @@ public final class ImageItem extends FileItem {
      * @param to        the 'to' field of the Item (recipient)
      * @param date      the creation/posting date of the Item
      * @param condition the content (text message)
-     * @param data      the image
+     * @param data      the image as a byte array
      * @see Item#Item(int, User, Recipient, Date, Condition)
      */
     public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String name) {
         super(ID, from, to, date, condition, data, name);
-        this.bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
     }
 
     /**
      * Instantiates a new ImageItem with the following parameters (condition will be always true)
      *
-     * @param ID     the id
-     * @param from   the 'from' field of the Item (sender)
-     * @param to     the 'to' field of the Item (recipient)
-     * @param date   the creation/posting date of the Item
-     * @param bitmap the image
+     * @param ID   the id
+     * @param from the 'from' field of the Item (sender)
+     * @param to   the 'to' field of the Item (recipient)
+     * @param date the creation/posting date of the Item
+     * @param data the image as a byte array
      * @see Item#Item(int, User, Recipient, Date)
      */
-    public ImageItem(int ID, User from, Recipient to, Date date, byte[] bitmap, String name) {
-        super(ID, from, to, date, bitmap, name);
-        this.bitmap = BitmapFactory.decodeByteArray(bitmap, 0, bitmap.length);
+    public ImageItem(int ID, User from, Recipient to, Date date, byte[] data, String name) {
+        super(ID, from, to, date, data, name);
     }
 
     /**
@@ -70,7 +68,7 @@ public final class ImageItem extends FileItem {
     @Override
     public View getItemView(Context context) {
         ImageView view = new ImageView(context);
-        view.setImageBitmap(bitmap);
+        view.setImageBitmap(BitmapFactory.decodeByteArray(getData(), 0, getData().length));
         return view;
     }
 
@@ -116,7 +114,7 @@ public final class ImageItem extends FileItem {
      * @return a bitmap
      */
     public Bitmap getBitmap() {
-        return Bitmap.createBitmap(bitmap);
+        return BitmapFactory.decodeByteArray(getData(), 0, getData().length);
     }
 
 
