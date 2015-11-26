@@ -1,6 +1,7 @@
 package ch.epfl.sweng.calamar;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -25,6 +26,9 @@ public class MainActivity extends BaseActivity {
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
+
+    public static final String TABKEY = MainActivity.class.getCanonicalName() +  ":TABID";
+    public enum TabID {MAP, CHAT};
 
     //TODO check activity lifecycle and pertinent action to make when entering new states
     // regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
@@ -51,17 +55,23 @@ public class MainActivity extends BaseActivity {
         getSupportActionBar().setTitle("Calamar");
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
-        setupViewPager(viewPager);
+        setupViewPager(viewPager, getIntent());
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
+        int tabId = getIntent().getIntExtra(MainActivity.TABKEY, 0);
+        viewPager.setCurrentItem(tabId);
+
     }
     // *********************************************************************************************
 
-    private void setupViewPager(ViewPager viewPager) {
+    private void setupViewPager(ViewPager viewPager, Intent intent) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new MapFragment(), "Map");
+
+        intent.get
+
+        adapter.addFragment(new MapFragment(), "Map"); // TODO add string
         adapter.addFragment(new ChatFragment(), "Chat");
         viewPager.setAdapter(adapter);
     }

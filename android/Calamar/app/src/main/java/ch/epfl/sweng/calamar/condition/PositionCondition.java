@@ -1,6 +1,7 @@
 package ch.epfl.sweng.calamar.condition;
 
-import android.content.Context;
+import android.app.Activity;
+import android.content.Intent;
 import android.location.Location;
 import android.view.View;
 import android.widget.Button;
@@ -10,8 +11,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.MainActivity;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.map.GPSProvider;
+import ch.epfl.sweng.calamar.map.MapFragment;
 
 /**
  * Created by pierre on 10/27/15.
@@ -128,11 +132,33 @@ public class PositionCondition extends Condition {
     }
 
     @Override
-    public View getView(Context context) {
+    public View getView(final Activity context) {
         LinearLayout view = (LinearLayout) (super.getView(context));
-        Button button = new Button(context);
-        button.setText(context.getResources().getString(R.string.condition_position));
-        view.addView(button);
+
+
+        // TODO how do we do this ?? is that acceptable ?
+        if(!context.getClass().getCanonicalName().equals(MainActivity.class.getCanonicalName()))
+        {
+            Button button = new Button(context);
+            button.setText(context.getResources().getString(R.string.condition_position));
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(CalamarApplication.getInstance(), MainActivity.class);
+                    intent.putExtra(MainActivity.TABKEY, MainActivity.TabID.MAP.ordinal());
+                    intent.putExtra(MapFragment.POSITIONKEY, getLocation());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    CalamarApplication.getInstance().startActivity(intent);
+
+    //                    ViewPager viewPager = (ViewPager)
+    //                            context.findViewById(R.id.viewpager);
+    //                    viewPager.setCurrentItem(MainActivity.TabID.MAP.ordinal(), true);
+
+                }
+            });
+            view.addView(button);
+        }
+
         return view;
     }
 

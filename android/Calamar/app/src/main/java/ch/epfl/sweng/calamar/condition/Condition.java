@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar.condition;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.location.Location;
@@ -86,7 +87,7 @@ public abstract class Condition {
         return false;
     }
 
-    public View getView(Context context) {
+    public View getView(Activity context) {
         LinearLayout layout = new LinearLayout(context);
         layout.setGravity(Gravity.CENTER_HORIZONTAL);
         //TODO : Add padding ?
@@ -208,7 +209,7 @@ public abstract class Condition {
             }
 
             @Override
-            public View getView(Context context) {
+            public View getView(Activity context) {
                 LinearLayout view = (LinearLayout) (super.getView(context));
                 TextView tv = new TextView(context);
                 tv.setText(context.getResources().getString(R.string.condition_true));
@@ -246,7 +247,7 @@ public abstract class Condition {
             }
 
             @Override
-            public View getView(Context context) {
+            public View getView(Activity context) {
                 LinearLayout view = (LinearLayout) (super.getView(context));
                 TextView tv = new TextView(context);
                 tv.setText(context.getResources().getString(R.string.condition_false));
@@ -314,7 +315,7 @@ public abstract class Condition {
             }
 
             @Override
-            public View getView(Context context) {
+            public View getView(Activity context) {
                 LinearLayout view = (LinearLayout) (super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
                 LL.setOrientation(LinearLayout.VERTICAL);
@@ -384,7 +385,7 @@ public abstract class Condition {
                 return concatArray(c1.getMetadata(), c2.getMetadata());
             }
 
-            public View getView(Context context) {
+            public View getView(Activity context) {
                 LinearLayout view = (LinearLayout) (super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
                 LL.setOrientation(LinearLayout.VERTICAL);
@@ -454,7 +455,7 @@ public abstract class Condition {
             }
 
             @Override
-            public View getView(Context context) {
+            public View getView(Activity context) {
                 LinearLayout view = (LinearLayout) (super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
                 LL.setOrientation(LinearLayout.VERTICAL);

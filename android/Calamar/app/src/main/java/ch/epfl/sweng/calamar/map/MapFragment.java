@@ -44,6 +44,7 @@ import ch.epfl.sweng.calamar.item.Item;
 public class MapFragment extends android.support.v4.app.Fragment implements OnMapReadyCallback {
 
     public static final String TAG = MapFragment.class.getSimpleName();
+    public static final String POSITIONKEY = MapFragment.class.getCanonicalName() + ":POSITION";
 
     //TODO : add two buttons begin checks stop checks
     // that will : checklocation settings + startlocation updates
