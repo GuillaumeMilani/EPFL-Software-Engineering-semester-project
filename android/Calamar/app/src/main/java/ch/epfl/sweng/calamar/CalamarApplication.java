@@ -3,6 +3,7 @@ package ch.epfl.sweng.calamar;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
+import android.content.ComponentCallbacks2;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -18,7 +19,7 @@ import java.util.Date;
 import ch.epfl.sweng.calamar.recipient.User;
 import ch.epfl.sweng.calamar.utils.StorageManager;
 
-public final class CalamarApplication extends Application implements Application.ActivityLifecycleCallbacks {
+public final class CalamarApplication extends Application implements Application.ActivityLifecycleCallbacks, ComponentCallbacks2 {
 
     //TODO Why volatile?
     private static volatile CalamarApplication instance;
@@ -445,6 +446,20 @@ public final class CalamarApplication extends Application implements Application
                 loopDatabaseUpdate();
             }
         }, UPDATE_DB_TIME);
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        if (level >= TRIM_MEMORY_BACKGROUND) {
+            dbHandler.applyPendingOperations();
+        }
+        if (level >= TRIM_MEMORY_MODERATE) {
+            storageManager.endWritingTasks();
+        } else if (level <= TRIM_MEMORY_RUNNING_CRITICAL && level > TRIM_MEMORY_RUNNING_MODERATE) {
+            dbHandler.applyPendingOperations();
+            storageManager.endWritingTasks();
+        }
     }
 
 

@@ -14,7 +14,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
@@ -27,6 +29,8 @@ import ch.epfl.sweng.calamar.item.Item;
  * A Singleton managing storing and retrieving items on local storage.
  */
 public class StorageManager {
+
+    private static final Set<WritingTask> currentWritingTasks = new HashSet<>();
 
     private static final int RETRY_TIME = 10000;
     private static final int MAX_ITER = 20;
@@ -61,6 +65,16 @@ public class StorageManager {
         dbHandler = app.getDatabaseHandler();
         handler = new Handler();
         calendar = Calendar.getInstance();
+    }
+
+    /**
+     * Stops all writing tasks (to free up memory mainly)
+     */
+    public void endWritingTasks() {
+        for (WritingTask w : currentWritingTasks) {
+            w.cancel(true);
+        }
+        currentWritingTasks.clear();
     }
 
     /**
@@ -144,18 +158,18 @@ public class StorageManager {
      * Updates the ChatAdapter with the full data of the items.
      *
      * @param items The list of items to update
-     * @param v     the ChatAdapter
+     * @param a     the ChatAdapter
      */
-    public void updateChatWithItems(List<Item> items, ChatAdapter v) {
-        new ReadTask(v).execute(items.toArray(new Item[items.size()]));
+    public void updateChatWithItems(List<Item> items, ChatAdapter a) {
+        new ReadTask(a).execute(items.toArray(new Item[items.size()]));
     }
 
     private class ReadTask extends AsyncTask<Item, Item, Void> {
-        private ChatAdapter v;
+        private ChatAdapter a;
         private AlertDialog d;
 
-        public ReadTask(ChatAdapter v) {
-            this.v = v;
+        public ReadTask(ChatAdapter a) {
+            this.a = a;
         }
 
         public ReadTask(AlertDialog d) {
@@ -210,9 +224,9 @@ public class StorageManager {
         protected void onProgressUpdate(Item... i) {
             if (d != null) {
                 d.setView(i[0].getView(app));
-            } else if (v != null) {
-                v.update(i[0]);
-                v.notifyDataSetChanged();
+            } else if (a != null) {
+                a.update(i[0]);
+                a.notifyDataSetChanged();
             } else {
                 //The adapter or dialog has been destroyed
                 this.cancel(true);
@@ -255,7 +269,9 @@ public class StorageManager {
     }
 
     private void storeFile(FileItem f) {
-        new WritingTask(f, 0).execute();
+        WritingTask task = new WritingTask(f, 0);
+        currentWritingTasks.add(task);
+        task.execute();
     }
 
     private void showStorageStateToast() {
@@ -320,6 +336,9 @@ public class StorageManager {
         return calendar.get(Calendar.DAY_OF_MONTH) + "" + calendar.get(Calendar.MONTH) + "" + calendar.get(Calendar.YEAR);
     }
 
+    /**
+     * An AsyncTask whose task is to write a FileItem to the storage. It will retry for ~30 min (20 times) before giving up
+     */
     private class WritingTask extends AsyncTask<Void, Void, Boolean> {
 
         private int iterCount;
@@ -402,10 +421,12 @@ public class StorageManager {
                         public void run() {
                             new WritingTask(f, iterCount + 1).execute();
                         }
-                    }, RETRY_TIME * iterCount);
+                    }, RETRY_TIME * (iterCount + 1));
                 } else {
                     showStorageStateToast();
                 }
+            } else {
+                currentWritingTasks.remove(this);
             }
         }
     }
