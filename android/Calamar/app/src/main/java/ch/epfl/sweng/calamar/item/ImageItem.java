@@ -68,7 +68,7 @@ public final class ImageItem extends FileItem {
     }
 
     @Override
-    protected View getItemView(Context context) {
+    public View getItemView(Context context) {
         ImageView view = new ImageView(context);
         view.setImageBitmap(bitmap);
         return view;
@@ -160,7 +160,7 @@ public final class ImageItem extends FileItem {
         }
 
         public ImageItem build() {
-            return new ImageItem(super.ID, super.from, super.to, super.date, super.condition, super.data, super.name);
+            return new ImageItem(super.ID, super.from, super.to, super.date, super.condition, super.data, super.path);
         }
     }
 }

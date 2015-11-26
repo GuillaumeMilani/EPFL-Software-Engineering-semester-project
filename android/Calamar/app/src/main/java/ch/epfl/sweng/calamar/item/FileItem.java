@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar.item;
 
 import android.content.Context;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -47,8 +48,15 @@ public class FileItem extends Item {
     public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path) {
         super(ID, from, to, date, condition);
         this.data = Compresser.compress(data.clone());
-        this.path = path;
-        this.name = path.substring(path.lastIndexOf('/'));
+        final int idx = path.lastIndexOf('/');
+        if (idx == -1) {
+            this.path = '/' + path;
+            this.name = path;
+            Log.d("Path", "Bad path of file : " + path);
+        } else {
+            this.path = path;
+            this.name = path.substring(idx + 1);
+        }
         hash = computeHash();
     }
 
@@ -64,8 +72,15 @@ public class FileItem extends Item {
      */
     public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String path) {
         super(ID, from, to, date);
-        this.path = path;
-        this.name = path.substring(path.lastIndexOf('/'));
+        final int idx = path.lastIndexOf('/');
+        if (idx == -1) {
+            this.path = '/' + path;
+            this.name = path;
+            Log.d("Path", "Bad path of file : " + path);
+        } else {
+            this.path = path;
+            this.name = path.substring(idx + 1);
+        }
         this.data = Compresser.compress(data.clone());
         hash = computeHash();
     }
@@ -124,7 +139,7 @@ public class FileItem extends Item {
     public void compose(JSONObject object) throws JSONException {
         super.compose(object);
         object.accumulate("data", byteArrayToBase64String(data));
-        object.accumulate("name", name);
+        object.accumulate("path", path);
         object.accumulate("type", ITEM_TYPE.name());
     }
 
@@ -159,7 +174,7 @@ public class FileItem extends Item {
         if (this == o) return true;
         if (!(o instanceof FileItem)) return false;
         FileItem that = (FileItem) o;
-        return super.equals(that) && Arrays.equals(data, that.data) && name.equals(that.name);
+        return super.equals(that) && Arrays.equals(data, that.data) && path.equals(that.path);
     }
 
     @Override
@@ -171,7 +186,7 @@ public class FileItem extends Item {
         if (data == null) {
             return 0;
         } else {
-            return super.hashCode() * 73 + Arrays.hashCode(data) * 107 + name.hashCode();
+            return super.hashCode() * 73 + Arrays.hashCode(data) * 107 + path.hashCode();
         }
     }
 
@@ -183,11 +198,11 @@ public class FileItem extends Item {
     public static class Builder extends Item.Builder {
 
         protected byte[] data;
-        protected String name;
+        protected String path;
 
         @Override
         public FileItem build() {
-            return new FileItem(super.ID, super.from, super.to, super.date, super.condition, data, name);
+            return new FileItem(super.ID, super.from, super.to, super.date, super.condition, data, path);
         }
 
         @Override
@@ -198,7 +213,7 @@ public class FileItem extends Item {
                 throw new IllegalArgumentException("expected " + FileItem.ITEM_TYPE.name() + " was : " + type);
             }
             data = Compresser.decompress(base64StringToByteArray(json.getString("data")));
-            name = json.getString("name");
+            path = json.getString("path");
             return this;
         }
 
@@ -225,13 +240,20 @@ public class FileItem extends Item {
         }
 
         /**
-         * Sets the name of the FileItem to be created
+         * Sets the path of the FileItem to be created
          *
-         * @param name a string
+         * @param path a string
          * @return the builder
          */
-        public FileItem.Builder setName(String name) {
-            this.name = name;
+        public FileItem.Builder setPath(String path) {
+            this.path = path;
+            final int idx = path.lastIndexOf('/');
+            if (idx == -1) {
+                this.path = '/' + path;
+                Log.d("PATH", "Bad path for FileItem :" + path);
+            } else {
+                this.path = path;
+            }
             return this;
         }
 
@@ -243,7 +265,7 @@ public class FileItem extends Item {
          * @throws IOException If there is a problem converting the file to an array of byte
          */
         public FileItem.Builder setFile(File f) throws IOException {
-            this.name = f.getName();
+            this.path = f.getAbsolutePath();
             this.data = FileUtils.toByteArray(f);
             return this;
         }

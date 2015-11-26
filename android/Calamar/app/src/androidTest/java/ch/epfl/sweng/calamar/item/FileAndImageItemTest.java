@@ -51,8 +51,8 @@ public class FileAndImageItemTest {
         builder.setID(testId);
         byte[] data = strContent.getBytes(Charset.forName("UTF-8"));
         FileItem f1 = builder.build();
-        FileItem f2 = new FileItem(testId, testFrom, testTo, testDate, data, "f");
-        FileItem f3 = builder.setData(strContent).setName("f").build();
+        FileItem f2 = new FileItem(testId, testFrom, testTo, testDate, data, "Calamar/1/2/f");
+        FileItem f3 = builder.setData(strContent).setPath("f").build();
         assertEquals(f1, f2);
         assertEquals(f1, f3);
         assertEquals(f2, f3);

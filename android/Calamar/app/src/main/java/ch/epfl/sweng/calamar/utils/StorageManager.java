@@ -196,7 +196,7 @@ public class StorageManager {
                         case SIMPLETEXTITEM:
                             break;
                         case FILEITEM:
-                            String fileName = ((FileItem) i).getName();
+                            String filePath = ((FileItem) i).getPath();
                             byte[] fileData = getData((FileItem) i);
                             if (fileData != null) {
                                 FileItem.Builder fileBuilder = new FileItem.Builder();
@@ -205,13 +205,13 @@ public class StorageManager {
                                 fileBuilder.setTo(i.getTo());
                                 fileBuilder.setDate(i.getDate());
                                 fileBuilder.setCondition(i.getCondition());
-                                fileBuilder.setName(fileName);
+                                fileBuilder.setPath(filePath);
                                 fileBuilder.setData(fileData);
                                 publishProgress(fileBuilder.build());
                             }
                             break;
                         case IMAGEITEM:
-                            String imageName = ((ImageItem) i).getName();
+                            String imagePath = ((ImageItem) i).getPath();
                             byte[] imageData = getData((ImageItem) i);
                             if (imageData != null) {
                                 ImageItem.Builder imageBuilder = new ImageItem.Builder();
@@ -220,7 +220,7 @@ public class StorageManager {
                                 imageBuilder.setTo(i.getTo());
                                 imageBuilder.setDate(i.getDate());
                                 imageBuilder.setCondition(i.getCondition());
-                                imageBuilder.setName(imageName);
+                                imageBuilder.setPath(imagePath);
                                 imageBuilder.setData(imageData);
                                 publishProgress(imageBuilder.build());
                             }
