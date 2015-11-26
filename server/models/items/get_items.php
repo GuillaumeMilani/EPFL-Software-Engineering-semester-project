@@ -1,5 +1,5 @@
 <?php
-include('../users/retrieve_users.php');
+include('models/users/retrieve_users.php');
 
 // List of the fields to select in the DB for an item
 const TO_BE_SELECTED = 'itm.`ID`, itm.`from`, itm.`to`, itm.`date`, cnd.`condition`, itm.`message`, "SIMPLETEXTITEM" as "type"';
