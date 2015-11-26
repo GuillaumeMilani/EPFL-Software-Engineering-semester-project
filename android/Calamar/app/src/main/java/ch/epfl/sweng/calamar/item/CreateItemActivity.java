@@ -1,5 +1,7 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
@@ -55,6 +57,7 @@ public class CreateItemActivity extends BaseActivity {
     private RadioGroup timeGroup;
     private CheckBox timeCheck;
     private Button browseButton;
+    private Button sendButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +91,26 @@ public class CreateItemActivity extends BaseActivity {
             contactsSpinner.setSelection(contacts.indexOf(new User(id, name)));
         }
         browseButton = (Button) findViewById(R.id.selectFileButton);
+        sendButton = (Button) findViewById(R.id.createButton);
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    createAndSend();
+                } catch (IOException e) {
+                    // TODO untested code, simulate IOException
+                    Log.e(CreateItemActivity.TAG, e.getMessage());
+                    AlertDialog.Builder newUserAlert = new AlertDialog.Builder(CreateItemActivity.this);
+                    newUserAlert.setTitle(R.string.unable_to_create_item);
+                    newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            //OK
+                        }
+                    });
+                    newUserAlert.show();
+                }
+            }
+        });
 
         final String[] imgExt = {"png", "PNG", "jpg", "jpeg", "JPG", "JPEG", "bmp", "BMP"};
         imageExt = new HashSet<>(Arrays.asList(imgExt));
@@ -127,12 +150,23 @@ public class CreateItemActivity extends BaseActivity {
     }
 
     public void locationChecked(View v) {
-        // TODO timing exception, client may not be connected,
-        // similar problem can arise at multiple place, we need
-        // to design kind of protocol between the callbacks, to wait/disable UI/ re iterate action
-        // ...etc ...or any other clever idea....
-        GPSProvider.getInstance().startLocationUpdates(this);
-        currentLocation = GPSProvider.getInstance().getLastLocation();
+        final GPSProvider gpsProvider = GPSProvider.getInstance();
+        gpsProvider.startLocationUpdates(this);
+        sendButton.setEnabled(false);
+
+        // TODO show "sablier" + test
+
+        gpsProvider.addObserver(new GPSProvider.Observer() {
+            @Override
+            public void update(Location newLocation) {
+                currentLocation = newLocation;
+                sendButton.setEnabled(true);
+                gpsProvider.removeObserver(this);
+                // TODO ConcurrentModificationException
+                // because set modified during notify iteration
+                // normally solved now, but wait and see
+            }
+        });
         GPSProvider.getInstance().stopLocationUpdates();
     }
 
@@ -152,7 +186,7 @@ public class CreateItemActivity extends BaseActivity {
         }
     }
 
-    public void createAndSend(View v) throws IOException {
+    public void createAndSend() throws IOException {
         Item.Builder toSendBuilder;
         if (file != null) {
             String name = file.getName();
