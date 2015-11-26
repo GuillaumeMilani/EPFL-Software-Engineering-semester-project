@@ -31,12 +31,11 @@ public abstract class Item {
     private final Recipient to;
     private final Date date; //posix date
     private final Condition condition;
-
+    
 
     public enum Type {SIMPLETEXTITEM, IMAGEITEM, FILEITEM}
-    //TODO date d'expiration ?
 
-    private final Set<Observer> observers = new HashSet<>();
+    private Set<Item.Observer> observers = new HashSet<>();
 
 
     private final Condition.Observer conditionObserver = new Condition.Observer() {
@@ -56,7 +55,7 @@ public abstract class Item {
         this.from = from; //User is immutable
         this.to = to;     //Recipient is immutable
         this.date = date;
-        this.condition = condition;
+        this.condition = condition; //TODO Condition is not immutable...
 
         condition.addObserver(conditionObserver);
     }
@@ -255,15 +254,15 @@ public abstract class Item {
         public Builder parse(JSONObject o) throws JSONException {
             ID = o.getInt("ID");
             from = User.fromJSON(o.getJSONObject("from"));
-            to = Recipient.fromJSON(o.getJSONObject("to"));
-            date = new Date(o.getLong("date"));
-            //TODO to delete when server ready to send true condition when there is no condition
-            // and replace by just fromJSON etc..
-            if (o.has("condition")) {
-                condition = Condition.fromJSON(o.getJSONObject("condition"));
+            if (o.isNull("to")) {
+                to = new User(User.PUBLIC_ID, User.PUBLIC_NAME);
             } else {
-                condition = Condition.trueCondition();
+                to = Recipient.fromJSON(o.getJSONObject("to"));
             }
+
+            date = new Date(o.getLong("date"));
+            condition = Condition.fromJSON(new JSONObject(o.getString("condition")));
+
             return this;
         }
 
