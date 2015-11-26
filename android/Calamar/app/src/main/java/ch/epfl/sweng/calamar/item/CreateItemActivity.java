@@ -187,7 +187,7 @@ public class CreateItemActivity extends BaseActivity {
         }
     }
 
-    public void createAndSend() throws IOException {
+    private void createAndSend() throws IOException {
         Item.Builder toSendBuilder;
         if (file != null) {
             String name = file.getName();
