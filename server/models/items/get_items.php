@@ -83,8 +83,10 @@ function get_all_private_items($recipient, $last_refresh) {
 			AND	itm.to = :to
     		AND itm.date > :last_refresh
 			AND itm.ID = txt.ID');
+			
+	$id = $recipient['ID'];
 	
-	$query->bindParam(':to', $recipient['ID'], PDO::PARAM_INT);
+	$query->bindParam(':to', $id, PDO::PARAM_INT);
 	$query->bindParam(':last_refresh', $last_refresh, PDO::PARAM_STR);
 	
 	return get_items($query);
