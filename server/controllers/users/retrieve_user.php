@@ -19,7 +19,7 @@ else
 	try {
 	    $response = retrieve_user($name);
 	    http_response_code(201);
-	    echo format_array($response);
+	    echo format_array(array('user' => $response));
 	} catch (Exception $e) {
 	    http_response_code(500);
 	    echo format_array(array('error' => $e->getMessage()));
