@@ -43,7 +43,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static long lastUpdateTime;
     private static long lastItemTime;
 
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
     private static final String DATABASE_NAME = "CalamarDB";
 
     private static final int MAX_PLACEHOLDERS_COUNT = 99;
@@ -58,8 +58,8 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static final String ITEMS_KEY_CONDITION = "condition";
     private static final String ITEMS_KEY_TEXT = "text";
     private static final String ITEMS_KEY_DATA = "data";
-    private static final String ITEMS_KEY_NAME = "name";
-    private static final String[] ITEMS_COLUMNS = {ITEMS_KEY_TYPE, ITEMS_KEY_ID, ITEMS_KEY_FROM, ITEMS_KEY_TO, ITEMS_KEY_TIME, ITEMS_KEY_CONDITION, ITEMS_KEY_TEXT, ITEMS_KEY_DATA, ITEMS_KEY_NAME};
+    private static final String ITEMS_KEY_PATH = "path";
+    private static final String[] ITEMS_COLUMNS = {ITEMS_KEY_TYPE, ITEMS_KEY_ID, ITEMS_KEY_FROM, ITEMS_KEY_TO, ITEMS_KEY_TIME, ITEMS_KEY_CONDITION, ITEMS_KEY_TEXT, ITEMS_KEY_DATA, ITEMS_KEY_PATH};
 
     private static final String RECIPIENTS_TABLE = "tb_Recipients";
     private static final String RECIPIENTS_KEY_ID = "id";
@@ -105,7 +105,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 + ITEMS_KEY_CONDITION + " TEXT NOT NULL, "
                 + ITEMS_KEY_TEXT + " TEXT, "
                 + ITEMS_KEY_DATA + " BLOB, "
-                + ITEMS_KEY_NAME + " TEXT)";
+                + ITEMS_KEY_PATH + " TEXT)";
         db.execSQL(createMessagesTable);
         final String createRecipientsTable = "CREATE TABLE " + RECIPIENTS_TABLE + " ("
                 + RECIPIENTS_KEY_ID + " INTEGER PRIMARY KEY NOT NULL,"
@@ -877,7 +877,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());
         } else if (item.getType() == Item.Type.FILEITEM || item.getType() == Item.Type.IMAGEITEM) {
             values.put(ITEMS_KEY_DATA, ((FileItem) item).getData());
-            values.put(ITEMS_KEY_NAME, ((FileItem) item).getName());
+            values.put(ITEMS_KEY_PATH, ((FileItem) item).getPath());
         } else {
             throw new IllegalArgumentException("Unknown item type");
         }
@@ -903,14 +903,14 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         }
         String text = cursor.getString(6);
         byte[] data = cursor.getBlob(7);
-        String name = cursor.getString(8);
+        String path = cursor.getString(8);
         switch (type) {
             case SIMPLETEXTITEM:
                 return new SimpleTextItem(id, from, to, time, condition, text);
             case FILEITEM:
-                return new FileItem(id, from, to, time, condition, data, name);
+                return new FileItem(id, from, to, time, condition, data, path);
             case IMAGEITEM:
-                return new ImageItem(id, from, to, time, condition, data, name);
+                return new ImageItem(id, from, to, time, condition, data, path);
             default:
                 throw new UnsupportedOperationException("Unexpected Item type");
         }

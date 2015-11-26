@@ -174,8 +174,8 @@ public class ChatActivity extends BaseActivity {
         @Override
         protected void onPostExecute(Item item) {
             if (item != null) {
-                adapter.add(item);
-                messagesHistory.add(item);
+                messagesHistory.set(messagesHistory.size() - 1, item);
+                adapter.update(item);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 storageManager.storeItem(item);

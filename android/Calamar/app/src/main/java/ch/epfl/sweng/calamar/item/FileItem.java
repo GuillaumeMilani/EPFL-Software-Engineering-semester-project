@@ -1,10 +1,15 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ipaulpro.afilechooser.utils.FileUtils;
 
@@ -17,6 +22,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
@@ -121,6 +127,12 @@ public class FileItem extends Item {
     public View getItemView(Context context) {
         TextView view = new TextView(context);
         view.setText(name);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivityForFile(FileItem.this);
+            }
+        });
         return view;
     }
 
@@ -192,7 +204,40 @@ public class FileItem extends Item {
 
     @Override
     public String toString() {
-        return super.toString() + ", filename : " + name;
+        return super.toString() + ", filepath : " + path;
+    }
+
+    private static void startActivityForFile(FileItem f) {
+        File file = new File(f.getPath());
+        MimeTypeMap myMime = MimeTypeMap.getSingleton();
+        Intent newIntent = new Intent(Intent.ACTION_VIEW);
+        String mimeType = myMime.getMimeTypeFromExtension(fileExt(f.getName()).substring(1));
+        newIntent.setDataAndType(Uri.fromFile(file), mimeType);
+        newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            CalamarApplication.getInstance().startActivity(newIntent);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(CalamarApplication.getInstance(), "No handler for this type of file.", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private static String fileExt(String url) {
+        if (url.contains("?")) {
+            url = url.substring(0, url.indexOf("?"));
+        }
+        if (url.lastIndexOf(".") == -1) {
+            return "";
+        } else {
+            String ext = url.substring(url.lastIndexOf("."));
+            if (ext.contains("%")) {
+                ext = ext.substring(0, ext.indexOf("%"));
+            }
+            if (ext.contains("/")) {
+                ext = ext.substring(0, ext.indexOf("/"));
+            }
+            return ext.toLowerCase();
+
+        }
     }
 
     public static class Builder extends Item.Builder {
