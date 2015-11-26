@@ -32,6 +32,9 @@ public class StorageManager {
 
     private static final Set<WritingTask> currentWritingTasks = new HashSet<>();
 
+    //Will be used to requery server if writing of a file has failed and the file is no longer available.
+    private static final Set<Integer> currentFilesID = new HashSet<>();
+
     private static final int RETRY_TIME = 10000;
     private static final int MAX_ITER = 20;
 
@@ -70,11 +73,20 @@ public class StorageManager {
     /**
      * Stops all writing tasks (to free up memory mainly)
      */
-    public void endWritingTasks() {
+    public void endWritingTasks(int level) {
         for (WritingTask w : currentWritingTasks) {
-            w.cancel(true);
+            if (w.getIteration() >= level) {
+                w.cancel(true);
+            }
         }
         currentWritingTasks.clear();
+    }
+
+    /**
+     * Retry failed FileItem writings once more memory is available
+     */
+    public void retryFailedWriting() {
+        //Ask server
     }
 
     /**
@@ -271,6 +283,7 @@ public class StorageManager {
     private void storeFile(FileItem f) {
         WritingTask task = new WritingTask(f, 0);
         currentWritingTasks.add(task);
+        currentFilesID.add(f.getID());
         task.execute();
     }
 
@@ -308,13 +321,15 @@ public class StorageManager {
     }
 
     private void writeFile(FileItem f, File path) throws IOException {
-        OutputStream stream = null;
-        try {
-            stream = new BufferedOutputStream(new FileOutputStream(path));
-            stream.write(f.getData());
-        } finally {
-            if (stream != null) {
-                stream.close();
+        if (f.getData() != null) {
+            OutputStream stream = null;
+            try {
+                stream = new BufferedOutputStream(new FileOutputStream(path));
+                stream.write(Compresser.decompress(f.getData()));
+            } finally {
+                if (stream != null) {
+                    stream.close();
+                }
             }
         }
     }
@@ -347,6 +362,10 @@ public class StorageManager {
         private WritingTask(FileItem f, int iterCount) {
             this.iterCount = iterCount;
             this.f = f;
+        }
+
+        public int getIteration() {
+            return iterCount;
         }
 
         @Override
@@ -426,6 +445,7 @@ public class StorageManager {
                     showStorageStateToast();
                 }
             } else {
+                currentFilesID.remove(f.getID());
                 currentWritingTasks.remove(this);
             }
         }

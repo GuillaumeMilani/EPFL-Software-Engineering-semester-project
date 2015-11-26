@@ -454,11 +454,17 @@ public final class CalamarApplication extends Application implements Application
         if (level >= TRIM_MEMORY_BACKGROUND) {
             dbHandler.applyPendingOperations();
         }
-        if (level >= TRIM_MEMORY_MODERATE) {
-            storageManager.endWritingTasks();
+        if (level >= TRIM_MEMORY_MODERATE && level < TRIM_MEMORY_COMPLETE) {
+            storageManager.endWritingTasks(5);
         } else if (level <= TRIM_MEMORY_RUNNING_CRITICAL && level > TRIM_MEMORY_RUNNING_MODERATE) {
             dbHandler.applyPendingOperations();
-            storageManager.endWritingTasks();
+            storageManager.endWritingTasks(1);
+        } else if (level >= TRIM_MEMORY_COMPLETE) {
+            dbHandler.applyPendingOperations();
+            storageManager.endWritingTasks(1);
+        } else if ((level > TRIM_MEMORY_RUNNING_CRITICAL && level < TRIM_MEMORY_MODERATE)
+                || level < TRIM_MEMORY_RUNNING_MODERATE) {
+            storageManager.retryFailedWriting();
         }
     }
 
