@@ -13,7 +13,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
@@ -30,7 +29,7 @@ public class ChatAdapter extends BaseAdapter {
     public ChatAdapter(Activity context, List<Item> messages) {
         assert (context != null && messages != null);
         this.context = context;
-        this.messages = new ArrayList<>(messages);
+        this.messages = messages;
 
     }
 
@@ -97,6 +96,8 @@ public class ChatAdapter extends BaseAdapter {
     public void update(Item message) {
         for (int i = 0; i < messages.size(); ++i) {
             if (messages.get(i).getID() == message.getID()) {
+                System.out.println("BEFORE : " + messages.get(i));
+                System.out.println("UPDATED : " + message);
                 messages.set(i, message);
             }
         }

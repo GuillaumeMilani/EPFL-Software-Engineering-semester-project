@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
 import android.view.View;
-import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,7 +24,7 @@ public final class ImageItem extends FileItem {
 
     protected final static Type ITEM_TYPE = Type.IMAGEITEM;
 
-    //TODO Create bitmap only when necessary ?
+    //TODO Need to decode bitmap from path, then compress to byte array ?
 
     /**
      * Instantiates a new ImageItem with the following parameters
@@ -35,10 +35,11 @@ public final class ImageItem extends FileItem {
      * @param date      the creation/posting date of the Item
      * @param condition the content (text message)
      * @param data      the image as a byte array
+     * @param path      the path of the image
      * @see Item#Item(int, User, Recipient, Date, Condition)
      */
-    public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String name) {
-        super(ID, from, to, date, condition, data, name);
+    public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path) {
+        super(ID, from, to, date, condition, data, path);
     }
 
     /**
@@ -49,10 +50,11 @@ public final class ImageItem extends FileItem {
      * @param to   the 'to' field of the Item (recipient)
      * @param date the creation/posting date of the Item
      * @param data the image as a byte array
+     * @param path the path of the image
      * @see Item#Item(int, User, Recipient, Date)
      */
-    public ImageItem(int ID, User from, Recipient to, Date date, byte[] data, String name) {
-        super(ID, from, to, date, data, name);
+    public ImageItem(int ID, User from, Recipient to, Date date, byte[] data, String path) {
+        super(ID, from, to, date, data, path);
     }
 
     /**
@@ -67,8 +69,12 @@ public final class ImageItem extends FileItem {
 
     @Override
     public View getItemView(Context context) {
+        /*
         ImageView view = new ImageView(context);
         view.setImageBitmap(BitmapFactory.decodeByteArray(getData(), 0, getData().length));
+        */
+        TextView view = new TextView(context);
+        view.setText(new String(getData()));
         return view;
     }
 

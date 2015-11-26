@@ -128,17 +128,18 @@ public class Compresser {
     }
 
     private static byte[] getDataThumbnail(ImageItem i) {
-        if (i.getData() == null) {
-            return null;
-        }
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        if (i.getBitmap().getWidth() <= 100 && i.getBitmap().getHeight() <= 100) {
-            i.getBitmap().compress(Bitmap.CompressFormat.PNG, 100, stream);
-        } else {
-            Bitmap thumbnail = ThumbnailUtils.extractThumbnail(i.getBitmap(), THUMBNAIL_SIZE, THUMBNAIL_SIZE);
-            thumbnail.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        Bitmap bitmap = i.getBitmap();
+        if (bitmap != null) {
+            if (bitmap.getWidth() <= THUMBNAIL_SIZE && bitmap.getHeight() <= THUMBNAIL_SIZE) {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            } else {
+                Bitmap thumbnail = ThumbnailUtils.extractThumbnail(bitmap, THUMBNAIL_SIZE, THUMBNAIL_SIZE);
+                thumbnail.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            }
+            return stream.toByteArray();
         }
-        return stream.toByteArray();
+        return new byte[0];
     }
 
     private static boolean isCompressed(byte[] data) {

@@ -89,7 +89,7 @@ public class CreateItemActivity extends BaseActivity {
         }
         browseButton = (Button) findViewById(R.id.selectFileButton);
 
-        final String[] imgExt = {"png", "PNG", "jpg", "jpeg", "JPG", "JPEG", "bmp", "BMP"};
+        final String[] imgExt = {"png", "jpg", "jpeg", "bmp"};
         imageExt = new HashSet<>(Arrays.asList(imgExt));
         file = null;
         currentLocation = null;
@@ -158,7 +158,7 @@ public class CreateItemActivity extends BaseActivity {
             String name = file.getName();
             int extIndex = name.lastIndexOf('.');
             String ext = extIndex > 0 ? name.substring(extIndex + 1) : "";
-            if (imageExt.contains(ext)) {
+            if (imageExt.contains(ext.toLowerCase())) {
                 toSendBuilder = new ImageItem.Builder().setFile(file);
             } else {
                 toSendBuilder = new FileItem.Builder().setFile(file);

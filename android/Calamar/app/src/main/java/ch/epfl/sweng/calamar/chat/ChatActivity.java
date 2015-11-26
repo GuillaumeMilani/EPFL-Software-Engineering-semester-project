@@ -144,7 +144,6 @@ public class ChatActivity extends BaseActivity {
         String message = editText.getText().toString();
         Item textMessage = new SimpleTextItem(1, app.getCurrentUser(), correspondent, new Date(), message);
         messagesHistory.add(textMessage);
-        adapter.add(textMessage);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
         editText.setText("");
@@ -176,8 +175,7 @@ public class ChatActivity extends BaseActivity {
         @Override
         protected void onPostExecute(Item item) {
             if (item != null) {
-                messagesHistory.set(messagesHistory.size() - 1, item);
-                adapter.update(item);
+                messagesHistory.set(messagesHistory.indexOf(this.item), item);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 storageManager.storeItem(item);
@@ -221,7 +219,6 @@ public class ChatActivity extends BaseActivity {
                 if (!offline) {
                     storageManager.storeItems(items);
                 }
-                adapter.add(items);
                 messagesHistory.addAll(items);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);

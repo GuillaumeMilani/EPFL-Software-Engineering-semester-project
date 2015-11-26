@@ -224,6 +224,7 @@ public class StorageManager {
                                 imageBuilder.setData(imageData);
                                 publishProgress(imageBuilder.build());
                             }
+                            break;
                         default:
                             throw new IllegalArgumentException("Unknown item type");
                     }

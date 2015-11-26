@@ -931,7 +931,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     private void addOrUpdateRecipientWithItem(Item item) {
         pendingRecipients.put(item.getFrom().getID(), new Pair<>(Operation.ADD, (Recipient) item.getFrom()));
-        pendingRecipients.put(item.getTo().getID(), new Pair<>(Operation.ADD, item.getTo()));
+        if (!(item.getTo().getID() == User.PUBLIC_ID)) {
+            pendingRecipients.put(item.getTo().getID(), new Pair<>(Operation.ADD, item.getTo()));
+        }
     }
 
     private void manageItemUpdate(Item item) {

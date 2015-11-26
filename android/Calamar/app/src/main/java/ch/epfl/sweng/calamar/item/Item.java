@@ -31,7 +31,7 @@ public abstract class Item {
     private final Recipient to;
     private final Date date; //posix date
     private final Condition condition;
-    
+
 
     public enum Type {SIMPLETEXTITEM, IMAGEITEM, FILEITEM}
 

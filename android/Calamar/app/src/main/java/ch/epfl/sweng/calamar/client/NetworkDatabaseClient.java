@@ -1,6 +1,5 @@
 package ch.epfl.sweng.calamar.client;
 
-import android.location.Location;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.VisibleRegion;
@@ -17,12 +16,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.IllegalFormatCodePointException;
 import java.util.List;
 
+import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
-import ch.epfl.sweng.calamar.item.Item;
 
 /**
  * Created by LPI on 19.10.2015.

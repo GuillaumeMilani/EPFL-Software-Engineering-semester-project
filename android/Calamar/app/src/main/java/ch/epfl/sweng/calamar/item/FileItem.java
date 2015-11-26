@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
-import android.webkit.MimeTypeMap;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,7 +52,11 @@ public class FileItem extends Item {
      */
     public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path) {
         super(ID, from, to, date, condition);
-        this.data = Compresser.compress(data.clone());
+        if (data != null) {
+            this.data = Compresser.compress(data.clone());
+        } else {
+            this.data = new byte[0];
+        }
         final int idx = path.lastIndexOf('/');
         if (idx == -1) {
             this.path = '/' + path;
@@ -87,7 +90,12 @@ public class FileItem extends Item {
             this.path = path;
             this.name = path.substring(idx + 1);
         }
-        this.data = Compresser.compress(data.clone());
+        if (data != null) {
+            this.data = Compresser.compress(data.clone());
+        } else {
+            this.data = new byte[0];
+        }
+        System.out.println("path : " + path);
         hash = computeHash();
     }
 
@@ -209,34 +217,14 @@ public class FileItem extends Item {
 
     private static void startActivityForFile(FileItem f) {
         File file = new File(f.getPath());
-        MimeTypeMap myMime = MimeTypeMap.getSingleton();
         Intent newIntent = new Intent(Intent.ACTION_VIEW);
-        String mimeType = myMime.getMimeTypeFromExtension(fileExt(f.getName()).substring(1));
+        String mimeType = FileUtils.getMimeType(file);
         newIntent.setDataAndType(Uri.fromFile(file), mimeType);
         newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
             CalamarApplication.getInstance().startActivity(newIntent);
         } catch (ActivityNotFoundException e) {
             Toast.makeText(CalamarApplication.getInstance(), "No handler for this type of file.", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private static String fileExt(String url) {
-        if (url.contains("?")) {
-            url = url.substring(0, url.indexOf("?"));
-        }
-        if (url.lastIndexOf(".") == -1) {
-            return "";
-        } else {
-            String ext = url.substring(url.lastIndexOf("."));
-            if (ext.contains("%")) {
-                ext = ext.substring(0, ext.indexOf("%"));
-            }
-            if (ext.contains("/")) {
-                ext = ext.substring(0, ext.indexOf("/"));
-            }
-            return ext.toLowerCase();
-
         }
     }
 
