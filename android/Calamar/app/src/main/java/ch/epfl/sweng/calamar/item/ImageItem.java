@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.ImageView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -69,12 +69,8 @@ public final class ImageItem extends FileItem {
 
     @Override
     public View getItemView(Context context) {
-        /*
         ImageView view = new ImageView(context);
         view.setImageBitmap(BitmapFactory.decodeByteArray(getData(), 0, getData().length));
-        */
-        TextView view = new TextView(context);
-        view.setText(new String(getData()));
         return view;
     }
 

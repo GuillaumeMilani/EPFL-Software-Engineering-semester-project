@@ -96,8 +96,6 @@ public class ChatAdapter extends BaseAdapter {
     public void update(Item message) {
         for (int i = 0; i < messages.size(); ++i) {
             if (messages.get(i).getID() == message.getID()) {
-                System.out.println("BEFORE : " + messages.get(i));
-                System.out.println("UPDATED : " + message);
                 messages.set(i, message);
             }
         }

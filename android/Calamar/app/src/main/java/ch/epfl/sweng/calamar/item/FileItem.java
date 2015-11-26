@@ -95,7 +95,6 @@ public class FileItem extends Item {
         } else {
             this.data = new byte[0];
         }
-        System.out.println("path : " + path);
         hash = computeHash();
     }
 
@@ -212,7 +211,7 @@ public class FileItem extends Item {
 
     @Override
     public String toString() {
-        return super.toString() + ", filepath : " + path;
+        return super.toString() + ", filename : " + name;
     }
 
     private static void startActivityForFile(FileItem f) {

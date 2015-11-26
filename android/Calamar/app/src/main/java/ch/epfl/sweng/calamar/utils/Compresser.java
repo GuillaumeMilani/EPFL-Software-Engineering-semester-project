@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar.utils;
 
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -139,6 +140,7 @@ public class Compresser {
             }
             return stream.toByteArray();
         }
+        Log.d("Bitmap", "Bitmap of " + i + " is null.");
         return new byte[0];
     }
 
