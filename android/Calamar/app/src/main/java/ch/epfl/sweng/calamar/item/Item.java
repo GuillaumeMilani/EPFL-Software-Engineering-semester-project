@@ -67,7 +67,7 @@ public abstract class Item {
 
     public abstract Type getType();
 
-    protected abstract View getItemView(Context context);
+    public abstract View getItemView(Context context);
 
 
     /**
@@ -245,14 +245,14 @@ public abstract class Item {
      * is used by the child builders (in {@link SimpleTextItem} or...) to build the "Item
      * part of the object". currently only used to parse JSON (little overkill..but ..)
      */
-    protected abstract static class Builder {
+    public abstract static class Builder {
         protected int ID;
         protected User from;
         protected Recipient to;
         protected Date date;
         protected Condition condition = Condition.trueCondition();
 
-        protected Builder parse(JSONObject o) throws JSONException {
+        public Builder parse(JSONObject o) throws JSONException {
             ID = o.getInt("ID");
             from = User.fromJSON(o.getJSONObject("from"));
             to = Recipient.fromJSON(o.getJSONObject("to"));
@@ -267,37 +267,37 @@ public abstract class Item {
             return this;
         }
 
-        protected Builder setID(int ID) {
+        public Builder setID(int ID) {
             this.ID = ID;
             return this;
         }
 
-        protected Builder setFrom(User from) {
+        public Builder setFrom(User from) {
             this.from = from;
             return this;
         }
 
-        protected Builder setTo(Recipient to) {
+        public Builder setTo(Recipient to) {
             this.to = to;
             return this;
         }
 
-        protected Builder setDate(long date) {
+        public Builder setDate(long date) {
             this.date = new Date(date);
             return this;
         }
 
-        protected Builder setDate(Date date) {
+        public Builder setDate(Date date) {
             this.date = date;
             return this;
         }
 
-        protected Builder setCondition(Condition condition) {
+        public Builder setCondition(Condition condition) {
             this.condition = condition;
             return this;
         }
 
-        protected abstract Item build();
+        public abstract Item build();
     }
 
     public void addObserver(Item.Observer observer) {

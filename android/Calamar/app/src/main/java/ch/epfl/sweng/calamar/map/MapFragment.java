@@ -28,12 +28,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.User;
+import ch.epfl.sweng.calamar.utils.StorageManager;
 
 
 /**
@@ -51,6 +53,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     //TODO : Use a bidirectional map ?
     private Map<Item, Marker> markers;
     private Map<Marker, Item> itemFromMarkers;
+    private StorageManager storageManager;
 
     private GoogleMap map; // Might be null if Google Play services APK is not available.
     // however google play services are checked at app startup...and
@@ -130,6 +133,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
         detailsViewDialog = new LinearLayout(getActivity());
         detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
+        storageManager = CalamarApplication.getInstance().getStorageManager();
 
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_map, container, false);
@@ -179,7 +183,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
                 item.addObserver(detailsItemObserver);
 
-                itemDescription.show();
+                AlertDialog dialog = itemDescription.show();
+                storageManager.updateDialogWithItem(item, dialog);
 
                 return false;
             }
@@ -309,4 +314,5 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         gpsProvider.addObserver(gpsObserver);
         gpsProvider.startLocationUpdates(getActivity());
     }
+
 }

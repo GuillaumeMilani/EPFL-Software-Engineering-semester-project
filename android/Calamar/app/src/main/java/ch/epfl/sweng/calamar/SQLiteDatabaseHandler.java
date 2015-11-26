@@ -85,12 +85,12 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     private SQLiteDatabaseHandler() {
         super(app, DATABASE_NAME, null, DATABASE_VERSION);
+        lastItemTime = app.getLastItemsRefresh().getTime();
+        lastUpdateTime = app.getLastItemsRefresh().getTime();
         db = getReadableDatabase(app.getCurrentUser().getPassword());
         this.pendingRecipients = new HashMap<>();
         this.pendingItems = new HashMap<>();
         this.FULL_PLACEHOLDERS = createPlaceholders(MAX_PLACEHOLDERS_COUNT);
-        lastItemTime = app.getLastItemsRefresh().getTime();
-        lastUpdateTime = app.getLastItemsRefresh().getTime();
 
     }
 
@@ -111,6 +111,10 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 + RECIPIENTS_KEY_ID + " INTEGER PRIMARY KEY NOT NULL,"
                 + RECIPIENTS_KEY_NAME + " TEXT NOT NULL)";
         db.execSQL(createRecipientsTable);
+        lastUpdateTime = 0;
+        lastItemTime = 0;
+        app.resetLastItemsRefresh();
+        app.resetLastUsersRefresh();
     }
 
     @Override
@@ -118,8 +122,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         //TODO only recreates db at the moment
         db.execSQL("DROP TABLE IF EXISTS " + ITEMS_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + RECIPIENTS_TABLE);
-        lastUpdateTime = 0;
-        lastItemTime = 0;
         app.setLastItemsRefresh(lastUpdateTime);
         app.setLastUsersRefresh(lastUpdateTime);
         onCreate(db);
@@ -132,6 +134,8 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         pendingItems.clear();
         db = getWritableIfNotOpen();
         db.delete(ITEMS_TABLE, null, null);
+        lastUpdateTime = lastItemTime;
+        app.setLastItemsRefresh(lastUpdateTime);
     }
 
     /**
@@ -517,6 +521,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         pendingRecipients.clear();
         db = getWritableIfNotOpen();
         db.delete(RECIPIENTS_TABLE, null, null);
+        app.setLastUsersRefresh(lastItemTime);
     }
 
     /**

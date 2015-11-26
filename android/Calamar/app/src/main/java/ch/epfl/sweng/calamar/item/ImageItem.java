@@ -110,6 +110,15 @@ public final class ImageItem extends FileItem {
         return ret;
     }
 
+    /**
+     * Returns the image of the item
+     *
+     * @return a bitmap
+     */
+    public Bitmap getBitmap() {
+        return Bitmap.createBitmap(bitmap);
+    }
+
 
     /**
      * used to transform a string (containing an array of bytes representing the png image) to a bitmap

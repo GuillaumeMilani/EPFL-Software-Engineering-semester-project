@@ -30,12 +30,8 @@ public class ChatAdapter extends BaseAdapter {
     public ChatAdapter(Activity context, List<Item> messages) {
         assert (context != null && messages != null);
         this.context = context;
-        this.messages = new ArrayList<>();
+        this.messages = new ArrayList<>(messages);
 
-        //Add the items
-        for (Item i : messages) {
-            addItem(i);
-        }
     }
 
     @Override
@@ -68,7 +64,7 @@ public class ChatAdapter extends BaseAdapter {
 
 
         boolean ingoing = item.getTo().getID() == CalamarApplication.getInstance().getCurrentUserID();
-        setAlignment(holder, ingoing,item.getCondition().getValue());
+        setAlignment(holder, ingoing, item.getCondition().getValue());
         holder.itemView.removeAllViews();
         holder.itemView.addView(item.getPreView(context));
         holder.textTime.setText(item.getDate().toString());
@@ -81,7 +77,7 @@ public class ChatAdapter extends BaseAdapter {
      * @param message the message to be added
      */
     public void add(Item message) {
-        addItem(message);
+        this.messages.add(message);
     }
 
     /**
@@ -90,14 +86,22 @@ public class ChatAdapter extends BaseAdapter {
      * @param messages the list of messages
      */
     public void add(List<Item> messages) {
-        for (Item i : messages) {
-            addItem(i);
+        this.messages.addAll(messages);
+    }
+
+    /**
+     * Updates an item of the adapter (StorageManager has found the complete data)
+     *
+     * @param message the item to update
+     */
+    public void update(Item message) {
+        for (int i = 0; i < messages.size(); ++i) {
+            if (messages.get(i).getID() == message.getID()) {
+                messages.set(i, message);
+            }
         }
     }
 
-    private void addItem(Item i) {
-        this.messages.add(i);
-    }
 
     /**
      * Set the alignment of the messages, depending on if the message is outgoing or ingoing.
@@ -105,7 +109,7 @@ public class ChatAdapter extends BaseAdapter {
      * @param holder  The ViewHolder containing the necessary attributes
      * @param ingoing True if the message is received by the user, false if it is sent.
      */
-    private void setAlignment(ViewHolder holder, boolean ingoing,boolean unlocked) {
+    private void setAlignment(ViewHolder holder, boolean ingoing, boolean unlocked) {
         if (ingoing) {
             holder.contentWithBG.setBackgroundResource(unlocked ? R.drawable.in_message_bg_lock : R.drawable.in_message_bg);
             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) holder.contentWithBG.getLayoutParams();

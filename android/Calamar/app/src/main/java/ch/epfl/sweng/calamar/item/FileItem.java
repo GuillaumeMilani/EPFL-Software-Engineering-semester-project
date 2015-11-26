@@ -27,6 +27,7 @@ import ch.epfl.sweng.calamar.utils.Compresser;
  */
 public class FileItem extends Item {
 
+    private final String path;
     private final String name;
     private final static Type ITEM_TYPE = Type.FILEITEM;
     private final byte[] data;
@@ -41,12 +42,13 @@ public class FileItem extends Item {
      * @param date      The date of creation of the item
      * @param condition The condition for unlocking the item
      * @param data      The content of the file
-     * @param name      The name of the file
+     * @param path      The path of the file
      */
-    public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String name) {
+    public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path) {
         super(ID, from, to, date, condition);
         this.data = Compresser.compress(data.clone());
-        this.name = name;
+        this.path = path;
+        this.name = path.substring(path.lastIndexOf('/'));
         hash = computeHash();
     }
 
@@ -58,11 +60,12 @@ public class FileItem extends Item {
      * @param to   The recipient of the item
      * @param date The date of creation of the item
      * @param data The content of the file
-     * @param name The name of the file
+     * @param path The path of the file
      */
-    public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String name) {
+    public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String path) {
         super(ID, from, to, date);
-        this.name = name;
+        this.path = path;
+        this.name = path.substring(path.lastIndexOf('/'));
         this.data = Compresser.compress(data.clone());
         hash = computeHash();
     }
@@ -85,13 +88,22 @@ public class FileItem extends Item {
         return name;
     }
 
+    /**
+     * Returns the path of the file
+     *
+     * @return the path
+     */
+    public String getPath() {
+        return path;
+    }
+
     @Override
     public Type getType() {
         return ITEM_TYPE;
     }
 
     @Override
-    protected View getItemView(Context context) {
+    public View getItemView(Context context) {
         TextView view = new TextView(context);
         view.setText(name);
         return view;
@@ -168,18 +180,18 @@ public class FileItem extends Item {
         return super.toString() + ", filename : " + name;
     }
 
-    protected static class Builder extends Item.Builder {
+    public static class Builder extends Item.Builder {
 
         protected byte[] data;
         protected String name;
 
         @Override
-        protected FileItem build() {
+        public FileItem build() {
             return new FileItem(super.ID, super.from, super.to, super.date, super.condition, data, name);
         }
 
         @Override
-        protected FileItem.Builder parse(JSONObject json) throws JSONException {
+        public FileItem.Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString("type");
             if (!(type.equals(FileItem.ITEM_TYPE.name()) || type.equals(ImageItem.ITEM_TYPE.name()))) {
@@ -196,7 +208,7 @@ public class FileItem extends Item {
          * @param data an array of byte
          * @return the builder
          */
-        protected FileItem.Builder setData(byte[] data) {
+        public FileItem.Builder setData(byte[] data) {
             this.data = data;
             return this;
         }
@@ -207,7 +219,7 @@ public class FileItem extends Item {
          * @param str a string representing bytes
          * @return the builder
          */
-        protected FileItem.Builder setData(String str) {
+        public FileItem.Builder setData(String str) {
             this.data = str.getBytes(Charset.forName("UTF-8"));
             return this;
         }
@@ -218,7 +230,7 @@ public class FileItem extends Item {
          * @param name a string
          * @return the builder
          */
-        protected FileItem.Builder setName(String name) {
+        public FileItem.Builder setName(String name) {
             this.name = name;
             return this;
         }
@@ -230,7 +242,7 @@ public class FileItem extends Item {
          * @return the builder
          * @throws IOException If there is a problem converting the file to an array of byte
          */
-        protected FileItem.Builder setFile(File f) throws IOException {
+        public FileItem.Builder setFile(File f) throws IOException {
             this.name = f.getName();
             this.data = FileUtils.toByteArray(f);
             return this;

@@ -28,6 +28,7 @@ import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
+import ch.epfl.sweng.calamar.utils.StorageManager;
 
 //TODO Support other item types
 
@@ -49,7 +50,8 @@ public class ChatActivity extends BaseActivity {
 
     private Recipient correspondent;
 
-    private SQLiteDatabaseHandler databaseHandler;
+    private StorageManager storageManager;
+    private SQLiteDatabaseHandler dbHandler;
 
     private CalamarApplication app;
 
@@ -109,16 +111,18 @@ public class ChatActivity extends BaseActivity {
                     }
                 });
 
-                itemDescription.setView(item.getView(ChatActivity.this));
+                itemDescription.setView(item.getPreView(ChatActivity.this));
 
-                itemDescription.show();
+                AlertDialog dialog = itemDescription.show();
+                storageManager.updateDialogWithItem(item, dialog);
             }
         });
 
         TextView recipient = (TextView) findViewById(R.id.recipientLabel);
         recipient.setText(correspondent.getName());
 
-        databaseHandler = app.getDatabaseHandler();
+        storageManager = app.getStorageManager();
+        dbHandler = app.getDatabaseHandler();
 
         boolean offline = true;
         refresh(offline);
@@ -137,6 +141,8 @@ public class ChatActivity extends BaseActivity {
     private void sendTextItem() {
         String message = editText.getText().toString();
         Item textMessage = new SimpleTextItem(1, app.getCurrentUser(), correspondent, new Date(), message);
+        messagesHistory.add(textMessage);
+        adapter.add(textMessage);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
         editText.setText("");
@@ -172,7 +178,7 @@ public class ChatActivity extends BaseActivity {
                 messagesHistory.add(item);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                databaseHandler.addItem(item);
+                storageManager.storeItem(item);
             } else {
                 Toast.makeText(getApplicationContext(), getString(R.string.item_send_error),
                         Toast.LENGTH_SHORT).show();
@@ -196,7 +202,7 @@ public class ChatActivity extends BaseActivity {
         @Override
         protected List<Item> doInBackground(Void... v) {
             if (offline) {
-                return databaseHandler.getItemsForContact(correspondent);
+                return dbHandler.getItemsForContact(correspondent);
             } else {
                 try {
                     return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, app.getLastItemsRefresh());
@@ -210,12 +216,14 @@ public class ChatActivity extends BaseActivity {
         @Override
         protected void onPostExecute(List<Item> items) {
             if (items != null) {
-                databaseHandler.addItems(items);
+                if (!offline) {
+                    storageManager.storeItems(items);
+                }
                 adapter.add(items);
                 messagesHistory.addAll(items);
-
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
+                storageManager.updateChatWithItems(items, adapter);
                 Toast.makeText(getApplicationContext(), R.string.chat_activity_refresh_message,
                         Toast.LENGTH_SHORT).show();
 

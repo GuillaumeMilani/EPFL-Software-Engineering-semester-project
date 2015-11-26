@@ -58,7 +58,7 @@ public final class SimpleTextItem extends Item {
     }
 
     @Override
-    protected View getItemView(Context context) {
+    public View getItemView(Context context) {
         TextView res = new TextView(context);
         res.setText(message);
         return res;
@@ -138,7 +138,7 @@ public final class SimpleTextItem extends Item {
     protected static class Builder extends Item.Builder {
         private String message = "default message";
 
-        protected Builder parse(JSONObject json) throws JSONException {
+        public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString("type");
             if (!type.equals(SimpleTextItem.ITEM_TYPE.name())) {
@@ -148,11 +148,11 @@ public final class SimpleTextItem extends Item {
             return this;
         }
 
-        protected SimpleTextItem build() {
+        public SimpleTextItem build() {
             return new SimpleTextItem(super.ID, super.from, super.to, super.date, super.condition, message);
         }
 
-        protected void setMessage(String message) {
+        public void setMessage(String message) {
             this.message = message;
         }
     }

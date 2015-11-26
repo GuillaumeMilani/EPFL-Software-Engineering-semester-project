@@ -1,5 +1,8 @@
 package ch.epfl.sweng.calamar.utils;
 
+import android.graphics.Bitmap;
+import android.media.ThumbnailUtils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -7,11 +10,15 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+import ch.epfl.sweng.calamar.item.FileItem;
+import ch.epfl.sweng.calamar.item.ImageItem;
+
 /**
  * Utilitary class used to compress and decompress byte arrays of data using the native zlib implementation of java
  */
 public class Compresser {
 
+    private static final int THUMBNAIL_SIZE = 100;
     private static final int BUFFER_SIZE = 1024;
     private static final byte HEADER_1 = 0x78;
     private static final byte HEADER_2 = (byte) 0xDA;
@@ -101,6 +108,37 @@ public class Compresser {
             return data;
         }
 
+    }
+
+    /**
+     * Compresses (or removes) data from a FileItem, to reduce the size of the database.
+     *
+     * @param f The FileItem to be compressed
+     * @return The compressed FileItem
+     */
+    public static FileItem compressDataForDatabase(FileItem f) {
+        switch (f.getType()) {
+            case FILEITEM:
+                return new FileItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), null, f.getName());
+            case IMAGEITEM:
+                return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), getDataThumbnail((ImageItem) f), f.getName());
+            default:
+                throw new IllegalArgumentException("Expected FileItem");
+        }
+    }
+
+    private static byte[] getDataThumbnail(ImageItem i) {
+        if (i.getData() == null) {
+            return null;
+        }
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        if (i.getBitmap().getWidth() <= 100 && i.getBitmap().getHeight() <= 100) {
+            i.getBitmap().compress(Bitmap.CompressFormat.PNG, 100, stream);
+        } else {
+            Bitmap thumbnail = ThumbnailUtils.extractThumbnail(i.getBitmap(), THUMBNAIL_SIZE, THUMBNAIL_SIZE);
+            thumbnail.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        }
+        return stream.toByteArray();
     }
 
     private static boolean isCompressed(byte[] data) {
