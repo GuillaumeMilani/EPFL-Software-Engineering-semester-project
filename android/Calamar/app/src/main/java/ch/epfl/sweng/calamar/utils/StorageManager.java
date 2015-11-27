@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar.utils;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -152,8 +153,8 @@ public class StorageManager {
      * @param i the item
      * @param v the ChatAdapter
      */
-    public void updateChatWithItem(Item i, ChatAdapter v) {
-        new ReadTask(v).execute(i);
+    public void updateChatWithItem(Item i, ChatAdapter v, Activity context) {
+        new ReadTask(v, context).execute(i);
     }
 
     /**
@@ -162,8 +163,8 @@ public class StorageManager {
      * @param i The item
      * @param d the dialog
      */
-    public void updateDialogWithItem(Item i, AlertDialog d) {
-        new ReadTask(d).execute(i);
+    public void updateDialogWithItem(Item i, AlertDialog d, Activity context) {
+        new ReadTask(d, context).execute(i);
     }
 
     /**
@@ -172,20 +173,23 @@ public class StorageManager {
      * @param items The list of items to update
      * @param a     the ChatAdapter
      */
-    public void updateChatWithItems(List<Item> items, ChatAdapter a) {
-        new ReadTask(a).execute(items.toArray(new Item[items.size()]));
+    public void updateChatWithItems(List<Item> items, ChatAdapter a, Activity context) {
+        new ReadTask(a, context).execute(items.toArray(new Item[items.size()]));
     }
 
     private class ReadTask extends AsyncTask<Item, Item, Void> {
         private ChatAdapter a;
+        private Activity context;
         private AlertDialog d;
 
-        public ReadTask(ChatAdapter a) {
+        public ReadTask(ChatAdapter a, Activity context) {
             this.a = a;
+            this.context = context;
         }
 
-        public ReadTask(AlertDialog d) {
+        public ReadTask(AlertDialog d, Activity context) {
             this.d = d;
+            this.context = context;
         }
 
         @Override
@@ -236,7 +240,7 @@ public class StorageManager {
         @Override
         protected void onProgressUpdate(Item... i) {
             if (d != null) {
-                d.setView(i[0].getView(app));
+                d.setView(i[0].getView(context));
             } else if (a != null) {
                 a.update(i[0]);
                 a.notifyDataSetChanged();

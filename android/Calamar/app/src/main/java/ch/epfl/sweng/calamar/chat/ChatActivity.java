@@ -117,7 +117,7 @@ public class ChatActivity extends BaseActivity {
                 itemDescription.setView(item.getPreView(ChatActivity.this));
 
                 AlertDialog dialog = itemDescription.show();
-                storageManager.updateDialogWithItem(item, dialog);
+                storageManager.updateDialogWithItem(item, dialog, ChatActivity.this);
             }
         });
 
@@ -228,7 +228,7 @@ public class ChatActivity extends BaseActivity {
                 messagesHistory.addAll(items);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                storageManager.updateChatWithItems(items, adapter);
+                storageManager.updateChatWithItems(items, adapter, ChatActivity.this);
                 Toast.makeText(context, R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();
             } else {

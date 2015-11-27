@@ -4,7 +4,6 @@ package ch.epfl.sweng.calamar.map;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -202,7 +201,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                 item.addObserver(detailsItemObserver);
 
                 AlertDialog dialog = itemDescription.show();
-                storageManager.updateDialogWithItem(item, dialog);
+                storageManager.updateDialogWithItem(item, dialog, getActivity());
 
                 return false;
             }
