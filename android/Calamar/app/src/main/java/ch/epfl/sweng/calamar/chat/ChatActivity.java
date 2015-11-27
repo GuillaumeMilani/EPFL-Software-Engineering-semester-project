@@ -26,10 +26,13 @@ import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.item.CreateItemActivity;
+import ch.epfl.sweng.calamar.item.FileItem;
+import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
+import ch.epfl.sweng.calamar.utils.StorageCallbacks;
 import ch.epfl.sweng.calamar.utils.StorageManager;
 
 //TODO Support other item types
@@ -38,7 +41,7 @@ import ch.epfl.sweng.calamar.utils.StorageManager;
  * This activity manages the chat between two users (or in a group)
  */
 
-public class ChatActivity extends BaseActivity {
+public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
     private static final String RECIPIENT_EXTRA_ID = "ID";
     private static final String RECIPIENT_EXTRA_NAME = "Name";
@@ -99,27 +102,7 @@ public class ChatActivity extends BaseActivity {
         adapter = new ChatAdapter(this, messagesHistory);
         messagesContainer.setAdapter(adapter);
 
-        messagesContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                Item item = messagesHistory.get(position);
-
-                AlertDialog.Builder itemDescription = new AlertDialog.Builder(ChatActivity.this);
-                itemDescription.setTitle(R.string.item_details_alertDialog_title);
-
-                itemDescription.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        //OK
-                    }
-                });
-
-                itemDescription.setView(item.getPreView(ChatActivity.this));
-
-                AlertDialog dialog = itemDescription.show();
-                storageManager.updateDialogWithItem(item, dialog, ChatActivity.this);
-            }
-        });
+        messagesContainer.setOnItemClickListener(new ItemClickWithStorageCallbackListener());
 
         TextView recipient = (TextView) findViewById(R.id.recipientLabel);
         recipient.setText(correspondent.getName());
@@ -179,7 +162,7 @@ public class ChatActivity extends BaseActivity {
                 messagesHistory.set(messagesHistory.indexOf(this.item), item);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                storageManager.storeItem(item);
+                storageManager.storeItem(item, ChatActivity.this);
             } else {
                 Toast.makeText(getApplicationContext(), getString(R.string.item_send_error),
                         Toast.LENGTH_SHORT).show();
@@ -198,7 +181,7 @@ public class ChatActivity extends BaseActivity {
 
         public RefreshTask(Recipient recipient, boolean offline, Activity context) {
             if (null == recipient || null == context) {
-                throw new IllegalArgumentException("ChatActivity.RefreshTask: recipient or context is null");
+                throw new IllegalArgumentException(getString(R.string.refreshtask_null));
             }
             this.context = context;
             this.recipient = recipient;
@@ -223,12 +206,11 @@ public class ChatActivity extends BaseActivity {
         protected void onPostExecute(List<Item> items) {
             if (items != null) {
                 if (!offline) {
-                    storageManager.storeItems(items);
+                    storageManager.storeItems(items, ChatActivity.this);
                 }
                 messagesHistory.addAll(items);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                storageManager.updateChatWithItems(items, adapter, ChatActivity.this);
                 Toast.makeText(context, R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();
             } else {
@@ -248,10 +230,94 @@ public class ChatActivity extends BaseActivity {
 
     }
 
+    /**
+     * Returns a copy of the messages history
+     *
+     * @return the messages history
+     */
+    public List<Item> getHistory() {
+        return new ArrayList<>(messagesHistory);
+    }
+
+    /**
+     * Updates the item in the messages history
+     *
+     * @param item the item to be updated
+     */
+    @Override
+    public void onItemRetrieved(Item item) {
+        boolean notFound = true;
+        for (int i = messagesHistory.size() - 1; i >= 0 && notFound; --i) {
+            if (item.getID() == messagesHistory.get(i).getID()) {
+                messagesHistory.set(i, item);
+                adapter.notifyDataSetChanged();
+                notFound = false;
+            }
+        }
+    }
+
+    /**
+     * Does nothing, will never ask the StorageManager for only data.
+     *
+     * @param data the data
+     */
+    @Override
+    public void onDataRetrieved(byte[] data) {
+        //Does nothing
+    }
+
     public void createItem(View v) {
         Intent intent = new Intent(this, CreateItemActivity.class);
         intent.putExtra(RECIPIENT_EXTRA_ID, correspondent.getID());
         intent.putExtra(RECIPIENT_EXTRA_NAME, correspondent.getName());
         startActivity(intent);
+    }
+
+    private class ItemClickWithStorageCallbackListener implements AdapterView.OnItemClickListener, StorageCallbacks {
+
+        private AlertDialog dialog;
+        private Item item;
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+            item = messagesHistory.get(position);
+
+            AlertDialog.Builder itemDescription = new AlertDialog.Builder(ChatActivity.this);
+            itemDescription.setTitle(R.string.item_details_alertDialog_title);
+
+            itemDescription.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    //OK
+                }
+            });
+
+            itemDescription.setView(item.getView(ChatActivity.this));
+
+            dialog = itemDescription.show();
+        }
+
+        @Override
+        public void onItemRetrieved(Item i) {
+            item = i;
+            dialog.setView(item.getView(ChatActivity.this));
+        }
+
+        @Override
+        public void onDataRetrieved(byte[] data) {
+            switch (item.getType()) {
+                case SIMPLETEXTITEM:
+                    break;
+                case FILEITEM:
+                    item = new FileItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, ((FileItem) item).getPath());
+                    break;
+                case IMAGEITEM:
+                    item = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, ((ImageItem) item).getPath());
+                    break;
+                default:
+                    throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unknown_item_type));
+            }
+            dialog.setView(item.getView(ChatActivity.this));
+        }
     }
 }

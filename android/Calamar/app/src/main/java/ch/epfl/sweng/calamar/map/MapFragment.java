@@ -37,7 +37,10 @@ import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.item.FileItem;
+import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.utils.StorageCallbacks;
 import ch.epfl.sweng.calamar.utils.StorageManager;
 
 
@@ -167,45 +170,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     public void onMapReady(GoogleMap map) {
         this.map = map;
         map.setMyLocationEnabled(true);
-        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                final Item item = itemFromMarkers.get(marker);
-
-                AlertDialog.Builder itemDescription = new AlertDialog.Builder(getActivity());
-                itemDescription.setTitle(R.string.item_details_alertDialog_title);
-
-                itemDescription.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        item.removeObserver(detailsItemObserver);
-                    }
-                });
-
-                //OnCancel is called when we press the back button.
-                itemDescription.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        item.removeObserver(detailsItemObserver);
-                    }
-                });
-
-                //Create a new view
-                detailsViewDialog = new LinearLayout(getActivity());
-                detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
-
-                detailsViewDialog.addView(item.getView(getActivity()));
-
-
-                itemDescription.setView(detailsViewDialog);
-
-                item.addObserver(detailsItemObserver);
-
-                AlertDialog dialog = itemDescription.show();
-                storageManager.updateDialogWithItem(item, dialog, getActivity());
-
-                return false;
-            }
-        });
+        map.setOnMarkerClickListener(new MarkerWithStorageCallBackListener());
         setUpGPS();
         addAllItemsInRegionToMap();
     }
@@ -353,6 +318,73 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             }
         }
 
+    }
+
+    private class MarkerWithStorageCallBackListener implements GoogleMap.OnMarkerClickListener, StorageCallbacks {
+
+        private AlertDialog dialog;
+        private Item item;
+
+        @Override
+        public boolean onMarkerClick(Marker marker) {
+            item = itemFromMarkers.get(marker);
+
+            AlertDialog.Builder itemDescription = new AlertDialog.Builder(getActivity());
+            itemDescription.setTitle(R.string.item_details_alertDialog_title);
+
+            itemDescription.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    item.removeObserver(detailsItemObserver);
+                }
+            });
+
+            //OnCancel is called when we press the back button.
+            itemDescription.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    item.removeObserver(detailsItemObserver);
+                }
+            });
+
+            //Create a new view
+            detailsViewDialog = new LinearLayout(getActivity());
+            detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
+
+            detailsViewDialog.addView(item.getView(getActivity()));
+
+
+            itemDescription.setView(detailsViewDialog);
+
+            item.addObserver(detailsItemObserver);
+
+            dialog = itemDescription.show();
+
+            return false;
+        }
+
+
+        @Override
+        public void onItemRetrieved(Item i) {
+            item = i;
+            dialog.setView(item.getView(MapFragment.this.getActivity()));
+        }
+
+        @Override
+        public void onDataRetrieved(byte[] data) {
+            switch (item.getType()) {
+                case SIMPLETEXTITEM:
+                    break;
+                case FILEITEM:
+                    item = new FileItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, ((FileItem) item).getPath());
+                    break;
+                case IMAGEITEM:
+                    item = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, ((ImageItem) item).getPath());
+                    break;
+                default:
+                    throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unknown_item_type));
+            }
+            dialog.setView(item.getView(MapFragment.this.getActivity()));
+        }
     }
 
 }

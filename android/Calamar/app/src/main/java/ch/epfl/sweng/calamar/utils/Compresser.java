@@ -120,9 +120,10 @@ public class Compresser {
     public static FileItem compressDataForDatabase(FileItem f) {
         switch (f.getType()) {
             case FILEITEM:
-                return new FileItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), null, f.getName());
+                System.out.println(Arrays.toString(f.getData()));
+                return new FileItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), null, f.getPath());
             case IMAGEITEM:
-                return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), getDataThumbnail((ImageItem) f), f.getName());
+                return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), getDataThumbnail((ImageItem) f), f.getPath());
             default:
                 throw new IllegalArgumentException("Expected FileItem");
         }

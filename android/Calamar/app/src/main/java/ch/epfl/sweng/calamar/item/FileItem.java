@@ -196,7 +196,7 @@ public class FileItem extends Item {
 
     @Override
     public String toString() {
-        return super.toString() + ", filename : " + name;
+        return super.toString() + ", filepath : " + path;
     }
 
     private static void startActivityForFile(FileItem f) {

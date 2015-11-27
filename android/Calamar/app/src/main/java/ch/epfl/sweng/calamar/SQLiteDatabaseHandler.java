@@ -393,7 +393,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
                 if (!mapIds.contains(cursor.getInt(1))) {
-                    SimpleTextItem item = (SimpleTextItem) createItem(cursor);
+                    Item item = createItem(cursor);
                     items.add(item);
                 }
                 hasNext = cursor.moveToNext();
@@ -434,7 +434,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
                 if (!mapIds.contains(cursor.getInt(1))) {
-                    SimpleTextItem item = (SimpleTextItem) createItem(cursor);
+                    Item item = createItem(cursor);
                     items.add(item);
                 }
                 hasNext = cursor.moveToNext();

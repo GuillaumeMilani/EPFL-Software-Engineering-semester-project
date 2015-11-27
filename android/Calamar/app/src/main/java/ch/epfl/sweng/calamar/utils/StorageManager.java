@@ -1,7 +1,5 @@
 package ch.epfl.sweng.calamar.utils;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
@@ -22,7 +20,6 @@ import java.util.Set;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
-import ch.epfl.sweng.calamar.chat.ChatAdapter;
 import ch.epfl.sweng.calamar.item.FileItem;
 import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.Item;
@@ -40,9 +37,9 @@ public class StorageManager {
     private static final int RETRY_TIME = 10000;
     private static final int MAX_ITER = 20;
 
-    private static final String ROOT_FOLDER_NAME = "Calamar";
-    private static final String IMAGE_FOLDER_NAME = ROOT_FOLDER_NAME + "/Images";
-    private static final String FILE_FOLDER_NAME = ROOT_FOLDER_NAME + "/Others";
+    private static final String ROOT_FOLDER_NAME = "Calamar/";
+    private static final String IMAGE_FOLDER_NAME = ROOT_FOLDER_NAME + "Images/";
+    private static final String FILE_FOLDER_NAME = ROOT_FOLDER_NAME + "Others/";
     private static final String FILENAME = "FILE_";
     private static final String IMAGENAME = "IMG_";
     private static final String NAME_SUFFIX = "_CAL";
@@ -97,10 +94,11 @@ public class StorageManager {
 
     /**
      * Adds the item to the database and possibly store it if it is a FileItem
+     * Also updates the item with his new path
      *
      * @param i The item to be stored
      */
-    public void storeItem(Item i) {
+    public void storeItem(Item i, StorageCallbacks caller) {
         switch (i.getType()) {
             case SIMPLETEXTITEM:
                 dbHandler.addItem(i);
@@ -109,7 +107,11 @@ public class StorageManager {
                 ImageItem image;
                 if (!i.getFrom().equals(app.getCurrentUser())) {
                     if (i.getCondition().getValue()) {
-                        image = (ImageItem) rePath(Compresser.compressDataForDatabase((ImageItem) i));
+                        ImageItem repathedImage = (ImageItem) rePath((ImageItem) i);
+                        if (caller != null) {
+                            caller.onItemRetrieved(repathedImage);
+                        }
+                        image = (ImageItem) Compresser.compressDataForDatabase(repathedImage);
                         app.increaseImageCount();
                         dbHandler.addItem(image);
                         storeFile((ImageItem) i);
@@ -124,7 +126,11 @@ public class StorageManager {
                 FileItem file;
                 if (!i.getFrom().equals(app.getCurrentUser())) {
                     if (i.getCondition().getValue()) {
-                        file = rePath(Compresser.compressDataForDatabase((FileItem) i));
+                        FileItem repathedFile = rePath((FileItem) i);
+                        if (caller != null) {
+                            caller.onItemRetrieved(repathedFile);
+                        }
+                        file = Compresser.compressDataForDatabase(repathedFile);
                         app.increaseFileCount();
                         dbHandler.addItem(file);
                         storeFile((FileItem) i);
@@ -146,9 +152,9 @@ public class StorageManager {
      *
      * @param items The items to be stored
      */
-    public void storeItems(List<Item> items) {
+    public void storeItems(List<Item> items, StorageCallbacks caller) {
         for (Item i : items) {
-            storeItem(i);
+            storeItem(i, caller);
         }
     }
 
@@ -157,7 +163,7 @@ public class StorageManager {
      *
      * @param item The item to delete
      */
-    public void deleteItem(Item item) {
+    public void deleteItemWithDatabase(Item item) {
         switch (item.getType()) {
             case SIMPLETEXTITEM:
                 dbHandler.deleteItem(item);
@@ -176,13 +182,64 @@ public class StorageManager {
     }
 
     /**
+     * Deletes an item without deleting it in the database
+     *
+     * @param item the item to delete
+     */
+    public void deleteItemWithoutDatabase(Item item) {
+        switch (item.getType()) {
+            case SIMPLETEXTITEM:
+                break;
+            case FILEITEM:
+                new DeleteTask((FileItem) item).execute();
+                break;
+            case IMAGEITEM:
+                new DeleteTask((ImageItem) item).execute();
+                break;
+            default:
+                throw new IllegalArgumentException(app.getString(R.string.unknown_item_type));
+        }
+    }
+
+    /**
      * Deletes the item whose ID is given (deletes also in the database)
      *
      * @param ID the id of the item to delete
      */
-    public void deleteItem(int ID) {
+    public void deleteItemWithDatabase(int ID) {
         Item item = dbHandler.getItem(ID);
-        deleteItem(item);
+        deleteItemWithDatabase(item);
+    }
+
+    /**
+     * Deletes the item whose ID is given, without deleting it in the database
+     *
+     * @param ID The id of the item to delete
+     */
+    public void deleteItemWithoutDatabase(int ID) {
+        Item item = dbHandler.getItem(ID);
+        deleteItemWithoutDatabase(item);
+    }
+
+    /**
+     * Deletes all stored items (even in database)
+     */
+    public void deleteAllItemsWithDatabase() {
+        List<Item> items = dbHandler.getAllItems();
+        for (Item i : items) {
+            deleteItemWithDatabase(i);
+        }
+        dbHandler.deleteAllItems();
+    }
+
+    /**
+     * Deletes all stored items (without deleting anything in database)
+     */
+    public void deleteAllItemsWithoutDatabase() {
+        List<Item> items = dbHandler.getAllItems();
+        for (Item i : items) {
+            deleteItemWithoutDatabase(i);
+        }
     }
 
     /**
@@ -190,9 +247,9 @@ public class StorageManager {
      *
      * @param ids the ids of the items to delete
      */
-    public void deleteItemsForIds(List<Integer> ids) {
+    public void deleteItemsForIdsWithDatabase(List<Integer> ids) {
         List<Item> toDelete = dbHandler.getItems(ids);
-        deleteItems(toDelete);
+        deleteItemsWithDatabase(toDelete);
     }
 
     /**
@@ -200,9 +257,30 @@ public class StorageManager {
      *
      * @param items the items to delete
      */
-    public void deleteItems(List<Item> items) {
+    public void deleteItemsWithDatabase(List<Item> items) {
         for (Item i : items) {
-            deleteItem(i);
+            deleteItemWithDatabase(i);
+        }
+    }
+
+    /**
+     * Deletes all items whose id is in the list without deleting them in the database
+     *
+     * @param ids the ids of the items to delete
+     */
+    public void deleteItemsForIdsWithoutDatabase(List<Integer> ids) {
+        List<Item> toDelete = dbHandler.getItems(ids);
+        deleteItemsWithoutDatabase(toDelete);
+    }
+
+    /**
+     * Deletes all items given in the list without deleting them in the database
+     *
+     * @param items the items to delete
+     */
+    public void deleteItemsWithoutDatabase(List<Item> items) {
+        for (Item i : items) {
+            deleteItemWithoutDatabase(i);
         }
     }
 
@@ -233,112 +311,97 @@ public class StorageManager {
         }
     }
 
-
     /**
-     * Updates the ChatAdapter with the potential full data when retrieved.
+     * Returns the complete Item (with complete data) for a given Item
      *
-     * @param i the item
-     * @param v the ChatAdapter
+     * @param i      The item
+     * @param caller The Activity who called this method
      */
-    public void updateChatWithItem(Item i, ChatAdapter v, Activity context) {
-        new UpdateViewTask(v, context).execute(i);
-    }
-
-    /**
-     * Updates the dialog with the full data of the item.
-     *
-     * @param i The item
-     * @param d the dialog
-     */
-    public void updateDialogWithItem(Item i, AlertDialog d, Activity context) {
-        new UpdateViewTask(d, context).execute(i);
-    }
-
-    /**
-     * Updates the ChatAdapter with the full data of the items.
-     *
-     * @param items The list of items to update
-     * @param a     the ChatAdapter
-     */
-    public void updateChatWithItems(List<Item> items, ChatAdapter a, Activity context) {
-        new UpdateViewTask(a, context).execute(items.toArray(new Item[items.size()]));
-    }
-
-    /**
-     * Task which updates an AlertDialog or ChatAdapter, depending on the argument in the constructor
-     * Tries to read only once.
-     */
-    private class UpdateViewTask extends AsyncTask<Item, Item, Void> {
-        private ChatAdapter a;
-        private Activity context;
-        private AlertDialog d;
-
-        public UpdateViewTask(ChatAdapter a, Activity context) {
-            this.a = a;
-            this.context = context;
+    public void getCompleteItem(Item i, StorageCallbacks caller) {
+        if (i != null) {
+            switch (i.getType()) {
+                case SIMPLETEXTITEM:
+                    caller.onItemRetrieved(i);
+                case FILEITEM:
+                    new ReadTask((FileItem) i, ((FileItem) i).getPath(), caller).execute();
+                    break;
+                case IMAGEITEM:
+                    new ReadTask((ImageItem) i, ((ImageItem) i).getPath(), caller).execute();
+                    break;
+                default:
+                    throw new IllegalArgumentException(app.getString(R.string.unknown_item_type));
+            }
         }
+    }
 
-        public UpdateViewTask(AlertDialog d, Activity context) {
-            this.d = d;
-            this.context = context;
+    /**
+     * Returns the complete Item (with complete Data) for a given ID
+     *
+     * @param ID     The id of the item
+     * @param caller The Activity who called this method
+     */
+    public void getCompleteItem(int ID, StorageCallbacks caller) {
+        Item i = dbHandler.getItem(ID);
+        getCompleteItem(i, caller);
+    }
+
+    /**
+     * Returns the data of the file given by the path
+     *
+     * @param path   The path of the file
+     * @param caller The Activity who called this method
+     */
+    public void getData(String path, StorageCallbacks caller) {
+        new ReadTask(null, path, caller);
+    }
+
+    /**
+     * Called when ReadTask has finished
+     *
+     * @param i      The FileItem (if null, callbacks OnDataRetrieved, else OnItemRetrieved)
+     * @param data   The data retrieved
+     * @param caller The Activity who asked for reading
+     */
+    private void onDataRetrieved(FileItem i, byte[] data, StorageCallbacks caller) {
+        if (i == null) {
+            caller.onDataRetrieved(data);
+        } else {
+            switch (i.getType()) {
+                case FILEITEM:
+                    caller.onItemRetrieved(new FileItem(i.getID(), i.getFrom(), i.getTo(), i.getDate(), i.getCondition(), data, i.getPath()));
+                    break;
+                case IMAGEITEM:
+                    caller.onItemRetrieved(new ImageItem(i.getID(), i.getFrom(), i.getTo(), i.getDate(), i.getCondition(), data, i.getPath()));
+                    break;
+                default:
+                    throw new IllegalArgumentException(app.getString(R.string.expected_fileitem));
+            }
+        }
+    }
+
+    /**
+     * The task whose job is to retrieve data from storage and return it
+     */
+    private class ReadTask extends AsyncTask<Void, Void, byte[]> {
+
+        private final FileItem f;
+        private final String path;
+        private final StorageCallbacks caller;
+
+        public ReadTask(FileItem f, String path, StorageCallbacks caller) {
+            this.f = f;
+            this.path = path;
+            this.caller = caller;
         }
 
         @Override
-        protected Void doInBackground(Item... params) {
-            for (Item i : params) {
-                if (i != null) {
-                    switch (i.getType()) {
-                        case SIMPLETEXTITEM:
-                            break;
-                        case FILEITEM:
-                            String filePath = ((FileItem) i).getPath();
-                            byte[] fileData = getData((FileItem) i);
-                            if (fileData != null) {
-                                FileItem.Builder fileBuilder = new FileItem.Builder();
-                                fileBuilder.setID(i.getID());
-                                fileBuilder.setFrom(i.getFrom());
-                                fileBuilder.setTo(i.getTo());
-                                fileBuilder.setDate(i.getDate());
-                                fileBuilder.setCondition(i.getCondition());
-                                fileBuilder.setPath(filePath);
-                                fileBuilder.setData(fileData);
-                                publishProgress(fileBuilder.build());
-                            }
-                            break;
-                        case IMAGEITEM:
-                            String imagePath = ((ImageItem) i).getPath();
-                            byte[] imageData = getData((ImageItem) i);
-                            if (imageData != null) {
-                                ImageItem.Builder imageBuilder = new ImageItem.Builder();
-                                imageBuilder.setID(i.getID());
-                                imageBuilder.setFrom(i.getFrom());
-                                imageBuilder.setTo(i.getTo());
-                                imageBuilder.setDate(i.getDate());
-                                imageBuilder.setCondition(i.getCondition());
-                                imageBuilder.setPath(imagePath);
-                                imageBuilder.setData(imageData);
-                                publishProgress(imageBuilder.build());
-                            }
-                            break;
-                        default:
-                            throw new IllegalArgumentException(app.getString(R.string.unknown_item_type));
-                    }
-                }
-            }
-            return null;
+        protected byte[] doInBackground(Void... params) {
+            return getData(path);
         }
 
         @Override
-        protected void onProgressUpdate(Item... i) {
-            if (d != null) {
-                d.setView(i[0].getView(context));
-            } else if (a != null) {
-                a.update(i[0]);
-                a.notifyDataSetChanged();
-            } else {
-                //The adapter or dialog has been destroyed
-                this.cancel(true);
-            }
+        protected void onPostExecute(byte[] data) {
+            onDataRetrieved(f, data, caller);
         }
     }
 
@@ -349,37 +412,31 @@ public class StorageManager {
      * @return The data
      */
     private byte[] getData(FileItem f) {
+        switch (f.getType()) {
+            case FILEITEM:
+                return getData(f.getPath());
+            case IMAGEITEM:
+                return getData(f.getPath());
+            default:
+                throw new IllegalArgumentException(app.getString(R.string.expected_fileitem));
+        }
+    }
+
+
+    private byte[] getData(String path) {
         if (isExternalStorageReadable()) {
-            switch (f.getType()) {
-                case FILEITEM:
-                    File file = new File(f.getPath());
-                    if (!file.exists()) {
-                        return null;
-                    } else {
-                        try {
-                            return FileUtils.toByteArray(file);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                case IMAGEITEM:
-                    File image = new File(f.getPath());
-                    if (!image.exists()) {
-                        return null;
-                    } else {
-                        try {
-                            return FileUtils.toByteArray(image);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                default:
-                    throw new IllegalArgumentException(app.getString(R.string.expected_fileitem));
+            File file = new File(path);
+            if (file.exists()) {
+                try {
+                    return FileUtils.toByteArray(file);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         } else {
             showStorageStateToast();
-            return null;
         }
+        return null;
     }
 
     /**
@@ -388,10 +445,12 @@ public class StorageManager {
      * @param f the FileItem to store
      */
     private void storeFile(FileItem f) {
-        WritingTask task = new WritingTask(f, 0);
-        currentWritingTasks.add(task);
-        currentFilesID.add(f.getID());
-        task.execute();
+        if (f.getData().length != 0) {
+            WritingTask task = new WritingTask(f, 0);
+            currentWritingTasks.add(task);
+            currentFilesID.add(f.getID());
+            task.execute();
+        }
     }
 
     /**
@@ -472,7 +531,7 @@ public class StorageManager {
      * @return the String, used in rePath
      */
     private String formatDate() {
-        return calendar.get(Calendar.DAY_OF_MONTH) + "" + calendar.get(Calendar.MONTH) + "" + calendar.get(Calendar.YEAR);
+        return calendar.get(Calendar.DAY_OF_MONTH) + "" + (calendar.get(Calendar.MONTH) + 1) + "" + calendar.get(Calendar.YEAR);
     }
 
     /**

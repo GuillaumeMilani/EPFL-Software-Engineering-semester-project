@@ -256,7 +256,7 @@ public class CreateItemActivity extends BaseActivity {
         @Override
         protected void onPostExecute(Item item) {
             if (item != null) {
-                CalamarApplication.getInstance().getStorageManager().storeItem(item);
+                CalamarApplication.getInstance().getStorageManager().storeItem(item, null);
                 Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getApplicationContext(), getString(R.string.item_send_error),

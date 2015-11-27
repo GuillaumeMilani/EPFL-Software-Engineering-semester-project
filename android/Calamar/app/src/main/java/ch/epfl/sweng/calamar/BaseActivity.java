@@ -16,9 +16,11 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
 import ch.epfl.sweng.calamar.item.CreateItemActivity;
+import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.push.RegistrationIntentService;
+import ch.epfl.sweng.calamar.utils.StorageCallbacks;
 
-public class BaseActivity extends AppCompatActivity
+public abstract class BaseActivity extends AppCompatActivity
         implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private CalamarApplication app;
 
@@ -63,8 +65,7 @@ public class BaseActivity extends AppCompatActivity
         GoogleApiClient googleApiClient = app.getGoogleApiClient();
         if (!resolvingError &&
                 !googleApiClient.isConnected() &&
-                !googleApiClient.isConnecting())
-        {
+                !googleApiClient.isConnecting()) {
             googleApiClient.connect();
             // if errors, such as no google play apk, onConnectionFailed will handle the errors
         }
@@ -79,7 +80,7 @@ public class BaseActivity extends AppCompatActivity
     @Override
     protected void onStop() {
         GoogleApiClient googleApiClient = app.getGoogleApiClient();
-        if(googleApiClient.isConnected()) {
+        if (googleApiClient.isConnected()) {
             googleApiClient.disconnect();
         }
         super.onStop();
@@ -221,4 +222,5 @@ public class BaseActivity extends AppCompatActivity
         Intent intent = new Intent(this, CreateItemActivity.class);
         startActivity(intent);
     }
+
 }

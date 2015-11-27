@@ -63,4 +63,5 @@
     <string name="error_directory_creation">Couldn\'t create directory</string>
     <string name="error_file_creation">Couldn\'t write %s file to storage</string>
     <string name="error_image_creation">Couldn\'t write %s image to storage</string>
+    <string name="refreshtask_null">ChatActivity.RefreshTask: recipient or context is null</string>
 </resources>
