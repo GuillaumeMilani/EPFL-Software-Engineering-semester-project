@@ -123,7 +123,7 @@ public abstract class Item {
         final LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
 
-        if (message != "") {
+        if (!message.equals("")) {
             TextView text = new TextView(context);
             text.setText(message);
             view.addView(text, 0);
