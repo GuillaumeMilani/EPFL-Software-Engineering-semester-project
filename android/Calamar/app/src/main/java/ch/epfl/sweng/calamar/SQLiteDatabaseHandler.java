@@ -878,7 +878,10 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         if (item.getType() == Item.Type.SIMPLETEXTITEM) {
             values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());
         } else if (item.getType() == Item.Type.FILEITEM || item.getType() == Item.Type.IMAGEITEM) {
-            values.put(ITEMS_KEY_DATA, ((FileItem) item).getData());
+            byte[] data = ((FileItem) item).getData();
+            if (data.length != 0) {
+                values.put(ITEMS_KEY_DATA, ((FileItem) item).getData());
+            }
             values.put(ITEMS_KEY_PATH, ((FileItem) item).getPath());
         } else {
             throw new IllegalArgumentException("Unknown item type");
@@ -906,6 +909,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         String text = cursor.getString(6);
         byte[] data = cursor.getBlob(7);
         String path = cursor.getString(8);
+        System.out.println(id + " " + from + " " + to + " " + time.toString() + " " + condition + " " + text + " " + data + " " + path);
         switch (type) {
             case SIMPLETEXTITEM:
                 return new SimpleTextItem(id, from, to, time, condition, text);

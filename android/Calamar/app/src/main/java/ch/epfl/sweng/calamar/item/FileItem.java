@@ -59,8 +59,8 @@ public class FileItem extends Item {
         }
         final int idx = path.lastIndexOf('/');
         if (idx == -1) {
-            this.path = '/' + path;
             this.name = path;
+            this.path = '/' + path;
             Log.d("Path", "Bad path of file : " + path);
         } else {
             this.path = path;

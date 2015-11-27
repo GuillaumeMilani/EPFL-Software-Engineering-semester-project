@@ -120,7 +120,7 @@ public class Compresser {
     public static FileItem compressDataForDatabase(FileItem f) {
         switch (f.getType()) {
             case FILEITEM:
-                System.out.println(Arrays.toString(f.getData()));
+                System.out.println("COMPRESSER PATH :" + f.getPath());
                 return new FileItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), null, f.getPath());
             case IMAGEITEM:
                 return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), getDataThumbnail((ImageItem) f), f.getPath());

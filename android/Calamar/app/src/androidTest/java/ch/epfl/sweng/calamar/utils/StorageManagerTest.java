@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -65,8 +64,8 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
     public void setUp() {
         app = CalamarApplication.getInstance();
         app.resetPreferences();
-        dbHandler.deleteAllRecipients();
         storageManager.deleteAllItemsWithDatabase();
+        dbHandler.deleteAllRecipients();
     }
 
     @Test
@@ -137,8 +136,6 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                final File filePath = Environment.getExternalStoragePublicDirectory(FILE_FOLDER_NAME);
-                final File imagePath = Environment.getExternalStoragePublicDirectory(IMAGE_FOLDER_NAME);
                 final ImageItem item = new ImageItem(0, testUser, testRecipient, new Date(), fc, null, f1.getAbsolutePath());
                 final FileItem item2 = new FileItem(1, testUser, testRecipient, new Date(), fc, null, f2.getAbsolutePath());
                 final ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
@@ -208,12 +205,10 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
                 final FileItem item3After = new FileItem(item3.getID(), item3.getFrom(), item3.getTo(),
                         item3.getDate(), item3.getCondition(), null, filePath.toString() + '/' + FILENAME + formatDate() + NAME_SUFFIX + '0');
                 final FileItem item4After = new FileItem(item4.getID(), item4.getFrom(), item4.getTo(),
-                        item4.getDate(), item4.getCondition(), item4.getData(), '/' + item4.getPath());
+                        item4.getDate(), item4.getCondition(), null, item4.getPath());
                 assertEquals(allItems.size(), 4);
                 assertEquals(allItems.get(0), itemAfter);
                 assertEquals(allItems.get(1), item2After);
-                System.out.println(Arrays.toString(((FileItem) allItems.get(2)).getData()));
-                System.out.println(Arrays.toString(item3After.getData()));
                 assertEquals(allItems.get(2), item3After);
                 assertEquals(allItems.get(3), item4After);
             }
