@@ -53,4 +53,14 @@
     <string name="item_details_from">From : </string>
     <string name="item_details_to">To : </string>
     <string name="unable_to_create_item">unable to create and send item</string>
+    <string name="error_file_deletion">Couldn\'t delete file</string>
+    <string name="unknown_item_type">Unknown item type</string>
+    <string name="expected_fileitem">Expected FileItem</string>
+    <string name="error_media_unmounted">Storage inaccessible, please mount the storage.</string>
+    <string name="error_media_shared">Storage inaccessible, please disconnect your phone from any connected usb device.</string>
+    <string name="error_media_unmountable">Storage inaccessible, storage is probably corrupted.</string>
+    <string name="error_media_generic">Storage inaccessible, please check that your storage is usable and mounted.</string>
+    <string name="error_directory_creation">Couldn\'t create directory</string>
+    <string name="error_file_creation">Couldn\'t write %s file to storage</string>
+    <string name="error_image_creation">Couldn\'t write %s image to storage</string>
 </resources>

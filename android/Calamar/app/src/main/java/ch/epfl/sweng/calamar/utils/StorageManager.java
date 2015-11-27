@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
 import ch.epfl.sweng.calamar.chat.ChatAdapter;
 import ch.epfl.sweng.calamar.item.FileItem;
@@ -131,7 +132,7 @@ public class StorageManager {
                 }
                 break;
             default:
-                throw new IllegalArgumentException("Unknown Item type");
+                throw new IllegalArgumentException(app.getString(R.string.unknown_item_type));
         }
 
     }
@@ -146,6 +147,88 @@ public class StorageManager {
             storeItem(i);
         }
     }
+
+    /**
+     * Deletes the item given as argument (deletes also in the database)
+     *
+     * @param item The item to delete
+     */
+    public void deleteItem(Item item) {
+        switch (item.getType()) {
+            case SIMPLETEXTITEM:
+                dbHandler.deleteItem(item);
+                break;
+            case FILEITEM:
+                new DeleteTask((FileItem) item).execute();
+                dbHandler.deleteItem(item);
+                break;
+            case IMAGEITEM:
+                new DeleteTask((ImageItem) item).execute();
+                dbHandler.deleteItem(item);
+                break;
+            default:
+                throw new IllegalArgumentException(app.getString(R.string.unknown_item_type));
+        }
+    }
+
+    /**
+     * Deletes the item whose ID is given (deletes also in the database)
+     *
+     * @param ID the id of the item to delete
+     */
+    public void deleteItem(int ID) {
+        Item item = dbHandler.getItem(ID);
+        deleteItem(item);
+    }
+
+    /**
+     * Deletes all items whose id is in the list (deletes also in the database)
+     *
+     * @param ids the ids of the items to delete
+     */
+    public void deleteItemsForIds(List<Integer> ids) {
+        List<Item> toDelete = dbHandler.getItems(ids);
+        deleteItems(toDelete);
+    }
+
+    /**
+     * Deletes all items given in the list (deletes also in the database)
+     *
+     * @param items the items to delete
+     */
+    public void deleteItems(List<Item> items) {
+        for (Item i : items) {
+            deleteItem(i);
+        }
+    }
+
+    /**
+     * Task which deletes the FileItem given to the constructor
+     */
+    private class DeleteTask extends AsyncTask<Void, Void, Void> {
+
+        private final FileItem f;
+
+        public DeleteTask(FileItem f) {
+            this.f = f;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            if (isExternalStorageWritable()) {
+                File file = new File(f.getPath());
+                if (file.exists()) {
+                    if (!file.delete()) {
+                        Toast.makeText(CalamarApplication.getInstance(), R.string.error_file_deletion, Toast.LENGTH_SHORT).show();
+                    }
+                }
+            } else {
+                showStorageStateToast();
+            }
+            return null;
+        }
+    }
+
 
     /**
      * Updates the ChatAdapter with the potential full data when retrieved.
@@ -230,7 +313,7 @@ public class StorageManager {
                             }
                             break;
                         default:
-                            throw new IllegalArgumentException("Unknown item type");
+                            throw new IllegalArgumentException(app.getString(R.string.unknown_item_type));
                     }
                 }
             }
@@ -277,7 +360,7 @@ public class StorageManager {
                         }
                     }
                 default:
-                    throw new IllegalArgumentException("Expected FileItem");
+                    throw new IllegalArgumentException(app.getString(R.string.expected_fileitem));
             }
         } else {
             showStorageStateToast();
@@ -295,19 +378,15 @@ public class StorageManager {
     private void showStorageStateToast() {
         switch (Environment.getExternalStorageState()) {
             case Environment.MEDIA_UNMOUNTED:
-                Toast.makeText(app, "Storage inaccessible, please mount" +
-                        "the storage.", Toast.LENGTH_LONG).show();
+                Toast.makeText(app, R.string.error_media_unmounted, Toast.LENGTH_LONG).show();
             case Environment.MEDIA_SHARED:
-                Toast.makeText(app, "Storage inaccessible, please " +
-                        "disconnect your phone from any connected usb device.", Toast.LENGTH_LONG).show();
+                Toast.makeText(app, R.string.error_media_shared, Toast.LENGTH_LONG).show();
                 break;
             case Environment.MEDIA_UNMOUNTABLE:
-                Toast.makeText(app, "Storage inaccessible, storage is " +
-                        "probably corrupted.", Toast.LENGTH_LONG).show();
+                Toast.makeText(app, R.string.error_media_unmountable, Toast.LENGTH_LONG).show();
                 break;
             default:
-                Toast.makeText(app, "Storage inaccessible, please check" +
-                        "that your storage is usable and mounted.", Toast.LENGTH_LONG).show();
+                Toast.makeText(app, R.string.error_media_generic, Toast.LENGTH_LONG).show();
                 break;
         }
     }
@@ -348,7 +427,7 @@ public class StorageManager {
                 File imagePath = Environment.getExternalStoragePublicDirectory(IMAGE_FOLDER_NAME);
                 return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), f.getData(), imagePath.getAbsolutePath() + '/' + IMAGENAME + "" + formatDate() + NAME_SUFFIX + app.getTodayImageCount());
             default:
-                throw new IllegalArgumentException("Expected FileItem");
+                throw new IllegalArgumentException(app.getString(R.string.expected_fileitem));
         }
     }
 
@@ -385,12 +464,11 @@ public class StorageManager {
                                     writeFile(f, filePath);
                                     return true;
                                 } catch (IOException e) {
-                                    Toast.makeText(app, "Couldn't write file "
-                                            + f.getName() + " to storage.", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(app, app.getString(R.string.error_file_creation, f.getName()), Toast.LENGTH_SHORT).show();
                                     return false;
                                 }
                             } else {
-                                Toast.makeText(app, "Couldn't create directory", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(app, R.string.error_directory_creation, Toast.LENGTH_SHORT).show();
                                 return false;
                             }
                         }
@@ -398,8 +476,7 @@ public class StorageManager {
                             writeFile(f, filePath);
                             return true;
                         } catch (IOException e) {
-                            Toast.makeText(app, "Couldn't write file "
-                                    + f.getName() + " to storage.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(app, app.getString(R.string.error_file_creation, f.getName()), Toast.LENGTH_SHORT).show();
                             return false;
                         }
                     case IMAGEITEM:
@@ -410,12 +487,11 @@ public class StorageManager {
                                     writeFile(f, imagePath);
                                     return true;
                                 } catch (IOException e) {
-                                    Toast.makeText(app, "Couldn't write image "
-                                            + f.getName() + " to storage.", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(app, app.getString(R.string.error_image_creation, f.getName()), Toast.LENGTH_SHORT).show();
                                     return false;
                                 }
                             } else {
-                                Toast.makeText(app, "Couldn't create directory", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(app, R.string.error_directory_creation, Toast.LENGTH_SHORT).show();
                                 return false;
                             }
                         } else {
@@ -423,14 +499,13 @@ public class StorageManager {
                                 writeFile(f, imagePath);
                                 return true;
                             } catch (IOException e) {
-                                Toast.makeText(app, "Couldn't write image "
-                                        + f.getName() + " to storage.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(app, app.getString(R.string.error_image_creation, f.getName()), Toast.LENGTH_SHORT).show();
                                 return false;
                             }
                         }
 
                     default:
-                        throw new IllegalArgumentException("Expected FileItem");
+                        throw new IllegalArgumentException(app.getString(R.string.expected_fileitem));
                 }
             }
             return false;
