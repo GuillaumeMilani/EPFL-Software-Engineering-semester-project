@@ -108,22 +108,23 @@ public class ChatUsersListActivity extends BaseActivity {
      */
     private void setActualUser() {
         //TODO : Remove when you use a real device.
-        app.setCurrentUserID(11);
-        app.setCurrentUserName("calamaremulator@gmail.com");
-        //app.resetPreferences();
+            app.setCurrentUserID(11);
+            app.setCurrentUserName("calamaremulator@gmail.com");
+            //app.resetPreferences();
 
-        /*
-        if (app.getCurrentUserID() == -1) {
-            String name = null;
-            //Get google account email
-            AccountManager manager = AccountManager.get(this);
-            Account[] list = manager.getAccountsByType("com.google");
-            if (list.length > 0) {
-                name = list[0].name;
-            }
-            new createNewUserTask(name, this).execute();
-        }*/
-        actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
+            /*
+            if (app.getCurrentUserID() == -1) {
+                String name = null;
+                //Get google account email
+                AccountManager manager = AccountManager.get(this);
+                Account[] list = manager.getAccountsByType("com.google");
+                if (list.length > 0) {
+                    name = list[0].name;
+                }
+                new createNewUserTask(name, this).execute();
+            }*/
+
+            actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
     }
 
     private void getContacts() {
