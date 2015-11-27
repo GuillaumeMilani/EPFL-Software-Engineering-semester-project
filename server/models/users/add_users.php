@@ -12,13 +12,26 @@ function add_recipient($name,$deviceID)
 	
 	if(checkEmail($name) == false)
 	{
-		 throw new Exception('Wrong name');
+		 throw new Exception('Wrong name :'.$name);
 	}
 	
 	if(!checkdeviceID($deviceID))
 	{
-		 throw new Exception('Wrong device ID');
+		 throw new Exception('Wrong device ID : '.$deviceID);
 	}
+	
+	// check if user already exist
+	try {
+		$response = retrieve_user($name);
+		$id = $response['user']['ID'];
+		return array('ID' => $id);
+	} catch (Exception $e) {
+	    // user doesn't exist
+	    // continue
+	}
+	
+	
+	//TODO check how to do for group
 	$query = $pdo->prepare('INSERT INTO `tb_recipient` (`name`) VALUES(NULL)');
 	
 	if($query->execute() == true)
@@ -27,7 +40,7 @@ function add_recipient($name,$deviceID)
 	}
 	else
 	{
-		 throw new Exception("Query wasn't executed");
+		 throw new Exception("Query wasn't executed into top table");
 	}
 
 }
@@ -51,6 +64,6 @@ function add_recipientUser($ID,$name,$devID)
 	}
 	else
 	{
-		throw new Exception("Query wasn't executed");
+		throw new Exception("Query wasn't executed into user table");
 	}
 }

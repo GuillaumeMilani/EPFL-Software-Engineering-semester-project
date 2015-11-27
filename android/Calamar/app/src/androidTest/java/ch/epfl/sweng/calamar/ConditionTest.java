@@ -1,6 +1,5 @@
 package ch.epfl.sweng.calamar;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -8,10 +7,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import ch.epfl.sweng.calamar.condition.Condition;
-import ch.epfl.sweng.calamar.condition.PositionCondition;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
 /**
  * Created by pierre on 11/6/15.

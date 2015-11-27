@@ -1,5 +1,7 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
@@ -18,6 +20,7 @@ import android.widget.Toast;
 import com.ipaulpro.afilechooser.utils.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -40,7 +43,9 @@ public class CreateItemActivity extends BaseActivity {
     private static final int PICK_FILE_REQUEST = 1;
     private static final String RECIPIENT_EXTRA_ID = "ID";
     private static final String RECIPIENT_EXTRA_NAME = "Name";
+
     private static final String TAG = CreateItemActivity.class.getSimpleName();
+
     private Set<String> imageExt;
     private Spinner contactsSpinner;
     private CheckBox privateCheck;
@@ -52,6 +57,7 @@ public class CreateItemActivity extends BaseActivity {
     private RadioGroup timeGroup;
     private CheckBox timeCheck;
     private Button browseButton;
+    private Button sendButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +91,26 @@ public class CreateItemActivity extends BaseActivity {
             contactsSpinner.setSelection(contacts.indexOf(new User(id, name)));
         }
         browseButton = (Button) findViewById(R.id.selectFileButton);
+        sendButton = (Button) findViewById(R.id.createButton);
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    createAndSend();
+                } catch (IOException e) {
+                    // TODO untested code, simulate IOException
+                    Log.e(CreateItemActivity.TAG, e.getMessage());
+                    AlertDialog.Builder newUserAlert = new AlertDialog.Builder(CreateItemActivity.this);
+                    newUserAlert.setTitle(R.string.unable_to_create_item);
+                    newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            //OK
+                        }
+                    });
+                    newUserAlert.show();
+                }
+            }
+        });
 
         final String[] imgExt = {"png", "PNG", "jpg", "jpeg", "JPG", "JPEG", "bmp", "BMP"};
         imageExt = new HashSet<>(Arrays.asList(imgExt));
@@ -124,13 +150,25 @@ public class CreateItemActivity extends BaseActivity {
     }
 
     public void locationChecked(View v) {
-        // TODO timing exception, client may not be connected,
-        // similar problem can arise at multiple place, we need
-        // to design kind of protocol between the callbacks, to wait/disable UI/ re iterate action
-        // ...etc ...or any other clever idea....
-        GPSProvider.getInstance().startLocationUpdates(this);
-        currentLocation = GPSProvider.getInstance().getLastLocation();
-        GPSProvider.getInstance().stopLocationUpdates();
+        final GPSProvider gpsProvider = GPSProvider.getInstance();
+        gpsProvider.startLocationUpdates(this);
+        sendButton.setEnabled(false);
+
+        // TODO show "sablier" + test
+
+        gpsProvider.addObserver(new GPSProvider.Observer() {
+            @Override
+            public void update(Location newLocation) {
+                currentLocation = newLocation;
+                sendButton.setEnabled(true);
+                gpsProvider.removeObserver(this);
+                // TODO ConcurrentModificationException
+                // because set modified during notify iteration
+                // normally solved now, but wait and see
+                GPSProvider.getInstance().stopLocationUpdates();
+            }
+        });
+
     }
 
     public void privateChecked(View v) {
@@ -149,17 +187,16 @@ public class CreateItemActivity extends BaseActivity {
         }
     }
 
-    public void createAndSend(View v) {
+    private void createAndSend() throws IOException {
         Item.Builder toSendBuilder;
         if (file != null) {
             String name = file.getName();
             int extIndex = name.lastIndexOf('.');
             String ext = extIndex > 0 ? name.substring(extIndex + 1) : "";
             if (imageExt.contains(ext)) {
-                toSendBuilder = new ImageItem.Builder().setImage(file);
+                toSendBuilder = new ImageItem.Builder().setFile(file);
             } else {
-                Toast.makeText(this, R.string.create_item_select_type_file, Toast.LENGTH_SHORT).show();
-                return;
+                toSendBuilder = new FileItem.Builder().setFile(file);
             }
         } else {
             toSendBuilder = new SimpleTextItem.Builder();
@@ -174,11 +211,16 @@ public class CreateItemActivity extends BaseActivity {
             }
         }
         if (privateCheck.isChecked()) {
-            Recipient to = contacts.get(contactsSpinner.getSelectedItemPosition());
-            toSendBuilder.setTo(to);
+            // TODO clean this..........
+            int contactPosition = contactsSpinner.getSelectedItemPosition();
+            if (contactPosition != -1) {
+                Recipient to = contacts.get(contactsSpinner.getSelectedItemPosition());
+                toSendBuilder.setTo(to);
+            } else {
+                toSendBuilder.setTo(new User(User.PUBLIC_ID, User.PUBLIC_NAME));
+            }
         } else {
-            //TODO Public = null ? Not allowed by Item constructor at the moment
-            toSendBuilder.setTo(new User(0, "public"));
+            toSendBuilder.setTo(new User(User.PUBLIC_ID, User.PUBLIC_NAME));
         }
         if (locationCheck.isChecked()) {
             toSendBuilder.setCondition(new PositionCondition(currentLocation));

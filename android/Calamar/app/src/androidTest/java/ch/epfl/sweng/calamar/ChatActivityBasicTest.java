@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar;
 
+import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.ActivityInstrumentationTestCase2;
@@ -21,6 +22,7 @@ import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.not;
 
 /**
  * Test for the chat activity
@@ -102,6 +104,32 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
         onView(withId(R.id.messageEdit)).perform(typeText("Hello Alice !"));
         onView(withId(R.id.chatSendButton)).perform(click());
         assertEquals(list.getCount(), before + 1);
+        onView(withText("Hello Alice !")).check(matches(ViewMatchers.isDisplayed()));
     }
 
+    /**
+     * Test that the message is displayed when we send a new one.
+     */
+    @Test
+    public void testContentOfMessageLockedIsNotDisplayed() {
+        onView(withId(R.id.refreshButton)).perform(click());
+        onView(withText("You have to fill the conditions to see the message !")).check(matches(ViewMatchers.isDisplayed()));
+    }
+
+    /**
+     * Test that item details are shown when we click on a message.
+     */
+    @Test
+    public void testItemDetailsAreShownAndCanBeRemoved() {
+        onView(withId(R.id.refreshButton)).perform(click());
+        onView(withText("Hello Bob, it's Alice !")).perform(click());
+
+        // We test the content of the view in ItemsDetailsTests
+
+        //If we can click on OK, the dialog is displayed !
+        onView(withText("Item description")).check(matches(ViewMatchers.isDisplayed()));
+
+        onView(withText("OK")).perform(click());
+        not(onView(withText("Item description")));
+    }
 }

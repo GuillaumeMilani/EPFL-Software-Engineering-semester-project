@@ -1,9 +1,14 @@
 package ch.epfl.sweng.calamar.chat;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -36,6 +41,8 @@ public class ChatActivity extends BaseActivity {
 
     private static final String RECIPIENT_EXTRA_ID = "ID";
     private static final String RECIPIENT_EXTRA_NAME = "Name";
+    private static final String TAG = ChatActivity.class.getSimpleName();
+
 
     private EditText editText;
     private Button sendButton;
@@ -50,7 +57,6 @@ public class ChatActivity extends BaseActivity {
 
     private CalamarApplication app;
 
-    private final String TAG = ChatActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +97,27 @@ public class ChatActivity extends BaseActivity {
         adapter = new ChatAdapter(this, messagesHistory);
         messagesContainer.setAdapter(adapter);
 
+        messagesContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                Item item = messagesHistory.get(position);
+
+                AlertDialog.Builder itemDescription = new AlertDialog.Builder(ChatActivity.this);
+                itemDescription.setTitle(R.string.item_details_alertDialog_title);
+
+                itemDescription.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        //OK
+                    }
+                });
+
+                itemDescription.setView(item.getView(ChatActivity.this));
+
+                itemDescription.show();
+            }
+        });
+
         TextView recipient = (TextView) findViewById(R.id.recipientLabel);
         recipient.setText(correspondent.getName());
 
@@ -104,7 +131,7 @@ public class ChatActivity extends BaseActivity {
      * Gets all messages and display them
      */
     private void refresh(boolean offline) {
-        new RefreshTask(app.getCurrentUser(), offline).execute();
+        new RefreshTask(app.getCurrentUser(), offline, this).execute();
     }
 
     /**
@@ -136,7 +163,7 @@ public class ChatActivity extends BaseActivity {
             try {
                 return DatabaseClientLocator.getDatabaseClient().send(item);
             } catch (DatabaseClientException e) {
-                e.printStackTrace();
+                Log.e(ChatActivity.TAG, e.getMessage());
                 return null;
             }
         }
@@ -145,6 +172,7 @@ public class ChatActivity extends BaseActivity {
         protected void onPostExecute(Item item) {
             if (item != null) {
                 adapter.add(item);
+                messagesHistory.add(item);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 databaseHandler.addItem(item);
@@ -162,8 +190,13 @@ public class ChatActivity extends BaseActivity {
 
         private final Recipient recipient;
         private final boolean offline;
+        private final Activity context;
 
-        public RefreshTask(Recipient recipient, boolean offline) {
+        public RefreshTask(Recipient recipient, boolean offline, Activity context) {
+            if(null == recipient || null == context) {
+                throw new IllegalArgumentException("ChatActivity.RefreshTask: recipient or context is null");
+            }
+            this.context = context;
             this.recipient = recipient;
             this.offline = offline;
         }
@@ -174,9 +207,9 @@ public class ChatActivity extends BaseActivity {
                 return databaseHandler.getItemsForContact(correspondent);
             } else {
                 try {
-                    return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, new Date(app.getLastItemsRefresh()));
+                    return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, app.getLastItemsRefresh());
                 } catch (DatabaseClientException e) {
-                    e.printStackTrace();
+                    Log.e(ChatActivity.TAG, e.getMessage());
                     return null;
                 }
             }
@@ -187,14 +220,25 @@ public class ChatActivity extends BaseActivity {
             if (items != null) {
                 databaseHandler.addItems(items);
                 adapter.add(items);
+                messagesHistory.addAll(items);
+
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                Toast.makeText(getApplicationContext(), R.string.chat_activity_refresh_message,
+                Toast.makeText(context, R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();
 
             } else {
-                Toast.makeText(getApplicationContext(), R.string.chat_activity_unable_to_refresh,
-                        Toast.LENGTH_SHORT).show();
+                // TODO same code used in multiple asynctask, ...
+                Log.e(ChatActivity.TAG, "unable to refresh");
+                // TODO once gave me : android.view.WindowManager$BadTokenException: Unable to add window -- token android.os.BinderProxy@4291e5a0 is not valid; is your activity running ?
+                AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
+                newUserAlert.setTitle(R.string.unable_to_refresh_message);
+                newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        //OK
+                    }
+                });
+                newUserAlert.show();
             }
         }
 

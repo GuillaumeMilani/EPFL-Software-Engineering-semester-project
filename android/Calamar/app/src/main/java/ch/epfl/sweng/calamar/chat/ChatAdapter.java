@@ -68,8 +68,9 @@ public class ChatAdapter extends BaseAdapter {
 
 
         boolean ingoing = item.getTo().getID() == CalamarApplication.getInstance().getCurrentUserID();
-        setAlignment(holder, ingoing);
-        holder.itemView.addView(item.getView(context));
+        setAlignment(holder, ingoing,item.getCondition().getValue());
+        holder.itemView.removeAllViews();
+        holder.itemView.addView(item.getPreView(context));
         holder.textTime.setText(item.getDate().toString());
         return convertView;
     }
@@ -104,9 +105,9 @@ public class ChatAdapter extends BaseAdapter {
      * @param holder  The ViewHolder containing the necessary attributes
      * @param ingoing True if the message is received by the user, false if it is sent.
      */
-    private void setAlignment(ViewHolder holder, boolean ingoing) {
+    private void setAlignment(ViewHolder holder, boolean ingoing,boolean unlocked) {
         if (ingoing) {
-            holder.contentWithBG.setBackgroundResource(R.drawable.in_message_bg);
+            holder.contentWithBG.setBackgroundResource(unlocked ? R.drawable.in_message_bg : R.drawable.in_message_bg_lock);
             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) holder.contentWithBG.getLayoutParams();
             layoutParams.gravity = Gravity.START;
             holder.contentWithBG.setLayoutParams(layoutParams);
@@ -128,7 +129,7 @@ public class ChatAdapter extends BaseAdapter {
             layoutParams.gravity = Gravity.START;
             holder.textTime.setLayoutParams(layoutParams);
         } else {
-            holder.contentWithBG.setBackgroundResource(R.drawable.out_message_bg);
+            holder.contentWithBG.setBackgroundResource(unlocked ? R.drawable.out_message_bg : R.drawable.out_message_bg_lock );
             LinearLayout.LayoutParams layoutParams =
                     (LinearLayout.LayoutParams) holder.contentWithBG.getLayoutParams();
             layoutParams.gravity = Gravity.END;

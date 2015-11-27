@@ -20,6 +20,7 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
 
@@ -38,11 +39,14 @@ public final class GPSProvider implements LocationListener
     // location
     private Location lastLocation;
     private Date lastUpdateTime;
-    private LocationRequest locationRequest = createLocationRequest();
+    private final LocationRequest locationRequest = createLocationRequest();
 
     private final GoogleApiClient googleApiClient;
 
-    private final Set<Observer> observers = new HashSet<>();
+    // TODO, seems to be one possible soluce to avoid (or maybe luck....)
+    // https://stackoverflow.com/questions/24201356/avoiding-concurrent-modification-in-observer-pattern
+    // but ?? maybe "just" Collections.synchronizedSet can do the job
+    private final Set<Observer> observers = new CopyOnWriteArraySet<>();
 
     /**
      * @return the GPSProvider singleton's instance
@@ -84,8 +88,10 @@ public final class GPSProvider implements LocationListener
      *     If you only want to unsubscribe, please call {@link #removeObserver(Observer)}
      */
     public void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                googleApiClient, this);
+        if(googleApiClient.isConnected()) { // else call cause illegalstateexception
+            LocationServices.FusedLocationApi.removeLocationUpdates(
+                    googleApiClient, this);
+        } // TODO else ??? we need to think when we start / stop / connect / disconnect
     }
 
     /**
@@ -94,6 +100,8 @@ public final class GPSProvider implements LocationListener
      */
     public Location getLastLocation() {
         //TODO mybe check lastupdatetime and return null if too old
+        //use get last location of underlying fusedlocation provider + make
+        // al checks in gps demo
         return lastLocation;
     }
 
