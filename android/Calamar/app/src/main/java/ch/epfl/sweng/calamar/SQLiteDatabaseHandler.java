@@ -744,7 +744,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * Closes the database.
      */
     public synchronized void closeDatabase() {
-        this.db.close();
+        if (db.isOpen()) {
+            this.db.close();
+        }
     }
 
     /**

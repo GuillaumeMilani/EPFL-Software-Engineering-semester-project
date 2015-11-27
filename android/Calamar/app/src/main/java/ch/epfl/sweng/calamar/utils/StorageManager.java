@@ -371,7 +371,7 @@ public class StorageManager {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            if (isExternalStorageWritable()) {
+            if (isExternalStorageWritable() && !isCancelled()) {
                 switch (f.getType()) {
                     case FILEITEM:
                         File filePath = Environment.getExternalStoragePublicDirectory(FILE_FOLDER_NAME);
@@ -435,15 +435,17 @@ public class StorageManager {
         @Override
         protected void onPostExecute(final Boolean b) {
             if (!b) {
-                if (iterCount < MAX_ITER) {
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            new WritingTask(f, iterCount + 1).execute();
-                        }
-                    }, RETRY_TIME * (iterCount + 1));
-                } else {
-                    showStorageStateToast();
+                if (!isCancelled()) {
+                    if (iterCount < MAX_ITER) {
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                new WritingTask(f, iterCount + 1).execute();
+                            }
+                        }, RETRY_TIME * (iterCount + 1));
+                    } else {
+                        showStorageStateToast();
+                    }
                 }
             } else {
                 currentFilesID.remove(f.getID());

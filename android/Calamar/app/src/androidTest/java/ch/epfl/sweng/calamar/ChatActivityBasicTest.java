@@ -136,7 +136,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
         assertEquals(list.getCount(), before + 1);
     }
 
-    //Works but fails, too fast
+    //Works but fails ; Too fast ? JUnit waiting on AsyncTask perhaps?
     @Ignore
     public void testImageItemIsUpdatedWithStorageManager() throws IOException, InterruptedException {
         File f = testFolder.newFile("f.png");
