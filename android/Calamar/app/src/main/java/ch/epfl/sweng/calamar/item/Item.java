@@ -49,8 +49,8 @@ public abstract class Item {
     };
 
     protected Item(int ID, User from, Recipient to, Date date, Condition condition) {
-        if (null == from || null == to || null == condition) {
-            throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' cannot be null");
+        if (null == from || null == to || null == condition || null == date) {
+            throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' and/or 'date' cannot be null");
         }
         this.ID = ID;
         this.from = from; //User is immutable
@@ -262,7 +262,12 @@ public abstract class Item {
             }
 
             date = new Date(o.getLong("date"));
-            condition = Condition.fromJSON(new JSONObject(o.getString("condition")));
+
+            if(o.isNull("condition")) {
+                condition = Condition.trueCondition();
+            } else {
+                condition = Condition.fromJSON(new JSONObject(o.getString("condition")));
+            }
 
             return this;
         }
