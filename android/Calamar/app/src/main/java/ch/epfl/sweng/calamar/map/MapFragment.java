@@ -36,6 +36,7 @@ import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.item.Item;
 
 /**
@@ -44,7 +45,11 @@ import ch.epfl.sweng.calamar.item.Item;
 public class MapFragment extends android.support.v4.app.Fragment implements OnMapReadyCallback {
 
     public static final String TAG = MapFragment.class.getSimpleName();
-    public static final String POSITIONKEY = MapFragment.class.getCanonicalName() + ":POSITION";
+    public static final String LATITUDEKEY = PositionCondition.class.getCanonicalName() + ":LATITUDEKEY";
+    public static final String LONGITUDEKEY = PositionCondition.class.getCanonicalName() + ":LONGITUDEKEY";
+    private double initialLat;
+    private double initialLong;
+    // public static final String POSITIONKEY = MapFragment.class.getCanonicalName() + ":POSITION";
 
     //TODO : add two buttons begin checks stop checks
     // that will : checklocation settings + startlocation updates
@@ -75,8 +80,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             double latitude = newLocation.getLatitude();
             double longitude = newLocation.getLongitude();
             LatLng myLoc = new LatLng(latitude, longitude);
-            map.moveCamera(CameraUpdateFactory.newLatLng(myLoc));
-            map.moveCamera(CameraUpdateFactory.zoomTo(18.0f));
+//            map.moveCamera(CameraUpdateFactory.newLatLng(myLoc));
+//            map.moveCamera(CameraUpdateFactory.zoomTo(18.0f));
         }
     };
 
@@ -107,14 +112,29 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         @Override
         public void update(Item item) {
             //Update the dialog with the new view.
-            View itemView = item.getView(getContext());
+            View itemView = item.getView(getActivity());
             detailsViewDialog.removeAllViews();
             detailsViewDialog.addView(itemView);
         }
     };
+
     public MapFragment() {
-        // Required empty public constructor
+        // required
     }
+
+
+//    public MapFragment(double latitude, double longitude) {
+//        this();
+//        if (latitude == -1 || longitude == -1) {
+//            initialLat = 46.518797; // guess ^^
+//            initialLong = 6.561908;
+//        } else {
+//            initialLat = latitude;
+//            initialLong = longitude;
+//        }
+//    }
+
+
 
     // *********************************************************************************************
     // map fragment lifecycle callbacks
@@ -137,6 +157,18 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
         detailsViewDialog = new LinearLayout(getActivity());
         detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
+
+        Bundle args = getArguments();
+        double latitude = args.getDouble(MapFragment.LATITUDEKEY);
+        double longitude = args.getDouble(MapFragment.LONGITUDEKEY);
+
+        if (latitude == -1 || longitude == -1) {
+            initialLat = 46.518797; // guess ^^
+            initialLong = 6.561908;
+        } else {
+            initialLat = latitude;
+            initialLong = longitude;
+        }
 
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_map, container, false);
@@ -201,6 +233,9 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             }
         });
 
+        LatLng initialLoc = new LatLng(initialLat, initialLong);
+        map.moveCamera(CameraUpdateFactory.newLatLng(initialLoc));
+        // map.moveCamera(CameraUpdateFactory.zoomTo(18.0f));
         addAllItemsInRegionToMap();
     }
 

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.chat.ChatFragment;
+import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.map.MapFragment;
 
 /**
@@ -69,9 +70,16 @@ public class MainActivity extends BaseActivity {
     private void setupViewPager(ViewPager viewPager, Intent intent) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
 
-        intent.get
+        double latitude = intent.getDoubleExtra(MapFragment.LATITUDEKEY, -1);
+        double longitude = intent.getDoubleExtra(MapFragment.LONGITUDEKEY, -1);
 
-        adapter.addFragment(new MapFragment(), "Map"); // TODO add string
+        Bundle args = new Bundle();
+        args.putDouble(MapFragment.LATITUDEKEY, latitude);
+        args.putDouble(MapFragment.LONGITUDEKEY, longitude);
+        MapFragment mapFragment = new MapFragment();
+        mapFragment.setArguments(args);
+
+        adapter.addFragment(mapFragment, "Map"); // TODO add string
         adapter.addFragment(new ChatFragment(), "Chat");
         viewPager.setAdapter(adapter);
     }

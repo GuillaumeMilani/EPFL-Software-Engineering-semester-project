@@ -24,6 +24,8 @@ public class PositionCondition extends Condition {
 
     private final static String CONDITION_TYPE = "position";
     private final static double DEFAULT_RADIUS = 20;
+    public static final String TAG = PositionCondition.class.getSimpleName();
+
 
     private final Location location;
     private final double radius;
@@ -146,10 +148,15 @@ public class PositionCondition extends Condition {
                 public void onClick(View v) {
                     Intent intent = new Intent(CalamarApplication.getInstance(), MainActivity.class);
                     intent.putExtra(MainActivity.TABKEY, MainActivity.TabID.MAP.ordinal());
-                    intent.putExtra(MapFragment.POSITIONKEY, getLocation());
+                    // intent.putExtra(MapFragment.POSITIONKEY, getLocation());
+                    // TODO ideally put location and find way to retrieve it, I think this must be easy ?
+                    intent.putExtra(MapFragment.LATITUDEKEY,
+                            PositionCondition.this.getLocation().getLatitude());
+                    intent.putExtra(MapFragment.LONGITUDEKEY,
+                            PositionCondition.this.getLocation().getLongitude());
+
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     CalamarApplication.getInstance().startActivity(intent);
-
     //                    ViewPager viewPager = (ViewPager)
     //                            context.findViewById(R.id.viewpager);
     //                    viewPager.setCurrentItem(MainActivity.TabID.MAP.ordinal(), true);

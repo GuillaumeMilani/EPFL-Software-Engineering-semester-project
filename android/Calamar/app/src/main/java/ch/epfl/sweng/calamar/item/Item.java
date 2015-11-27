@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -75,7 +76,7 @@ public abstract class Item {
      * @param context
      * @return the view of the item.
      */
-    public View getView(final Context context) {
+    public View getView(final Activity context) {
         //Inflate a basic layout
         LayoutInflater li = LayoutInflater.from(context);
         View baseView = li.inflate(R.layout.item_details_base_layout, null);
