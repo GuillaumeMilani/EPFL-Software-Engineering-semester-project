@@ -133,8 +133,7 @@ public final class GPSProvider implements LocationListener
 
     public void setMockLocation(Location location) {
         if(BuildConfig.DEBUG) {
-            LocationServices.FusedLocationApi.setMockMode(googleApiClient, true);
-            LocationServices.FusedLocationApi.setMockLocation(googleApiClient, location);
+            notifyObservers(location);
         } else {
             throw new RuntimeException("can't set mock Location when mock mode is disabled");
         }

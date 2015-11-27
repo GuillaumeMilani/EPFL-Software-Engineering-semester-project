@@ -33,33 +33,7 @@ import static junit.framework.Assert.fail;
  */
 
 @RunWith(JUnit4.class)
-public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity> {
-
-
-    private final String testUsername = "test";
-    private final int testID = 0;
-    private final Date testTime = new Date(100);
-
-    private CalamarApplication app;
-
-    @Rule
-    public final ActivityTestRule<MainActivity> mActivityRule = new ActivityTestRule<>(
-            MainActivity.class);
-
-    public ConditionTest() {
-        super(MainActivity.class);
-    }
-
-    @Before
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
-        CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
-        app = CalamarApplication.getInstance();
-        app.setCurrentUserName(testUsername);
-        app.setCurrentUserID(testID);
-    }
+public class ConditionTest {
 
 
         /**
@@ -253,10 +227,8 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
     @Test
     public void testPositionCondition() throws InterruptedException {
         GPSProvider gps = GPSProvider.getInstance();
-        gps.startLocationUpdates(getActivity());
         // BC
         gps.setMockLocation(makeLocation(46.518568, 6.561926));
-        Thread.sleep(5000);
         // ~ Rolex
         PositionCondition c1 = new PositionCondition(46.518388, 6.568313, 20);
         // ~ BC
@@ -267,17 +239,14 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity
         o2.assertAll(true, 0);
         // Amphimax
         gps.setMockLocation(makeLocation(46.521783, 6.575507));
-        Thread.sleep(5000);
         o1.assertAll(false, 0);
         o2.assertAll(false, 1);
         // in the Rolex
         gps.setMockLocation(makeLocation(46.518313, 6.567804));
-        Thread.sleep(5000);
         o1.assertAll(true, 1);
         o2.assertAll(false, 1);
         // back to BC
         gps.setMockLocation(makeLocation(46.518568, 6.561926));
-        Thread.sleep(5000);
         o1.assertAll(false, 2);
         o2.assertAll(true, 2);
     }
