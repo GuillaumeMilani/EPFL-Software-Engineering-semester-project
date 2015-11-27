@@ -27,7 +27,7 @@ import ch.epfl.sweng.calamar.item.Item;
 /**
  * A Singleton managing storing, retrieving and deleting items on local storage.
  */
-//TODO Make test on UI thread, RuntimeException otherwise
+//TODO Make toasts on UI thread, RuntimeException otherwise
 public class StorageManager {
 
     private static final Set<WritingTask> currentWritingTasks = new HashSet<>();
