@@ -255,7 +255,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      * @return id of the lock
      */
     private int getLockIdForItem(Item i){
-        Log.v("IDD",""+i.getTo().getID());
         if(i.getTo().getID() == User.PUBLIC_ID) {
             if (i.getCondition().getValue()) {
                 return R.drawable.unlock;
