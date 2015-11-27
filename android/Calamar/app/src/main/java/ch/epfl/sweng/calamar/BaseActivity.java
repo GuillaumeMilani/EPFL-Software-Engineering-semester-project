@@ -206,7 +206,7 @@ public class BaseActivity extends AppCompatActivity
     private synchronized void buildGoogleApiClient() {
         app.setGoogleApiClient(
                 new GoogleApiClient.Builder(app)
-                        .addApi(LocationServices.API)//TODO add service push TONY
+                        .addApi(LocationServices.API)
                         .addConnectionCallbacks(this)
                         .addOnConnectionFailedListener(this).build());
     }

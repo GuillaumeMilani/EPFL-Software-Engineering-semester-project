@@ -18,7 +18,6 @@ import ch.epfl.sweng.calamar.map.GPSProvider;
  */
 public class PositionCondition extends Condition {
 
-    private final static String CONDITION_TYPE = "position";
     private final static double DEFAULT_RADIUS = 20;
 
     private final Location location;
@@ -35,10 +34,8 @@ public class PositionCondition extends Condition {
         this.radius = radius;
         setValue(GPSProvider.getInstance().getLastLocation().distanceTo(getLocation()) < getRadius());
         GPSProvider.getInstance().addObserver(new GPSProvider.Observer() {
-
             @Override
             public void update(Location newLocation) {
-
                 setValue(getLocation().distanceTo(newLocation) < getRadius());
             }
         });
@@ -95,9 +92,10 @@ public class PositionCondition extends Condition {
      * @param json jsonObject to put this in
      * @throws JSONException
      */
-    @Override
+    @Override // WARNING, if modified maintain TestCondPosition, DIRTY copy paste to work around
+    // problem of google api client in tests // TODO check way to test without that kind of ugly things
     protected void compose(JSONObject json) throws JSONException {
-        json.accumulate("type", CONDITION_TYPE);
+        json.accumulate("type", getType().name());
         json.accumulate("latitude", location.getLatitude());
         json.accumulate("longitude", location.getLongitude());
         json.accumulate("radius", radius);
@@ -109,8 +107,8 @@ public class PositionCondition extends Condition {
     }
 
     @Override
-    public String type() {
-        return "true";
+    public Type getType() {
+        return Type.POSITIONCONDITION;
     }
 
     @Override
@@ -121,11 +119,14 @@ public class PositionCondition extends Condition {
         return super.equals(that) && location.equals(that.location) && radius == that.radius;
     }
 
-    @Override
+    @Override // WARNING, if modified maintain TestCondPosition, DIRTY copy paste to work around
+              // problem of google api client in tests // TODO check way to test without that kind of ugly things
     public JSONArray getMetadata() throws JSONException {
         JSONArray array = new JSONArray();
         JSONObject jObject = new JSONObject();
-        compose(jObject);
+        jObject.accumulate("type", getType().name());
+        jObject.accumulate("latitude", location.getLatitude());
+        jObject.accumulate("longitude", location.getLongitude());
         array.put(jObject);
         return array;
     }
@@ -165,8 +166,9 @@ public class PositionCondition extends Condition {
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString("type");
-            if (!type.equals(PositionCondition.CONDITION_TYPE)) {
-                throw new IllegalArgumentException("expected " + PositionCondition.CONDITION_TYPE + " was : " + type);
+            if(Type.valueOf(type) != Type.POSITIONCONDITION) {
+                throw new IllegalArgumentException("expected : " + Type.POSITIONCONDITION.name() +
+                        " was : "+type);
             }
             latitude = json.getDouble("latitude");
             longitude = json.getDouble("longitude");
