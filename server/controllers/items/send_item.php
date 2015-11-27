@@ -55,4 +55,4 @@ try {
 }
 	http_response_code(201);
 	echo json_encode(array("ID" => $result, "type" => $type, "from" => $from, "to" => $to, "date" => $date, "message" => $message, "condition" => json_decode($condition), "message" => $message));
-	send_push_to($to);
+	send_push_to($to,$type);

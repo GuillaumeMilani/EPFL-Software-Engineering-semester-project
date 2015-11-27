@@ -1,14 +1,16 @@
 <?php
 include_once('models/users/retrieve_users.php');
+include_once('functions.php');
 
-function send_push_to($id)
+function send_push_to($id,$type)
 {
 	// retrieve registration id
 	try {
 		$user = get_user_by_id($id);
+		var_dump($user);
 		if(checkToken($user['registrationToken']))
 		{
-			send_push(array($user['registrationToken']));
+			send_push(array($user['registrationToken']),$type);
 		}
 	
 	} catch (Exception $e) {
@@ -18,7 +20,7 @@ function send_push_to($id)
 }
 
 // TODO look at testNotification.php
-function send_push($registrationIds)
+function send_push($registrationIds,$type)
 {
 
 	if(!is_array($registrationIds))
@@ -28,10 +30,9 @@ function send_push($registrationIds)
 	// prep the bundle
 	$msg = array
 	(
-		'message' 	=> 'here is a message. message',
-		'title'		=> 'This is a title. title',
-		'subtitle'	=> 'This is a subtitle. subtitle',
-		'tickerText'	=> 'Ticker text here...Ticker text here...Ticker text here',
+		'message' 	=> $type,
+		'title'		=> 'New Item',
+		'tickerText'	=> 'You have received a new item',
 		'vibrate'	=> 1,
 		'sound'		=> 1,
 		'largeIcon'	=> 'large_icon',
@@ -58,5 +59,4 @@ function send_push($registrationIds)
 	curl_setopt( $ch,CURLOPT_POSTFIELDS, json_encode( $fields ) );
 	$result = curl_exec($ch );
 	curl_close( $ch );
-	echo $result;
 }
