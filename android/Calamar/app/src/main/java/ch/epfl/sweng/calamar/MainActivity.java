@@ -156,7 +156,8 @@ public class MainActivity extends BaseActivity {
 
         try {
             ViewPagerAdapter adapter = (ViewPagerAdapter) viewPager.getAdapter();
-            ChatFragment chatFragment = (ChatFragment) adapter.getItem(1);;
+            //TODO careful when we will add tab, see later if set actual User is useful
+            ChatFragment chatFragment = (ChatFragment) adapter.getItem(1);
             chatFragment.setActualUser();
         }
         catch (Exception e)
