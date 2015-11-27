@@ -43,8 +43,8 @@ public class FileItem extends Item {
      * @param data      The content of the file
      * @param name      The name of the file
      */
-    public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String name) {
-        super(ID, from, to, date, condition);
+    public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String name, String message) {
+        super(ID, from, to, date, condition, message);
         this.data = Compresser.compress(data.clone());
         this.name = name;
         hash = computeHash();
@@ -60,8 +60,8 @@ public class FileItem extends Item {
      * @param data The content of the file
      * @param name The name of the file
      */
-    public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String name) {
-        super(ID, from, to, date);
+    public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String name, String message) {
+        super(ID, from, to, date, message);
         this.name = name;
         this.data = Compresser.compress(data.clone());
         hash = computeHash();
@@ -175,7 +175,7 @@ public class FileItem extends Item {
 
         @Override
         protected FileItem build() {
-            return new FileItem(super.ID, super.from, super.to, super.date, super.condition, data, name);
+            return new FileItem(super.ID, super.from, super.to, super.date, super.condition, data, name, message);
         }
 
         @Override
