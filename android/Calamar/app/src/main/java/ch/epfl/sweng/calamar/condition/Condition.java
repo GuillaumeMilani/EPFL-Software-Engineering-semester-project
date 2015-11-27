@@ -126,7 +126,7 @@ public abstract class Condition {
      * @param newValue new value to set
      */
     protected void setValue(Boolean newValue) {
-        if (value != newValue) {
+        if (value == false && newValue == true) {
             value = newValue;
             for (Observer o : observers) {
                 o.update(this);
