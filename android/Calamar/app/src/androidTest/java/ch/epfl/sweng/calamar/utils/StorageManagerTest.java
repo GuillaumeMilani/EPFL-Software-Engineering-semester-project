@@ -215,6 +215,51 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         });
     }
 
+    @Test
+    public void testDoesntRenameOrStoreIfSent() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                File f1 = null;
+                File f2 = null;
+                try {
+                    f1 = temp.newFile();
+                    f2 = temp.newFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                app.setCurrentUserID(testUser.getID());
+                app.setCurrentUserName(testUser.getName());
+                byte[] data = {0x55, 0x43};
+                final ImageItem item = new ImageItem(0, testUser, testRecipient, new Date(), fc, null, f1.getAbsolutePath());
+                final FileItem item2 = new FileItem(1, testUser, testRecipient, new Date(), fc, data, f2.getAbsolutePath());
+                final ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+                final ChatAdapter adapter = (ChatAdapter) list.getAdapter();
+                adapter.add(item);
+                adapter.add(item2);
+                final List<Item> retrievedFirst = mActivityRule.getActivity().getHistory();
+                assertEquals(retrievedFirst.size(), 2);
+                assertEquals(app.getTodayImageCount(), 0);
+                assertEquals(app.getTodayFileCount(), 0);
+                final ChatActivity activity = mActivityRule.getActivity();
+                storageManager.storeItem(item, activity);
+                assertEquals(app.getTodayFileCount(), 0);
+                assertEquals(app.getTodayImageCount(), 0);
+                storageManager.storeItem(item2, activity);
+                //Checks if file still has data
+                assertEquals(mActivityRule.getActivity().getHistory().get(1), retrievedFirst.get(1));
+                assertEquals(app.getTodayFileCount(), 0);
+                assertEquals(app.getTodayImageCount(), 0);
+                storageManager.getCompleteItem(item, mActivityRule.getActivity());
+                storageManager.getCompleteItem(item2, mActivityRule.getActivity());
+                List<Item> retrieved = mActivityRule.getActivity().getHistory();
+                assertEquals(retrieved.size(), 2);
+                assertEquals(retrieved.get(0), retrievedFirst.get(0));
+                assertEquals(retrieved.get(1), retrievedFirst.get(1));
+            }
+        });
+    }
+
     private String formatDate() {
         return calendar.get(Calendar.DAY_OF_MONTH) + "" + (calendar.get(Calendar.MONTH) + 1) + "" + calendar.get(Calendar.YEAR);
     }
