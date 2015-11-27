@@ -54,7 +54,7 @@ public final class ImageItem extends FileItem {
      * @see Item#Item(int, User, Recipient, Date)
      */
     public ImageItem(int ID, User from, Recipient to, Date date, byte[] data, String path) {
-        super(ID, from, to, date, data, path);
+        this(ID, from, to, date, Condition.trueCondition(), data, path);
     }
 
     /**

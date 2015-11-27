@@ -80,22 +80,7 @@ public class FileItem extends Item {
      * @param path The path of the file
      */
     public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String path) {
-        super(ID, from, to, date);
-        final int idx = path.lastIndexOf('/');
-        if (idx == -1) {
-            this.path = '/' + path;
-            this.name = path;
-            Log.d("Path", "Bad path of file : " + path);
-        } else {
-            this.path = path;
-            this.name = path.substring(idx + 1);
-        }
-        if (data != null) {
-            this.data = Compresser.compress(data.clone());
-        } else {
-            this.data = new byte[0];
-        }
-        hash = computeHash();
+        this(ID, from, to, date, Condition.trueCondition(), data, path);
     }
 
     /**
