@@ -51,105 +51,16 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
         app = (CalamarApplication) InstrumentationRegistry.getTargetContext().getApplicationContext();
     }
 
-    /**
-     * Test that we have a new user button.
-     */
-    @Test
-    public void testNewContactButtonName() {
-        getActivity();
-        onView(withId(R.id.newContact))
-                .check(matches(withText("New")));
-    }
 
-    /**
-     * Test that we display nothing when nothing is in the database
-     */
-    @Test
-    public void testDisplayContactIsEmptyWhenNoContact() {
-        app.getDatabaseHandler().deleteAllRecipients();
 
-        getActivity();
 
-        ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
-        assertEquals(list.getCount(), 0);
-    }
 
-    /**
-     * Test that we display contacts in the database.
-     */
-    @Test
-    public void testDisplayTwoContact() {
-        app.getDatabaseHandler().deleteAllRecipients();
-        app.getDatabaseHandler().addRecipient(bob);
-        app.getDatabaseHandler().addRecipient(alice);
 
-        getActivity();
 
-        ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
 
-        assertEquals(list.getCount(), 2);
 
-        app.getDatabaseHandler().deleteAllRecipients();
-    }
 
-    /**
-     * Test that we can cancel to add a new contact.
-     */
-    @Test
-    public void testCreateContactCanBeCancelled() {
-        app.getDatabaseHandler().deleteAllRecipients();
 
-        getActivity();
 
-        onView(withId(R.id.newContact)).perform(click());
-
-        onView(withText("Cancel")).perform(click());
-    }
-
-    /**
-     * Test that we can correctly add a contact.
-     */
-    @Test
-    public void testCreateContactIsCorrectlyCreated() {
-        app.getDatabaseHandler().deleteAllRecipients();
-
-        DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
-
-        getActivity();
-
-        ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
-        final int before = list.getCount();
-
-        onView(withId(R.id.newContact)).perform(click());
-
-        onView(withText("Add")).perform(click());
-
-        assertEquals(before + 1, list.getCount());
-    }
-
-    /**
-     * Test that we send correct data as parameter to the database client
-     */
-    @Test
-    public void testCreateContactSendCorrectParameter() throws DatabaseClientException {
-        app.getDatabaseHandler().deleteAllRecipients();
-
-        DatabaseClient client = Mockito.mock(ConstantDatabaseClient.class);
-        DatabaseClientLocator.setDatabaseClient(client);
-
-        getActivity();
-
-        onView(withId(R.id.newContact)).perform(click());
-
-        onView(withHint("Mail")).perform(typeText("calamar@gmail.com"));
-
-        ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
-
-        onView(withText("Add")).perform(click());
-
-        verify(client).findUserByName(argument.capture());
-
-        assertEquals("calamar@gmail.com", argument.getValue());
-    }
 
 }
