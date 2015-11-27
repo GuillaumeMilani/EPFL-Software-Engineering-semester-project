@@ -58,6 +58,37 @@ public final class ImageItem extends FileItem {
     }
 
     /**
+     * Instantiates a new ImageItem with the following parameters
+     *
+     * @param ID        the id
+     * @param from      the 'from' field of the Item (sender)
+     * @param to        the 'to' field of the Item (recipient)
+     * @param date      the creation/posting date of the Item
+     * @param condition the content (text message)
+     * @param data      the image
+     * @see Item#Item(int, User, Recipient, Date, Condition, String)
+     */
+    public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String name) {
+        super(ID, from, to, date, condition, data, name, "");
+        this.bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+    }
+
+    /**
+     * Instantiates a new ImageItem with the following parameters (condition will be always true)
+     *
+     * @param ID     the id
+     * @param from   the 'from' field of the Item (sender)
+     * @param to     the 'to' field of the Item (recipient)
+     * @param date   the creation/posting date of the Item
+     * @param bitmap the image
+     * @see Item#Item(int, User, Recipient, Date, String)
+     */
+    public ImageItem(int ID, User from, Recipient to, Date date, byte[] bitmap, String name) {
+        super(ID, from, to, date, bitmap, name, "");
+        this.bitmap = BitmapFactory.decodeByteArray(bitmap, 0, bitmap.length);
+    }
+
+    /**
      * gets type of this ImageItem (always returns IMAGEITEM)
      *
      * @return IMAGEITEM

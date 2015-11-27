@@ -68,6 +68,41 @@ public class FileItem extends Item {
     }
 
     /**
+     * Instantiates a new FileItem with the given parameters
+     *
+     * @param ID        The ID of the item
+     * @param from      The user who sent the item
+     * @param to        The recipient of the item
+     * @param date      The date of creation of the item
+     * @param condition The condition for unlocking the item
+     * @param data      The content of the file
+     * @param name      The name of the file
+     */
+    public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String name) {
+        super(ID, from, to, date, condition, "");
+        this.data = Compresser.compress(data.clone());
+        this.name = name;
+        hash = computeHash();
+    }
+
+    /**
+     * Instantiates a new FileItem with the given parameters
+     *
+     * @param ID   The ID of the item
+     * @param from The user who sent the item
+     * @param to   The recipient of the item
+     * @param date The date of creation of the item
+     * @param data The content of the file
+     * @param name The name of the file
+     */
+    public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String name) {
+        super(ID, from, to, date, "");
+        this.name = name;
+        this.data = Compresser.compress(data.clone());
+        hash = computeHash();
+    }
+
+    /**
      * Returns the copy of the data of the file.
      *
      * @return a byte array
