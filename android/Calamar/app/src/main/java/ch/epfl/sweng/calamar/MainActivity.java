@@ -29,7 +29,22 @@ public class MainActivity extends BaseActivity {
     private ViewPager viewPager;
 
     public static final String TABKEY = MainActivity.class.getCanonicalName() +  ":TABID";
-    public enum TabID {MAP, CHAT};
+    public enum TabID {
+
+        MAP(CalamarApplication.getInstance().getString(R.string.label_map_tab)),
+        CHAT(CalamarApplication.getInstance().getString(R.string.label_chat_tab));
+
+        private final String label;
+
+        TabID(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return this.label;
+        }
+    };
 
     //TODO check activity lifecycle and pertinent action to make when entering new states
     // regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
@@ -61,7 +76,7 @@ public class MainActivity extends BaseActivity {
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-        int tabId = getIntent().getIntExtra(MainActivity.TABKEY, 0);
+        int tabId = getIntent().getIntExtra(MainActivity.TABKEY, TabID.MAP.ordinal());
         viewPager.setCurrentItem(tabId);
 
     }
@@ -79,8 +94,9 @@ public class MainActivity extends BaseActivity {
         MapFragment mapFragment = new MapFragment();
         mapFragment.setArguments(args);
 
-        adapter.addFragment(mapFragment, "Map"); // TODO add string
-        adapter.addFragment(new ChatFragment(), "Chat");
+        // BEWARE OF THE ORDER, must be consistent with tabid
+        adapter.addFragment(mapFragment, TabID.MAP.toString());
+        adapter.addFragment(new ChatFragment(), TabID.CHAT.toString());
         viewPager.setAdapter(adapter);
     }
 

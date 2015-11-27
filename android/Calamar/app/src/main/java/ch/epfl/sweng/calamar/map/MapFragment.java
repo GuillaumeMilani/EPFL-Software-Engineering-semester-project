@@ -53,13 +53,13 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     private double initialLong;
     // public static final String POSITIONKEY = MapFragment.class.getCanonicalName() + ":POSITION";
 
-    //TODO : add two buttons begin checks stop checks
+    // TODO : add two buttons begin checks stop checks
     // that will : checklocation settings + startlocation updates
-    //TODO : manage activity lifecycle : start stop location updates when not needed, plus many potential problems
-    //TODO : do we save state of fragment/map using a bundle ?
+    // TODO : manage activity lifecycle : start stop location updates when not needed, plus many potential problems
+    // TODO : do we save state of fragment/map using a bundle ?
 
 
-    //TODO : Use a bidirectional map ?
+    // TODO : Use a bidirectional map ?
     private Map<Item, Marker> markers;
     // TODO : Create a set of items to avoid diplaying the same items multiple time
     private Map<Marker, Item> itemFromMarkers;
@@ -71,21 +71,16 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     // see comment on setupMapIfNeeded
     // ....maybe delegate all the work to the map fragment, I think google has correctly done the job...
 
-    private GPSProvider gpsProvider;
-    private final GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
-        @Override
-        public void update(Location newLocation) {
-            if(null == map) {
-                throw new IllegalStateException(
-                        "map should be initialized and ready before accessed by location updater");
-            }
-            double latitude = newLocation.getLatitude();
-            double longitude = newLocation.getLongitude();
-            LatLng myLoc = new LatLng(latitude, longitude);
-//            map.moveCamera(CameraUpdateFactory.newLatLng(myLoc));
-//            map.moveCamera(CameraUpdateFactory.zoomTo(18.0f));
-        }
-    };
+//    private GPSProvider gpsProvider;
+//    private final GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
+//        @Override
+//        public void update(Location newLocation) {
+//            if(null == map) {
+//                throw new IllegalStateException(
+//                        "map should be initialized and ready before accessed by location updater");
+//            }
+//        }
+//    };
 
 
     // The condition is updated when the location change and if the value(true/false) of the
@@ -125,19 +120,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     }
 
 
-//    public MapFragment(double latitude, double longitude) {
-//        this();
-//        if (latitude == -1 || longitude == -1) {
-//            initialLat = 46.518797; // guess ^^
-//            initialLong = 6.561908;
-//        } else {
-//            initialLat = latitude;
-//            initialLong = longitude;
-//        }
-//    }
-
-
-
     // *********************************************************************************************
     // map fragment lifecycle callbacks
     // https://developer.android.com/guide/components/fragments.html
@@ -164,6 +146,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         double latitude = args.getDouble(MapFragment.LATITUDEKEY);
         double longitude = args.getDouble(MapFragment.LONGITUDEKEY);
 
+        // TODO for release or future maybe change........
         if (latitude == -1 || longitude == -1) {
             initialLat = 46.518797; // guess ^^
             initialLong = 6.561908;
@@ -187,6 +170,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                 addAllItemsInRegionToMap();
             }
         });
+
         setUpMapIfNeeded();
     }
 
@@ -194,6 +178,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     @Override
     public void onMapReady(GoogleMap map) {
         this.map = map;
+        // setUpGPS();
+
         map.setMyLocationEnabled(true);
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
@@ -233,10 +219,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                 return false;
             }
         });
-        setUpGPS();
         LatLng initialLoc = new LatLng(initialLat, initialLong);
-        map.moveCamera(CameraUpdateFactory.newLatLng(initialLoc));
-        // map.moveCamera(CameraUpdateFactory.zoomTo(18.0f));
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(initialLoc, 18.0f));
         addAllItemsInRegionToMap();
     }
 
@@ -294,7 +278,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     /**
      * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
      * installed) and the map has not already been instantiated.. This will ensure that we only ever
-     * call {@link #setUpGPS()} once when {@link #map} is not null.
+     * access map once when {@link #map} is not null.
      * <p/>
      * If it isn't installed {@link SupportMapFragment} (and
      * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
@@ -315,11 +299,11 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         }
     }
 
-    private void setUpGPS() {
-        gpsProvider = GPSProvider.getInstance();
-        gpsProvider.addObserver(gpsObserver);
-        gpsProvider.startLocationUpdates(getActivity());
-    }
+//    private void setUpGPS() {
+//        gpsProvider = GPSProvider.getInstance();
+//        gpsProvider.addObserver(gpsObserver);
+//        gpsProvider.startLocationUpdates(getActivity());
+//    }
 
     /**
      * Async task for refreshing / getting new localized items.
