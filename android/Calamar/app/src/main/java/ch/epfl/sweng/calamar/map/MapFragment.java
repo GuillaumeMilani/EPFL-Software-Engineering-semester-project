@@ -39,7 +39,6 @@ import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.item.Item;
-import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
 
 /**
@@ -250,10 +249,10 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     }
 
     /**
-     * Return the id of the marker(private/public and lock/unlock) for a given item.
+     * Return the id of the lock (private/public and lock/unlock) for a given item.
      *
      * @param i Item for which we want the id.
-     * @return id of the marker
+     * @return id of the lock
      */
     private int getLockIdForItem(Item i){
         Log.v("IDD",""+i.getTo().getID());
