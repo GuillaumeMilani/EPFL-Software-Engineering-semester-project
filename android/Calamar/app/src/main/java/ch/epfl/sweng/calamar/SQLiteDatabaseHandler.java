@@ -873,7 +873,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         if (item.getType() == Item.Type.FILEITEM || item.getType() == Item.Type.IMAGEITEM) {
             values.put(ITEMS_KEY_DATA, ((FileItem) item).getData());
             values.put(ITEMS_KEY_NAME, ((FileItem) item).getName());
-        } else {
+        } else if (item.getType() != Item.Type.SIMPLETEXTITEM) {
             throw new IllegalArgumentException("Unknown item type");
         }
         return values;
