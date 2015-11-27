@@ -13,6 +13,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.util.Date;
+
 import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.condition.Condition;
@@ -24,15 +26,21 @@ import ch.epfl.sweng.calamar.map.GPSProvider;
  */
 
 @RunWith(JUnit4.class)
-public class ConditionTest extends ActivityInstrumentationTestCase2<BaseActivity> {
+public class ConditionTest extends ActivityInstrumentationTestCase2<MainActivity> {
 
+
+    private final String testUsername = "test";
+    private final int testID = 0;
+    private final Date testTime = new Date(100);
+
+    private CalamarApplication app;
 
     @Rule
-    public final ActivityTestRule<BaseActivity> mActivityRule = new ActivityTestRule<>(
-            BaseActivity.class);
+    public final ActivityTestRule<MainActivity> mActivityRule = new ActivityTestRule<>(
+            MainActivity.class);
 
     public ConditionTest() {
-        super(BaseActivity.class);
+        super(MainActivity.class);
     }
 
     @Before
@@ -41,6 +49,9 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<BaseActivity
         super.setUp();
         DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
         CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
+        app = CalamarApplication.getInstance();
+        app.setCurrentUserName(testUsername);
+        app.setCurrentUserID(testID);
     }
 
 
@@ -172,7 +183,7 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<BaseActivity
         loc.setLongitude(longitude);
         return loc;
     }
-    
+
     @Test
     public void testPositionCondition() throws InterruptedException {
         GPSProvider gps = GPSProvider.getInstance();
