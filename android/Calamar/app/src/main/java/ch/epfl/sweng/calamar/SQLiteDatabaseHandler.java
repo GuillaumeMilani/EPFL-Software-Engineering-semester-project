@@ -909,7 +909,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         String text = cursor.getString(6);
         byte[] data = cursor.getBlob(7);
         String path = cursor.getString(8);
-        System.out.println(id + " " + from + " " + to + " " + time.toString() + " " + condition + " " + text + " " + data + " " + path);
         switch (type) {
             case SIMPLETEXTITEM:
                 return new SimpleTextItem(id, from, to, time, condition, text);
