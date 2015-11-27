@@ -1,15 +1,20 @@
 package ch.epfl.sweng.calamar;
 
 import android.location.Location;
+import android.support.test.rule.ActivityTestRule;
 import android.test.ActivityInstrumentationTestCase2;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
+import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.map.GPSProvider;
@@ -21,14 +26,28 @@ import ch.epfl.sweng.calamar.map.GPSProvider;
 @RunWith(JUnit4.class)
 public class ConditionTest extends ActivityInstrumentationTestCase2<BaseActivity> {
 
+
+    @Rule
+    public final ActivityTestRule<BaseActivity> mActivityRule = new ActivityTestRule<>(
+            BaseActivity.class);
+
     public ConditionTest() {
         super(BaseActivity.class);
     }
 
-    /**
-     * helps defining observers that test Condition
-     * TO for TestingObserver
-     */
+    @Before
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
+        CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
+    }
+
+
+        /**
+         * helps defining observers that test Condition
+         * TO for TestingObserver
+         */
     class TO extends Condition.Observer {
 
         private int triggered = 0;
@@ -153,9 +172,7 @@ public class ConditionTest extends ActivityInstrumentationTestCase2<BaseActivity
         loc.setLongitude(longitude);
         return loc;
     }
-
-    //TODO: missing google play services Ignore while not fixed (position condition visually works)
-
+    
     @Test
     public void testPositionCondition() throws InterruptedException {
         GPSProvider gps = GPSProvider.getInstance();
