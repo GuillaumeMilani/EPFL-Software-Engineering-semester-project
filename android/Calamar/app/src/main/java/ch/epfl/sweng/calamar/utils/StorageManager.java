@@ -28,7 +28,7 @@ import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.Item;
 
 /**
- * A Singleton managing storing and retrieving items on local storage.
+ * A Singleton managing storing, retrieving and deleting items on local storage.
  */
 public class StorageManager {
 
@@ -65,6 +65,9 @@ public class StorageManager {
         return instance;
     }
 
+    /**
+     * Private constructor
+     */
     private StorageManager() {
         app = CalamarApplication.getInstance();
         dbHandler = app.getDatabaseHandler();
@@ -86,6 +89,7 @@ public class StorageManager {
 
     /**
      * Retry failed FileItem writings once more memory is available
+     * TODO does nothing at the moment
      */
     public void retryFailedWriting() {
         //Ask server
@@ -203,7 +207,7 @@ public class StorageManager {
     }
 
     /**
-     * Task which deletes the FileItem given to the constructor
+     * Task which deletes the FileItem given to the constructor. Tries only once.
      */
     private class DeleteTask extends AsyncTask<Void, Void, Void> {
 
@@ -237,7 +241,7 @@ public class StorageManager {
      * @param v the ChatAdapter
      */
     public void updateChatWithItem(Item i, ChatAdapter v, Activity context) {
-        new ReadTask(v, context).execute(i);
+        new UpdateViewTask(v, context).execute(i);
     }
 
     /**
@@ -247,7 +251,7 @@ public class StorageManager {
      * @param d the dialog
      */
     public void updateDialogWithItem(Item i, AlertDialog d, Activity context) {
-        new ReadTask(d, context).execute(i);
+        new UpdateViewTask(d, context).execute(i);
     }
 
     /**
@@ -257,20 +261,24 @@ public class StorageManager {
      * @param a     the ChatAdapter
      */
     public void updateChatWithItems(List<Item> items, ChatAdapter a, Activity context) {
-        new ReadTask(a, context).execute(items.toArray(new Item[items.size()]));
+        new UpdateViewTask(a, context).execute(items.toArray(new Item[items.size()]));
     }
 
-    private class ReadTask extends AsyncTask<Item, Item, Void> {
+    /**
+     * Task which updates an AlertDialog or ChatAdapter, depending on the argument in the constructor
+     * Tries to read only once.
+     */
+    private class UpdateViewTask extends AsyncTask<Item, Item, Void> {
         private ChatAdapter a;
         private Activity context;
         private AlertDialog d;
 
-        public ReadTask(ChatAdapter a, Activity context) {
+        public UpdateViewTask(ChatAdapter a, Activity context) {
             this.a = a;
             this.context = context;
         }
 
-        public ReadTask(AlertDialog d, Activity context) {
+        public UpdateViewTask(AlertDialog d, Activity context) {
             this.d = d;
             this.context = context;
         }
@@ -334,6 +342,12 @@ public class StorageManager {
         }
     }
 
+    /**
+     * Returns a byte array representing the data of the FileItem
+     *
+     * @param f the FileItem whose data needs to be retrieved from storage
+     * @return The data
+     */
     private byte[] getData(FileItem f) {
         if (isExternalStorageReadable()) {
             switch (f.getType()) {
@@ -368,6 +382,11 @@ public class StorageManager {
         }
     }
 
+    /**
+     * Store a FileItem in storage
+     *
+     * @param f the FileItem to store
+     */
     private void storeFile(FileItem f) {
         WritingTask task = new WritingTask(f, 0);
         currentWritingTasks.add(task);
@@ -375,6 +394,9 @@ public class StorageManager {
         task.execute();
     }
 
+    /**
+     * Shows different error toast depending on the state of the storage
+     */
     private void showStorageStateToast() {
         switch (Environment.getExternalStorageState()) {
             case Environment.MEDIA_UNMOUNTED:
@@ -404,6 +426,13 @@ public class StorageManager {
                 Environment.MEDIA_MOUNTED_READ_ONLY.equals(state);
     }
 
+    /**
+     * Writes a FileItem in the local storage
+     *
+     * @param f    The FileItem to store
+     * @param path Where it will be stored
+     * @throws IOException If there is a problem writing it
+     */
     private void writeFile(FileItem f, File path) throws IOException {
         if (f.getData() != null) {
             OutputStream stream = null;
@@ -418,6 +447,12 @@ public class StorageManager {
         }
     }
 
+    /**
+     * Rename and changes the path of a FileItem which will be stored.
+     *
+     * @param f The FileItem to "repath"
+     * @return The repathed FileItem
+     */
     private FileItem rePath(FileItem f) {
         switch (f.getType()) {
             case FILEITEM:
@@ -431,6 +466,11 @@ public class StorageManager {
         }
     }
 
+    /**
+     * Creates a String using the current Date
+     *
+     * @return the String, used in rePath
+     */
     private String formatDate() {
         return calendar.get(Calendar.DAY_OF_MONTH) + "" + calendar.get(Calendar.MONTH) + "" + calendar.get(Calendar.YEAR);
     }
@@ -525,11 +565,18 @@ public class StorageManager {
                     } else {
                         showStorageStateToast();
                     }
+                } else {
+                    currentWritingTasks.remove(this);
                 }
             } else {
                 currentFilesID.remove(f.getID());
                 currentWritingTasks.remove(this);
             }
+        }
+
+        @Override
+        protected void onCancelled() {
+            currentWritingTasks.remove(this);
         }
     }
 }
