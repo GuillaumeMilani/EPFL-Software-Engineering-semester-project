@@ -1,8 +1,10 @@
 package ch.epfl.sweng.calamar.map;
 
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -46,6 +48,7 @@ import ch.epfl.sweng.calamar.utils.StorageManager;
 public class MapFragment extends android.support.v4.app.Fragment implements OnMapReadyCallback {
 
     public static final String TAG = MapFragment.class.getSimpleName();
+    public static final String POSITIONKEY = MapFragment.class.getCanonicalName() + ":POSITION";
 
     //TODO : add two buttons begin checks stop checks
     // that will : checklocation settings + startlocation updates
@@ -109,7 +112,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         @Override
         public void update(Item item) {
             //Update the dialog with the new view.
-            View itemView = item.getView(getContext());
+            View itemView = item.getView(getActivity());
             detailsViewDialog.removeAllViews();
             detailsViewDialog.addView(itemView);
         }
@@ -158,7 +161,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             }
         });
         setUpMapIfNeeded();
-        setUpGPS();
     }
 
     // map setup here :
@@ -205,7 +207,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                 return false;
             }
         });
-
+        setUpGPS();
         addAllItemsInRegionToMap();
     }
 
@@ -229,7 +231,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     private void addAllItemsInRegionToMap() {
         if (null != map) {
             VisibleRegion visibleRegion = map.getProjection().getVisibleRegion();
-            new RefreshTask(visibleRegion).execute();
+            new RefreshTask(visibleRegion, getActivity()).execute();
         } else {
             throw new IllegalStateException("map not ready when refresh");
         }
@@ -297,12 +299,14 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     private class RefreshTask extends AsyncTask<Void, Void, List<Item>> {
 
         private final VisibleRegion visibleRegion;
+        private final Activity context;
 
-        public RefreshTask(VisibleRegion visibleRegion) {
-            if (null == visibleRegion) {
-                throw new IllegalArgumentException("RefreshTask: visibleRegion is null");
+        public RefreshTask(VisibleRegion visibleRegion, Activity context) {
+            if (null == visibleRegion || null == context) {
+                throw new IllegalArgumentException("RefreshTask: visibleRegion or context is null");
             }
             this.visibleRegion = visibleRegion;
+            this.context = context;
         }
 
         @Override
@@ -334,14 +338,19 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
                 Log.i(MapFragment.TAG, "map refreshed");
 
-                // TODO WTF nullPointerException sometimes, check getContext before using it
-                Toast.makeText(getContext(), R.string.refresh_message,
+                Toast.makeText(context, R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();
 
             } else {
                 Log.e(MapFragment.TAG, "unable to refresh");
-                Toast.makeText(getContext(), R.string.unable_to_refresh_message,
-                        Toast.LENGTH_SHORT).show();
+                AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
+                newUserAlert.setTitle(R.string.unable_to_refresh_message);
+                newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        //OK
+                    }
+                });
+                newUserAlert.show();
             }
         }
 

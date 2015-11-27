@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar.chat;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -134,7 +135,7 @@ public class ChatActivity extends BaseActivity {
      * Gets all messages and display them
      */
     private void refresh(boolean offline) {
-        new RefreshTask(app.getCurrentUser(), offline).execute();
+        new RefreshTask(app.getCurrentUser(), offline, this).execute();
     }
 
     /**
@@ -193,8 +194,13 @@ public class ChatActivity extends BaseActivity {
 
         private final Recipient recipient;
         private final boolean offline;
+        private final Activity context;
 
-        public RefreshTask(Recipient recipient, boolean offline) {
+        public RefreshTask(Recipient recipient, boolean offline, Activity context) {
+            if (null == recipient || null == context) {
+                throw new IllegalArgumentException("ChatActivity.RefreshTask: recipient or context is null");
+            }
+            this.context = context;
             this.recipient = recipient;
             this.offline = offline;
         }
@@ -223,12 +229,20 @@ public class ChatActivity extends BaseActivity {
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 storageManager.updateChatWithItems(items, adapter);
-                Toast.makeText(getApplicationContext(), R.string.refresh_message,
+                Toast.makeText(context, R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();
-
             } else {
-                Toast.makeText(getApplicationContext(), R.string.unable_to_refresh_message,
-                        Toast.LENGTH_SHORT).show();
+                // TODO same code used in multiple asynctask, ...
+                Log.e(ChatActivity.TAG, "unable to refresh");
+                // TODO once gave me : android.view.WindowManager$BadTokenException: Unable to add window -- token android.os.BinderProxy@4291e5a0 is not valid; is your activity running ?
+                AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
+                newUserAlert.setTitle(R.string.unable_to_refresh_message);
+                newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        //OK
+                    }
+                });
+                newUserAlert.show();
             }
         }
 
