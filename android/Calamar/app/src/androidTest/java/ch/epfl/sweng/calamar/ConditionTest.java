@@ -225,19 +225,19 @@ public class ConditionTest {
         TO o1 = new TO(c1);
         TO o2 = new TO(c2);
         o1.assertAll(false, 0);
-        o2.assertAll(true, 0);
+        o2.assertAll(false, 0); // because at begin it is always false
         // Amphimax
         gps.setMockLocation(makeLocation(46.521783, 6.575507));
         o1.assertAll(false, 0);
-        o2.assertAll(true, 0);
+        o2.assertAll(false, 0);
         // in the Rolex
         gps.setMockLocation(makeLocation(46.518313, 6.567804));
         o1.assertAll(true, 1);
-        o2.assertAll(true, 0);
+        o2.assertAll(false, 0);
         // back to BC
         gps.setMockLocation(makeLocation(46.518568, 6.561926));
         o1.assertAll(true, 1);
-        o2.assertAll(true, 0);
+        o2.assertAll(true, 1);
     }
 
     @Test
