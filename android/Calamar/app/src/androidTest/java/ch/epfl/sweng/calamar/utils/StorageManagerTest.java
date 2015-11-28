@@ -40,11 +40,17 @@ import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
 import ch.epfl.sweng.calamar.chat.ChatActivity;
 import ch.epfl.sweng.calamar.chat.ChatAdapter;
+import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
+import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.item.FileItem;
 import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.recipient.User;
+
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 @RunWith(AndroidJUnit4.class)
 public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatActivity> {
@@ -82,6 +88,7 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         app.resetPreferences();
         storageManager.deleteAllItemsWithDatabase();
         dbHandler.deleteAllRecipients();
+        DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
         injectInstrumentation(InstrumentationRegistry.getInstrumentation());
     }
 
@@ -542,6 +549,31 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         assertEquals(activity.getHistory().get(0), itemFull);
     }
 
+    @Test
+    public void testImageItemIsUpdatedWithStorageManager() throws Throwable {
+        File f = temp.newFile();
+        Bitmap bitmap = getBitmapFromAsset("testImage.jpg");
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] bitmapData = stream.toByteArray();
+        OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
+        out.write(bitmapData);
+        assertTrue(Arrays.equals(FileUtils.toByteArray(f), bitmapData));
+        ImageItem testItem = new ImageItem(20, CalamarApplication.getInstance().getCurrentUser(), new User(1, "Alice"), new Date(1445198511), null, f.getAbsolutePath(), "BLABLABLA");
+        ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+        ChatAdapter adapter = (ChatAdapter) list.getAdapter();
+        ((ConstantDatabaseClient) DatabaseClientLocator.getDatabaseClient()).addItem(testItem);
+        onView(withId(R.id.refreshButton)).perform(click());
+        Item firstTextBefore = adapter.getItem(adapter.getCount() - 2);
+        Item secondTextBefore = adapter.getItem(adapter.getCount() - 3);
+        synchronized (this) {
+            wait(1000);
+        }
+        assertEquals(firstTextBefore, adapter.getItem(adapter.getCount() - 2));
+        assertEquals(secondTextBefore, adapter.getItem(adapter.getCount() - 3));
+        assertTrue(((ImageItem) adapter.getItem(adapter.getCount() - 1)).getBitmap().sameAs(bitmap));
+    }
+
 
     private String formatDate() {
         return calendar.get(Calendar.DAY_OF_MONTH) + "" + (calendar.get(Calendar.MONTH) + 1) + "" + calendar.get(Calendar.YEAR);
@@ -561,19 +593,11 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         }
     }
 
-    private Bitmap getBitmapFromAsset(String filePath) {
-        AssetManager assetManager = getInstrumentation().getTargetContext().getAssets();
-
+    private Bitmap getBitmapFromAsset(String filePath) throws IOException {
+        AssetManager assetManager = CalamarApplication.getInstance().getAssets();
         InputStream istr;
-        Bitmap bitmap = null;
-        try {
-            istr = assetManager.open(filePath);
-            bitmap = BitmapFactory.decodeStream(istr);
-        } catch (IOException e) {
-            // handle exception
-        }
-
-        return bitmap;
+        istr = assetManager.open(filePath);
+        return BitmapFactory.decodeStream(istr);
     }
 
 }

@@ -87,7 +87,7 @@ public class FileAndImageItemTest {
     }
 
     @Test
-    public void testCanGetBitmap() {
+    public void testCanGetBitmap() throws IOException {
         Bitmap bitmap = getBitmapFromAsset("testImage.jpg");
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
@@ -132,19 +132,11 @@ public class FileAndImageItemTest {
         assertTrue(Arrays.equals(Compresser.decompress(tooShort), tooShort));
     }
 
-    private Bitmap getBitmapFromAsset(String filePath) {
+    private Bitmap getBitmapFromAsset(String filePath) throws IOException {
         AssetManager assetManager = CalamarApplication.getInstance().getAssets();
-
         InputStream istr;
-        Bitmap bitmap = null;
-        try {
-            istr = assetManager.open(filePath);
-            bitmap = BitmapFactory.decodeStream(istr);
-        } catch (IOException e) {
-            // handle exception
-        }
-
-        return bitmap;
+        istr = assetManager.open(filePath);
+        return BitmapFactory.decodeStream(istr);
     }
 
 }

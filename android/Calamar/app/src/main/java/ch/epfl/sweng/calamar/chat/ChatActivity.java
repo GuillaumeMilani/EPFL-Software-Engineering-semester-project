@@ -210,6 +210,9 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
                 }
                 messagesHistory.addAll(items);
                 adapter.notifyDataSetChanged();
+                for (Item item : items) {
+                    storageManager.getCompleteItem(item, ChatActivity.this);
+                }
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 Toast.makeText(context, R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();

@@ -323,6 +323,7 @@ public class StorageManager {
             switch (i.getType()) {
                 case SIMPLETEXTITEM:
                     caller.onItemRetrieved(i);
+                    break;
                 case FILEITEM:
                     new ReadTask((FileItem) i, ((FileItem) i).getPath(), caller).execute();
                     break;

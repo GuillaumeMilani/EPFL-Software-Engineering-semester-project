@@ -139,31 +139,6 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
         onView(withText("Hello Alice !")).check(matches(ViewMatchers.isDisplayed()));
     }
 
-    //Works but fails ; Too fast ? JUnit waiting on AsyncTask perhaps?
-    @Ignore
-    public void testImageItemIsUpdatedWithStorageManager() throws IOException, InterruptedException {
-        File f = testFolder.newFile("f.png");
-        FileWriter fw = new FileWriter(f.getAbsoluteFile());
-        BufferedWriter bw = new BufferedWriter(fw);
-        bw.write(new String(testContent));
-        bw.close();
-
-        ImageItem testItem = new ImageItem(20, CalamarApplication.getInstance().getCurrentUser(), new User(1, "Alice"), new Date(), null, f.getAbsolutePath());
-        ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
-        ChatAdapter adapter = (ChatAdapter) list.getAdapter();
-        ((ConstantDatabaseClient) DatabaseClientLocator.getDatabaseClient()).addItem(testItem);
-        onView(withId(R.id.refreshButton)).perform(click());
-        Item firstBefore = adapter.getItem(adapter.getCount() - 1);
-        Item firstTextBefore = adapter.getItem(adapter.getCount() - 2);
-        Item secondTextBefore = adapter.getItem(adapter.getCount() - 3);
-        synchronized (this) {
-            wait(2000);
-        }
-        assertEquals(firstTextBefore, adapter.getItem(adapter.getCount() - 2));
-        assertEquals(secondTextBefore, adapter.getItem(adapter.getCount() - 3));
-        assertFalse(firstBefore.equals(adapter.getItem(adapter.getCount() - 1)));
-    }
-
     /**
      * Test that the message is displayed when we send a new one.
      */
