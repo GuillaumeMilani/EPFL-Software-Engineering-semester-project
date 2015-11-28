@@ -33,7 +33,7 @@ public abstract class Item {
     private final Date date; //posix date
     private final Condition condition;
     private final String message;
-    
+
 
     public enum Type {SIMPLETEXTITEM, IMAGEITEM, FILEITEM}
 
@@ -52,8 +52,10 @@ public abstract class Item {
     protected Item(int ID, User from, Recipient to, Date date, Condition condition, String message) {
         if (null == from || null == to || null == condition || null == date) {
             throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' and/or 'date' cannot be null");
+        if (null == from || null == to || null == condition) {
+            throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' cannot be null");
         }
-        if(message == null) {
+        if (message == null) {
             this.message = "";
         } else {
             this.message = message;
@@ -122,7 +124,7 @@ public abstract class Item {
         final LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
 
-        if (message != "") {
+        if (!message.equals("")) {
             TextView text = new TextView(context);
             text.setText(message);
             view.addView(text, 0);
@@ -285,7 +287,7 @@ public abstract class Item {
             message = o.getString("message");
             date = new Date(o.getLong("date"));
 
-            if(o.isNull("condition")) {
+            if (o.isNull("condition")) {
                 condition = Condition.trueCondition();
             } else {
                 condition = Condition.fromJSON(new JSONObject(o.getString("condition")));

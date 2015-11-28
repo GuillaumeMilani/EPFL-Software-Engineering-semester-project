@@ -868,12 +868,12 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        if (item.getType() == Item.Type.SIMPLETEXTITEM) {
-            values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());
-        } else if (item.getType() == Item.Type.FILEITEM || item.getType() == Item.Type.IMAGEITEM) {
+        values.put(ITEMS_KEY_TEXT, item.getMessage());
+
+        if (item.getType() == Item.Type.FILEITEM || item.getType() == Item.Type.IMAGEITEM) {
             values.put(ITEMS_KEY_DATA, ((FileItem) item).getData());
             values.put(ITEMS_KEY_NAME, ((FileItem) item).getName());
-        } else {
+        } else if (item.getType() != Item.Type.SIMPLETEXTITEM) {
             throw new IllegalArgumentException("Unknown item type");
         }
         return values;
@@ -898,14 +898,14 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         }
         String text = cursor.getString(6);
         byte[] data = cursor.getBlob(7);
-        String name = cursor.getString(8);
+        String path = cursor.getString(8);
         switch (type) {
             case SIMPLETEXTITEM:
                 return new SimpleTextItem(id, from, to, time, condition, text);
             case FILEITEM:
-                return new FileItem(id, from, to, time, condition, data, name);
+                return new FileItem(id, from, to, time, condition, data, path, text);
             case IMAGEITEM:
-                return new ImageItem(id, from, to, time, condition, data, name);
+                return new ImageItem(id, from, to, time, condition, data, path, text);
             default:
                 throw new UnsupportedOperationException("Unexpected Item type");
         }
