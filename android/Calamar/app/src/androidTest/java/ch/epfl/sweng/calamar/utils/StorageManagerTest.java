@@ -12,6 +12,8 @@ import android.support.test.runner.AndroidJUnit4;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.ListView;
 
+import com.ipaulpro.afilechooser.utils.FileUtils;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -87,48 +89,63 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
     public void testWritingTaskLoopsIfRequiredAndCancelWorks() throws Throwable {
         byte[] data = {0x33};
         final FileItem item = new FileItem(0, testUser, testRecipient, new Date(), tc, data, "WriteThis");
-        int numRun = 0;
-        while (numRun < 5) {
-            CountDownLatch latch = new CountDownLatch(1);
-            runTestOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    storageManager.storeItem(item, null);
-                }
-            });
-            assertEquals(storageManager.getCurrentWritingTasks().size(), 1);
-            assertEquals(storageManager.getCurrentFilesID().size(), 1);
-            assertTrue(storageManager.getCurrentFilesID().contains(item.getID()));
-            storageManager.cancelWritingTasks(0);
-            latch.await(5, TimeUnit.SECONDS);
-            assertEquals(storageManager.getCurrentWritingTasks().size(), 0);
-            assertEquals(storageManager.getCurrentFilesID().size(), 1);
-            runTestOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    storageManager.storeItem(item, null);
-                }
-            });
-            StorageManager.WritingTask wt = new ArrayList<>(storageManager.getCurrentWritingTasks()).get(0);
-            while (wt.getIteration() < 2) {
-                storageManager.cancelWritingTasks(2);
-                assertFalse(wt.isCancelled());
-                assertEquals(storageManager.getCurrentFilesID().size(), 1);
-                List<StorageManager.WritingTask> tasks = new ArrayList<>(storageManager.getCurrentWritingTasks());
-                if (tasks.isEmpty()) {
-                    assertEquals(wt.getIteration(), 1);
-                    assertEquals(wt.getStatus(), AsyncTask.Status.FINISHED);
-                    break;
-                } else {
-                    wt = new ArrayList<>(storageManager.getCurrentWritingTasks()).get(0);
-                }
+        CountDownLatch latch = new CountDownLatch(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                storageManager.storeItem(item, null);
             }
+        });
+        assertEquals(storageManager.getCurrentWritingTasks().size(), 1);
+        assertEquals(storageManager.getCurrentFilesID().size(), 1);
+        assertTrue(storageManager.getCurrentFilesID().contains(item.getID()));
+        storageManager.cancelWritingTasks(0);
+        latch.await(5, TimeUnit.SECONDS);
+        assertEquals(storageManager.getCurrentWritingTasks().size(), 0);
+        assertEquals(storageManager.getCurrentFilesID().size(), 1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                storageManager.storeItem(item, null);
+            }
+        });
+        StorageManager.WritingTask wt = new ArrayList<>(storageManager.getCurrentWritingTasks()).get(0);
+        while (wt.getIteration() < 2) {
             storageManager.cancelWritingTasks(2);
-            latch.await(5, TimeUnit.SECONDS);
+            assertFalse(wt.isCancelled());
             assertEquals(storageManager.getCurrentFilesID().size(), 1);
-            assertEquals(storageManager.getCurrentWritingTasks().size(), 0);
-            numRun += 1;
+            List<StorageManager.WritingTask> tasks = new ArrayList<>(storageManager.getCurrentWritingTasks());
+            if (tasks.isEmpty()) {
+                assertEquals(wt.getIteration(), 1);
+                assertEquals(wt.getStatus(), AsyncTask.Status.FINISHED);
+                break;
+            } else {
+                wt = new ArrayList<>(storageManager.getCurrentWritingTasks()).get(0);
+            }
         }
+        storageManager.cancelWritingTasks(2);
+        latch.await(5, TimeUnit.SECONDS);
+        assertEquals(storageManager.getCurrentFilesID().size(), 1);
+        assertEquals(storageManager.getCurrentWritingTasks().size(), 0);
+    }
+
+    @Test
+    public void testDeleteTask() throws Throwable {
+        File f1 = temp.newFile();
+        byte[] data = {0x33};
+        writeFile(f1, data);
+        final FileItem item = new FileItem(0, testUser, testRecipient, new Date(), tc, null, f1.getAbsolutePath());
+        assertTrue(Arrays.equals(FileUtils.toByteArray(f1), data));
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                storageManager.deleteItemWithoutDatabase(item);
+            }
+        });
+        synchronized (this) {
+            wait(1000);
+        }
+        assertFalse(f1.exists());
     }
 
 
@@ -138,13 +155,9 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         File f1 = null;
         File f2 = null;
         File f3 = null;
-        try {
-            f1 = temp.newFile();
-            f2 = temp.newFile();
-            f3 = temp.newFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        f1 = temp.newFile();
+        f2 = temp.newFile();
+        f3 = temp.newFile();
         final File filePath = Environment.getExternalStoragePublicDirectory(FILE_FOLDER_NAME);
         final File imagePath = Environment.getExternalStoragePublicDirectory(IMAGE_FOLDER_NAME);
         final ChatActivity activity = mActivityRule.getActivity();
