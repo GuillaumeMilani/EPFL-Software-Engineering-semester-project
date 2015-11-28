@@ -115,7 +115,7 @@ public class FileItem extends Item {
     }
 
     /**
-     * Returns the copy of the data of the file.
+     * Returns a copy of the (COMPRESSED!) data of the file.
      *
      * @return a byte array
      */
