@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar.item;
 
 import android.app.Activity;
 import android.content.Context;
+import android.location.Location;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -141,33 +142,50 @@ public abstract class Item {
     /**
      * @return the 'condition' field of the Item
      */
-    public Condition getCondition() {
+    public final Condition getCondition() {
         return condition;
     }
 
     /**
      * @return the 'from' field of the Item (sender)
      */
-    public User getFrom() {
+    public final User getFrom() {
         return from;
     }
 
     /**
      * @return the 'to' field of the Item (recipient)
      */
-    public Recipient getTo() {
+    public final Recipient getTo() {
         return to;
     }
 
     /**
      * @return the creation/posting date of the Item
      */
-    public Date getDate() {
+    public final Date getDate() {
         return date;
     }
 
-    public int getID() {
+    public final int getID() {
         return ID;
+    }
+
+    /**
+     * @return the item's location if {@link #hasLocation()} is true.
+     * (simple shortcut for condition.getLocation)
+     * @see Condition#getLocation()
+     */
+    public final Location getLocation() {
+        return getCondition().getLocation();
+    }
+
+    /**
+     * @return true if the item's condition contains at least one location, false otherwise
+     * @see Condition#getLocation()
+     */
+    public final boolean hasLocation() {
+        return getCondition().hasLocation();
     }
 
     /**
@@ -240,7 +258,7 @@ public abstract class Item {
         if (!(o instanceof Item)) return false;
         Item that = (Item) o;
         return that.ID == ID && that.from.equals(from) && that.to.equals(to) &&
-                that.date.getTime() == date.getTime() && this.condition.equals(that.condition) &&
+                that.date.getTime() == date.getTime() &&
                 that.message.equals(this.message);
     }
 
@@ -251,8 +269,7 @@ public abstract class Item {
      */
     @Override
     public int hashCode() {
-        return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date.getTime()) * 479 +
-                condition.hashCode() * 503 + (message != null ? message.hashCode() : 0) * 701;
+        return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date.getTime()) * 479 + (message != null ? message.hashCode() : 0) * 701;
     }
 
     @Override

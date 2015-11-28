@@ -76,12 +76,13 @@ public class EqualsAndHashcodeTest {
         SimpleTextItem s6 = new SimpleTextItem(12, testUser1, testUser2, new Date(1), tc, testMessage);
         SimpleTextItem s7 = new SimpleTextItem(12, testUser1, testUser2, testDate, Condition.falseCondition(), testMessage);
         SimpleTextItem s8 = new SimpleTextItem(12, testUser1, testUser2, testDate, tc, "Heeeeeeee");
+
         helperVerifyEqualsAndHashcode(s, s2);
         helperVerifyNotEqualsAndHashcode(s, s3);
         helperVerifyNotEqualsAndHashcode(s, s4);
         helperVerifyNotEqualsAndHashcode(s, s5);
         helperVerifyNotEqualsAndHashcode(s, s6);
-        helperVerifyNotEqualsAndHashcode(s, s7);
+        helperVerifyEqualsAndHashcode(s, s7);
         helperVerifyNotEqualsAndHashcode(s, s8);
         helperVerifyNotEqualsAndHashcode(s3, s4);
         helperVerifyNotEqualsAndHashcode(s3, s5);
