@@ -50,8 +50,8 @@
     <string name="select_local_file">Please select a local file</string>
     <string name="choose_file">Choose a file</string>
     <string name="select_file_title">"Complete action using "</string>
-    <string name="item_details_from">From : </string>
-    <string name="item_details_to">To : </string>
+    <string name="item_details_from">From :</string>
+    <string name="item_details_to">To :</string>
     <string name="unable_to_create_item">unable to create and send item</string>
     <string name="label_map_tab">Map</string>
     <string name="label_chat_tab">Chat</string>

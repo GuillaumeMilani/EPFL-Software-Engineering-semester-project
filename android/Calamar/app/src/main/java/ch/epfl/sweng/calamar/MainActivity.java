@@ -1,6 +1,7 @@
 package ch.epfl.sweng.calamar;
 
 
+import android.accounts.AccountManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -27,6 +28,11 @@ public class MainActivity extends BaseActivity {
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
+
+    // LogCat tag
+    private static final String TAG = MainActivity.class.getSimpleName();
+    // *********************************************************************************************
+
 
     public static final String TABKEY = MainActivity.class.getCanonicalName() +  ":TABID";
     public enum TabID {
@@ -79,6 +85,12 @@ public class MainActivity extends BaseActivity {
         // get front tab from intent or set it to Map (default)
         int tabId = getIntent().getIntExtra(MainActivity.TABKEY, TabID.MAP.ordinal());
         viewPager.setCurrentItem(tabId);
+        //choose account dialog
+        // TODO if possible get rid of this deprecated call, see javadoc
+        Intent accountIntent = AccountManager.newChooseAccountIntent(null, null,
+                new String[] {"com.google"}, true, null, null,
+                null, null);
+        startActivityForResult(accountIntent, BaseActivity.ACCOUNT_CHOOSEN);
     }
     // *********************************************************************************************
 
@@ -130,6 +142,4 @@ public class MainActivity extends BaseActivity {
             return mFragmentTitleList.get(position);
         }
     }
-
 }
-

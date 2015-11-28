@@ -47,8 +47,10 @@ public class PositionCondition extends Condition {
 
             @Override
             public void update(Location newLocation) {
-                setValue(newLocation.distanceTo(PositionCondition.this.location) <
-                        PositionCondition.this.radius);
+                setValue(newLocation.distanceTo(getLocation()) < getRadius());
+                if(getValue()) {
+                    GPSProvider.getInstance().removeObserver(this);
+                }
             }
         });
     }
@@ -91,6 +93,10 @@ public class PositionCondition extends Condition {
     @Override
     public Location getLocation() {
         return location;
+    }
+
+    public double getRadius() {
+        return radius;
     }
 
     @Override

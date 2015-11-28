@@ -5,8 +5,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -38,9 +36,9 @@ import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
-import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.recipient.User;
 
 /**
  * A simple {@link Fragment} subclass holding the calamar map !.
@@ -100,15 +98,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         @Override
         public void update(Item item) {
             Marker updatedMarker = markers.get(item);
-            Bitmap icon;
-            if (item.getCondition().getValue()) {
-                updatedMarker.setTitle(getString(R.string.label_unlocked_item));
-                icon = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.unlock);
-            } else {
-                updatedMarker.setTitle(getString(R.string.label_locked_item));
-                icon = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.lock);
-            }
-            updatedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(icon));
+            updatedMarker.setIcon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
         }
     };
 
@@ -250,7 +240,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         } else {
             throw new IllegalStateException("map not ready when refresh");
         }
-        
     }
 
     /**
@@ -264,7 +253,9 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
         MarkerOptions marker = new MarkerOptions()
                 .position(new LatLng(location.getLatitude(), location.getLongitude()));
-        marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.lock));
+            marker.icon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
+
+        // TODO set correct label
         marker.title(getString(R.string.label_locked_item));
 
         item.addObserver(itemObserver);
@@ -272,6 +263,29 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         Marker finalMarker = map.addMarker(marker);
         markers.put(item, finalMarker);
         itemFromMarkers.put(finalMarker, item);
+    }
+
+    /**
+     * Return the id of the lock (private/public and lock/unlock) for a given item.
+     *
+     * @param i Item for which we want the id.
+     * @return id of the lock
+     */
+    private int getLockIdForItem(Item i){
+        if(i.getTo().getID() == User.PUBLIC_ID) {
+            if (i.getCondition().getValue()) {
+                return R.drawable.unlock;
+            } else {
+                return R.drawable.lock;
+            }
+        } else {
+            //The item is private !
+            if (i.getCondition().getValue()) {
+                return R.drawable.unlock_private;
+            } else {
+                return R.drawable.lock_private;
+            }
+        }
     }
 
     /**
