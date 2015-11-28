@@ -260,7 +260,7 @@ public class ConditionTest {
     public void testMetadataPositionCondition() throws JSONException {
         Condition pc = new PositionCondition(123.4, 432.1, 10);
         JSONObject jo = new JSONObject();
-        jo.accumulate("type", Condition.Type.TESTCONDITION);
+        jo.accumulate("type", Condition.Type.POSITIONCONDITION);
         jo.accumulate("latitude", 123.4);
         jo.accumulate("longitude", 432.1);
         JSONArray ja = (new JSONArray()).put(jo);
@@ -273,11 +273,11 @@ public class ConditionTest {
         Condition pc2 = new PositionCondition(432.1, 123.4, 20);
         Condition pc1AndPc2 = Condition.and(pc1, pc2);
         JSONObject jo1 = new JSONObject();
-        jo1.accumulate("type", Condition.Type.TESTCONDITION);
+        jo1.accumulate("type", Condition.Type.POSITIONCONDITION);
         jo1.accumulate("latitude", 123.4);
         jo1.accumulate("longitude", 432.1);
         JSONObject jo2 = new JSONObject();
-        jo2.accumulate("type", Condition.Type.TESTCONDITION);
+        jo2.accumulate("type", Condition.Type.POSITIONCONDITION);
         jo2.accumulate("latitude", 432.1);
         jo2.accumulate("longitude", 123.4);
         JSONArray ja = new JSONArray();
@@ -291,14 +291,14 @@ public class ConditionTest {
         Condition pc1 = new PositionCondition(123.4, 432.1, 10);
 
         JSONObject jo1 = new JSONObject();
-        jo1.accumulate("type", Condition.Type.TESTCONDITION);
+        jo1.accumulate("type", Condition.Type.POSITIONCONDITION);
         jo1.accumulate("latitude", 123.4);
         jo1.accumulate("longitude", 432.1);
         jo1.accumulate("radius", 10);
 
 
         JSONObject met = new JSONObject();
-        met.accumulate("type", Condition.Type.TESTCONDITION);
+        met.accumulate("type", Condition.Type.POSITIONCONDITION);
         met.accumulate("latitude", 123.4);
         met.accumulate("longitude", 432.1);
 
