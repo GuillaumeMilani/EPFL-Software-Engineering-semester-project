@@ -41,7 +41,9 @@ public class PositionCondition extends Condition {
             public void update(Location newLocation) {
 
                 setValue(newLocation.distanceTo(This.location) < This.radius);
-                GPSProvider.getInstance().removeObserver(this);
+                if(getValue()) {
+                    GPSProvider.getInstance().removeObserver(this);
+                }
             }
         });
     }
