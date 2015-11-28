@@ -52,8 +52,6 @@ public abstract class Item {
     protected Item(int ID, User from, Recipient to, Date date, Condition condition, String message) {
         if (null == from || null == to || null == condition || null == date) {
             throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' and/or 'date' cannot be null");
-        if (null == from || null == to || null == condition) {
-            throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' cannot be null");
         }
         if (message == null) {
             this.message = "";
