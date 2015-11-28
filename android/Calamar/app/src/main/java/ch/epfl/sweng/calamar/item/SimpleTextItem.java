@@ -2,7 +2,6 @@ package ch.epfl.sweng.calamar.item;
 
 import android.content.Context;
 import android.view.View;
-import android.widget.FrameLayout;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,7 +49,7 @@ public final class SimpleTextItem extends Item {
 
     @Override
     public View getItemView(Context context) {
-        return new FrameLayout(context);
+        return null;
     }
 
     /**

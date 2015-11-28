@@ -130,8 +130,11 @@ public abstract class Item {
             childCount += 1;
         }
         if (condition.getValue()) {
-            view.addView(getItemView(context), childCount);
-            childCount += 1;
+            View itemView = getItemView(context);
+            if (itemView != null) {
+                view.addView(itemView, childCount);
+                childCount += 1;
+            }
         } else {
             TextView lockMessage = new TextView(context);
             lockMessage.setText(R.string.item_is_locked_getview);
