@@ -131,7 +131,7 @@ public abstract class Condition {
      * @param newValue new value to set
      */
     protected void setValue(Boolean newValue) {
-        if (value != newValue) {
+        if (value == false && newValue == true) {
             value = newValue;
             for (Observer o : observers) {
                 o.update(this);
@@ -282,6 +282,10 @@ public abstract class Condition {
                     @Override
                     public void update(Condition c) {
                         setValue(c1.value && c2.value);
+                        if(getValue() == true) {
+                            c1.removeObserver(this);
+                            c2.removeObserver(this);
+                        }
                     }
                 };
                 c1.addObserver(o);
@@ -355,6 +359,10 @@ public abstract class Condition {
                     @Override
                     public void update(Condition c) {
                         setValue(c1.value || c2.value);
+                        if(getValue() == true) {
+                            c1.removeObserver(this);
+                            c2.removeObserver(this);
+                        }
                     }
                 };
                 c1.addObserver(o);
@@ -424,6 +432,9 @@ public abstract class Condition {
                     @Override
                     public void update(Condition c) {
                         setValue(!c.value);
+                        if(getValue() == true) {
+                            c.removeObserver(this);
+                        }
                     }
                 };
                 c.addObserver(o);
