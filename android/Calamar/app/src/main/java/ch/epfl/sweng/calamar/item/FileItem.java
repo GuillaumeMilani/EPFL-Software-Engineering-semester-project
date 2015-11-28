@@ -43,8 +43,43 @@ public class FileItem extends Item {
      * @param data      The content of the file
      * @param name      The name of the file
      */
+    public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String name, String message) {
+        super(ID, from, to, date, condition, message);
+        this.data = Compresser.compress(data.clone());
+        this.name = name;
+        hash = computeHash();
+    }
+
+    /**
+     * Instantiates a new FileItem with the given parameters
+     *
+     * @param ID   The ID of the item
+     * @param from The user who sent the item
+     * @param to   The recipient of the item
+     * @param date The date of creation of the item
+     * @param data The content of the file
+     * @param name The name of the file
+     */
+    public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String name, String message) {
+        super(ID, from, to, date, message);
+        this.name = name;
+        this.data = Compresser.compress(data.clone());
+        hash = computeHash();
+    }
+
+    /**
+     * Instantiates a new FileItem with the given parameters
+     *
+     * @param ID        The ID of the item
+     * @param from      The user who sent the item
+     * @param to        The recipient of the item
+     * @param date      The date of creation of the item
+     * @param condition The condition for unlocking the item
+     * @param data      The content of the file
+     * @param name      The name of the file
+     */
     public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String name) {
-        super(ID, from, to, date, condition);
+        super(ID, from, to, date, condition, "");
         this.data = Compresser.compress(data.clone());
         this.name = name;
         hash = computeHash();
@@ -61,7 +96,7 @@ public class FileItem extends Item {
      * @param name The name of the file
      */
     public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String name) {
-        super(ID, from, to, date);
+        super(ID, from, to, date, "");
         this.name = name;
         this.data = Compresser.compress(data.clone());
         hash = computeHash();
@@ -175,7 +210,7 @@ public class FileItem extends Item {
 
         @Override
         protected FileItem build() {
-            return new FileItem(super.ID, super.from, super.to, super.date, super.condition, data, name);
+            return new FileItem(super.ID, super.from, super.to, super.date, super.condition, data, name, message);
         }
 
         @Override
