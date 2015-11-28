@@ -99,6 +99,7 @@ public final class GPSProvider implements LocationListener
      * @return the last received location <br>(<b>WARNING</b>, can be null if {@link #startLocationUpdates(Activity)}
      * hasn't been called, or can be stale if {@link #stopLocationUpdates()} has been called and ...)
      */
+    @Deprecated
     public Location getLastLocation() {
         //TODO mybe check lastupdatetime and return null if too old
         //use get last location of underlying fusedlocation provider + make
