@@ -59,8 +59,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
         getContacts();
 
         actualUserTextView = (TextView) getView().findViewById(R.id.actualUserName);
-       //TODO see if useful
-       // setActualUser();
+        setActualUser();
 
         contactsView = (ListView) getView().findViewById(R.id.contactsList);
         contactsView.setSelector(R.drawable.list_selector);
@@ -106,14 +105,14 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     }
 
     /**
-     * Return the actual user of the app.
+     * prints the actual user of the app on textview.
      */
-    public  void setActualUser() {
+    public void setActualUser() {
         if(!app.getCurrentUserName().equals("")) {
             actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
         }
-        else
-        {
+        else {
+            // TODO ok ???
             getActivity().finish();
         }
     }
