@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,8 +49,8 @@ public abstract class Item {
     };
 
     protected Item(int ID, User from, Recipient to, Date date, Condition condition) {
-        if (null == from || null == to || null == condition) {
-            throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' cannot be null");
+        if (null == from || null == to || null == condition || null == date) {
+            throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' and/or 'date' cannot be null");
         }
         this.ID = ID;
         this.from = from; //User is immutable
@@ -75,7 +76,7 @@ public abstract class Item {
      * @param context
      * @return the view of the item.
      */
-    public View getView(final Context context) {
+    public View getView(final Activity context) {
         //Inflate a basic layout
         LayoutInflater li = LayoutInflater.from(context);
         View baseView = li.inflate(R.layout.item_details_base_layout, null);
@@ -261,7 +262,12 @@ public abstract class Item {
             }
 
             date = new Date(o.getLong("date"));
-            condition = Condition.fromJSON(new JSONObject(o.getString("condition")));
+
+            if(o.isNull("condition")) {
+                condition = Condition.trueCondition();
+            } else {
+                condition = Condition.fromJSON(new JSONObject(o.getString("condition")));
+            }
 
             return this;
         }

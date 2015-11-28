@@ -20,6 +20,7 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import ch.epfl.sweng.calamar.BuildConfig;
 import ch.epfl.sweng.calamar.CalamarApplication;
@@ -43,7 +44,10 @@ public final class GPSProvider implements LocationListener
 
     private final GoogleApiClient googleApiClient;
 
-    private final Set<Observer> observers = new HashSet<>();
+    // TODO, seems to be one possible soluce to avoid (or maybe luck....)
+    // https://stackoverflow.com/questions/24201356/avoiding-concurrent-modification-in-observer-pattern
+    // but ?? maybe "just" Collections.synchronizedSet can do the job
+    private final Set<Observer> observers = new CopyOnWriteArraySet<>();
 
     /**
      * @return the GPSProvider singleton's instance

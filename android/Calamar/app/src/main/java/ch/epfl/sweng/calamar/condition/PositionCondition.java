@@ -30,6 +30,9 @@ public class PositionCondition extends Condition {
      * @param radius
      */
     public PositionCondition(Location location, double radius) {
+        if(null == location) {
+            throw new IllegalArgumentException("PositionCondition: location cannot be null");
+        }
         this.location = location;
         this.radius = radius;
         setValue(false);
