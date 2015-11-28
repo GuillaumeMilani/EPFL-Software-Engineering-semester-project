@@ -4,7 +4,6 @@ package ch.epfl.sweng.calamar.map;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -30,8 +29,10 @@ import com.google.android.gms.maps.model.VisibleRegion;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
@@ -49,8 +50,17 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     public static final String TAG = MapFragment.class.getSimpleName();
     public static final String LATITUDEKEY = PositionCondition.class.getCanonicalName() + ":LATITUDEKEY";
     public static final String LONGITUDEKEY = PositionCondition.class.getCanonicalName() + ":LONGITUDEKEY";
+
+    // TODO maybe change for release or future
+    public static final double DEFAULTLATITUDE = 46.518797; // guess ^^;
+    public static final double DEFAULTLONGITUDE = 6.561908;
+
     private double initialLat;
     private double initialLong;
+
+
+
+
     // public static final String POSITIONKEY = MapFragment.class.getCanonicalName() + ":POSITION";
 
     // TODO : add two buttons begin checks stop checks
@@ -61,8 +71,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
     // TODO : Use a bidirectional map ?
     private Map<Item, Marker> markers;
-    // TODO : Create a set of items to avoid diplaying the same items multiple time
     private Map<Marker, Item> itemFromMarkers;
+    private Set<Item> items;
 
 
     private GoogleMap map; // Might be null if Google Play services APK is not available.
@@ -92,10 +102,10 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             Marker updatedMarker = markers.get(item);
             Bitmap icon;
             if (item.getCondition().getValue()) {
-                updatedMarker.setTitle("Unlocked");
+                updatedMarker.setTitle(getString(R.string.label_unlocked_item));
                 icon = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.unlock);
             } else {
-                updatedMarker.setTitle("Locked");
+                updatedMarker.setTitle(getString(R.string.label_locked_item));
                 icon = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.lock);
             }
             updatedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(icon));
@@ -134,26 +144,19 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+                             Bundle savedInstanceState)
+    {
         super.onCreateView(inflater, container, savedInstanceState);
         markers = new HashMap<>();
         itemFromMarkers = new HashMap<>();
+        items = new HashSet<>();
 
         detailsViewDialog = new LinearLayout(getActivity());
         detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
 
         Bundle args = getArguments();
-        double latitude = args.getDouble(MapFragment.LATITUDEKEY);
-        double longitude = args.getDouble(MapFragment.LONGITUDEKEY);
-
-        // TODO for release or future maybe change........
-        if (latitude == -1 || longitude == -1) {
-            initialLat = 46.518797; // guess ^^
-            initialLong = 6.561908;
-        } else {
-            initialLat = latitude;
-            initialLong = longitude;
-        }
+        initialLat = args.getDouble(MapFragment.LATITUDEKEY);
+        initialLong = args.getDouble(MapFragment.LONGITUDEKEY);
 
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_map, container, false);
@@ -176,7 +179,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
     // map setup here :
     @Override
-    public void onMapReady(GoogleMap map) {
+    public void onMapReady(final GoogleMap map) {
         this.map = map;
         // setUpGPS();
 
@@ -215,7 +218,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                 item.addObserver(detailsItemObserver);
 
                 itemDescription.show();
-
                 return false;
             }
         });
@@ -254,25 +256,22 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     /**
      * Add an item to the googleMap, and fill the map markers
      */
-    private void addItemToMap(Item i) {
-        Condition condition = i.getCondition();
-        if (condition.hasLocation()) {
-            Location location = condition.getLocation();
-
-            MarkerOptions marker = new MarkerOptions()
-                    .position(new LatLng(location.getLatitude(), location.getLongitude()));
-
-            marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
-            marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.lock));
-
-            marker.title("Locked");
-
-            i.addObserver(itemObserver);
-
-            Marker finalMarker = map.addMarker(marker);
-            markers.put(i, finalMarker);
-            itemFromMarkers.put(finalMarker, i);
+    private void addItemToMap(Item item) {
+        if (!item.hasLocation()) {
+            throw new IllegalStateException("Ecublens we have a problem : item on map hasn't any location");
         }
+        Location location = item.getLocation();
+
+        MarkerOptions marker = new MarkerOptions()
+                .position(new LatLng(location.getLatitude(), location.getLongitude()));
+        marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.lock));
+        marker.title(getString(R.string.label_locked_item));
+
+        item.addObserver(itemObserver);
+
+        Marker finalMarker = map.addMarker(marker);
+        markers.put(item, finalMarker);
+        itemFromMarkers.put(finalMarker, item);
     }
 
     /**
@@ -324,14 +323,13 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         @Override
         protected List<Item> doInBackground(Void... v) {
                 try {
-
+                    // TODO enhancement: custom request specifying the items already fetched
+                    // + bundle saving state of fragment
+                    // now all items in region are fetched, and if not already in set, displayed
+                    // on map
                     return DatabaseClientLocator.getDatabaseClient().getAllItems(
                             CalamarApplication.getInstance().getCurrentUser(),
-                            new Date(0), //TODO need to ask others what are we going to do with the local database
-                            //lastrefresh and etc...
-                            //or we don't store them in local db and everytime we refresh we flush the map
-                            //before re adding all the items in visible range
-                            //I think it can make sense ..
+                            new Date(0),
                             visibleRegion);
 
                 } catch (DatabaseClientException e) {
@@ -341,18 +339,20 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         }
 
         @Override
-        protected void onPostExecute(List<Item> items) {
-            if (items != null) {
+        protected void onPostExecute(List<Item> receivedItems) {
+            if (receivedItems != null) {
 
-                for(Item item : items){
-                    addItemToMap(item);
+                for(Item item : receivedItems){
+                    if(!items.contains(item)) {
+                        items.add(item);
+                        addItemToMap(item);
+                    }
                 }
 
                 Log.i(MapFragment.TAG, "map refreshed");
 
                 Toast.makeText(context, R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();
-
             } else {
                 Log.e(MapFragment.TAG, "unable to refresh");
                 AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
@@ -365,6 +365,5 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                 newUserAlert.show();
             }
         }
-
     }
 }

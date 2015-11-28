@@ -18,7 +18,7 @@
     <string name="add_new_contact_impossible">Impossible to add the contact</string>
     <string name="new_account_creation_success">"Account correctly created : User : "</string>
     <string name="refresh_message">Refreshed !</string>
-    <string name="unable_to_refresh_message">Unable to refresh</string>
+    <string name="unable_to_refresh_message">Unable to refresh, check your connection settings</string>
     <string name="title_activity_maps">Map</string>
     <string name="action_settings">Settings</string>
     <string name="add_user_text">New</string>
@@ -55,4 +55,6 @@
     <string name="unable_to_create_item">unable to create and send item</string>
     <string name="label_map_tab">Map</string>
     <string name="label_chat_tab">Chat</string>
+    <string name="label_locked_item">Locked</string>
+    <string name="label_unlocked_item">Unlocked</string>
 </resources>

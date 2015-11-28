@@ -1,13 +1,12 @@
 package ch.epfl.sweng.calamar.condition;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Intent;
 import android.location.Location;
-import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -78,6 +77,10 @@ public class PositionCondition extends Condition {
      * @return Location in this place
      */
     private static Location makeLocation(double latitude, double longitude) {
+        if(-90 > latitude || latitude > 90 || -180 > longitude || longitude > 180) {
+            throw new IllegalArgumentException("invalid latitude or longitude");
+        }
+
         Location loc = new Location("calamarTeam");
         loc.setLatitude(latitude);
         loc.setLongitude(longitude);
@@ -139,13 +142,16 @@ public class PositionCondition extends Condition {
     @Override
     public View getView(final Activity context) {
         LinearLayout view = (LinearLayout) (super.getView(context));
+        view.setOrientation(LinearLayout.HORIZONTAL);
 
-        Button button = new Button(context);
-        button.setText(context.getResources().getString(R.string.condition_position));
-
-        // TODO how do we do this ?? is that acceptable ?
-        if(!context.getClass().getCanonicalName().equals(MainActivity.class.getCanonicalName()))
-        {
+        // TODO make this looks better, and inflate from xml instead of like now :
+        TextView positionText = new TextView(context);
+        positionText.setText(this.toString());
+        positionText.setTextSize(15);
+        view.addView(positionText, 0);
+        if(!context.getClass().equals(MainActivity.class)) {
+            Button button = new Button(context);
+            button.setText(context.getResources().getString(R.string.condition_position));
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -162,25 +168,10 @@ public class PositionCondition extends Condition {
                             PositionCondition.this.getLocation().getLongitude());
 
                     CalamarApplication.getInstance().startActivity(intent);
-                    //                    ViewPager viewPager = (ViewPager)
-                    //                            context.findViewById(R.id.viewpager);
-                    //                    viewPager.setCurrentItem(MainActivity.TabID.MAP.ordinal(), true);
-
                 }
             });
-        } else {
-            // TODO
-            Fragment mapFragment =
-                    context.getFragmentManager().findFragmentById(MainActivity.TabID.MAP.ordinal());
-
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                }
-            });
+            view.addView(button, 1);
         }
-        view.addView(button);
         return view;
     }
 

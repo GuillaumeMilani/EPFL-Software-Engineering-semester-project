@@ -76,17 +76,19 @@ public class MainActivity extends BaseActivity {
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
+        // get front tab from intent or set it to Map (default)
         int tabId = getIntent().getIntExtra(MainActivity.TABKEY, TabID.MAP.ordinal());
         viewPager.setCurrentItem(tabId);
-
     }
     // *********************************************************************************************
 
     private void setupViewPager(ViewPager viewPager, Intent intent) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
 
-        double latitude = intent.getDoubleExtra(MapFragment.LATITUDEKEY, -1);
-        double longitude = intent.getDoubleExtra(MapFragment.LONGITUDEKEY, -1);
+        // initial map position, either default or set from intent (activity started from item's
+        // detail view)
+        double latitude = intent.getDoubleExtra(MapFragment.LATITUDEKEY, MapFragment.DEFAULTLATITUDE);
+        double longitude = intent.getDoubleExtra(MapFragment.LONGITUDEKEY, MapFragment.DEFAULTLONGITUDE);
 
         Bundle args = new Bundle();
         args.putDouble(MapFragment.LATITUDEKEY, latitude);
@@ -94,7 +96,7 @@ public class MainActivity extends BaseActivity {
         MapFragment mapFragment = new MapFragment();
         mapFragment.setArguments(args);
 
-        // BEWARE OF THE ORDER, must be consistent with tabid
+        // BEWARE OF THE ORDER, must be consistent with TabID
         adapter.addFragment(mapFragment, TabID.MAP.toString());
         adapter.addFragment(new ChatFragment(), TabID.CHAT.toString());
         viewPager.setAdapter(adapter);
