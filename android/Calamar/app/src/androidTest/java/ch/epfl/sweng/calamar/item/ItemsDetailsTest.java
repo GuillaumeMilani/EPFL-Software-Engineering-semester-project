@@ -4,7 +4,6 @@ import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 import android.test.ActivityInstrumentationTestCase2;
 
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,6 +18,7 @@ import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
@@ -40,6 +40,7 @@ public class ItemsDetailsTest extends ActivityInstrumentationTestCase2<ChatActiv
         super.setUp();
         DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
         CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
+        CalamarApplication.getInstance().resetPreferences();
     }
 
     /**
@@ -47,7 +48,7 @@ public class ItemsDetailsTest extends ActivityInstrumentationTestCase2<ChatActiv
      * ( Test getView() of Item )
      */
     @Test
-    public void testItemDetailsShowsUsers(){
+    public void testItemDetailsShowsUsers() {
         onView(withId(R.id.refreshButton)).perform(click());
         onView(withText("Hello Bob, it's Alice !")).perform(click());
 
@@ -63,7 +64,7 @@ public class ItemsDetailsTest extends ActivityInstrumentationTestCase2<ChatActiv
      * ( Test getPreview() of SimpleTextItem )
      */
     @Test
-    public void testSimpleTextItemDetailsShowCorrectPreview(){
+    public void testSimpleTextItemDetailsShowCorrectPreview() {
         onView(withId(R.id.refreshButton)).perform(click());
         onView(withText("Hello Bob, it's Alice !")).perform(click());
 
@@ -77,7 +78,7 @@ public class ItemsDetailsTest extends ActivityInstrumentationTestCase2<ChatActiv
      * ( Test getPreview() of SimpleTextItem )
      */
     @Test
-    public void testLockedSimpleTextItemDetailsShowCorrectPreview(){
+    public void testLockedSimpleTextItemDetailsShowCorrectPreview() {
         onView(withId(R.id.refreshButton)).perform(click());
         onView(withText("You have to fill the conditions to see the message !")).perform(click());
 
@@ -90,7 +91,7 @@ public class ItemsDetailsTest extends ActivityInstrumentationTestCase2<ChatActiv
      * (Test getView() of true condition )
      */
     @Test
-    public void testTrueConditionInItemIsCorrectlyDisplayed(){
+    public void testTrueConditionInItemIsCorrectlyDisplayed() {
         onView(withId(R.id.refreshButton)).perform(click());
         onView(withText("Hello Bob, it's Alice !")).perform(click());
 
@@ -102,7 +103,7 @@ public class ItemsDetailsTest extends ActivityInstrumentationTestCase2<ChatActiv
      * (Test getView() of false and position condition)
      */
     @Test
-    public void testFalseAndPositionConditionInItemIsCorrectlyDisplayed(){
+    public void testFalseAndPositionConditionInItemIsCorrectlyDisplayed() {
         onView(withId(R.id.refreshButton)).perform(click());
         onView(withText("You have to fill the conditions to see the message !")).perform(click());
 

@@ -273,6 +273,11 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
         startActivity(intent);
     }
 
+    public void clearChat() {
+        this.messagesHistory.clear();
+        adapter.notifyDataSetChanged();
+    }
+
     private class ItemClickWithStorageCallbackListener implements AdapterView.OnItemClickListener, StorageCallbacks {
 
         private AlertDialog dialog;

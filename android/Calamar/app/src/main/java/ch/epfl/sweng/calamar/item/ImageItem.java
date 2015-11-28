@@ -35,14 +35,47 @@ public final class ImageItem extends FileItem {
      * @param condition the content (text message)
      * @param data      the image as a byte array
      * @param path      the path of the image
-     * @see Item#Item(int, User, Recipient, Date, Condition)
+     * @param message   the message of the image
+     * @see Item#Item(int, User, Recipient, Date, Condition, String)
      */
-    public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path) {
-        super(ID, from, to, date, condition, data, path);
+    public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path, String message) {
+        super(ID, from, to, date, condition, data, path, message);
     }
 
     /**
-     * Instantiates a new ImageItem with the following parameters (condition will be always true)
+     * Instantiates a new ImageItem with the following parameters
+     *
+     * @param ID      the id
+     * @param from    the 'from' field of the Item (sender)
+     * @param to      the 'to' field of the Item (recipient)
+     * @param date    the creation/posting date of the Item
+     * @param data    the image as a byte array
+     * @param path    the path of the image
+     * @param message the message of the image
+     * @see Item#Item(int, User, Recipient, Date, Condition, String)
+     */
+    public ImageItem(int ID, User from, Recipient to, Date date, byte[] data, String path, String message) {
+        this(ID, from, to, date, Condition.trueCondition(), data, path, message);
+    }
+
+    /**
+     * Instantiates a new ImageItem with the following parameters
+     *
+     * @param ID        the id
+     * @param from      the 'from' field of the Item (sender)
+     * @param to        the 'to' field of the Item (recipient)
+     * @param date      the creation/posting date of the Item
+     * @param condition the content (text message)
+     * @param data      the image as a byte array
+     * @param path      the path of the image
+     * @see Item#Item(int, User, Recipient, Date, Condition, String)
+     */
+    public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path) {
+        this(ID, from, to, date, condition, data, path, "");
+    }
+
+    /**
+     * Instantiates a new ImageItem with the following parameters
      *
      * @param ID   the id
      * @param from the 'from' field of the Item (sender)
@@ -50,10 +83,10 @@ public final class ImageItem extends FileItem {
      * @param date the creation/posting date of the Item
      * @param data the image as a byte array
      * @param path the path of the image
-     * @see Item#Item(int, User, Recipient, Date)
+     * @see Item#Item(int, User, Recipient, Date, Condition, String)
      */
     public ImageItem(int ID, User from, Recipient to, Date date, byte[] data, String path) {
-        this(ID, from, to, date, Condition.trueCondition(), data, path);
+        this(ID, from, to, date, Condition.trueCondition(), data, path, "");
     }
 
     /**
@@ -95,6 +128,7 @@ public final class ImageItem extends FileItem {
      * @throws JSONException
      * @see Item#fromJSON(JSONObject) Recipient.fromJSON
      */
+
     public static ImageItem fromJSON(JSONObject json) throws JSONException {
         return new ImageItem.Builder().parse(json).build();
     }
@@ -161,7 +195,7 @@ public final class ImageItem extends FileItem {
         }
 
         public ImageItem build() {
-            return new ImageItem(super.ID, super.from, super.to, super.date, super.condition, super.data, super.path);
+            return new ImageItem(super.ID, super.from, super.to, super.date, super.condition, super.data, super.path, super.message);
         }
     }
 }

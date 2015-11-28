@@ -1,24 +1,30 @@
 package ch.epfl.sweng.calamar;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
+import ch.epfl.sweng.calamar.client.DatabaseClientException;
+import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.item.CreateItemActivity;
-import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.push.RegistrationIntentService;
-import ch.epfl.sweng.calamar.utils.StorageCallbacks;
 
 public abstract class BaseActivity extends AppCompatActivity
         implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -30,6 +36,8 @@ public abstract class BaseActivity extends AppCompatActivity
     // activity request codes
     private static final int ERROR_RESOLUTION_REQUEST = 1001;
     private static final int REQUEST_CODE_PICK_ACCOUNT = 1002;
+    protected static final int ACCOUNT_CHOOSEN = 3001;
+
 
     // google api related stuff
     private boolean resolvingError;
@@ -148,7 +156,7 @@ public abstract class BaseActivity extends AppCompatActivity
                 }
                 break;
             //TODO code 1002 http://www.androiddesignpatterns.com/2013/01/google-play-services-setup.html
-            case REQUEST_CODE_PICK_ACCOUNT:
+            case REQUEST_CODE_PICK_ACCOUNT: // TODO ?? is this still useful ??
                 /*
                 if (resultCode == RESULT_OK) {
                     String accountName = data.getStringExtra(
@@ -160,6 +168,20 @@ public abstract class BaseActivity extends AppCompatActivity
                     finish();
                 }
                 */
+                break;
+            case ACCOUNT_CHOOSEN:
+                switch (resultCode) {
+                    case Activity.RESULT_OK:
+                        // get account name
+                        String accountName = data.getExtras().getString(AccountManager.KEY_ACCOUNT_NAME);
+                        Log.i(TAG, accountName);
+                        CalamarApplication.getInstance().setCurrentUserName(accountName);
+                        afterAccountAuthentication();
+                        break;
+                    default:
+                        Log.e(BaseActivity.TAG, "Didn't choose an account");
+                        finish();
+                }
                 break;
             default:
                 throw new IllegalStateException("onActivityResult : unknown request ! ");
@@ -207,9 +229,16 @@ public abstract class BaseActivity extends AppCompatActivity
     private synchronized void buildGoogleApiClient() {
         app.setGoogleApiClient(
                 new GoogleApiClient.Builder(app)
-                        .addApi(LocationServices.API)//TODO add service push TONY
+                        .addApi(LocationServices.API)
                         .addConnectionCallbacks(this)
                         .addOnConnectionFailedListener(this).build());
+    }
+
+    /**
+     * Called after the account was authenticated
+     */
+    private void afterAccountAuthentication() {
+        new createNewUserTask(CalamarApplication.getInstance().getCurrentUserName(), this).execute();
     }
 
 
@@ -223,4 +252,52 @@ public abstract class BaseActivity extends AppCompatActivity
         startActivity(intent);
     }
 
+
+    private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
+        private String name = null;
+        private Context context;
+
+        public createNewUserTask(String name, Context context) {
+            this.name = name;
+            this.context = context;
+        }
+
+        @Override
+        protected Integer doInBackground(Void... v) {
+            try {
+                //Get the device id.
+                return DatabaseClientLocator.getDatabaseClient().newUser(name,
+                        Settings.Secure.getString(getContentResolver(),
+                                Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
+            } catch (DatabaseClientException e) {
+                e.printStackTrace();
+                // TODO make it works like the other asynctask,
+                // and make use of context safe
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Integer id) {
+            if (id != null) {
+                CalamarApplication.getInstance().setCurrentUserID(id);
+                // Show toast
+                Context context = getApplicationContext();
+                CharSequence text = "Connected as " + name;
+                int duration = Toast.LENGTH_SHORT;
+
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
+            } else {
+                AlertDialog.Builder newUser = new AlertDialog.Builder(context);
+                newUser.setTitle(R.string.new_account_creation_fail);
+                newUser.setPositiveButton(R.string.new_account_creation_retry, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        new createNewUserTask(name, context).execute();
+                    }
+                });
+                newUser.show();
+            }
+        }
+    }
 }
