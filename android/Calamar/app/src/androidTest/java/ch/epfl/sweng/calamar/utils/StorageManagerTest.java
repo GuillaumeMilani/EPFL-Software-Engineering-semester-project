@@ -4,6 +4,7 @@ package ch.epfl.sweng.calamar.utils;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
@@ -60,6 +61,7 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
     private static final String FILENAME = "FILE_";
     private static final String IMAGENAME = "IMG_";
     private static final String NAME_SUFFIX = "_CAL";
+
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
     @Rule
@@ -80,6 +82,55 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         dbHandler.deleteAllRecipients();
         injectInstrumentation(InstrumentationRegistry.getInstrumentation());
     }
+
+    @Test
+    public void testWritingTaskLoopsIfRequiredAndCancelWorks() throws Throwable {
+        byte[] data = {0x33};
+        final FileItem item = new FileItem(0, testUser, testRecipient, new Date(), tc, data, "WriteThis");
+        int numRun = 0;
+        while (numRun < 5) {
+            CountDownLatch latch = new CountDownLatch(1);
+            runTestOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    storageManager.storeItem(item, null);
+                }
+            });
+            assertEquals(storageManager.getCurrentWritingTasks().size(), 1);
+            assertEquals(storageManager.getCurrentFilesID().size(), 1);
+            assertTrue(storageManager.getCurrentFilesID().contains(item.getID()));
+            storageManager.cancelWritingTasks(0);
+            latch.await(5, TimeUnit.SECONDS);
+            assertEquals(storageManager.getCurrentWritingTasks().size(), 0);
+            assertEquals(storageManager.getCurrentFilesID().size(), 1);
+            runTestOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    storageManager.storeItem(item, null);
+                }
+            });
+            StorageManager.WritingTask wt = new ArrayList<>(storageManager.getCurrentWritingTasks()).get(0);
+            while (wt.getIteration() < 2) {
+                storageManager.cancelWritingTasks(2);
+                assertFalse(wt.isCancelled());
+                assertEquals(storageManager.getCurrentFilesID().size(), 1);
+                List<StorageManager.WritingTask> tasks = new ArrayList<>(storageManager.getCurrentWritingTasks());
+                if (tasks.isEmpty()) {
+                    assertEquals(wt.getIteration(), 1);
+                    assertEquals(wt.getStatus(), AsyncTask.Status.FINISHED);
+                    break;
+                } else {
+                    wt = new ArrayList<>(storageManager.getCurrentWritingTasks()).get(0);
+                }
+            }
+            storageManager.cancelWritingTasks(2);
+            latch.await(5, TimeUnit.SECONDS);
+            assertEquals(storageManager.getCurrentFilesID().size(), 1);
+            assertEquals(storageManager.getCurrentWritingTasks().size(), 0);
+            numRun += 1;
+        }
+    }
+
 
     @Test
     public void testFilesAreRenamed() throws Throwable {

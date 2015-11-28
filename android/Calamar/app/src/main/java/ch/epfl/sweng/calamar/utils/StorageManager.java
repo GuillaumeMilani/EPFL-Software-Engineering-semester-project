@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
@@ -30,10 +31,10 @@ import ch.epfl.sweng.calamar.item.Item;
 //TODO Make toasts on UI thread, RuntimeException otherwise
 public class StorageManager {
 
-    private static final Set<WritingTask> currentWritingTasks = new HashSet<>();
+    private static final Set<WritingTask> currentWritingTasks = new CopyOnWriteArraySet<>();
 
     //Will be used to requery server if writing of a file has failed and the file is no longer available.
-    private static final Set<Integer> currentFilesID = new HashSet<>();
+    private static final Set<Integer> currentFilesID = new CopyOnWriteArraySet<>();
 
     private static final int RETRY_TIME = 10000;
     private static final int MAX_ITER = 20;
@@ -76,13 +77,12 @@ public class StorageManager {
     /**
      * Stops all writing tasks (to free up memory mainly)
      */
-    public void endWritingTasks(int level) {
+    public void cancelWritingTasks(int level) {
         for (WritingTask w : currentWritingTasks) {
             if (w.getIteration() >= level) {
                 w.cancel(true);
             }
         }
-        currentWritingTasks.clear();
     }
 
     /**
@@ -543,7 +543,7 @@ public class StorageManager {
         private int iterCount;
         private FileItem f;
 
-        private WritingTask(FileItem f, int iterCount) {
+        protected WritingTask(FileItem f, int iterCount) {
             this.iterCount = iterCount;
             this.f = f;
         }
@@ -613,24 +613,29 @@ public class StorageManager {
 
         @Override
         protected void onPostExecute(final Boolean b) {
+            currentWritingTasks.remove(this);
             if (!b) {
                 if (!isCancelled()) {
                     if (iterCount < MAX_ITER) {
+                        final WritingTask task = new WritingTask(f, iterCount + 1);
+                        task.execute();
+                        currentWritingTasks.add(task);
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                new WritingTask(f, iterCount + 1).execute();
+                                //TODO seems that task is executed twice in tests so it fails
+                                //I dont understand why.
+                                if (!(task.getStatus().equals(Status.FINISHED)) && !(task.getStatus().equals(Status.RUNNING))) {
+                                    task.execute();
+                                }
                             }
                         }, RETRY_TIME * (iterCount + 1));
                     } else {
                         showStorageStateToast();
                     }
-                } else {
-                    currentWritingTasks.remove(this);
                 }
             } else {
                 currentFilesID.remove(f.getID());
-                currentWritingTasks.remove(this);
             }
         }
 
@@ -638,5 +643,13 @@ public class StorageManager {
         protected void onCancelled() {
             currentWritingTasks.remove(this);
         }
+    }
+
+    protected Set<WritingTask> getCurrentWritingTasks() {
+        return new HashSet<>(currentWritingTasks);
+    }
+
+    protected Set<Integer> getCurrentFilesID() {
+        return new HashSet<>(currentFilesID);
     }
 }
