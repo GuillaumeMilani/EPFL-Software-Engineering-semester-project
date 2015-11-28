@@ -201,14 +201,11 @@ public class CreateItemActivity extends BaseActivity {
         } else {
             toSendBuilder = new SimpleTextItem.Builder();
         }
-        if (!message.getText().toString().equals("")) {
-            ((SimpleTextItem.Builder) toSendBuilder).setMessage(message.getText().toString());
-        } else {
-            if (toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
-                Toast.makeText(getApplicationContext(), getString(R.string.item_create_invalid),
-                        Toast.LENGTH_SHORT).show();
-                return;
-            }
+        if (message.getText().toString().equals("") && toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
+
+            Toast.makeText(getApplicationContext(), getString(R.string.item_create_invalid),
+                    Toast.LENGTH_SHORT).show();
+            return;
         }
         if (privateCheck.isChecked()) {
             // TODO clean this..........
@@ -227,6 +224,7 @@ public class CreateItemActivity extends BaseActivity {
         }
         toSendBuilder.setFrom(CalamarApplication.getInstance().getCurrentUser());
         toSendBuilder.setDate(new Date().getTime());
+        toSendBuilder.setMessage(message.getText().toString());
         Item toSend = toSendBuilder.build();
         new SendItemTask(toSend).execute();
         this.finish();
