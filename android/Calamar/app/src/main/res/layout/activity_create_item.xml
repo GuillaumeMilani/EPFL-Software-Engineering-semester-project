@@ -167,5 +167,17 @@
         android:layout_marginTop="0dp"
         android:text="@string/create_button_text" />
 
+    <ProgressBar
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/locationProgressBar"
+        android:indeterminate="false"
+        android:max="10"
+        android:visibility="invisible"
+        android:layout_below="@+id/contactSpinner"
+        android:layout_toRightOf="@+id/locationCheck"
+        android:layout_toEndOf="@+id/locationCheck" />
+
 
 </RelativeLayout>

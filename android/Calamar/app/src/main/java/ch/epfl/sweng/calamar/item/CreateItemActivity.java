@@ -13,6 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -58,6 +59,7 @@ public class CreateItemActivity extends BaseActivity {
     //private CheckBox timeCheck;
     private Button browseButton;
     private Button sendButton;
+    private ProgressBar locationProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +68,8 @@ public class CreateItemActivity extends BaseActivity {
 
         privateCheck = (CheckBox) findViewById(R.id.privateCheck);
         locationCheck = (CheckBox) findViewById(R.id.locationCheck);
+        locationProgressBar = (ProgressBar) findViewById(R.id.locationProgressBar);
+        locationProgressBar.setVisibility(ProgressBar.INVISIBLE);
         message = (EditText) findViewById(R.id.createItemActivity_messageText);
 
         contacts = CalamarApplication.getInstance().getDatabaseHandler().getAllRecipients();
@@ -154,7 +158,8 @@ public class CreateItemActivity extends BaseActivity {
         gpsProvider.startLocationUpdates(this);
         sendButton.setEnabled(false);
 
-        // TODO show "sablier" + test
+        locationProgressBar.setVisibility(ProgressBar.VISIBLE);
+        sendButton.setEnabled(false);
 
         gpsProvider.addObserver(new GPSProvider.Observer() {
             @Override
@@ -162,6 +167,8 @@ public class CreateItemActivity extends BaseActivity {
                 currentLocation = newLocation;
                 sendButton.setEnabled(true);
                 gpsProvider.removeObserver(this);
+                locationProgressBar.setVisibility(ProgressBar.INVISIBLE);
+                sendButton.setEnabled(true);
                 // TODO ConcurrentModificationException
                 // because set modified during notify iteration
                 // normally solved now, but wait and see
