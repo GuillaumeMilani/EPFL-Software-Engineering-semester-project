@@ -231,7 +231,7 @@ public class ConditionTest {
         o1.assertAll(false, 0);
         o2.assertAll(false, 0);
         // in the Rolex
-        gps.setMockLocation(makeLocation(46.518313, 6.567804));
+        gps.setMockLocation(makeLocation(46.518388, 6.568313));
         o1.assertAll(true, 1);
         o2.assertAll(false, 0);
         // back to BC
