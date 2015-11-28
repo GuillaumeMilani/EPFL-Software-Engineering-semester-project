@@ -1,27 +1,16 @@
 package ch.epfl.sweng.calamar;
 
 import android.location.Location;
-import android.support.test.rule.ActivityTestRule;
-import android.test.ActivityInstrumentationTestCase2;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.Date;
-
-import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
-import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.map.GPSProvider;
-import ch.epfl.sweng.calamar.condition.Condition;
-import ch.epfl.sweng.calamar.condition.PositionCondition;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -240,15 +229,15 @@ public class ConditionTest {
         // Amphimax
         gps.setMockLocation(makeLocation(46.521783, 6.575507));
         o1.assertAll(false, 0);
-        o2.assertAll(false, 1);
+        o2.assertAll(true, 0);
         // in the Rolex
         gps.setMockLocation(makeLocation(46.518313, 6.567804));
         o1.assertAll(true, 1);
-        o2.assertAll(false, 1);
+        o2.assertAll(true, 0);
         // back to BC
         gps.setMockLocation(makeLocation(46.518568, 6.561926));
-        o1.assertAll(false, 2);
-        o2.assertAll(true, 2);
+        o1.assertAll(true, 1);
+        o2.assertAll(true, 0);
     }
 
     @Test
