@@ -383,7 +383,7 @@ public class StorageManager {
     /**
      * The task whose job is to retrieve data from storage and return it
      */
-    private class ReadTask extends AsyncTask<Void, Void, byte[]> {
+    protected class ReadTask extends AsyncTask<Void, Void, byte[]> {
 
         private final FileItem f;
         private final String path;
@@ -538,7 +538,7 @@ public class StorageManager {
     /**
      * An AsyncTask whose task is to write a FileItem to the storage. It will retry for ~30 min (20 times) before giving up
      */
-    private class WritingTask extends AsyncTask<Void, Void, Boolean> {
+    protected class WritingTask extends AsyncTask<Void, Void, Boolean> {
 
         private int iterCount;
         private FileItem f;

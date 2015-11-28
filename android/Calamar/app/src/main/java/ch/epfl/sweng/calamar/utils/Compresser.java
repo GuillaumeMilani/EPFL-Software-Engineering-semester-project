@@ -122,13 +122,13 @@ public class Compresser {
             case FILEITEM:
                 return new FileItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), null, f.getPath());
             case IMAGEITEM:
-                return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), getDataThumbnail((ImageItem) f), f.getPath());
+                return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), getImageThumbnail((ImageItem) f), f.getPath());
             default:
                 throw new IllegalArgumentException("Expected FileItem");
         }
     }
 
-    private static byte[] getDataThumbnail(ImageItem i) {
+    public static byte[] getImageThumbnail(ImageItem i) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         Bitmap bitmap = i.getBitmap();
         if (bitmap != null) {
@@ -141,7 +141,7 @@ public class Compresser {
             return stream.toByteArray();
         }
         Log.d("Bitmap", "Bitmap of " + i + " is null.");
-        return new byte[0];
+        return null;
     }
 
     private static boolean isCompressed(byte[] data) {

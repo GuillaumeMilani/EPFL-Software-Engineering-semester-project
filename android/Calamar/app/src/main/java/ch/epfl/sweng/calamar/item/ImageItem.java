@@ -16,6 +16,7 @@ import java.util.Date;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
+import ch.epfl.sweng.calamar.utils.Compresser;
 
 /**
  * Created by pierre on 11/12/15.
@@ -23,8 +24,6 @@ import ch.epfl.sweng.calamar.recipient.User;
 public final class ImageItem extends FileItem {
 
     protected final static Type ITEM_TYPE = Type.IMAGEITEM;
-
-    //TODO Need to decode bitmap from path, then compress to byte array ?
 
     /**
      * Instantiates a new ImageItem with the following parameters
@@ -70,7 +69,8 @@ public final class ImageItem extends FileItem {
     @Override
     public View getItemView(Context context) {
         ImageView view = new ImageView(context);
-        view.setImageBitmap(BitmapFactory.decodeByteArray(getData(), 0, getData().length));
+        byte[] tempData = Compresser.decompress(getData());
+        view.setImageBitmap(BitmapFactory.decodeByteArray(tempData, 0, tempData.length));
         return view;
     }
 
@@ -116,7 +116,8 @@ public final class ImageItem extends FileItem {
      * @return a bitmap
      */
     public Bitmap getBitmap() {
-        return BitmapFactory.decodeByteArray(getData(), 0, getData().length);
+        byte[] tempData = Compresser.decompress(getData());
+        return BitmapFactory.decodeByteArray(tempData, 0, tempData.length);
     }
 
 
