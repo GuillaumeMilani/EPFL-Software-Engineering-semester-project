@@ -101,6 +101,19 @@ public class ChatAdapter extends BaseAdapter {
         }
     }
 
+    /**
+     * Removes an item from the list
+     *
+     * @param message the message to delete
+     */
+    public void delete(Item message) {
+        for (Item i : messages) {
+            if (i.equals(message)) {
+                messages.remove(i);
+            }
+        }
+    }
+
 
     /**
      * Set the alignment of the messages, depending on if the message is outgoing or ingoing.
@@ -132,7 +145,7 @@ public class ChatAdapter extends BaseAdapter {
             layoutParams.gravity = Gravity.START;
             holder.textTime.setLayoutParams(layoutParams);
         } else {
-            holder.contentWithBG.setBackgroundResource(unlocked ? R.drawable.out_message_bg : R.drawable.out_message_bg_lock );
+            holder.contentWithBG.setBackgroundResource(unlocked ? R.drawable.out_message_bg : R.drawable.out_message_bg_lock);
             LinearLayout.LayoutParams layoutParams =
                     (LinearLayout.LayoutParams) holder.contentWithBG.getLayoutParams();
             layoutParams.gravity = Gravity.END;

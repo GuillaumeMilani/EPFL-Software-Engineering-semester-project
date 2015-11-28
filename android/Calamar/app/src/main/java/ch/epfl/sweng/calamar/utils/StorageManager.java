@@ -435,7 +435,7 @@ public class StorageManager {
                 }
             }
         } else {
-            showStorageStateToast();
+            //showStorageStateToast();
         }
         return null;
     }

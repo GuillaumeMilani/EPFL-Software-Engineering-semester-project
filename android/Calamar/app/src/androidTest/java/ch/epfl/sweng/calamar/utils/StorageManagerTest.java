@@ -14,8 +14,13 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -86,19 +91,19 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
                 }
                 final File filePath = Environment.getExternalStoragePublicDirectory(FILE_FOLDER_NAME);
                 final File imagePath = Environment.getExternalStoragePublicDirectory(IMAGE_FOLDER_NAME);
+                final ChatActivity activity = mActivityRule.getActivity();
                 final ImageItem item = new ImageItem(0, testUser, testRecipient, new Date(), tc, null, f1.getAbsolutePath());
                 final ImageItem item2 = new ImageItem(1, testUser, testRecipient, new Date(), tc, null, f2.getAbsolutePath());
                 final FileItem item3 = new FileItem(2, testUser, testRecipient, new Date(), tc, null, f3.getAbsolutePath());
-                final ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+                final ListView list = (ListView) activity.findViewById(R.id.messagesContainer);
                 final ChatAdapter adapter = (ChatAdapter) list.getAdapter();
                 adapter.add(item);
                 adapter.add(item2);
                 adapter.add(item3);
-                final List<Item> retrievedFirst = mActivityRule.getActivity().getHistory();
+                final List<Item> retrievedFirst = activity.getHistory();
                 assertEquals(retrievedFirst.size(), 3);
                 assertEquals(app.getTodayImageCount(), 0);
                 assertEquals(app.getTodayFileCount(), 0);
-                final ChatActivity activity = mActivityRule.getActivity();
                 storageManager.storeItem(item, activity);
                 assertEquals(app.getTodayFileCount(), 0);
                 assertEquals(app.getTodayImageCount(), 1);
@@ -108,10 +113,7 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
                 storageManager.storeItem(item2, activity);
                 assertEquals(app.getTodayFileCount(), 1);
                 assertEquals(app.getTodayImageCount(), 2);
-                storageManager.getCompleteItem(item, mActivityRule.getActivity());
-                storageManager.getCompleteItem(item2, mActivityRule.getActivity());
-                storageManager.getCompleteItem(item3, mActivityRule.getActivity());
-                List<Item> retrieved = mActivityRule.getActivity().getHistory();
+                List<Item> retrieved = activity.getHistory();
                 assertEquals(retrieved.size(), 3);
                 assertEquals(((ImageItem) retrieved.get(0)).getPath(), imagePath.toString() + '/' + IMAGENAME + formatDate() + NAME_SUFFIX + '0');
                 assertEquals(((ImageItem) retrieved.get(1)).getPath(), imagePath.toString() + '/' + IMAGENAME + formatDate() + NAME_SUFFIX + '1');
@@ -136,26 +138,24 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                final ChatActivity activity = mActivityRule.getActivity();
                 final ImageItem item = new ImageItem(0, testUser, testRecipient, new Date(), fc, null, f1.getAbsolutePath());
                 final FileItem item2 = new FileItem(1, testUser, testRecipient, new Date(), fc, null, f2.getAbsolutePath());
-                final ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+                final ListView list = (ListView) activity.findViewById(R.id.messagesContainer);
                 final ChatAdapter adapter = (ChatAdapter) list.getAdapter();
                 adapter.add(item);
                 adapter.add(item2);
-                final List<Item> retrievedFirst = mActivityRule.getActivity().getHistory();
+                final List<Item> retrievedFirst = activity.getHistory();
                 assertEquals(retrievedFirst.size(), 2);
                 assertEquals(app.getTodayImageCount(), 0);
                 assertEquals(app.getTodayFileCount(), 0);
-                final ChatActivity activity = mActivityRule.getActivity();
                 storageManager.storeItem(item, activity);
                 assertEquals(app.getTodayFileCount(), 0);
                 assertEquals(app.getTodayImageCount(), 0);
                 storageManager.storeItem(item2, activity);
                 assertEquals(app.getTodayFileCount(), 0);
                 assertEquals(app.getTodayImageCount(), 0);
-                storageManager.getCompleteItem(item, mActivityRule.getActivity());
-                storageManager.getCompleteItem(item2, mActivityRule.getActivity());
-                List<Item> retrieved = mActivityRule.getActivity().getHistory();
+                List<Item> retrieved = activity.getHistory();
                 assertEquals(retrieved.size(), 2);
                 assertEquals(retrieved.get(0), retrievedFirst.get(0));
                 assertEquals(retrieved.get(1), retrievedFirst.get(1));
@@ -165,7 +165,54 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
 
     @Test
     public void testDataIsRetrieved() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                File f1 = null;
+                File f2 = null;
+                try {
+                    f1 = temp.newFile();
+                    f2 = temp.newFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                app.setCurrentUserID(testUser.getID());
+                app.setCurrentUserName(testUser.getName());
+                final ChatActivity activity = mActivityRule.getActivity();
+                byte[] data = {0x55, 0x43};
+                try {
+                    writeFile(f1, data);
+                    writeFile(f2, data);
 
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                final ImageItem item = new ImageItem(0, testUser, testRecipient, new Date(), tc, data, f1.getAbsolutePath());
+                final FileItem item2 = new FileItem(1, testUser, testRecipient, new Date(), tc, data, f2.getAbsolutePath());
+                ArrayList<Item> toAdd = new ArrayList<>(2);
+                toAdd.add(item);
+                toAdd.add(item2);
+                storageManager.storeItems(toAdd, activity);
+                final ImageItem itemEmpty = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), null, item.getPath());
+                final FileItem item2Empty = new FileItem(item2.getID(), item2.getFrom(), item2.getTo(), item2.getDate(), item2.getCondition(), null, item2.getPath());
+                final ListView list = (ListView) activity.findViewById(R.id.messagesContainer);
+                final ChatAdapter adapter = (ChatAdapter) list.getAdapter();
+                adapter.add(itemEmpty);
+                adapter.add(item2Empty);
+                final List<Item> retrievedFirst = activity.getHistory();
+                assertEquals(retrievedFirst.size(), 2);
+                assertEquals(app.getTodayImageCount(), 0);
+                assertEquals(app.getTodayFileCount(), 0);
+                storageManager.getCompleteItem(itemEmpty, activity);
+                storageManager.getCompleteItem(item2Empty, activity);
+                List<Item> retrieved = activity.getHistory();
+                assertEquals(retrieved.size(), 2);
+                assertTrue(Arrays.toString(((FileItem) retrieved.get(0)).getData()), Arrays.equals(((ImageItem) retrieved.get(0)).getData(), data));
+                assertTrue(Arrays.equals(((FileItem) retrieved.get(1)).getData(), data));
+                assertFalse(retrieved.get(0).equals(retrievedFirst.get(0)));
+                assertFalse(retrieved.get(1).equals(retrievedFirst.get(1)));
+            }
+        });
     }
 
     @Test
@@ -196,7 +243,6 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
                 storageManager.storeItem(item2, activity);
                 storageManager.storeItem(item3, activity);
                 storageManager.storeItem(item4, activity);
-                dbHandler.applyPendingOperations();
                 List<Item> allItems = dbHandler.getAllItems();
                 final ImageItem itemAfter = new ImageItem(item.getID(), item.getFrom(), item.getTo(),
                         item.getDate(), item.getCondition(), item.getData(), imagePath.toString() + '/' + IMAGENAME + formatDate() + NAME_SUFFIX + '0');
@@ -231,28 +277,26 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
                 app.setCurrentUserID(testUser.getID());
                 app.setCurrentUserName(testUser.getName());
                 byte[] data = {0x55, 0x43};
-                final ImageItem item = new ImageItem(0, testUser, testRecipient, new Date(), fc, null, f1.getAbsolutePath());
-                final FileItem item2 = new FileItem(1, testUser, testRecipient, new Date(), fc, data, f2.getAbsolutePath());
-                final ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+                final ChatActivity activity = mActivityRule.getActivity();
+                final ImageItem item = new ImageItem(0, testUser, testRecipient, new Date(), tc, null, f1.getAbsolutePath());
+                final FileItem item2 = new FileItem(1, testUser, testRecipient, new Date(), tc, data, f2.getAbsolutePath());
+                final ListView list = (ListView) activity.findViewById(R.id.messagesContainer);
                 final ChatAdapter adapter = (ChatAdapter) list.getAdapter();
                 adapter.add(item);
                 adapter.add(item2);
-                final List<Item> retrievedFirst = mActivityRule.getActivity().getHistory();
+                final List<Item> retrievedFirst = activity.getHistory();
                 assertEquals(retrievedFirst.size(), 2);
                 assertEquals(app.getTodayImageCount(), 0);
                 assertEquals(app.getTodayFileCount(), 0);
-                final ChatActivity activity = mActivityRule.getActivity();
                 storageManager.storeItem(item, activity);
                 assertEquals(app.getTodayFileCount(), 0);
                 assertEquals(app.getTodayImageCount(), 0);
                 storageManager.storeItem(item2, activity);
                 //Checks if file still has data
-                assertEquals(mActivityRule.getActivity().getHistory().get(1), retrievedFirst.get(1));
+                assertEquals(activity.getHistory().get(1), retrievedFirst.get(1));
                 assertEquals(app.getTodayFileCount(), 0);
                 assertEquals(app.getTodayImageCount(), 0);
-                storageManager.getCompleteItem(item, mActivityRule.getActivity());
-                storageManager.getCompleteItem(item2, mActivityRule.getActivity());
-                List<Item> retrieved = mActivityRule.getActivity().getHistory();
+                List<Item> retrieved = activity.getHistory();
                 assertEquals(retrieved.size(), 2);
                 assertEquals(retrieved.get(0), retrievedFirst.get(0));
                 assertEquals(retrieved.get(1), retrievedFirst.get(1));
@@ -260,7 +304,83 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         });
     }
 
+    @Test
+    public void testStoresGetsAndDeletes() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                File f1 = null;
+                File f2 = null;
+                try {
+                    f1 = temp.newFile();
+                    f2 = temp.newFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                final ChatActivity activity = mActivityRule.getActivity();
+                final ChatAdapter adapter = (ChatAdapter) ((ListView) activity.findViewById(R.id.messagesContainer)).getAdapter();
+                byte[] data = {0x66, 0x34};
+                try {
+                    writeFile(f1, data);
+                    writeFile(f2, data);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                app.setCurrentUserName(testUser.getName());
+                app.setCurrentUserID(testUser.getID());
+                final ImageItem item = new ImageItem(0, testUser, testRecipient, new Date(), tc, null, f1.getAbsolutePath());
+                final FileItem item2 = new FileItem(1, testUser, testRecipient, new Date(), tc, null, f2.getAbsolutePath());
+                final ImageItem itemFull = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, item.getPath());
+                final FileItem item2Full = new FileItem(item2.getID(), item2.getFrom(), item2.getTo(), item2.getDate(), item2.getCondition(), data, item2.getPath());
+                adapter.add(item);
+                assertEquals(activity.getHistory().get(0), item);
+                storageManager.storeItem(item, activity);
+                assertEquals(activity.getHistory().get(0), item);
+                storageManager.getCompleteItem(item, activity);
+                assertEquals(activity.getHistory().get(0), itemFull);
+                adapter.update(item);
+                storageManager.deleteItemWithoutDatabase(itemFull);
+                storageManager.getCompleteItem(itemFull, activity);
+                assertEquals(activity.getHistory().get(0), item);
+                List<Item> toAdd = new ArrayList<>();
+                toAdd.add(itemFull);
+                storageManager.storeItems(toAdd, activity);
+                assertEquals(activity.getHistory().get(0), itemFull);
+                adapter.update(item);
+                assertEquals(activity.getHistory().get(0), item);
+                storageManager.getCompleteItem(item, activity);
+                assertEquals(activity.getHistory().get(0), itemFull);
+                storageManager.deleteItemWithoutDatabase(item.getID());
+                adapter.update(item);
+                storageManager.getCompleteItem(item, activity);
+                assertEquals(activity.getHistory().get(0), item);
+                try {
+                    writeFile(f1, data);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                storageManager.getCompleteItem(item.getID(), activity);
+                assertEquals(activity.getHistory().get(0), itemFull);
+            }
+        });
+    }
+
     private String formatDate() {
         return calendar.get(Calendar.DAY_OF_MONTH) + "" + (calendar.get(Calendar.MONTH) + 1) + "" + calendar.get(Calendar.YEAR);
     }
+
+    private void writeFile(File f, byte[] data) throws IOException {
+        if (data != null) {
+            OutputStream stream = null;
+            try {
+                stream = new BufferedOutputStream(new FileOutputStream(f.getAbsolutePath()));
+                stream.write(data);
+            } finally {
+                if (stream != null) {
+                    stream.close();
+                }
+            }
+        }
+    }
+
 }
