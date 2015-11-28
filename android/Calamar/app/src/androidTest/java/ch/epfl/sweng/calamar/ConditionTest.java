@@ -101,9 +101,9 @@ public class ConditionTest {
         b.set(true);
         o.assertAll(true, 1);
         a.set(false);
-        o.assertAll(false, 2);
+        o.assertAll(true, 1);
         b.set(false);
-        o.assertAll(false, 2);
+        o.assertAll(true, 1);
     }
 
     @Test
@@ -120,7 +120,7 @@ public class ConditionTest {
         o.assertAll(true, 1);
         a.set(false);
         b.set(false);
-        o.assertAll(false, 2);
+        o.assertAll(true, 1);
     }
 
     @Test
@@ -131,11 +131,11 @@ public class ConditionTest {
         a.set(false);
         o.assertAll(true, 0);
         a.set(true);
-        o.assertAll(false, 1);
+        o.assertAll(true, 0);
         a.set(true);
-        o.assertAll(false, 1);
+        o.assertAll(true, 0);
         a.set(false);
-        o.assertAll(true, 2);
+        o.assertAll(true, 0);
     }
 
     /*
