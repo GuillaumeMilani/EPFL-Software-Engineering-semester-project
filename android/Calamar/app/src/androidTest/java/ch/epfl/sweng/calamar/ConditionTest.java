@@ -89,64 +89,6 @@ public class ConditionTest {
         }
     }
 
-    class TestCondPosition extends Condition {
-
-        Location location;
-        double radius;
-
-        public TestCondPosition(Location location, double radius) {
-            this.location = location;
-            this.radius = radius;
-        }
-
-        public TestCondPosition(double latitude, double longitude, double radius) {
-            this.location = new Location("test");
-            location.setLatitude(latitude);
-            location.setLongitude(longitude);
-            this.radius = radius;
-        }
-
-        @Override
-        protected void compose(JSONObject json) throws JSONException {
-            json.accumulate("type", getType().name());
-            json.accumulate("latitude", location.getLatitude());
-            json.accumulate("longitude", location.getLongitude());
-            json.accumulate("radius", radius);
-        }
-
-        @Override
-        public String toString() {
-            return "";
-        }
-
-        @Override
-        public Type getType() {
-            return Type.TESTCONDITION;
-        }
-
-        @Override
-        public Location getLocation() {
-            return location;
-        }
-
-        @Override
-        public boolean hasLocation() {
-            return true;
-        }
-
-
-        @Override
-        public JSONArray getMetadata() throws JSONException {
-            JSONArray array = new JSONArray();
-            JSONObject jObject = new JSONObject();
-            jObject.accumulate("type", getType().name());
-            jObject.accumulate("latitude", location.getLatitude());
-            jObject.accumulate("longitude", location.getLongitude());
-            array.put(jObject);
-            return array;
-        }
-    }
-
 
     @Test
     public void testConditionTrueFalse() {
@@ -251,8 +193,8 @@ public class ConditionTest {
         loc2.setLatitude(78);
         loc2.setLongitude(93);
 
-        TestCondPosition posCond = new TestCondPosition(loc, 20);
-        TestCondPosition posCond2 = new TestCondPosition(loc2, 20);
+        PositionCondition posCond = new PositionCondition(loc, 20);
+        PositionCondition posCond2 = new PositionCondition(loc2, 20);
 
         // simple
         assertEquals(loc, posCond.getLocation());
@@ -316,7 +258,7 @@ public class ConditionTest {
 
     @Test
     public void testMetadataPositionCondition() throws JSONException {
-        Condition pc = new TestCondPosition(123.4, 432.1, 10);
+        Condition pc = new PositionCondition(123.4, 432.1, 10);
         JSONObject jo = new JSONObject();
         jo.accumulate("type", Condition.Type.TESTCONDITION);
         jo.accumulate("latitude", 123.4);
@@ -327,8 +269,8 @@ public class ConditionTest {
 
     @Test
     public void testMetadataMultiplePositionCondition() throws JSONException {
-        Condition pc1 = new TestCondPosition(123.4, 432.1, 10);
-        Condition pc2 = new TestCondPosition(432.1, 123.4, 20);
+        Condition pc1 = new PositionCondition(123.4, 432.1, 10);
+        Condition pc2 = new PositionCondition(432.1, 123.4, 20);
         Condition pc1AndPc2 = Condition.and(pc1, pc2);
         JSONObject jo1 = new JSONObject();
         jo1.accumulate("type", Condition.Type.TESTCONDITION);
@@ -346,7 +288,7 @@ public class ConditionTest {
 
     @Test
     public void testToJSONMetadata() throws JSONException {
-        Condition pc1 = new TestCondPosition(123.4, 432.1, 10);
+        Condition pc1 = new PositionCondition(123.4, 432.1, 10);
 
         JSONObject jo1 = new JSONObject();
         jo1.accumulate("type", Condition.Type.TESTCONDITION);
