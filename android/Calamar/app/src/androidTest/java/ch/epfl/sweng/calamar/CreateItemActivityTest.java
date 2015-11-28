@@ -1,11 +1,13 @@
 package ch.epfl.sweng.calamar;
 
 
+import android.os.SystemClock;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 import android.test.ActivityInstrumentationTestCase2;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,6 +16,8 @@ import org.junit.runners.JUnit4;
 import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.item.CreateItemActivity;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -29,6 +33,12 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
     private final static String HELLO_ALICE = "Hello Alice !";
     private final static String ALICE = "Alice";
 
+    private final Recipient BOB = new User(1, "bob");
+
+    private final Recipient CALAMAR = new User(2, "calamar");
+
+    CalamarApplication app;
+
     @Rule
     public final ActivityTestRule<CreateItemActivity> mActivityRule = new ActivityTestRule<>(
             CreateItemActivity.class);
@@ -42,12 +52,24 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
     public void setUp() throws Exception {
         super.setUp();
         DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
-        CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
+        app = CalamarApplication.getInstance();
+        app.getDatabaseHandler().deleteAllItems();
     }
 
     @Test
     public void titleOfActivityIsShown() {
-        onView(withId(R.id.activityTitle)).check(matches(withText("CreateItemActivity")));
+        onView(withId(R.id.activityTitle)).check(matches(withText("Create a new item")));
+    }
+
+    @Test
+    public void testProgressBarIsInvisibleAtStart() {
+        onView(withId(R.id.locationProgressBar)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
+    }
+
+    @Test
+    public void testBrowseAFileDisplayed() {
+        onView(withId(R.id.selectFileText)).check(matches(withText("File :")));
+        onView(withId(R.id.selectFileButton)).check(matches(withText("Browse…")));
     }
 
     @Test
@@ -57,6 +79,29 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
         onView(withId(R.id.contactSpinner)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)));
         onView(withId(R.id.privateCheck)).perform(click());
         onView(withId(R.id.contactSpinner)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
+    }
+
+    @Test
+    public void testAllContactAreDisplayedWhenPrivateIsSelected(){
+        app.getDatabaseHandler().addRecipient(BOB);
+        app.getDatabaseHandler().addRecipient(CALAMAR);
+
+        onView(withId(R.id.privateCheck)).perform(click());
+        onView(withId(R.id.contactSpinner)).perform(click());
+
+        onView(withText("bob")).check(matches(ViewMatchers.isDisplayed()));
+        onView(withText("calamar")).check(matches(ViewMatchers.isDisplayed()));
+
+        app.getDatabaseHandler().deleteAllRecipients();
+    }
+
+
+    @Ignore
+    //TODO : Refactor once error message is done.
+    public void testImpossibleToCreateEmptyItem(){
+        onView(withId(R.id.createButton)).perform(click());
+        SystemClock.sleep(1000);
+        onView(withText("An item must either have a text, a file, or both.")).check(matches(ViewMatchers.isDisplayed()));
     }
 
     /*
