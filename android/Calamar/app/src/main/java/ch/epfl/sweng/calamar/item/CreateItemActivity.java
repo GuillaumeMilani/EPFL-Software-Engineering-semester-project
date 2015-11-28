@@ -54,8 +54,8 @@ public class CreateItemActivity extends BaseActivity {
     private File file;
     private List<Recipient> contacts;
     private Location currentLocation;
-    private RadioGroup timeGroup;
-    private CheckBox timeCheck;
+    //private RadioGroup timeGroup;
+    //private CheckBox timeCheck;
     private Button browseButton;
     private Button sendButton;
 
@@ -78,9 +78,9 @@ public class CreateItemActivity extends BaseActivity {
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, contactsName);
         contactsSpinner.setAdapter(spinnerAdapter);
 
-        timeCheck = (CheckBox) findViewById(R.id.timeCheck);
-        timeGroup = (RadioGroup) findViewById(R.id.timeGroup);
-        timeGroup.setVisibility(View.INVISIBLE);
+        //timeCheck = (CheckBox) findViewById(R.id.timeCheck);
+        //timeGroup = (RadioGroup) findViewById(R.id.timeGroup);
+        //timeGroup.setVisibility(View.INVISIBLE);
 
         Intent intent = getIntent();
         final int id = intent.getIntExtra(RECIPIENT_EXTRA_ID, -1);
@@ -179,13 +179,14 @@ public class CreateItemActivity extends BaseActivity {
         }
     }
 
+    /*
     public void timeChecked(View v) {
         if (timeCheck.isChecked()) {
             timeGroup.setVisibility(View.VISIBLE);
         } else {
             timeGroup.setVisibility(View.INVISIBLE);
         }
-    }
+    }*/
 
     private void createAndSend() throws IOException {
         Item.Builder toSendBuilder;

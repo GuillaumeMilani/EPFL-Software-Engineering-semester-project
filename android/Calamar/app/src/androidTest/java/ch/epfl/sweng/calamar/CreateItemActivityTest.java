@@ -46,6 +46,11 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
     }
 
     @Test
+    public void titleOfActivityIsShown() {
+        onView(withId(R.id.activityTitle)).check(matches(withText("CreateItemActivity")));
+    }
+
+    @Test
     public void testPrivateCheckedToggleTogglesSpinnerVisibility() {
         onView(withId(R.id.contactSpinner)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
         onView(withId(R.id.privateCheck)).perform(click());
@@ -54,6 +59,7 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
         onView(withId(R.id.contactSpinner)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
     }
 
+    /*
     @Test
     public void testTimeCheckedToggleTogglesRadioVisibility() {
         onView(withId(R.id.timeGroup)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
@@ -61,7 +67,7 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
         onView(withId(R.id.timeGroup)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)));
         onView(withId(R.id.timeCheck)).perform(click());
         onView(withId(R.id.timeGroup)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
-    }
+    } */
 
     @Test
     public void testCanWriteInTextField() {
