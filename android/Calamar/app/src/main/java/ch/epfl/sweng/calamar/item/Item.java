@@ -33,7 +33,8 @@ public abstract class Item {
     private final Recipient to;
     private final Date date; //posix date
     private final Condition condition;
-    
+    private final String message;
+
 
     public enum Type {SIMPLETEXTITEM, IMAGEITEM, FILEITEM}
 
@@ -49,9 +50,14 @@ public abstract class Item {
         }
     };
 
-    protected Item(int ID, User from, Recipient to, Date date, Condition condition) {
+    protected Item(int ID, User from, Recipient to, Date date, Condition condition, String message) {
         if (null == from || null == to || null == condition || null == date) {
             throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' and/or 'date' cannot be null");
+        }
+        if (message == null) {
+            this.message = "";
+        } else {
+            this.message = message;
         }
         this.ID = ID;
         this.from = from; //User is immutable
@@ -62,14 +68,20 @@ public abstract class Item {
         condition.addObserver(conditionObserver);
     }
 
-    protected Item(int ID, User from, Recipient to, Date date) {
-        this(ID, from, to, date, Condition.trueCondition());
+    protected Item(int ID, User from, Recipient to, Date date, String message) {
+        this(ID, from, to, date, Condition.trueCondition(), message);
     }
 
     public abstract Type getType();
 
     protected abstract View getItemView(Context context);
 
+    /**
+     * @return the text content (message) of the Item
+     */
+    public String getMessage() {
+        return this.message;
+    }
 
     /**
      * Get the complete view of the item. ( With condition(s) )
@@ -111,12 +123,17 @@ public abstract class Item {
         final LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
 
+        if (!message.equals("")) {
+            TextView text = new TextView(context);
+            text.setText(message);
+            view.addView(text, 0);
+        }
         if (condition.getValue()) {
-            view.addView(getItemView(context), 0);
+            view.addView(getItemView(context), 1);
         } else {
             TextView lockMessage = new TextView(context);
             lockMessage.setText(R.string.item_is_locked_getview);
-            view.addView(lockMessage, 0);
+            view.addView(lockMessage, 1);
         }
 
         return view;
@@ -187,6 +204,7 @@ public abstract class Item {
         json.accumulate("to", to.toJSON());
         json.accumulate("date", date.getTime());
         json.accumulate("condition", condition.toJSON());
+        json.accumulate("message", message);
     }
 
     /**
@@ -240,7 +258,8 @@ public abstract class Item {
         if (!(o instanceof Item)) return false;
         Item that = (Item) o;
         return that.ID == ID && that.from.equals(from) && that.to.equals(to) &&
-                that.date.getTime() == date.getTime();
+                that.date.getTime() == date.getTime() &&
+                that.message.equals(this.message);
     }
 
     /**
@@ -250,12 +269,13 @@ public abstract class Item {
      */
     @Override
     public int hashCode() {
-        return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date.getTime()) * 479;
+        return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date.getTime()) * 479 + (message != null ? message.hashCode() : 0) * 701;
     }
 
     @Override
     public String toString() {
-        return "id : " + ID + " , from : (" + from + ") , to : (" + to + ") , at : " + date;
+        return "id : " + ID + " , from : (" + from + ") , to : (" + to + ") , at : " + date
+                + " message : " + message;
     }
 
     /**
@@ -269,6 +289,7 @@ public abstract class Item {
         protected Recipient to;
         protected Date date;
         protected Condition condition = Condition.trueCondition();
+        protected String message;
 
         protected Builder parse(JSONObject o) throws JSONException {
             ID = o.getInt("ID");
@@ -278,10 +299,10 @@ public abstract class Item {
             } else {
                 to = Recipient.fromJSON(o.getJSONObject("to"));
             }
-
+            message = o.getString("message");
             date = new Date(o.getLong("date"));
 
-            if(o.isNull("condition")) {
+            if (o.isNull("condition")) {
                 condition = Condition.trueCondition();
             } else {
                 condition = Condition.fromJSON(new JSONObject(o.getString("condition")));
@@ -318,6 +339,10 @@ public abstract class Item {
         protected Builder setCondition(Condition condition) {
             this.condition = condition;
             return this;
+        }
+
+        protected void setMessage(String message) {
+            this.message = message;
         }
 
         protected abstract Item build();

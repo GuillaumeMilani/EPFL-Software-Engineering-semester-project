@@ -832,17 +832,17 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     @Test
     public void testLastUpdateTimeAlwaysApplying() {
         checkLastTime(0);
-        Item item = new SimpleTextItem(1, new User(1, ""), new User(2, ""), new Date(1000), "");
+        Item item = new SimpleTextItem(1, new User(1, ""), new User(2, ""), new Date(1000), "a");
         dbHandler.addItem(item);
         checkLastTime(0);
         dbHandler.applyPendingOperations();
         checkLastTime(1000);
-        Item item2 = new SimpleTextItem(2, new User(2, ""), new User(3, ""), new Date(0), "");
+        Item item2 = new SimpleTextItem(2, new User(2, ""), new User(3, ""), new Date(0), "a");
         dbHandler.addItem(item2);
         checkLastTime(1000);
         dbHandler.applyPendingOperations();
         checkLastTime(1000);
-        Item item3 = new SimpleTextItem(3, new User(3, ""), new User(1, ""), new Date(1001), "");
+        Item item3 = new SimpleTextItem(3, new User(3, ""), new User(1, ""), new Date(1001), "a");
         dbHandler.updateItem(item3);
         checkLastTime(1000);
         dbHandler.applyPendingOperations();
@@ -852,13 +852,13 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     @Test
     public void testLastUpdateTime() {
         checkLastTime(0);
-        Item item = new SimpleTextItem(1, new User(1, ""), new User(2, ""), new Date(1000), "");
+        Item item = new SimpleTextItem(1, new User(1, ""), new User(2, ""), new Date(1000), "a");
         dbHandler.addItem(item);
         checkLastTime(0);
-        Item item2 = new SimpleTextItem(2, new User(2, ""), new User(3, ""), new Date(0), "");
+        Item item2 = new SimpleTextItem(2, new User(2, ""), new User(3, ""), new Date(0), "a");
         dbHandler.addItem(item2);
         checkLastTime(0);
-        Item item3 = new SimpleTextItem(3, new User(3, ""), new User(1, ""), new Date(1001), "");
+        Item item3 = new SimpleTextItem(3, new User(3, ""), new User(1, ""), new Date(1001), "a");
         dbHandler.updateItem(item3);
         checkLastTime(0);
         dbHandler.applyPendingOperations();
@@ -875,7 +875,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         if (update) {
             return new SimpleTextItem(i, new User(1, ""), new User(2, ""), new Date(1), "bla");
         } else {
-            return new SimpleTextItem(i, new User(0, ""), new User(1, ""), new Date(0), "");
+            return new SimpleTextItem(i, new User(0, ""), new User(1, ""), new Date(0), "b");
         }
     }
 
