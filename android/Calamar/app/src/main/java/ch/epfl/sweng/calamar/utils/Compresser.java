@@ -19,6 +19,7 @@ import ch.epfl.sweng.calamar.item.ImageItem;
  */
 public class Compresser {
 
+    private static final int MIN_SIZE_FOR_COMPRESSION = 30;
     private static final int THUMBNAIL_SIZE = 100;
     private static final int BUFFER_SIZE = 1024;
     private static final byte HEADER_1 = 0x78;
@@ -33,7 +34,7 @@ public class Compresser {
      */
     public static byte[] compress(byte[] data) {
 
-        if (isCompressed(data)) {
+        if (isCompressed(data) || data.length < MIN_SIZE_FOR_COMPRESSION) {
             return data;
         } else {
             Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION);
