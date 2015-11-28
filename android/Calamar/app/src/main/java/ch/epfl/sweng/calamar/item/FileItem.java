@@ -230,7 +230,7 @@ public class FileItem extends Item {
         return super.toString() + ", filepath : " + path;
     }
 
-    private static void startActivityForFile(FileItem f) {
+    protected static void startActivityForFile(FileItem f) {
         File file = new File(f.getPath());
         Intent newIntent = new Intent(Intent.ACTION_VIEW);
         String mimeType = FileUtils.getMimeType(file);

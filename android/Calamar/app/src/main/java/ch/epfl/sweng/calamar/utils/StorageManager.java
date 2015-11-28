@@ -365,18 +365,20 @@ public class StorageManager {
      * @param caller The Activity who asked for reading
      */
     private void onDataRetrieved(FileItem i, byte[] data, StorageCallbacks caller) {
-        if (i == null) {
-            caller.onDataRetrieved(data);
-        } else {
-            switch (i.getType()) {
-                case FILEITEM:
-                    caller.onItemRetrieved(new FileItem(i.getID(), i.getFrom(), i.getTo(), i.getDate(), i.getCondition(), data, i.getPath()));
-                    break;
-                case IMAGEITEM:
-                    caller.onItemRetrieved(new ImageItem(i.getID(), i.getFrom(), i.getTo(), i.getDate(), i.getCondition(), data, i.getPath()));
-                    break;
-                default:
-                    throw new IllegalArgumentException(app.getString(R.string.expected_fileitem));
+        if (data != null && data.length != 0) {
+            if (i == null) {
+                caller.onDataRetrieved(data);
+            } else {
+                switch (i.getType()) {
+                    case FILEITEM:
+                        caller.onItemRetrieved(new FileItem(i.getID(), i.getFrom(), i.getTo(), i.getDate(), i.getCondition(), data, i.getPath()));
+                        break;
+                    case IMAGEITEM:
+                        caller.onItemRetrieved(new ImageItem(i.getID(), i.getFrom(), i.getTo(), i.getDate(), i.getCondition(), data, i.getPath()));
+                        break;
+                    default:
+                        throw new IllegalArgumentException(app.getString(R.string.expected_fileitem));
+                }
             }
         }
     }

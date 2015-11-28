@@ -104,6 +104,12 @@ public final class ImageItem extends FileItem {
         ImageView view = new ImageView(context);
         byte[] tempData = Compresser.decompress(getData());
         view.setImageBitmap(BitmapFactory.decodeByteArray(tempData, 0, tempData.length));
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivityForFile(ImageItem.this);
+            }
+        });
         return view;
     }
 

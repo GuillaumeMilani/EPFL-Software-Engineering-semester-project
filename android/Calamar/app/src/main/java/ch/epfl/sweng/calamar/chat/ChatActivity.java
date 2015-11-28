@@ -302,6 +302,8 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
             itemDescription.setView(item.getView(ChatActivity.this));
 
+            //Theoretically not needed : storageManager.getCompleteItem(item,this);
+
             dialog = itemDescription.show();
         }
 

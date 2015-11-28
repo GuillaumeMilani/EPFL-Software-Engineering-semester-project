@@ -124,16 +124,16 @@ public abstract class Item {
         view.setOrientation(LinearLayout.VERTICAL);
 
         int childCount = 0;
-        if (!message.equals("")) {
-            TextView text = new TextView(context);
-            text.setText(message);
-            view.addView(text, childCount);
-            childCount += 1;
-        }
         if (condition.getValue()) {
             View itemView = getItemView(context);
             if (itemView != null) {
                 view.addView(itemView, childCount);
+                childCount += 1;
+            }
+            if (!message.equals("")) {
+                TextView text = new TextView(context);
+                text.setText(message);
+                view.addView(text, childCount);
                 childCount += 1;
             }
         } else {

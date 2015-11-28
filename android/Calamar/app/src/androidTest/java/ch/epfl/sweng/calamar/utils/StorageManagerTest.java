@@ -567,7 +567,7 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         Item firstTextBefore = adapter.getItem(adapter.getCount() - 2);
         Item secondTextBefore = adapter.getItem(adapter.getCount() - 3);
         synchronized (this) {
-            wait(1000);
+            wait(10000);
         }
         assertEquals(firstTextBefore, adapter.getItem(adapter.getCount() - 2));
         assertEquals(secondTextBefore, adapter.getItem(adapter.getCount() - 3));
