@@ -21,13 +21,12 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
-import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.item.CreateItemActivity;
 import ch.epfl.sweng.calamar.push.RegistrationIntentService;
 
-public class BaseActivity extends AppCompatActivity
+public abstract class BaseActivity extends AppCompatActivity
         implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private CalamarApplication app;
 
@@ -74,8 +73,7 @@ public class BaseActivity extends AppCompatActivity
         GoogleApiClient googleApiClient = app.getGoogleApiClient();
         if (!resolvingError &&
                 !googleApiClient.isConnected() &&
-                !googleApiClient.isConnecting())
-        {
+                !googleApiClient.isConnecting()) {
             googleApiClient.connect();
             // if errors, such as no google play apk, onConnectionFailed will handle the errors
         }
@@ -90,7 +88,7 @@ public class BaseActivity extends AppCompatActivity
     @Override
     protected void onStop() {
         GoogleApiClient googleApiClient = app.getGoogleApiClient();
-        if(googleApiClient.isConnected()) {
+        if (googleApiClient.isConnected()) {
             googleApiClient.disconnect();
         }
         super.onStop();
@@ -171,11 +169,11 @@ public class BaseActivity extends AppCompatActivity
                 }
                 */
                 break;
-            case ACCOUNT_CHOOSEN :
+            case ACCOUNT_CHOOSEN:
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         // get account name
-                        String  accountName = data.getExtras().getString(AccountManager.KEY_ACCOUNT_NAME);
+                        String accountName = data.getExtras().getString(AccountManager.KEY_ACCOUNT_NAME);
                         Log.i(TAG, accountName);
                         CalamarApplication.getInstance().setCurrentUserName(accountName);
                         afterAccountAuthentication();
@@ -240,7 +238,7 @@ public class BaseActivity extends AppCompatActivity
      * Called after the account was authenticated
      */
     private void afterAccountAuthentication() {
-        new createNewUserTask(CalamarApplication.getInstance().getCurrentUserName(),this).execute();
+        new createNewUserTask(CalamarApplication.getInstance().getCurrentUserName(), this).execute();
     }
 
 

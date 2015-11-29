@@ -37,8 +37,12 @@ import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
+import ch.epfl.sweng.calamar.item.FileItem;
+import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.recipient.User;
+import ch.epfl.sweng.calamar.utils.StorageCallbacks;
+
 
 /**
  * A simple {@link Fragment} subclass holding the calamar map !.
@@ -55,8 +59,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
     private double initialLat;
     private double initialLong;
-
-
 
 
     // public static final String POSITIONKEY = MapFragment.class.getCanonicalName() + ":POSITION";
@@ -79,6 +81,21 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     // see comment on setupMapIfNeeded
     // ....maybe delegate all the work to the map fragment, I think google has correctly done the job...
 
+    private GPSProvider gpsProvider;
+    private final GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
+        @Override
+        public void update(Location newLocation) {
+            if (null == map) {
+                throw new IllegalStateException(
+                        "map should be initialized and ready before accessed by location updater");
+            }
+            double latitude = newLocation.getLatitude();
+            double longitude = newLocation.getLongitude();
+            LatLng myLoc = new LatLng(latitude, longitude);
+            map.moveCamera(CameraUpdateFactory.newLatLng(myLoc));
+            map.moveCamera(CameraUpdateFactory.zoomTo(18.0f));
+        }
+    };
 //    private GPSProvider gpsProvider;
 //    private final GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
 //        @Override
@@ -130,12 +147,11 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      * @param inflater
      * @param container
      * @param savedInstanceState
-     * @return
+     * @returnS
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
+                             Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         markers = new HashMap<>();
         itemFromMarkers = new HashMap<>();
@@ -174,45 +190,11 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         // setUpGPS();
 
         map.setMyLocationEnabled(true);
-        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                final Item item = itemFromMarkers.get(marker);
-
-                AlertDialog.Builder itemDescription = new AlertDialog.Builder(getActivity());
-                itemDescription.setTitle(R.string.item_details_alertDialog_title);
-
-                itemDescription.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        item.removeObserver(detailsItemObserver);
-                    }
-                });
-
-                //OnCancel is called when we press the back button.
-                itemDescription.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        item.removeObserver(detailsItemObserver);
-                    }
-                });
-
-                //Create a new view
-                detailsViewDialog = new LinearLayout(getActivity());
-                detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
-
-                detailsViewDialog.addView(item.getView(getActivity()));
-
-
-                itemDescription.setView(detailsViewDialog);
-
-                item.addObserver(detailsItemObserver);
-
-                itemDescription.show();
-                return false;
-            }
-        });
+        map.setOnMarkerClickListener(new MarkerWithStorageCallBackListener());
         LatLng initialLoc = new LatLng(initialLat, initialLong);
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(initialLoc, 18.0f));
+
+
         addAllItemsInRegionToMap();
     }
 
@@ -253,7 +235,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
         MarkerOptions marker = new MarkerOptions()
                 .position(new LatLng(location.getLatitude(), location.getLongitude()));
-            marker.icon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
+        marker.icon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
 
         // TODO set correct label
         marker.title(getString(R.string.label_locked_item));
@@ -271,8 +253,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      * @param i Item for which we want the id.
      * @return id of the lock
      */
-    private int getLockIdForItem(Item i){
-        if(i.getTo().getID() == User.PUBLIC_ID) {
+    private int getLockIdForItem(Item i) {
+        if (i.getTo().getID() == User.PUBLIC_ID) {
             if (i.getCondition().getValue()) {
                 return R.drawable.unlock;
             } else {
@@ -318,6 +300,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 //        gpsProvider.startLocationUpdates(getActivity());
 //    }
 
+
     /**
      * Async task for refreshing / getting new localized items.
      */
@@ -336,28 +319,28 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
         @Override
         protected List<Item> doInBackground(Void... v) {
-                try {
-                    // TODO enhancement: custom request specifying the items already fetched
-                    // + bundle saving state of fragment
-                    // now all items in region are fetched, and if not already in set, displayed
-                    // on map
-                    return DatabaseClientLocator.getDatabaseClient().getAllItems(
-                            CalamarApplication.getInstance().getCurrentUser(),
-                            new Date(0),
-                            visibleRegion);
+            try {
+                // TODO enhancement: custom request specifying the items already fetched
+                // + bundle saving state of fragment
+                // now all items in region are fetched, and if not already in set, displayed
+                // on map
+                return DatabaseClientLocator.getDatabaseClient().getAllItems(
+                        CalamarApplication.getInstance().getCurrentUser(),
+                        new Date(0),
+                        visibleRegion);
 
-                } catch (DatabaseClientException e) {
-                    Log.e(MapFragment.TAG, e.getMessage());
-                    return null;
-                }
+            } catch (DatabaseClientException e) {
+                Log.e(MapFragment.TAG, e.getMessage());
+                return null;
+            }
         }
 
         @Override
         protected void onPostExecute(List<Item> receivedItems) {
             if (receivedItems != null) {
 
-                for(Item item : receivedItems){
-                    if(!items.contains(item)) {
+                for (Item item : receivedItems) {
+                    if (!items.contains(item)) {
                         items.add(item);
                         addItemToMap(item);
                     }
@@ -380,4 +363,73 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             }
         }
     }
+
+
+    private class MarkerWithStorageCallBackListener implements GoogleMap.OnMarkerClickListener, StorageCallbacks {
+
+        private AlertDialog dialog;
+        private Item item;
+
+        @Override
+        public boolean onMarkerClick(Marker marker) {
+            final Item item = itemFromMarkers.get(marker);
+            CalamarApplication.getInstance().getStorageManager().getCompleteItem(item, this);
+
+            AlertDialog.Builder itemDescription = new AlertDialog.Builder(getActivity());
+            itemDescription.setTitle(R.string.item_details_alertDialog_title);
+
+            itemDescription.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    item.removeObserver(detailsItemObserver);
+                }
+            });
+
+            //OnCancel is called when we press the back button.
+            itemDescription.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    item.removeObserver(detailsItemObserver);
+                }
+            });
+
+            //Create a new view
+            detailsViewDialog = new LinearLayout(getActivity());
+            detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
+
+            detailsViewDialog.addView(item.getView(getActivity()));
+
+
+            itemDescription.setView(detailsViewDialog);
+
+            item.addObserver(detailsItemObserver);
+
+            itemDescription.show();
+            return false;
+        }
+
+
+        @Override
+        public void onItemRetrieved(Item i) {
+            item = i;
+            dialog.setView(item.getView(MapFragment.this.getActivity()));
+        }
+
+        @Override
+        public void onDataRetrieved(byte[] data) {
+            switch (item.getType()) {
+                case SIMPLETEXTITEM:
+                    break;
+                case FILEITEM:
+                    item = new FileItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, ((FileItem) item).getPath());
+                    break;
+                case IMAGEITEM:
+                    item = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, ((ImageItem) item).getPath());
+                    break;
+                default:
+                    throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unknown_item_type));
+            }
+            dialog.setView(item.getView(MapFragment.this.getActivity()));
+        }
+    }
+
 }

@@ -1,9 +1,13 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.util.Base64;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ipaulpro.afilechooser.utils.FileUtils;
 
@@ -16,6 +20,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
@@ -27,6 +32,7 @@ import ch.epfl.sweng.calamar.utils.Compresser;
  */
 public class FileItem extends Item {
 
+    private final String path;
     private final String name;
     private final static Type ITEM_TYPE = Type.FILEITEM;
     private final byte[] data;
@@ -41,30 +47,24 @@ public class FileItem extends Item {
      * @param date      The date of creation of the item
      * @param condition The condition for unlocking the item
      * @param data      The content of the file
-     * @param name      The name of the file
+     * @param path      The path of the file
+     * @param message   The message of the file
      */
-    public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String name, String message) {
+    public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path, String message) {
         super(ID, from, to, date, condition, message);
-        this.data = Compresser.compress(data.clone());
-        this.name = name;
-        hash = computeHash();
-    }
-
-    /**
-     * Instantiates a new FileItem with the given parameters
-     *
-     * @param ID   The ID of the item
-     * @param from The user who sent the item
-     * @param to   The recipient of the item
-     * @param date The date of creation of the item
-     * @param data The content of the file
-     * @param name The name of the file
-     */
-    public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String name, String message) {
-        super(ID, from, to, date, message);
-        this.name = name;
-        this.data = Compresser.compress(data.clone());
-        hash = computeHash();
+        if (data != null) {
+            this.data = Compresser.compress(data.clone());
+        } else {
+            this.data = new byte[0];
+        }
+        final int idx = path.lastIndexOf('/');
+        if (idx == -1) {
+            throw new IllegalArgumentException("Bad path of file : " + path);
+        } else {
+            this.path = path;
+            this.name = path.substring(idx + 1);
+        }
+        this.hash = computeHash();
     }
 
     /**
@@ -76,13 +76,25 @@ public class FileItem extends Item {
      * @param date      The date of creation of the item
      * @param condition The condition for unlocking the item
      * @param data      The content of the file
-     * @param name      The name of the file
+     * @param path      The path of the file
      */
-    public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String name) {
-        super(ID, from, to, date, condition, "");
-        this.data = Compresser.compress(data.clone());
-        this.name = name;
-        hash = computeHash();
+    public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path) {
+        this(ID, from, to, date, condition, data, path, "");
+    }
+
+    /**
+     * Instantiates a new FileItem with the given parameters
+     *
+     * @param ID      The ID of the item
+     * @param from    The user who sent the item
+     * @param to      The recipient of the item
+     * @param date    The date of creation of the item
+     * @param data    The content of the file
+     * @param path    The path of the file
+     * @param message The message of the file
+     */
+    public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String path, String message) {
+        this(ID, from, to, date, Condition.trueCondition(), data, path, message);
     }
 
     /**
@@ -93,17 +105,14 @@ public class FileItem extends Item {
      * @param to   The recipient of the item
      * @param date The date of creation of the item
      * @param data The content of the file
-     * @param name The name of the file
+     * @param path The path of the file
      */
-    public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String name) {
-        super(ID, from, to, date, "");
-        this.name = name;
-        this.data = Compresser.compress(data.clone());
-        hash = computeHash();
+    public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String path) {
+        this(ID, from, to, date, Condition.trueCondition(), data, path, "");
     }
 
     /**
-     * Returns the copy of the data of the file.
+     * Returns a copy of the (COMPRESSED!) data of the file.
      *
      * @return a byte array
      */
@@ -120,15 +129,30 @@ public class FileItem extends Item {
         return name;
     }
 
+    /**
+     * Returns the path of the file
+     *
+     * @return the path
+     */
+    public String getPath() {
+        return path;
+    }
+
     @Override
     public Type getType() {
         return ITEM_TYPE;
     }
 
     @Override
-    protected View getItemView(Context context) {
+    public View getItemView(Context context) {
         TextView view = new TextView(context);
         view.setText(name);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivityForFile(FileItem.this);
+            }
+        });
         return view;
     }
 
@@ -147,7 +171,7 @@ public class FileItem extends Item {
     public void compose(JSONObject object) throws JSONException {
         super.compose(object);
         object.accumulate("data", byteArrayToBase64String(data));
-        object.accumulate("name", name);
+        object.accumulate("path", path);
         object.accumulate("type", ITEM_TYPE.name());
     }
 
@@ -182,7 +206,7 @@ public class FileItem extends Item {
         if (this == o) return true;
         if (!(o instanceof FileItem)) return false;
         FileItem that = (FileItem) o;
-        return super.equals(that) && Arrays.equals(data, that.data) && name.equals(that.name);
+        return super.equals(that) && Arrays.equals(data, that.data) && path.equals(that.path);
     }
 
     @Override
@@ -194,34 +218,47 @@ public class FileItem extends Item {
         if (data == null) {
             return 0;
         } else {
-            return super.hashCode() * 73 + Arrays.hashCode(data) * 107 + name.hashCode();
+            return super.hashCode() * 73 + Arrays.hashCode(data) * 107 + path.hashCode();
         }
     }
 
     @Override
     public String toString() {
-        return super.toString() + ", filename : " + name;
+        return super.toString() + ", filepath : " + path;
     }
 
-    protected static class Builder extends Item.Builder {
+    protected static void startActivityForFile(FileItem f) {
+        File file = new File(f.getPath());
+        Intent newIntent = new Intent(Intent.ACTION_VIEW);
+        String mimeType = FileUtils.getMimeType(file);
+        newIntent.setDataAndType(Uri.fromFile(file), mimeType);
+        newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            CalamarApplication.getInstance().startActivity(newIntent);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(CalamarApplication.getInstance(), "No handler for this type of file.", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public static class Builder extends Item.Builder {
 
         protected byte[] data;
-        protected String name;
+        protected String path;
 
         @Override
-        protected FileItem build() {
-            return new FileItem(super.ID, super.from, super.to, super.date, super.condition, data, name, message);
+        public FileItem build() {
+            return new FileItem(super.ID, super.from, super.to, super.date, super.condition, data, path, message);
         }
 
         @Override
-        protected FileItem.Builder parse(JSONObject json) throws JSONException {
+        public FileItem.Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString("type");
             if (!(type.equals(FileItem.ITEM_TYPE.name()) || type.equals(ImageItem.ITEM_TYPE.name()))) {
                 throw new IllegalArgumentException("expected " + FileItem.ITEM_TYPE.name() + " was : " + type);
             }
             data = Compresser.decompress(base64StringToByteArray(json.getString("data")));
-            name = json.getString("name");
+            path = json.getString("path");
             return this;
         }
 
@@ -231,7 +268,7 @@ public class FileItem extends Item {
          * @param data an array of byte
          * @return the builder
          */
-        protected FileItem.Builder setData(byte[] data) {
+        public FileItem.Builder setData(byte[] data) {
             this.data = data;
             return this;
         }
@@ -242,19 +279,25 @@ public class FileItem extends Item {
          * @param str a string representing bytes
          * @return the builder
          */
-        protected FileItem.Builder setData(String str) {
+        public FileItem.Builder setData(String str) {
             this.data = str.getBytes(Charset.forName("UTF-8"));
             return this;
         }
 
         /**
-         * Sets the name of the FileItem to be created
+         * Sets the path of the FileItem to be created
          *
-         * @param name a string
+         * @param path a string
          * @return the builder
          */
-        protected FileItem.Builder setName(String name) {
-            this.name = name;
+        public FileItem.Builder setPath(String path) {
+            this.path = path;
+            final int idx = path.lastIndexOf('/');
+            if (idx == -1) {
+                throw new IllegalArgumentException("Bad path of file : " + path);
+            } else {
+                this.path = path;
+            }
             return this;
         }
 
@@ -265,8 +308,8 @@ public class FileItem extends Item {
          * @return the builder
          * @throws IOException If there is a problem converting the file to an array of byte
          */
-        protected FileItem.Builder setFile(File f) throws IOException {
-            this.name = f.getName();
+        public FileItem.Builder setFile(File f) throws IOException {
+            this.path = f.getAbsolutePath();
             this.data = FileUtils.toByteArray(f);
             return this;
         }

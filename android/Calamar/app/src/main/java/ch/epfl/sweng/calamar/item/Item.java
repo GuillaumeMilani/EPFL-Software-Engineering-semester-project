@@ -74,7 +74,7 @@ public abstract class Item {
 
     public abstract Type getType();
 
-    protected abstract View getItemView(Context context);
+    public abstract View getItemView(Context context);
 
     /**
      * @return the text content (message) of the Item
@@ -123,17 +123,24 @@ public abstract class Item {
         final LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
 
-        if (!message.equals("")) {
-            TextView text = new TextView(context);
-            text.setText(message);
-            view.addView(text, 0);
-        }
+        int childCount = 0;
         if (condition.getValue()) {
-            view.addView(getItemView(context), 1);
+            View itemView = getItemView(context);
+            if (itemView != null) {
+                view.addView(itemView, childCount);
+                childCount += 1;
+            }
+            if (!message.equals("")) {
+                TextView text = new TextView(context);
+                text.setText(message);
+                view.addView(text, childCount);
+                childCount += 1;
+            }
         } else {
             TextView lockMessage = new TextView(context);
             lockMessage.setText(R.string.item_is_locked_getview);
-            view.addView(lockMessage, 1);
+            view.addView(lockMessage, childCount);
+            childCount += 1;
         }
 
         return view;
@@ -283,7 +290,7 @@ public abstract class Item {
      * is used by the child builders (in {@link SimpleTextItem} or...) to build the "Item
      * part of the object". currently only used to parse JSON (little overkill..but ..)
      */
-    protected abstract static class Builder {
+    public abstract static class Builder {
         protected int ID;
         protected User from;
         protected Recipient to;
@@ -291,7 +298,7 @@ public abstract class Item {
         protected Condition condition = Condition.trueCondition();
         protected String message;
 
-        protected Builder parse(JSONObject o) throws JSONException {
+        public Builder parse(JSONObject o) throws JSONException {
             ID = o.getInt("ID");
             from = User.fromJSON(o.getJSONObject("from"));
             if (o.isNull("to")) {
@@ -311,37 +318,37 @@ public abstract class Item {
             return this;
         }
 
-        protected Builder setID(int ID) {
+        public Builder setID(int ID) {
             this.ID = ID;
             return this;
         }
 
-        protected Builder setFrom(User from) {
+        public Builder setFrom(User from) {
             this.from = from;
             return this;
         }
 
-        protected Builder setTo(Recipient to) {
+        public Builder setTo(Recipient to) {
             this.to = to;
             return this;
         }
 
-        protected Builder setDate(long date) {
+        public Builder setDate(long date) {
             this.date = new Date(date);
             return this;
         }
 
-        protected Builder setDate(Date date) {
+        public Builder setDate(Date date) {
             this.date = date;
             return this;
         }
 
-        protected Builder setCondition(Condition condition) {
+        public Builder setCondition(Condition condition) {
             this.condition = condition;
             return this;
         }
 
-        protected void setMessage(String message) {
+        public void setMessage(String message) {
             this.message = message;
         }
 

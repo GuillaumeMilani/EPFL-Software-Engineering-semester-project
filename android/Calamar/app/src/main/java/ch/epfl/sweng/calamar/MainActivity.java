@@ -88,7 +88,7 @@ public class MainActivity extends BaseActivity {
         //choose account dialog
         // TODO if possible get rid of this deprecated call, see javadoc
         Intent accountIntent = AccountManager.newChooseAccountIntent(null, null,
-                new String[] {"com.google"}, true, null, null,
+                new String[]{"com.google"}, true, null, null,
                 null, null);
         startActivityForResult(accountIntent, BaseActivity.ACCOUNT_CHOOSEN);
     }

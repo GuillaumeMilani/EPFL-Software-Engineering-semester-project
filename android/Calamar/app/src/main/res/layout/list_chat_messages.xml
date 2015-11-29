@@ -2,12 +2,13 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
+
     <LinearLayout
         android:id="@+id/content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         android:orientation="vertical">
 
         <TextView
@@ -15,8 +16,8 @@
             android:layout_width="wrap_content"
             android:layout_height="30sp"
             android:layout_gravity="end"
-            android:textSize="12sp"
-            android:textColor="@android:color/darker_gray" />
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp" />
 
         <LinearLayout
             android:id="@+id/contentWithBG"
@@ -24,17 +25,17 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:background="@drawable/out_message_bg"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
+            android:orientation="vertical"
             android:paddingBottom="10dp"
-            android:orientation="vertical">
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp">
 
             <FrameLayout
                 android:id="@+id/itemView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/black"
-                android:maxWidth="240dp" />
+                android:maxWidth="240dp"
+                android:textColor="@android:color/black" />
 
         </LinearLayout>
 

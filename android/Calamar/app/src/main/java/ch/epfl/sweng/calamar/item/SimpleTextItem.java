@@ -2,8 +2,6 @@ package ch.epfl.sweng.calamar.item;
 
 import android.content.Context;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,8 +48,8 @@ public final class SimpleTextItem extends Item {
     }
 
     @Override
-    protected View getItemView(Context context) {
-        return new FrameLayout(context);
+    public View getItemView(Context context) {
+        return null;
     }
 
     /**
@@ -75,6 +73,7 @@ public final class SimpleTextItem extends Item {
      * @throws JSONException
      * @see Item#fromJSON(JSONObject) Recipient.fromJSON
      */
+
     public static SimpleTextItem fromJSON(JSONObject json) throws JSONException {
         return new SimpleTextItem.Builder().parse(json).build();
     }
@@ -126,7 +125,7 @@ public final class SimpleTextItem extends Item {
      */
     protected static class Builder extends Item.Builder {
 
-        protected Builder parse(JSONObject json) throws JSONException {
+        public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString("type");
             if (!type.equals(SimpleTextItem.ITEM_TYPE.name())) {
