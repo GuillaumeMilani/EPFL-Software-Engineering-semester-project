@@ -748,7 +748,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         dbHandler.applyPendingOperations();
         assertEquals(dbHandler.getItem(testFile.getID()), testFile);
         checkLastTime(testFile.getDate().getTime());
-        FileItem updated = new FileItem(testFile.getID(), new User(5, "bla"), new User(6, "blo"), new Date(), Condition.falseCondition(), updatedTestContent, "File");
+        FileItem updated = new FileItem(testFile.getID(), new User(5, "bla"), new User(6, "blo"), new Date(), Condition.falseCondition(), updatedTestContent, "/File");
         dbHandler.updateItem(updated);
         assertEquals(dbHandler.getItem(testFile.getID()), updated);
         dbHandler.applyPendingOperations();
@@ -768,7 +768,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         dbHandler.applyPendingOperations();
         assertEquals(dbHandler.getItem(testImage.getID()), testImage);
         checkLastTime(testImage.getDate().getTime());
-        ImageItem updated = new ImageItem(testImage.getID(), new User(5, "bla"), new User(6, "blo"), new Date(1000), Condition.falseCondition(), updatedTestContent, "File");
+        ImageItem updated = new ImageItem(testImage.getID(), new User(5, "bla"), new User(6, "blo"), new Date(1000), Condition.falseCondition(), updatedTestContent, "/File");
         dbHandler.updateItem(updated);
         assertEquals(dbHandler.getItem(testImage.getID()), updated);
         dbHandler.applyPendingOperations();
@@ -802,9 +802,9 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         assertEquals(got.get(0), testItem);
         assertEquals(got.get(1), testFile);
         assertEquals(got.get(2), testImage);
-        FileItem updatedFile = new FileItem(testFile.getID(), testFile.getFrom(), testFile.getTo(), testFile.getDate(), testFile.getData(), "F");
-        FileItem updatedImage = new ImageItem(testImage.getID(), testImage.getFrom(), testImage.getTo(), testImage.getDate(), testImage.getData(), "I");
-        SimpleTextItem updatedSimple = new SimpleTextItem(testItem.getID(), testItem.getFrom(), testItem.getTo(), testItem.getDate(), "updated");
+        FileItem updatedFile = new FileItem(testFile.getID(), testFile.getFrom(), testFile.getTo(), testFile.getDate(), testFile.getData(), "/F");
+        FileItem updatedImage = new ImageItem(testImage.getID(), testImage.getFrom(), testImage.getTo(), testImage.getDate(), testImage.getData(), "/I");
+        SimpleTextItem updatedSimple = new SimpleTextItem(testItem.getID(), testItem.getFrom(), testItem.getTo(), testItem.getDate(), "/updated");
         List<Item> toUpdate = new ArrayList<>();
         toUpdate.add(updatedFile);
         toUpdate.add(updatedImage);

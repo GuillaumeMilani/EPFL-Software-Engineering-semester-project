@@ -105,18 +105,19 @@ public class StorageManager {
                 dbHandler.addItem(i);
                 break;
             case IMAGEITEM:
-                ImageItem image;
                 if (!i.getFrom().equals(app.getCurrentUser())) {
                     if (i.getCondition().getValue()) {
                         ImageItem repathedImage = (ImageItem) rePath((ImageItem) i);
                         if (caller != null) {
+                            //Gives item updated with new path
                             caller.onItemRetrieved(repathedImage);
                         }
-                        image = (ImageItem) Compresser.compressDataForDatabase(repathedImage);
+                        ImageItem compressedImage = (ImageItem) Compresser.compressDataForDatabase(repathedImage);
                         app.increaseImageCount();
-                        dbHandler.addItem(image);
+                        dbHandler.addItem(compressedImage);
                         storeFile((ImageItem) i);
                     } else {
+                        //Assuming a locked item has no data
                         dbHandler.addItem(i);
                     }
                 } else {
@@ -124,18 +125,19 @@ public class StorageManager {
                 }
                 break;
             case FILEITEM:
-                FileItem file;
                 if (!i.getFrom().equals(app.getCurrentUser())) {
                     if (i.getCondition().getValue()) {
                         FileItem repathedFile = rePath((FileItem) i);
                         if (caller != null) {
+                            //Gives item updated with new path
                             caller.onItemRetrieved(repathedFile);
                         }
-                        file = Compresser.compressDataForDatabase(repathedFile);
+                        FileItem compressedFile = Compresser.compressDataForDatabase(repathedFile);
                         app.increaseFileCount();
-                        dbHandler.addItem(file);
+                        dbHandler.addItem(compressedFile);
                         storeFile((FileItem) i);
                     } else {
+                        //Assuming a locked item has no data
                         dbHandler.addItem(i);
                     }
                 } else {

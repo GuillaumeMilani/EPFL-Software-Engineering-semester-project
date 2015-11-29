@@ -102,8 +102,7 @@ public final class ImageItem extends FileItem {
     @Override
     public View getItemView(Context context) {
         ImageView view = new ImageView(context);
-        byte[] tempData = Compresser.decompress(getData());
-        view.setImageBitmap(BitmapFactory.decodeByteArray(tempData, 0, tempData.length));
+        view.setImageBitmap(getBitmap());
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

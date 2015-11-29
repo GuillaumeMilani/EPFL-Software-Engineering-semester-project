@@ -95,7 +95,7 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
     @Test
     public void testWritingTaskLoopsIfRequiredAndCancelWorks() throws Throwable {
         byte[] data = {0x33};
-        final FileItem item = new FileItem(0, testUser, testRecipient, new Date(), tc, data, "WriteThis");
+        final FileItem item = new FileItem(0, testUser, testRecipient, new Date(), tc, data, "/WriteThis");
         CountDownLatch latch = new CountDownLatch(1);
         runTestOnUiThread(new Runnable() {
             @Override
@@ -352,7 +352,7 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         final ImageItem item = new ImageItem(0, testUser, testRecipient, new Date(), tc, bitmapData, f1.getAbsolutePath());
         final ImageItem item2 = new ImageItem(1, testUser, testRecipient, new Date(), tc, null, f2.getAbsolutePath());
         final FileItem item3 = new FileItem(2, testUser, testRecipient, new Date(), tc, dummyData, f3.getAbsolutePath());
-        final FileItem item4 = new FileItem(3, testRecipient, testUser, new Date(), fc, null, "blablabla");
+        final FileItem item4 = new FileItem(3, testRecipient, testUser, new Date(), fc, null, "/blablabla");
         final ChatActivity activity = mActivityRule.getActivity();
         runTestOnUiThread(new Runnable() {
             @Override

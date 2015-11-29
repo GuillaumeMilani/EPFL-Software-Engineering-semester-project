@@ -82,7 +82,7 @@ public class FileAndImageItemTest {
 
     @Test
     public void testDataIsCompressed() {
-        FileItem f = new FileItem(testId, testFrom, testTo, testDate, testContent, "bla");
+        FileItem f = new FileItem(testId, testFrom, testTo, testDate, testContent, "/bla");
         assertFalse(Arrays.equals(testContent, f.getData()));
     }
 
@@ -92,7 +92,7 @@ public class FileAndImageItemTest {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
         byte[] bitmapData = stream.toByteArray();
-        ImageItem i = new ImageItem(testId, testFrom, testTo, testDate, bitmapData, "bla");
+        ImageItem i = new ImageItem(testId, testFrom, testTo, testDate, bitmapData, "/bla");
         assertFalse(Arrays.equals(bitmapData, i.getData()));
         assertTrue(bitmap.sameAs(i.getBitmap()));
     }

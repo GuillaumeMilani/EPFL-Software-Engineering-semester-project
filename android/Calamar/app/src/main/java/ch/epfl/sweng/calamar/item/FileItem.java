@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Base64;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -60,9 +59,7 @@ public class FileItem extends Item {
         }
         final int idx = path.lastIndexOf('/');
         if (idx == -1) {
-            this.name = path;
-            this.path = '/' + path;
-            Log.d("Path", "Bad path of file : " + path);
+            throw new IllegalArgumentException("Bad path of file : " + path);
         } else {
             this.path = path;
             this.name = path.substring(idx + 1);
@@ -297,8 +294,7 @@ public class FileItem extends Item {
             this.path = path;
             final int idx = path.lastIndexOf('/');
             if (idx == -1) {
-                this.path = '/' + path;
-                Log.d("PATH", "Bad path for FileItem :" + path);
+                throw new IllegalArgumentException("Bad path of file : " + path);
             } else {
                 this.path = path;
             }

@@ -94,9 +94,11 @@ public class ChatAdapter extends BaseAdapter {
      * @param message the item to update
      */
     public void update(Item message) {
-        for (int i = 0; i < messages.size(); ++i) {
+        boolean found = false;
+        for (int i = 0; i < messages.size() && !found; ++i) {
             if (messages.get(i).getID() == message.getID()) {
                 messages.set(i, message);
+                found = true;
             }
         }
     }
@@ -110,6 +112,7 @@ public class ChatAdapter extends BaseAdapter {
         for (Item i : messages) {
             if (i.equals(message)) {
                 messages.remove(i);
+                break;
             }
         }
     }
