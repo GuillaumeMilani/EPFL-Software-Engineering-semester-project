@@ -6,6 +6,7 @@ import android.location.Location;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.test.ActivityInstrumentationTestCase2;
+import android.view.View;
 
 import org.junit.After;
 import org.junit.Before;
@@ -21,6 +22,7 @@ import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
+import ch.epfl.sweng.calamar.client.FaultyDatabaseClient;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.item.CreateItemActivity;
 import ch.epfl.sweng.calamar.item.Item;
@@ -34,8 +36,12 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.verify;
 
 @RunWith(JUnit4.class)
@@ -164,7 +170,7 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
         getActivity();
 
 
-        onView(withText("bob")).check(matches(ViewMatchers.isDisplayed()));
+        onView(withText("bob")).check(matches(isDisplayed()));
     }
 
     @Test
@@ -177,7 +183,8 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
         onView(withId(R.id.privateCheck)).perform(click());
         onView(withId(R.id.contactSpinner)).perform(click());
 
-        onView(withText("bob")).check(matches(ViewMatchers.isDisplayed()));
-        onView(withText("calamar")).check(matches(ViewMatchers.isDisplayed()));
+        onView(withText("bob")).check(matches(isDisplayed()));
+        onView(withText("calamar")).check(matches(isDisplayed()));
     }
+
 }

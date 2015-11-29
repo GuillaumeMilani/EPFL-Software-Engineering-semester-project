@@ -81,14 +81,9 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
         onView(withId(R.id.contactSpinner)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
     }
 
-
-
-
-    @Ignore
-    //TODO : Refactor once error message is done.
+    @Test
     public void testImpossibleToCreateEmptyItem(){
         onView(withId(R.id.createButton)).perform(click());
-        SystemClock.sleep(1000);
         onView(withText("An item must either have a text, a file, or both.")).check(matches(ViewMatchers.isDisplayed()));
     }
 

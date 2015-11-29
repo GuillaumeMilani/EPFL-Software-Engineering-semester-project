@@ -175,8 +175,7 @@ public class ChatActivity extends BaseActivity {
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 databaseHandler.addItem(item);
             } else {
-                Toast.makeText(getApplicationContext(), getString(R.string.item_send_error),
-                        Toast.LENGTH_SHORT).show();
+                displayErrorMessage(getString(R.string.item_send_error));
             }
         }
     }
@@ -205,6 +204,7 @@ public class ChatActivity extends BaseActivity {
                 return databaseHandler.getItemsForContact(correspondent);
             } else {
                 try {
+
                     return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, app.getLastItemsRefresh());
                 } catch (DatabaseClientException e) {
                     Log.e(ChatActivity.TAG, e.getMessage());
@@ -222,21 +222,11 @@ public class ChatActivity extends BaseActivity {
 
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                Toast.makeText(context, R.string.refresh_message,
+                Toast.makeText(context, getString(R.string.refresh_message),
                         Toast.LENGTH_SHORT).show();
 
             } else {
-                // TODO same code used in multiple asynctask, ...
-                Log.e(ChatActivity.TAG, "unable to refresh");
-                // TODO once gave me : android.view.WindowManager$BadTokenException: Unable to add window -- token android.os.BinderProxy@4291e5a0 is not valid; is your activity running ?
-                AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
-                newUserAlert.setTitle(R.string.unable_to_refresh_message);
-                newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        //OK
-                    }
-                });
-                newUserAlert.show();
+                displayErrorMessage(getString(R.string.unable_to_refresh_message));
             }
         }
 

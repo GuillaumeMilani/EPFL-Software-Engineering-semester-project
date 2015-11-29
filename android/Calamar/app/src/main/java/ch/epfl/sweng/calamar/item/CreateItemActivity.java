@@ -210,9 +210,7 @@ public class CreateItemActivity extends BaseActivity {
             toSendBuilder = new SimpleTextItem.Builder();
         }
         if (message.getText().toString().equals("") && toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
-
-            Toast.makeText(getApplicationContext(), getString(R.string.item_create_invalid),
-                    Toast.LENGTH_SHORT).show();
+            displayErrorMessage(getString(R.string.item_create_invalid));
             return;
         }
         if (privateCheck.isChecked()) {
@@ -265,8 +263,7 @@ public class CreateItemActivity extends BaseActivity {
                 CalamarApplication.getInstance().getDatabaseHandler().addItem(item);
                 Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(getApplicationContext(), getString(R.string.item_send_error),
-                        Toast.LENGTH_SHORT).show();
+                displayErrorMessage(getString(R.string.item_send_error));
             }
         }
     }
