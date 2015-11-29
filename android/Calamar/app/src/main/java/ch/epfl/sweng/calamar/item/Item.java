@@ -122,17 +122,17 @@ public abstract class Item {
         final LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
 
-        if (!message.equals("")) {
-            TextView text = new TextView(context);
-            text.setText(message);
-            view.addView(text, 0);
-        }
         if (condition.getValue()) {
-            view.addView(getItemView(context), 1);
+            if (!message.equals("")) {
+                TextView text = new TextView(context);
+                text.setText(message);
+                view.addView(text);
+            }
+            view.addView(getItemView(context));
         } else {
             TextView lockMessage = new TextView(context);
             lockMessage.setText(R.string.item_is_locked_getview);
-            view.addView(lockMessage, 1);
+            view.addView(lockMessage);
         }
 
         return view;

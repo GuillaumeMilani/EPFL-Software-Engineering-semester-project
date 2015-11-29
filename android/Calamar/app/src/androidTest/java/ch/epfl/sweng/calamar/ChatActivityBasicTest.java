@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar;
 
+import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
@@ -118,6 +119,13 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
     public void testContentOfMessageLockedIsNotDisplayed() {
         onView(withId(R.id.refreshButton)).perform(click());
         onView(withText("You have to fill the conditions to see the message !")).check(matches(ViewMatchers.isDisplayed()));
+
+        try {
+            onView(withText("Hello Alice, it's Bob !")).check(matches(ViewMatchers.isDisplayed()));
+            throw new AssertionError("The content of a lock message should not be displayed");
+        } catch (NoMatchingViewException e){
+            //Good
+        }
     }
 
     /**
