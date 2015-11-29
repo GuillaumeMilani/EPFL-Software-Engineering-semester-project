@@ -6,6 +6,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -72,13 +74,31 @@ public class ChatActivity extends BaseActivity {
         app = CalamarApplication.getInstance();
         correspondent = new User(correspondentID, correspondentName);
 
-        editText = (EditText) findViewById(R.id.messageEdit);
 
         sendButton = (Button) findViewById(R.id.chatSendButton);
+        sendButton.setEnabled(false);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendTextItem();
+            }
+        });
+
+        editText = (EditText) findViewById(R.id.messageEdit);
+
+        editText.addTextChangedListener(new TextWatcher() {
+            public void afterTextChanged(Editable s) {
+                if(s.length() == 0){
+                    sendButton.setEnabled(false);
+                } else {
+                    sendButton.setEnabled(true);
+                }
+            }
+
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
         });
 
