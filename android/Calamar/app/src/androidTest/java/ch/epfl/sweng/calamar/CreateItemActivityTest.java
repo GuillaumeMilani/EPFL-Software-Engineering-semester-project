@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar;
 
 
 import android.os.SystemClock;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 import android.test.ActivityInstrumentationTestCase2;
@@ -35,8 +36,6 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
 
     private final Recipient BOB = new User(1, "bob");
 
-    private final Recipient CALAMAR = new User(2, "calamar");
-
     CalamarApplication app;
 
     @Rule
@@ -51,6 +50,7 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        injectInstrumentation(InstrumentationRegistry.getInstrumentation());
         DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
         app = CalamarApplication.getInstance();
         app.getDatabaseHandler().deleteAllItems();
@@ -81,19 +81,7 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
         onView(withId(R.id.contactSpinner)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
     }
 
-    @Test
-    public void testAllContactAreDisplayedWhenPrivateIsSelected(){
-        app.getDatabaseHandler().addRecipient(BOB);
-        app.getDatabaseHandler().addRecipient(CALAMAR);
 
-        onView(withId(R.id.privateCheck)).perform(click());
-        onView(withId(R.id.contactSpinner)).perform(click());
-
-        onView(withText("bob")).check(matches(ViewMatchers.isDisplayed()));
-        onView(withText("calamar")).check(matches(ViewMatchers.isDisplayed()));
-
-        app.getDatabaseHandler().deleteAllRecipients();
-    }
 
 
     @Ignore

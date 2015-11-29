@@ -39,8 +39,6 @@ import ch.epfl.sweng.calamar.recipient.User;
 
 public class ChatActivity extends BaseActivity {
 
-    private static final String RECIPIENT_EXTRA_ID = "ID";
-    private static final String RECIPIENT_EXTRA_NAME = "Name";
     private static final String TAG = ChatActivity.class.getSimpleName();
 
 
@@ -246,8 +244,8 @@ public class ChatActivity extends BaseActivity {
 
     public void createItem(View v) {
         Intent intent = new Intent(this, CreateItemActivity.class);
-        intent.putExtra(RECIPIENT_EXTRA_ID, correspondent.getID());
-        intent.putExtra(RECIPIENT_EXTRA_NAME, correspondent.getName());
+        intent.putExtra(CreateItemActivity.CREATE_ITEM_RECIPIENT_EXTRA_ID, correspondent.getID());
+        intent.putExtra(CreateItemActivity.CREATE_ITEM_RECIPIENT_EXTRA_NAME, correspondent.getName());
         startActivity(intent);
     }
 }

@@ -7,6 +7,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.test.ActivityInstrumentationTestCase2;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -43,9 +44,8 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
     private final static String HELLO_ALICE = "Hello Alice !";
     private final static String ALICE = "Alice";
 
-    private static final String RECIPIENT_EXTRA_NAME = "Name";
-
     private final Recipient BOB = new User(1, "bob");
+    private final Recipient CALAMAR = new User(2, "calamar");
 
     public CreateItemActivityCommunicationTest() {
         super(CreateItemActivity.class);
@@ -55,6 +55,13 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
     public void setUp() throws Exception {
         super.setUp();
         injectInstrumentation(InstrumentationRegistry.getInstrumentation());
+        CalamarApplication.getInstance().getDatabaseHandler().deleteAllRecipients();
+    }
+
+    @After
+    @Override
+    public void tearDown(){
+        CalamarApplication.getInstance().getDatabaseHandler().deleteAllRecipients();
     }
 
     @Test
@@ -79,9 +86,9 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
     public void testCreateItemToPrivate() throws DatabaseClientException {
         DatabaseClient client = Mockito.mock(ConstantDatabaseClient.class);
         DatabaseClientLocator.setDatabaseClient(client);
+        CalamarApplication.getInstance().getDatabaseHandler().addRecipient(BOB);
         getActivity();
 
-        CalamarApplication.getInstance().getDatabaseHandler().addRecipient(BOB);
 
         ArgumentCaptor<Item> argument = ArgumentCaptor.forClass(Item.class);
 
@@ -149,7 +156,8 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
     @Test
     public void testIntentAreCorrectlyProcessed(){
         Intent conversation = new Intent();
-        conversation.putExtra(RECIPIENT_EXTRA_NAME, "bob");
+        conversation.putExtra(CreateItemActivity.CREATE_ITEM_RECIPIENT_EXTRA_ID, 1);
+        conversation.putExtra(CreateItemActivity.CREATE_ITEM_RECIPIENT_EXTRA_NAME, "bob");
         setActivityIntent(conversation);
 
         CalamarApplication.getInstance().getDatabaseHandler().addRecipient(BOB);
@@ -157,6 +165,19 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
 
 
         onView(withText("bob")).check(matches(ViewMatchers.isDisplayed()));
+    }
 
+    @Test
+    public void testAllContactAreDisplayedWhenPrivateIsSelected(){
+        CalamarApplication.getInstance().getDatabaseHandler().addRecipient(BOB);
+        CalamarApplication.getInstance().getDatabaseHandler().addRecipient(CALAMAR);
+
+        getActivity();
+
+        onView(withId(R.id.privateCheck)).perform(click());
+        onView(withId(R.id.contactSpinner)).perform(click());
+
+        onView(withText("bob")).check(matches(ViewMatchers.isDisplayed()));
+        onView(withText("calamar")).check(matches(ViewMatchers.isDisplayed()));
     }
 }

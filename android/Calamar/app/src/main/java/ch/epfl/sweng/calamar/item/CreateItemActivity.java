@@ -42,8 +42,8 @@ import ch.epfl.sweng.calamar.recipient.User;
 public class CreateItemActivity extends BaseActivity {
 
     private static final int PICK_FILE_REQUEST = 1;
-    private static final String RECIPIENT_EXTRA_ID = "ID";
-    private static final String RECIPIENT_EXTRA_NAME = "Name";
+    public static final String CREATE_ITEM_RECIPIENT_EXTRA_ID = "ch.epfl.sweng.calamar.RECIPIENT_ID";
+    public static final String CREATE_ITEM_RECIPIENT_EXTRA_NAME = "ch.epfl.sweng.calamar.RECIPIENT_NAME";
 
     private static final String TAG = CreateItemActivity.class.getSimpleName();
 
@@ -87,9 +87,9 @@ public class CreateItemActivity extends BaseActivity {
         //timeGroup.setVisibility(View.INVISIBLE);
 
         Intent intent = getIntent();
-        final int id = intent.getIntExtra(RECIPIENT_EXTRA_ID, -1);
+        final int id = intent.getIntExtra(CREATE_ITEM_RECIPIENT_EXTRA_ID, -1);
         if (id != -1) {
-            final String name = intent.getStringExtra(RECIPIENT_EXTRA_NAME);
+            final String name = intent.getStringExtra(CREATE_ITEM_RECIPIENT_EXTRA_NAME);
             contactsSpinner.setVisibility(View.VISIBLE);
             privateCheck.setChecked(true);
             contactsSpinner.setSelection(contacts.indexOf(new User(id, name)));
