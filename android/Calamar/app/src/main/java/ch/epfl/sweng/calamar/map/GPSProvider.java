@@ -140,7 +140,7 @@ public final class GPSProvider implements LocationListener
         if(BuildConfig.DEBUG) {
             notifyObservers(location);
         } else {
-            throw new RuntimeException("can't set mock Location when mock mode is disabled");
+            throw new RuntimeException("can't set mock Location in release version");
         }
     }
 
