@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNotEquals;
 @RunWith(JUnit4.class)
 public class EqualsAndHashcodeTest {
 
+    private final String path = "Calamar/1/2/";
     private final Date testDate = new Date(1000);
     private final User testUser1 = new User(13, "bob");
     private final User testUser2 = new User(14, "sponge");
@@ -76,12 +77,13 @@ public class EqualsAndHashcodeTest {
         SimpleTextItem s6 = new SimpleTextItem(12, testUser1, testUser2, new Date(1), tc, testMessage);
         SimpleTextItem s7 = new SimpleTextItem(12, testUser1, testUser2, testDate, Condition.falseCondition(), testMessage);
         SimpleTextItem s8 = new SimpleTextItem(12, testUser1, testUser2, testDate, tc, "Heeeeeeee");
+
         helperVerifyEqualsAndHashcode(s, s2);
         helperVerifyNotEqualsAndHashcode(s, s3);
         helperVerifyNotEqualsAndHashcode(s, s4);
         helperVerifyNotEqualsAndHashcode(s, s5);
         helperVerifyNotEqualsAndHashcode(s, s6);
-        helperVerifyNotEqualsAndHashcode(s, s7);
+        helperVerifyEqualsAndHashcode(s, s7);
         helperVerifyNotEqualsAndHashcode(s, s8);
         helperVerifyNotEqualsAndHashcode(s3, s4);
         helperVerifyNotEqualsAndHashcode(s3, s5);
@@ -105,11 +107,11 @@ public class EqualsAndHashcodeTest {
         // just a random 5x5 pgn pictures to test
         byte[] testContent2 = testContent.clone();
         testContent2[5] = (byte) 0x12;
-        FileItem f = new FileItem(12, testUser1, testUser2, testDate, tc, testContent, "FileItem");
-        FileItem f2 = new FileItem(12, testUser1, testUser2, testDate, tc, testContent, "FileItem");
-        ImageItem i = new ImageItem(12, testUser1, testUser2, testDate, tc, testContent, "FileItem");
-        FileItem f3 = new FileItem(12, testUser1, testUser2, testDate, tc, testContent2, "FileItem");
-        FileItem f4 = new FileItem(12, testUser1, testUser2, testDate, tc, testContent, "FileIte");
+        FileItem f = new FileItem(12, testUser1, testUser2, testDate, tc, testContent, path + "FileItem");
+        FileItem f2 = new FileItem(12, testUser1, testUser2, testDate, tc, testContent, path + "FileItem");
+        ImageItem i = new ImageItem(12, testUser1, testUser2, testDate, tc, testContent, path + "FileItem");
+        FileItem f3 = new FileItem(12, testUser1, testUser2, testDate, tc, testContent2, path + "FileItem");
+        FileItem f4 = new FileItem(12, testUser1, testUser2, testDate, tc, testContent, path + "/3/FileItem");
         helperVerifyEqualsAndHashcode(f, f2);
         helperVerifyEqualsAndHashcode(f, i);
         helperVerifyEqualsAndHashcode(i, f);
@@ -121,8 +123,8 @@ public class EqualsAndHashcodeTest {
     @Test
     public void testImageItem() {
         // just a random 5x5 pgn pictures to test
-        ImageItem i = new ImageItem(12, testUser1, testUser2, testDate, tc, testContent, "ImageItem");
-        ImageItem i2 = new ImageItem(12, testUser1, testUser2, testDate, tc, testContent, "ImageItem");
+        ImageItem i = new ImageItem(12, testUser1, testUser2, testDate, tc, testContent, path + "ImageItem");
+        ImageItem i2 = new ImageItem(12, testUser1, testUser2, testDate, tc, testContent, path + "ImageItem");
         helperVerifyEqualsAndHashcode(i, i2);
     }
 

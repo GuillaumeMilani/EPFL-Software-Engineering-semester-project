@@ -30,8 +30,7 @@ import ch.epfl.sweng.calamar.CalamarApplication;
  * Created by LPI on 06.11.2015.
  */
 @SuppressWarnings("FinalStaticMethod")
-public final class GPSProvider implements LocationListener
-{
+public final class GPSProvider implements LocationListener {
     private static volatile GPSProvider instance = null;
     private static final String TAG = GPSProvider.class.getSimpleName();
     public static final int CHECK_SETTINGS_REQUEST = 1002;

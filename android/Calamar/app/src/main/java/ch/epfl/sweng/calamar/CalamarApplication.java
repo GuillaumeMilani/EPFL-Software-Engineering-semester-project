@@ -3,6 +3,7 @@ package ch.epfl.sweng.calamar;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
+import android.content.ComponentCallbacks2;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -12,22 +13,31 @@ import android.util.Log;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.securepreferences.SecurePreferences;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import ch.epfl.sweng.calamar.recipient.User;
+import ch.epfl.sweng.calamar.utils.StorageManager;
 
-public final class CalamarApplication extends Application implements Application.ActivityLifecycleCallbacks {
+public final class CalamarApplication extends Application implements Application.ActivityLifecycleCallbacks, ComponentCallbacks2 {
 
     //TODO Why volatile?
     private static volatile CalamarApplication instance;
     private SQLiteDatabaseHandler dbHandler;
+    private StorageManager storageManager;
+    private static final int UPDATE_DB_TIME = 60000;
     private SharedPreferences sp;
     private SharedPreferences.Editor editor;
+    private Calendar calendar;
+    private int day;
 
     private static final String LAST_USERS_REFRESH_SP = "lastUsersRefresh";
     private static final String LAST_ITEMS_REFRESH_SP = "lastItemsRefresh";
     private static final String CURRENT_USER_ID_SP = "currentUserID";
     private static final String CURRENT_USER_NAME_SP = "currentUserName";
+    private static final String TODAY_IMAGE_COUNT_SP = "todayImageCount";
+    private static final String TODAY_FILE_COUNT_SP = "todayFileCount";
+
     private static final String TAG = CalamarApplication.class.getSimpleName();
 
     // Google client to interact with Google API
@@ -65,29 +75,47 @@ public final class CalamarApplication extends Application implements Application
         editor = sp.edit();
         handler = new Handler();
         dbHandler = SQLiteDatabaseHandler.getInstance();
+        storageManager = StorageManager.getInstance();
         setLastItemsRefresh(0);
         setLastUsersRefresh(0);
+        calendar = Calendar.getInstance();
+        day = calendar.get(Calendar.DAY_OF_MONTH);
+        loopDatabaseUpdate();
     }
 
 
     /**
-     * Get the database containing the recipients and the items.
+     * Get the database handler containing the recipients and the items.
      *
-     * @return the database
+     * @return the database handler
      */
     public SQLiteDatabaseHandler getDatabaseHandler() {
         return dbHandler;
     }
 
     /**
+     * Get the StorageManager allowing to store and retrieve items
+     *
+     * @return the storage manager
+     */
+    public StorageManager getStorageManager() {
+        return storageManager;
+    }
+
+    /**
      * Set the last time the application refreshed the users.
      *
-     * @param lastTime The date.
+     * @param lastTime A long
      */
     public void setLastUsersRefresh(long lastTime) {
         editor.putLong(LAST_USERS_REFRESH_SP, lastTime).apply();
     }
 
+    /**
+     * Sets the last time the application refreshed the users.
+     *
+     * @param lastTime A date
+     */
     public void setLastUsersRefresh(Date lastTime) {
         setLastUsersRefresh(lastTime.getTime());
     }
@@ -151,6 +179,38 @@ public final class CalamarApplication extends Application implements Application
     }
 
     /**
+     * Sets the number of images stored today.
+     *
+     * @param count the number to be set
+     */
+    public void setImageCount(int count) {
+        editor.putInt(TODAY_IMAGE_COUNT_SP, count);
+    }
+
+    /**
+     * Sets the number of files stored today.
+     *
+     * @param count the number to be set
+     */
+    public void setFileCount(int count) {
+        editor.putInt(TODAY_FILE_COUNT_SP, count);
+    }
+
+    /**
+     * Increase today's image count by 1.
+     */
+    public void increaseImageCount() {
+        editor.putInt(TODAY_IMAGE_COUNT_SP, getTodayFileCount() + 1).apply();
+    }
+
+    /**
+     * Increase today's file count by 1.
+     */
+    public void increaseFileCount() {
+        editor.putInt(TODAY_FILE_COUNT_SP, getTodayFileCount() + 1).apply();
+    }
+
+    /**
      * Returns the name of the current user
      *
      * @return the name of the user
@@ -166,6 +226,38 @@ public final class CalamarApplication extends Application implements Application
      */
     public User getCurrentUser() {
         return new User(getCurrentUserID(), getCurrentUserName());
+    }
+
+    /**
+     * Returns the number of ImageItem stored today.
+     *
+     * @return the number of ImageItem stored today
+     */
+    public int getTodayImageCount() {
+        int curDay = calendar.get(Calendar.DAY_OF_MONTH);
+        if (curDay != day) {
+            day = curDay;
+            resetImageCount();
+            resetFileCount();
+            return 0;
+        }
+        return sp.getInt(TODAY_IMAGE_COUNT_SP, 0);
+    }
+
+    /**
+     * Returns the number of FileItem stored today.
+     *
+     * @return the number of FileItem stored today
+     */
+    public int getTodayFileCount() {
+        int curDay = calendar.get(Calendar.DAY_OF_MONTH);
+        if (curDay != day) {
+            day = curDay;
+            resetImageCount();
+            resetFileCount();
+            return 0;
+        }
+        return sp.getInt(TODAY_FILE_COUNT_SP, 0);
     }
 
     /**
@@ -197,15 +289,38 @@ public final class CalamarApplication extends Application implements Application
     }
 
     /**
-     * Resets everything to its default value {@see resetUserID}{@see resetUsername}{@see resetLastItemsRefresh}{@see resetLastUsersRefresh}
+     * Resets the number of images stored today to 0.
+     */
+    public void resetImageCount() {
+        setImageCount(0);
+    }
+
+    /**
+     * Resets the number of files stored today to 0.
+     */
+    public void resetFileCount() {
+        setFileCount(0);
+    }
+
+    /**
+     * Resets everything to its default value {@see resetUserID}
+     * {@see resetUsername}{@see resetLastItemsRefresh}
+     * {@see resetLastUsersRefresh}{@see resetImageCount}{@see resetFileCount}
      */
     public void resetPreferences() {
         resetUserID();
         resetUsername();
         resetLastItemsRefresh();
         resetLastUsersRefresh();
+        resetImageCount();
+        resetFileCount();
     }
 
+    /**
+     * Sets the google api client
+     *
+     * @param googleApiClient the google api client to be set.
+     */
     public void setGoogleApiClient(GoogleApiClient googleApiClient) {
 //        //TODO ask guru, when unresolvable errors cause the main activity to finish (destroy activity)
 //        //if user reopen, activity's oncreate is called again but because the app isn't killed,
@@ -219,6 +334,12 @@ public final class CalamarApplication extends Application implements Application
         }
     }
 
+    /**
+     * Returns the Google Api Client
+     *
+     * @return the instance of the google api client
+     * @throws IllegalStateException if the google api client has not been created yet.
+     */
     public GoogleApiClient getGoogleApiClient() {
         if (null == googleApiClient) {
             Log.e(CalamarApplication.TAG, "getGoogleApiClient : google api client has not been created !");
@@ -311,6 +432,39 @@ public final class CalamarApplication extends Application implements Application
             long time = dbHandler.getLastUpdateTime();
             instance.setLastUsersRefresh(time);
             instance.setLastItemsRefresh(time);
+        }
+    }
+
+    /**
+     * So that if there is a problem with the background check, we won't have to retrieve all items each time.
+     */
+    private void loopDatabaseUpdate() {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                new ApplyPendingDatabaseOperationsTask();
+                loopDatabaseUpdate();
+            }
+        }, UPDATE_DB_TIME);
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        if (level >= TRIM_MEMORY_BACKGROUND) {
+            dbHandler.applyPendingOperations();
+        } else if (level >= TRIM_MEMORY_MODERATE && level < TRIM_MEMORY_COMPLETE) {
+            dbHandler.applyPendingOperations();
+            storageManager.cancelWritingTasks(5);
+        } else if (level <= TRIM_MEMORY_RUNNING_CRITICAL && level > TRIM_MEMORY_RUNNING_MODERATE) {
+            dbHandler.applyPendingOperations();
+            storageManager.cancelWritingTasks(1);
+        } else if (level >= TRIM_MEMORY_COMPLETE) {
+            dbHandler.applyPendingOperations();
+            storageManager.cancelWritingTasks(1);
+        } else if ((level > TRIM_MEMORY_RUNNING_CRITICAL && level < TRIM_MEMORY_MODERATE)
+                || level < TRIM_MEMORY_RUNNING_MODERATE) {
+            storageManager.retryFailedWriting();
         }
     }
 

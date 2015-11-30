@@ -1,17 +1,22 @@
 package ch.epfl.sweng.calamar.condition;
 
-import android.content.Context;
+import android.app.Activity;
+import android.content.Intent;
 import android.location.Location;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.MainActivity;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.map.GPSProvider;
+import ch.epfl.sweng.calamar.map.MapFragment;
 
 /**
  * Created by pierre on 10/27/15.
@@ -19,6 +24,8 @@ import ch.epfl.sweng.calamar.map.GPSProvider;
 public class PositionCondition extends Condition {
 
     private final static double DEFAULT_RADIUS = 20;
+    public static final String TAG = PositionCondition.class.getSimpleName();
+
 
     private final Location location;
     private final double radius;
@@ -71,6 +78,10 @@ public class PositionCondition extends Condition {
      * @return Location in this place
      */
     private static Location makeLocation(double latitude, double longitude) {
+        if(-90 > latitude || latitude > 90 || -180 > longitude || longitude > 180) {
+            throw new IllegalArgumentException("invalid latitude or longitude");
+        }
+
         Location loc = new Location("calamarTeam");
         loc.setLatitude(latitude);
         loc.setLongitude(longitude);
@@ -138,11 +149,38 @@ public class PositionCondition extends Condition {
     }
 
     @Override
-    public View getView(Context context) {
+    public View getView(final Activity context) {
         LinearLayout view = (LinearLayout) (super.getView(context));
-        Button button = new Button(context);
-        button.setText(context.getResources().getString(R.string.condition_position));
-        view.addView(button);
+        view.setOrientation(LinearLayout.HORIZONTAL);
+
+        // TODO make this looks better, and inflate from xml instead of like now :
+        TextView positionText = new TextView(context);
+        positionText.setText(this.toString());
+        positionText.setTextSize(15);
+        view.addView(positionText, 0);
+        if(!context.getClass().equals(MainActivity.class)) {
+            Button button = new Button(context);
+            button.setText(context.getResources().getString(R.string.condition_position));
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(CalamarApplication.getInstance(), MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                    intent.putExtra(MainActivity.TABKEY, MainActivity.TabID.MAP.ordinal());
+
+                    // TODO ideally put location and find way to retrieve it, I think this must be easy ?
+                    // intent.putExtra(MapFragment.POSITIONKEY, getLocation());
+                    intent.putExtra(MapFragment.LATITUDEKEY,
+                            PositionCondition.this.getLocation().getLatitude());
+                    intent.putExtra(MapFragment.LONGITUDEKEY,
+                            PositionCondition.this.getLocation().getLongitude());
+
+                    CalamarApplication.getInstance().startActivity(intent);
+                }
+            });
+            view.addView(button, 1);
+        }
         return view;
     }
 

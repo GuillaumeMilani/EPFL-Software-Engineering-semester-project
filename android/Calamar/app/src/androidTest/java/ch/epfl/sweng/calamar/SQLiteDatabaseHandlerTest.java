@@ -55,8 +55,8 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     private final SimpleTextItem testItem2 = new SimpleTextItem(1, testUser2, testUser, new Date(1), "1");
     private final SimpleTextItem testItem3 = new SimpleTextItem(2, testUser, testUser2, new Date(2), "2");
     private final SimpleTextItem testItem4 = new SimpleTextItem(3, testUser, testUser2, new Date(3), "3");
-    private final FileItem testFile = new FileItem(4, testUser, testUser2, new Date(4), Condition.trueCondition(), testContent, "FileItem");
-    private final ImageItem testImage = new ImageItem(5, testUser, testRecipient, new Date(5), Condition.falseCondition(), testContent, "ImageItem");
+    private final FileItem testFile = new FileItem(4, testUser, testUser2, new Date(4), Condition.trueCondition(), testContent, "Calamar/1/2/FileItem");
+    private final ImageItem testImage = new ImageItem(5, testUser, testRecipient, new Date(5), Condition.falseCondition(), testContent, "Calamar/1/2/ImageItem");
 
     private final int NUM_ITER = 500;
     private final int MIN_ITER = 100; //For queries reasons => max placeholders=99
@@ -748,7 +748,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         dbHandler.applyPendingOperations();
         assertEquals(dbHandler.getItem(testFile.getID()), testFile);
         checkLastTime(testFile.getDate().getTime());
-        FileItem updated = new FileItem(testFile.getID(), new User(5, "bla"), new User(6, "blo"), new Date(), Condition.falseCondition(), updatedTestContent, "File");
+        FileItem updated = new FileItem(testFile.getID(), new User(5, "bla"), new User(6, "blo"), new Date(), Condition.falseCondition(), updatedTestContent, "/File");
         dbHandler.updateItem(updated);
         assertEquals(dbHandler.getItem(testFile.getID()), updated);
         dbHandler.applyPendingOperations();
@@ -768,7 +768,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         dbHandler.applyPendingOperations();
         assertEquals(dbHandler.getItem(testImage.getID()), testImage);
         checkLastTime(testImage.getDate().getTime());
-        ImageItem updated = new ImageItem(testImage.getID(), new User(5, "bla"), new User(6, "blo"), new Date(1000), Condition.falseCondition(), updatedTestContent, "File");
+        ImageItem updated = new ImageItem(testImage.getID(), new User(5, "bla"), new User(6, "blo"), new Date(1000), Condition.falseCondition(), updatedTestContent, "/File");
         dbHandler.updateItem(updated);
         assertEquals(dbHandler.getItem(testImage.getID()), updated);
         dbHandler.applyPendingOperations();
@@ -802,9 +802,9 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         assertEquals(got.get(0), testItem);
         assertEquals(got.get(1), testFile);
         assertEquals(got.get(2), testImage);
-        FileItem updatedFile = new FileItem(testFile.getID(), testFile.getFrom(), testFile.getTo(), testFile.getDate(), testFile.getData(), "F");
-        FileItem updatedImage = new ImageItem(testImage.getID(), testImage.getFrom(), testImage.getTo(), testImage.getDate(), testImage.getData(), "I");
-        SimpleTextItem updatedSimple = new SimpleTextItem(testItem.getID(), testItem.getFrom(), testItem.getTo(), testItem.getDate(), "updated");
+        FileItem updatedFile = new FileItem(testFile.getID(), testFile.getFrom(), testFile.getTo(), testFile.getDate(), testFile.getData(), "/F");
+        FileItem updatedImage = new ImageItem(testImage.getID(), testImage.getFrom(), testImage.getTo(), testImage.getDate(), testImage.getData(), "/I");
+        SimpleTextItem updatedSimple = new SimpleTextItem(testItem.getID(), testItem.getFrom(), testItem.getTo(), testItem.getDate(), "/updated");
         List<Item> toUpdate = new ArrayList<>();
         toUpdate.add(updatedFile);
         toUpdate.add(updatedImage);
