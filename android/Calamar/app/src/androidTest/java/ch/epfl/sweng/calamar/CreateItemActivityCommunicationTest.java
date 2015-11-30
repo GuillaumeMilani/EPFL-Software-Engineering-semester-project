@@ -121,6 +121,8 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
         DatabaseClientLocator.setDatabaseClient(client);
         getActivity();
 
+        Intent data = new Intent();
+
         ArgumentCaptor<Item> argument = ArgumentCaptor.forClass(Item.class);
 
         onView(withId(R.id.selectFileButton)).perform(click());
@@ -132,17 +134,19 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
         assertEquals(argument.getValue(), expected);
     }
 
-    @Ignore
+    @Test
     public void testPositionIsCorrect() throws DatabaseClientException {
         Location location = new Location("test");
-        location.setLongitude(42);
-        location.setLatitude(43);
-
-        //TODO : Set mock location (waiting PR #109)
+        location.setLongitude(46.518568);
+        location.setLatitude(6.561926);
 
         DatabaseClient client = Mockito.mock(ConstantDatabaseClient.class);
         DatabaseClientLocator.setDatabaseClient(client);
         getActivity();
+
+        GPSProvider gps = GPSProvider.getInstance();
+        // BC
+        gps.setMockLocation(location);
 
         ArgumentCaptor<Item> argument = ArgumentCaptor.forClass(Item.class);
 
@@ -150,6 +154,8 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
         closeSoftKeyboard();
 
         onView(withId(R.id.locationCheck)).perform(click());
+
+        gps.setMockLocation(location);
 
         onView(withId(R.id.createButton)).perform(click());
 

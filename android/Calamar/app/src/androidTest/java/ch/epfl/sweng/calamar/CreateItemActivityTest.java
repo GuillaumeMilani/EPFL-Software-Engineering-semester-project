@@ -85,6 +85,7 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
     public void testImpossibleToCreateEmptyItem(){
         onView(withId(R.id.createButton)).perform(click());
         onView(withText("An item must either have a text, a file, or both.")).check(matches(ViewMatchers.isDisplayed()));
+        onView(withText("OK")).perform(click());
     }
 
     /*

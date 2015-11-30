@@ -103,6 +103,7 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
 
 
         onView(withText("Impossible to send the message")).check(matches(ViewMatchers.isDisplayed()));
+        onView(withText("OK")).perform(click());
     }
 
     /**
