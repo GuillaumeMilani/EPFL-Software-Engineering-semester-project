@@ -134,7 +134,7 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
         assertEquals(argument.getValue(), expected);
     }
 
-    @Test
+    @Ignore
     public void testPositionIsCorrect() throws DatabaseClientException {
         Location location = new Location("test");
         location.setLongitude(46.518568);
