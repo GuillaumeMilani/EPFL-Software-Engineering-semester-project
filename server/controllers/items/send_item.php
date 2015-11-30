@@ -1,6 +1,7 @@
 <?php
 include_once('models/items/add_items.php');
 include_once('models/conditions/add_conditions.php');
+include_once('utils/push.php');
 global $pdo;
 
 $data = get_post_JSON();
@@ -54,3 +55,4 @@ try {
 }
 	http_response_code(201);
 	echo json_encode(array("ID" => $result, "type" => $type, "from" => $from, "to" => $to, "date" => $date, "message" => $message, "condition" => json_decode($condition), "message" => $message));
+	send_push_to($to,$type);
