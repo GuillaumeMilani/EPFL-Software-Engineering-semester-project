@@ -31,6 +31,7 @@ import android.widget.Switch;
 import com.google.android.gms.gcm.GcmListenerService;
 
 import ch.epfl.sweng.calamar.MainActivity;
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.item.Item;
 
 public class RegistrationGcmListenerService extends GcmListenerService {
@@ -98,7 +99,7 @@ public class RegistrationGcmListenerService extends GcmListenerService {
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
                 .setContentIntent(pendingIntent)
-                .setSmallIcon(android.support.design.R.drawable.notification_template_icon_bg);
+                .setSmallIcon(R.drawable.calamar);
 
 
         NotificationManager notificationManager =

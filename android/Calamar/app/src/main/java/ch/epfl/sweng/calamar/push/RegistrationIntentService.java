@@ -25,8 +25,6 @@
  */
 package ch.epfl.sweng.calamar.push;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.SharedPreferences;
