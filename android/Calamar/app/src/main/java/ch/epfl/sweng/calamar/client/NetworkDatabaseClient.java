@@ -209,6 +209,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
 
         int responseCode = connection.getResponseCode();
 
+        // TODO use implemented server response code
         if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
             throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )");
         }
