@@ -22,13 +22,15 @@ function add_items($from,$to,$date,$type,$message,$condition_id)
 	$query->bindParam(':condition', $condition_id, PDO::PARAM_INT);
 	$query->bindParam(':message', $message, PDO::PARAM_STR);
 	$query->execute();
+	$item_id = $pdo->lastInsertId();
 	
-	return add_items_text($pdo->lastInsertId(),$type_data);
+	add_items_text($item_id);
+	return $item_id;
 }
 /**
 *	Add an item of type text into the database
 */
-function add_items_text($ID,$text)
+function add_items_text($ID)
 {
 	global $pdo;
 	
