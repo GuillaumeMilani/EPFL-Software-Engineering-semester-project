@@ -1,5 +1,9 @@
 package ch.epfl.sweng.calamar.utils;
 
+import android.graphics.Bitmap;
+import android.media.ThumbnailUtils;
+import android.util.Log;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -7,11 +11,16 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+import ch.epfl.sweng.calamar.item.FileItem;
+import ch.epfl.sweng.calamar.item.ImageItem;
+
 /**
  * Utilitary class used to compress and decompress byte arrays of data using the native zlib implementation of java
  */
 public class Compresser {
 
+    private static final int MIN_SIZE_FOR_COMPRESSION = 30;
+    private static final int THUMBNAIL_SIZE = 100;
     private static final int BUFFER_SIZE = 1024;
     private static final byte HEADER_1 = 0x78;
     private static final byte HEADER_2 = (byte) 0xDA;
@@ -25,7 +34,7 @@ public class Compresser {
      */
     public static byte[] compress(byte[] data) {
 
-        if (isCompressed(data)) {
+        if (isCompressed(data) || data.length < MIN_SIZE_FOR_COMPRESSION) {
             return data;
         } else {
             Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION);
@@ -101,6 +110,39 @@ public class Compresser {
             return data;
         }
 
+    }
+
+    /**
+     * Compresses (or removes) data from a FileItem, to reduce the size of the database.
+     *
+     * @param f The FileItem to be compressed
+     * @return The compressed FileItem
+     */
+    public static FileItem compressDataForDatabase(FileItem f) {
+        switch (f.getType()) {
+            case FILEITEM:
+                return new FileItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), null, f.getPath());
+            case IMAGEITEM:
+                return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), getImageThumbnail((ImageItem) f), f.getPath());
+            default:
+                throw new IllegalArgumentException("Expected FileItem");
+        }
+    }
+
+    public static byte[] getImageThumbnail(ImageItem i) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        Bitmap bitmap = i.getBitmap();
+        if (bitmap != null) {
+            if (bitmap.getWidth() <= THUMBNAIL_SIZE && bitmap.getHeight() <= THUMBNAIL_SIZE) {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            } else {
+                Bitmap thumbnail = ThumbnailUtils.extractThumbnail(bitmap, THUMBNAIL_SIZE, THUMBNAIL_SIZE);
+                thumbnail.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            }
+            return stream.toByteArray();
+        }
+        Log.d("Bitmap", "Bitmap of " + i + " is null.");
+        return null;
     }
 
     private static boolean isCompressed(byte[] data) {

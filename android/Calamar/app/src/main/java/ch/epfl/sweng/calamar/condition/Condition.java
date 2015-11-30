@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar.condition;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.location.Location;
@@ -21,6 +22,11 @@ import ch.epfl.sweng.calamar.R;
  * Created by pierre on 10/27/15.
  */
 public abstract class Condition {
+
+    // TODO make tostring usable ^^
+
+    public enum Type {POSITIONCONDITION, TRUECONDITION, FALSECONDITION,
+        ANDCONDITION, ORCONDITION, NOTCONDITION, TESTCONDITION}
 
     private Boolean value = false;
     private final Set<Observer> observers = new HashSet<>();
@@ -65,10 +71,10 @@ public abstract class Condition {
         if (this == o) return true;
         if (!(o instanceof Condition)) return false;
         Condition that = (Condition) o;
-        return value == that.value && type().equals(that.type());
+        return value == that.value && getType().equals(that.getType());
     }
 
-    public abstract String type();
+    public abstract Type getType();
 
 
     /**
@@ -86,7 +92,7 @@ public abstract class Condition {
         return false;
     }
 
-    public View getView(Context context) {
+    public View getView(Activity context) {
         LinearLayout layout = new LinearLayout(context);
         layout.setGravity(Gravity.CENTER_HORIZONTAL);
         //TODO : Add padding ?
@@ -156,23 +162,23 @@ public abstract class Condition {
         }
         Condition cond;
         String type = json.getString("type");
-        switch (type) {
-            case "position":
+        switch (Type.valueOf(type)) {
+            case POSITIONCONDITION:
                 cond = PositionCondition.fromJSON(json);
                 break;
-            case "and":
+            case ANDCONDITION:
                 cond = and(fromJSON(json.getJSONObject("a")), fromJSON(json.getJSONObject("b")));
                 break;
-            case "or":
+            case ORCONDITION:
                 cond = or(fromJSON(json.getJSONObject("a")), fromJSON(json.getJSONObject("b")));
                 break;
-            case "not":
+            case NOTCONDITION:
                 cond = not(fromJSON(json.getJSONObject("val")));
                 break;
-            case "true":
+            case TRUECONDITION:
                 cond = trueCondition();
                 break;
-            case "false":
+            case FALSECONDITION:
                 cond = falseCondition();
                 break;
             default:
@@ -194,7 +200,7 @@ public abstract class Condition {
 
             @Override
             protected void compose(JSONObject json) throws JSONException {
-                json.accumulate("type", "true");
+                json.accumulate("type", getType().name());
             }
 
             @Override
@@ -203,15 +209,15 @@ public abstract class Condition {
             }
 
             @Override
-            public String type() {
-                return "true";
+            public Type getType() {
+                return Type.TRUECONDITION;
             }
 
             @Override
-            public View getView(Context context) {
+            public View getView(Activity context) {
                 LinearLayout view = (LinearLayout) (super.getView(context));
                 TextView tv = new TextView(context);
-                tv.setText(context.getResources().getString(R.string.condition_true));
+                tv.setText(context.getResources().getString(R.string.condition_true)); // TODO differs from name in enum...
                 view.addView(tv);
                 return view;
             }
@@ -232,7 +238,7 @@ public abstract class Condition {
 
             @Override
             protected void compose(JSONObject json) throws JSONException {
-                json.accumulate("type", "false");
+                json.accumulate("type", getType().name());
             }
 
             @Override
@@ -241,12 +247,12 @@ public abstract class Condition {
             }
 
             @Override
-            public String type() {
-                return "false";
+            public Type getType() {
+                return Type.FALSECONDITION;
             }
 
             @Override
-            public View getView(Context context) {
+            public View getView(Activity context) {
                 LinearLayout view = (LinearLayout) (super.getView(context));
                 TextView tv = new TextView(context);
                 tv.setText(context.getResources().getString(R.string.condition_false));
@@ -267,6 +273,10 @@ public abstract class Condition {
         return new Condition() {
             //constructor
             {
+                // usefull but some tests in ChatActivityBasicTest doesn't pass
+                /*if (c1.getType() == Type.FALSECONDITION || c2.getType() == Type.FALSECONDITION) {
+                    throw new IllegalArgumentException("... && false will always be false..");
+                }*/
                 setValue(c1.value && c2.value);
                 Condition.Observer o = new Observer() {
 
@@ -286,7 +296,7 @@ public abstract class Condition {
 
             @Override
             protected void compose(JSONObject json) throws JSONException {
-                json.accumulate("type", "and");
+                json.accumulate("type", getType().name());
                 json.accumulate("a", c1.toJSON());
                 json.accumulate("b", c2.toJSON());
             }
@@ -297,8 +307,8 @@ public abstract class Condition {
             }
 
             @Override
-            public String type() {
-                return "and";
+            public Type getType() {
+                return Type.ANDCONDITION;
             }
 
             @Override
@@ -318,7 +328,7 @@ public abstract class Condition {
             }
 
             @Override
-            public View getView(Context context) {
+            public View getView(Activity context) {
                 LinearLayout view = (LinearLayout) (super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
                 LL.setOrientation(LinearLayout.VERTICAL);
@@ -362,7 +372,7 @@ public abstract class Condition {
 
             @Override
             protected void compose(JSONObject json) throws JSONException {
-                json.accumulate("type", "or");
+                json.accumulate("type", getType().name());
                 json.accumulate("a", c1.toJSON());
                 json.accumulate("b", c2.toJSON());
             }
@@ -373,8 +383,8 @@ public abstract class Condition {
             }
 
             @Override
-            public String type() {
-                return "or";
+            public Type getType() {
+                return Type.ORCONDITION;
             }
 
             @Override
@@ -392,7 +402,7 @@ public abstract class Condition {
                 return concatArray(c1.getMetadata(), c2.getMetadata());
             }
 
-            public View getView(Context context) {
+            public View getView(Activity context) {
                 LinearLayout view = (LinearLayout) (super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
                 LL.setOrientation(LinearLayout.VERTICAL);
@@ -433,7 +443,7 @@ public abstract class Condition {
 
             @Override
             protected void compose(JSONObject json) throws JSONException {
-                json.accumulate("type", "not");
+                json.accumulate("type", getType().name());
                 json.accumulate("val", c.toJSON());
             }
 
@@ -443,12 +453,10 @@ public abstract class Condition {
             }
 
             @Override
-            public String type() {
-                return "not";
+            public Type getType() {
+                return Type.NOTCONDITION;
             }
 
-            // TODO How to deal metadata with not operator ?
-            // ==> nothing to do, no ?
             @Override
             public JSONArray getMetadata() throws JSONException {
                 return c.getMetadata();
@@ -465,7 +473,7 @@ public abstract class Condition {
             }
 
             @Override
-            public View getView(Context context) {
+            public View getView(Activity context) {
                 LinearLayout view = (LinearLayout) (super.getView(context));
                 LinearLayout LL = new LinearLayout(context);
                 LL.setOrientation(LinearLayout.VERTICAL);

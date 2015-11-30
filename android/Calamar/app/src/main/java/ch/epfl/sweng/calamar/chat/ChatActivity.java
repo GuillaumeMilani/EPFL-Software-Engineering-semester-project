@@ -28,10 +28,14 @@ import ch.epfl.sweng.calamar.SQLiteDatabaseHandler;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.item.CreateItemActivity;
+import ch.epfl.sweng.calamar.item.FileItem;
+import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
+import ch.epfl.sweng.calamar.utils.StorageCallbacks;
+import ch.epfl.sweng.calamar.utils.StorageManager;
 
 //TODO Support other item types
 
@@ -39,7 +43,7 @@ import ch.epfl.sweng.calamar.recipient.User;
  * This activity manages the chat between two users (or in a group)
  */
 
-public class ChatActivity extends BaseActivity {
+public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
     private static final String TAG = ChatActivity.class.getSimpleName();
 
@@ -53,7 +57,8 @@ public class ChatActivity extends BaseActivity {
 
     private Recipient correspondent;
 
-    private SQLiteDatabaseHandler databaseHandler;
+    private StorageManager storageManager;
+    private SQLiteDatabaseHandler dbHandler;
 
     private CalamarApplication app;
 
@@ -115,31 +120,13 @@ public class ChatActivity extends BaseActivity {
         adapter = new ChatAdapter(this, messagesHistory);
         messagesContainer.setAdapter(adapter);
 
-        messagesContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                Item item = messagesHistory.get(position);
-
-                AlertDialog.Builder itemDescription = new AlertDialog.Builder(ChatActivity.this);
-                itemDescription.setTitle(R.string.item_details_alertDialog_title);
-
-                itemDescription.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        //OK
-                    }
-                });
-
-                itemDescription.setView(item.getView(ChatActivity.this));
-
-                itemDescription.show();
-            }
-        });
+        messagesContainer.setOnItemClickListener(new ItemClickWithStorageCallbackListener());
 
         TextView recipient = (TextView) findViewById(R.id.recipientLabel);
         recipient.setText(correspondent.getName());
 
-        databaseHandler = app.getDatabaseHandler();
+        storageManager = app.getStorageManager();
+        dbHandler = app.getDatabaseHandler();
 
         boolean offline = true;
         refresh(offline);
@@ -158,6 +145,7 @@ public class ChatActivity extends BaseActivity {
     private void sendTextItem() {
         String message = editText.getText().toString();
         Item textMessage = new SimpleTextItem(1, app.getCurrentUser(), correspondent, new Date(), message);
+        messagesHistory.add(textMessage);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
         editText.setText("");
@@ -189,11 +177,10 @@ public class ChatActivity extends BaseActivity {
         @Override
         protected void onPostExecute(Item item) {
             if (item != null) {
-                adapter.add(item);
-                messagesHistory.add(item);
+                messagesHistory.set(messagesHistory.indexOf(this.item), item);
                 adapter.notifyDataSetChanged();
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                databaseHandler.addItem(item);
+                storageManager.storeItem(item, ChatActivity.this);
             } else {
                 displayErrorMessage(getString(R.string.item_send_error));
             }
@@ -210,8 +197,8 @@ public class ChatActivity extends BaseActivity {
         private final Activity context;
 
         public RefreshTask(Recipient recipient, boolean offline, Activity context) {
-            if(null == recipient || null == context) {
-                throw new IllegalArgumentException("ChatActivity.RefreshTask: recipient or context is null");
+            if (null == recipient || null == context) {
+                throw new IllegalArgumentException(getString(R.string.refreshtask_null));
             }
             this.context = context;
             this.recipient = recipient;
@@ -221,7 +208,7 @@ public class ChatActivity extends BaseActivity {
         @Override
         protected List<Item> doInBackground(Void... v) {
             if (offline) {
-                return databaseHandler.getItemsForContact(correspondent);
+                return dbHandler.getItemsForContact(correspondent);
             } else {
                 try {
 
@@ -236,15 +223,17 @@ public class ChatActivity extends BaseActivity {
         @Override
         protected void onPostExecute(List<Item> items) {
             if (items != null) {
-                databaseHandler.addItems(items);
-                adapter.add(items);
+                if (!offline) {
+                    storageManager.storeItems(items, ChatActivity.this);
+                }
                 messagesHistory.addAll(items);
-
                 adapter.notifyDataSetChanged();
+                for (Item item : items) {
+                    storageManager.getCompleteItem(item, ChatActivity.this);
+                }
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 Toast.makeText(context, getString(R.string.refresh_message),
                         Toast.LENGTH_SHORT).show();
-
             } else {
                 displayErrorMessage(getString(R.string.unable_to_refresh_message));
             }
@@ -252,10 +241,101 @@ public class ChatActivity extends BaseActivity {
 
     }
 
+    /**
+     * Returns a copy of the messages history
+     *
+     * @return the messages history
+     */
+    public List<Item> getHistory() {
+        return new ArrayList<>(messagesHistory);
+    }
+
+    /**
+     * Updates the item in the messages history
+     *
+     * @param item the item to be updated
+     */
+    @Override
+    public void onItemRetrieved(Item item) {
+        boolean notFound = true;
+        for (int i = messagesHistory.size() - 1; i >= 0 && notFound; --i) {
+            if (item.getID() == messagesHistory.get(i).getID()) {
+                messagesHistory.set(i, item);
+                adapter.notifyDataSetChanged();
+                notFound = false;
+            }
+        }
+    }
+
+    /**
+     * Does nothing, will never ask the StorageManager for only data.
+     *
+     * @param data the data
+     */
+    @Override
+    public void onDataRetrieved(byte[] data) {
+        //Does nothing
+    }
+
     public void createItem(View v) {
         Intent intent = new Intent(this, CreateItemActivity.class);
         intent.putExtra(CreateItemActivity.CREATE_ITEM_RECIPIENT_EXTRA_ID, correspondent.getID());
         intent.putExtra(CreateItemActivity.CREATE_ITEM_RECIPIENT_EXTRA_NAME, correspondent.getName());
         startActivity(intent);
+    }
+
+    public void clearChat() {
+        this.messagesHistory.clear();
+        adapter.notifyDataSetChanged();
+    }
+
+    private class ItemClickWithStorageCallbackListener implements AdapterView.OnItemClickListener, StorageCallbacks {
+
+        private AlertDialog dialog;
+        private Item item;
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+            item = messagesHistory.get(position);
+
+            AlertDialog.Builder itemDescription = new AlertDialog.Builder(ChatActivity.this);
+            itemDescription.setTitle(R.string.item_details_alertDialog_title);
+
+            itemDescription.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    //OK
+                }
+            });
+
+            itemDescription.setView(item.getView(ChatActivity.this));
+
+            //Theoretically not needed : storageManager.getCompleteItem(item,this);
+
+            dialog = itemDescription.show();
+        }
+
+        @Override
+        public void onItemRetrieved(Item i) {
+            item = i;
+            dialog.setView(item.getView(ChatActivity.this));
+        }
+
+        @Override
+        public void onDataRetrieved(byte[] data) {
+            switch (item.getType()) {
+                case SIMPLETEXTITEM:
+                    break;
+                case FILEITEM:
+                    item = new FileItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, ((FileItem) item).getPath());
+                    break;
+                case IMAGEITEM:
+                    item = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, ((ImageItem) item).getPath());
+                    break;
+                default:
+                    throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unknown_item_type));
+            }
+            dialog.setView(item.getView(ChatActivity.this));
+        }
     }
 }
