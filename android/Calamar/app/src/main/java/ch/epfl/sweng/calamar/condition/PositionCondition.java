@@ -141,7 +141,9 @@ public class PositionCondition extends Condition {
     public JSONArray getMetadata() throws JSONException {
         JSONArray array = new JSONArray();
         JSONObject jObject = new JSONObject();
-        compose(jObject);
+        jObject.accumulate("type", getType().name());
+        jObject.accumulate("latitude", location.getLatitude());
+        jObject.accumulate("longitude", location.getLongitude());
         array.put(jObject);
         return array;
     }
