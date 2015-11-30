@@ -168,7 +168,7 @@ public class FileItem extends Item {
     }
 
     @Override
-    public void compose(JSONObject object) throws JSONException {
+    protected void compose(JSONObject object) throws JSONException {
         super.compose(object);
         object.accumulate("data", byteArrayToBase64String(data));
         object.accumulate("path", path);

@@ -50,7 +50,7 @@ jacoco {
 task jacocoReport(type: JacocoReport, dependsOn: "connectedAndroidTest") {
     sourceDirectories = files(['src/main/java'])
     classDirectories = fileTree(
-        dir: 'build/intermediates/classes',
+        dir: 'build/intermediates/classes/debug',
         excludes: [
             '**/R.class', 
             '**/R$*.class', 

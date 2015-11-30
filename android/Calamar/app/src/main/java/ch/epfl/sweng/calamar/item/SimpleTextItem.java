@@ -60,7 +60,7 @@ public final class SimpleTextItem extends Item {
      * @throws JSONException
      */
     @Override
-    public void compose(JSONObject json) throws JSONException {
+    protected void compose(JSONObject json) throws JSONException {
         super.compose(json);
         json.accumulate("type", ITEM_TYPE.name());
     }
