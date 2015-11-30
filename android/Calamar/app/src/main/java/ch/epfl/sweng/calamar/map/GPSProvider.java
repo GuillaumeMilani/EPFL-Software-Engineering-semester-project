@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import ch.epfl.sweng.calamar.BuildConfig;
 import ch.epfl.sweng.calamar.CalamarApplication;
 
 
@@ -97,6 +98,7 @@ public final class GPSProvider implements LocationListener {
      * @return the last received location <br>(<b>WARNING</b>, can be null if {@link #startLocationUpdates(Activity)}
      * hasn't been called, or can be stale if {@link #stopLocationUpdates()} has been called and ...)
      */
+    @Deprecated
     public Location getLastLocation() {
         //TODO mybe check lastupdatetime and return null if too old
         //use get last location of underlying fusedlocation provider + make
@@ -131,6 +133,14 @@ public final class GPSProvider implements LocationListener {
      */
     public boolean removeObserver(GPSProvider.Observer observer) {
         return this.observers.remove(observer);
+    }
+
+    public void setMockLocation(Location location) {
+        if(BuildConfig.DEBUG) {
+            notifyObservers(location);
+        } else {
+            throw new RuntimeException("can't set mock Location in release version");
+        }
     }
 
     private GPSProvider() {
