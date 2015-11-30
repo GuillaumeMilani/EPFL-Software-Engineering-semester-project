@@ -124,6 +124,10 @@ public class NetworkDatabaseClient implements DatabaseClient {
     private List<Item> getItems(Recipient recipient, Date from, VisibleRegion visibleRegion)
             throws DatabaseClientException
     {
+        if(null == recipient || null == from) {
+            throw new IllegalArgumentException("getItems: recipient or date null");
+        }
+
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_PATH);
