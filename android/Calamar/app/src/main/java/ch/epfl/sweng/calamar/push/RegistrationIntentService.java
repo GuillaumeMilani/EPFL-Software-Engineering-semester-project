@@ -102,12 +102,12 @@ public class RegistrationIntentService extends IntentService {
      * @param token The new token.
      */
     private void sendRegistrationToServer(String token) {
-        // TODO Send with login parts to the server
         NetworkRegistrationClient client = new NetworkRegistrationClient("HTTP://calamar.japan-impact.ch", new DefaultNetworkProvider());
         try {
             String accountName = CalamarApplication.getInstance().getCurrentUserName();
-            client.send(token,accountName);
             Log.i(TAG,"(token,name) is (" + token +","+ accountName+")");
+            client.send(token, accountName);
+
         } catch (RegisterClientException e) {
             e.printStackTrace();
             Log.e("Token", "couldn't reach the server");

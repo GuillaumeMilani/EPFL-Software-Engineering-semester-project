@@ -111,7 +111,7 @@ public class NetworkRegistrationClient implements RegistrationClient {
             }
 
             String result = out.toString();
-            Log.d("HTTPFetchContent", "Fetched string of length "
+            Log.d("RegHTTPFetchContent", "Fetched string of length "
                     + result.length());
             return result;
         } finally {
