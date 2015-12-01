@@ -122,7 +122,6 @@ public abstract class Item {
     public View getPreView(final Context context) {
         final LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
-
         int childCount = 0;
         if (condition.getValue()) {
             View itemView = getItemView(context);

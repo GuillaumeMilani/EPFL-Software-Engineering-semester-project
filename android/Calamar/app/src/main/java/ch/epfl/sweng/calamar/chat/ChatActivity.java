@@ -6,6 +6,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -43,8 +45,6 @@ import ch.epfl.sweng.calamar.utils.StorageManager;
 
 public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
-    private static final String RECIPIENT_EXTRA_ID = "ID";
-    private static final String RECIPIENT_EXTRA_NAME = "Name";
     private static final String TAG = ChatActivity.class.getSimpleName();
 
 
@@ -79,13 +79,31 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
         app = CalamarApplication.getInstance();
         correspondent = new User(correspondentID, correspondentName);
 
-        editText = (EditText) findViewById(R.id.messageEdit);
 
         sendButton = (Button) findViewById(R.id.chatSendButton);
+        sendButton.setEnabled(false);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendTextItem();
+            }
+        });
+
+        editText = (EditText) findViewById(R.id.messageEdit);
+
+        editText.addTextChangedListener(new TextWatcher() {
+            public void afterTextChanged(Editable s) {
+                if (s.length() == 0) {
+                    sendButton.setEnabled(false);
+                } else {
+                    sendButton.setEnabled(true);
+                }
+            }
+
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
         });
 
@@ -164,8 +182,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 storageManager.storeItem(item, ChatActivity.this);
             } else {
-                Toast.makeText(getApplicationContext(), getString(R.string.item_send_error),
-                        Toast.LENGTH_SHORT).show();
+                displayErrorMessage(getString(R.string.item_send_error));
             }
         }
     }
@@ -214,20 +231,10 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
                     storageManager.getCompleteItem(item, ChatActivity.this);
                 }
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
-                Toast.makeText(context, R.string.refresh_message,
+                Toast.makeText(context, getString(R.string.refresh_message),
                         Toast.LENGTH_SHORT).show();
             } else {
-                // TODO same code used in multiple asynctask, ...
-                Log.e(ChatActivity.TAG, "unable to refresh");
-                // TODO once gave me : android.view.WindowManager$BadTokenException: Unable to add window -- token android.os.BinderProxy@4291e5a0 is not valid; is your activity running ?
-                AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
-                newUserAlert.setTitle(R.string.unable_to_refresh_message);
-                newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        //OK
-                    }
-                });
-                newUserAlert.show();
+                displayErrorMessage(getString(R.string.unable_to_refresh_message));
             }
         }
 
@@ -271,8 +278,8 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
     public void createItem(View v) {
         Intent intent = new Intent(this, CreateItemActivity.class);
-        intent.putExtra(RECIPIENT_EXTRA_ID, correspondent.getID());
-        intent.putExtra(RECIPIENT_EXTRA_NAME, correspondent.getName());
+        intent.putExtra(CreateItemActivity.CREATE_ITEM_RECIPIENT_EXTRA_ID, correspondent.getID());
+        intent.putExtra(CreateItemActivity.CREATE_ITEM_RECIPIENT_EXTRA_NAME, correspondent.getName());
         startActivity(intent);
     }
 
