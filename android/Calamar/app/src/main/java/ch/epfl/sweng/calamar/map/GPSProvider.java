@@ -42,6 +42,7 @@ public final class GPSProvider implements LocationListener {
     private final LocationRequest locationRequest = createLocationRequest();
 
     private final GoogleApiClient googleApiClient;
+    private boolean isStarted = false;
 
     // TODO, seems to be one possible soluce to avoid (or maybe luck....)
     // https://stackoverflow.com/questions/24201356/avoiding-concurrent-modification-in-observer-pattern
@@ -65,22 +66,23 @@ public final class GPSProvider implements LocationListener {
     }
 
     /**
-     * Checks location settings and starts the location updates if no issue found. <br>
+     * Starts the location updates. <br>
      * Registered observers will get new location periodically through their
      * {@link GPSProvider.Observer#update(Location) update} method. <br><br>
      *
-     * <b>Warning :</b> if settings are not OK, nothing done, caller <i>parentActivity</i>
-     * should implement {@link Activity#onActivityResult(int, int, Intent)} to react to the user actions.
-     * <br>
-     *     request code : {@link #CHECK_SETTINGS_REQUEST}
-     *     TODO describe result code and actions
+     *     WARNING: caller should call checkSettingsAndLaunchIfOK instead
+     *
+     * @throws IllegalStateException when google api client not connected
      */
-    public void startLocationUpdates(Activity parentActivity) {
-        checkLocationSettings(parentActivity);
-        // TODO...I don't manage to find a good solution....rethink
-        // here if settings KO and user sets them OK, caller will recall this, and settings will be checked
-        // again .........if I split them apart, in case of settings OK,
-        // need to decide on a way to inform caller that settings ok (callback..)
+    public void startLocationUpdates() {
+        if(googleApiClient.isConnected()) { // else call cause illegalstateexception
+            LocationServices.FusedLocationApi.requestLocationUpdates(
+                    googleApiClient, locationRequest, GPSProvider.instance);
+            isStarted = true;
+            Log.i(TAG, "GPS request started");
+        } else {
+            throw new IllegalStateException("startLocationUpdates: client not connected");
+        }
     }
 
     /**
@@ -91,7 +93,11 @@ public final class GPSProvider implements LocationListener {
         if(googleApiClient.isConnected()) { // else call cause illegalstateexception
             LocationServices.FusedLocationApi.removeLocationUpdates(
                     googleApiClient, this);
-        } // TODO else ??? we need to think when we start / stop / connect / disconnect
+            isStarted = false;
+            Log.i(TAG, "GPS request stopped");
+        } else {
+            throw new IllegalStateException("stopLocationUpdates: client not connected");
+        }
     }
 
     /**
@@ -131,6 +137,10 @@ public final class GPSProvider implements LocationListener {
         }
     }
 
+    public boolean isStarted() {
+        return isStarted;
+    }
+
     private GPSProvider() {
         // get the GoogleApi client,
         // creation plus play services availability checks are done in MainActivity at app startup
@@ -138,11 +148,12 @@ public final class GPSProvider implements LocationListener {
     }
 
     /**
-     * Verifies location services availability on the device, and initiate location updates if OK
+     * Verifies location services availability on the device
      * if KO, attempt to resolve error by showing user a dialog. <br>
-     * is called by startLocationUpdates()
+     * if OK, location updates are requested
+     * is NOT called by startLocationUpdates()
      * */
-    private void checkLocationSettings(final Activity parentActivity) {
+    public void checkSettingsAndLaunchIfOK(final Activity parentActivity) {
         googleApiClient.connect();//if already connected does nothing
 
         // build location settings status requests
@@ -165,10 +176,8 @@ public final class GPSProvider implements LocationListener {
                         // All location settings are satisfied. The client can initialize location
                         // requests.
                         Log.i(GPSProvider.TAG, "Location settings OK");
-
                         //  start location requests
-                        LocationServices.FusedLocationApi.requestLocationUpdates(
-                                googleApiClient, locationRequest, GPSProvider.instance);
+                        startLocationUpdates();
                         break;
                     case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
                         // Location settings are not satisfied. But could be fixed by showing the user

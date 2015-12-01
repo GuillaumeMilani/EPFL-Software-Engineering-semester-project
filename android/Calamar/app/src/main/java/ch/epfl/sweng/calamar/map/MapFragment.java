@@ -63,9 +63,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
     // public static final String POSITIONKEY = MapFragment.class.getCanonicalName() + ":POSITION";
 
-    // TODO : add two buttons begin checks stop checks
-    // that will : checklocation settings + startlocation updates
-    // TODO : manage activity lifecycle : start stop location updates when not needed, plus many potential problems
     // TODO : do we save state of fragment/map using a bundle ?
 
 
@@ -80,32 +77,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     // maps fragment will do all the necessary if gplay services apk not present
     // see comment on setupMapIfNeeded
     // ....maybe delegate all the work to the map fragment, I think google has correctly done the job...
-
-    private GPSProvider gpsProvider;
-    private final GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
-        @Override
-        public void update(Location newLocation) {
-            if (null == map) {
-                throw new IllegalStateException(
-                        "map should be initialized and ready before accessed by location updater");
-            }
-            double latitude = newLocation.getLatitude();
-            double longitude = newLocation.getLongitude();
-            LatLng myLoc = new LatLng(latitude, longitude);
-            map.moveCamera(CameraUpdateFactory.newLatLng(myLoc));
-            map.moveCamera(CameraUpdateFactory.zoomTo(18.0f));
-        }
-    };
-//    private GPSProvider gpsProvider;
-//    private final GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
-//        @Override
-//        public void update(Location newLocation) {
-//            if(null == map) {
-//                throw new IllegalStateException(
-//                        "map should be initialized and ready before accessed by location updater");
-//            }
-//        }
-//    };
 
 
     // The condition is updated when the location change and if the value(true/false) of the
@@ -135,7 +106,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     public MapFragment() {
         // required
     }
-
 
     // *********************************************************************************************
     // map fragment lifecycle callbacks
@@ -168,9 +138,16 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         return inflater.inflate(R.layout.fragment_map, container, false);
     }
 
+    // is called after activity.onStop !!!
+    // https://developer.android.com/guide/components/fragments.html#Lifecycle
     @Override
     public void onResume() {
         super.onResume();
+        GPSProvider gpsProvider = GPSProvider.getInstance();
+
+        if(!gpsProvider.isStarted()) {
+            gpsProvider.checkSettingsAndLaunchIfOK(getActivity());
+        }
 
         // REFRESH BUTTON
         getView().findViewById(R.id.refreshButton).setOnClickListener(new View.OnClickListener() {
@@ -183,12 +160,19 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         setUpMapIfNeeded();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        GPSProvider gpsProvider = GPSProvider.getInstance();
+        if(gpsProvider.isStarted()) {
+            GPSProvider.getInstance().stopLocationUpdates();
+        }
+    }
+
     // map setup here :
     @Override
     public void onMapReady(final GoogleMap map) {
         this.map = map;
-        // setUpGPS();
-
         map.setMyLocationEnabled(true);
         map.setOnMarkerClickListener(new MarkerWithStorageCallBackListener());
         LatLng initialLoc = new LatLng(initialLat, initialLong);
@@ -199,20 +183,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     }
 
 
-    @Override
-    // is called after activity.onStop !!!
-    // https://developer.android.com/guide/components/fragments.html#Lifecycle
-    public void onStop() {
-
-        // cause exception because client is disconnected in activity.onStop
-        //gpsProvider.stopLocationUpdates();
-        super.onStop();
-
-        //TODO
-        // think about when should we start stop locationUpdates
-        // on user demand ? via buttons, adds interaction and "user control"
-        // or on create / stop ??
-    }
     // *********************************************************************************************
 
     private void addAllItemsInRegionToMap() {
@@ -293,14 +263,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                     .getMapAsync(this);
         }
     }
-
-//    private void setUpGPS() {
-//        gpsProvider = GPSProvider.getInstance();
-//        gpsProvider.addObserver(gpsObserver);
-//        gpsProvider.startLocationUpdates(getActivity());
-//    }
-
-
+    
     /**
      * Async task for refreshing / getting new localized items.
      */

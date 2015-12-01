@@ -151,24 +151,32 @@ public class CreateItemActivity extends BaseActivity {
 
     public void locationChecked(View v) {
         final GPSProvider gpsProvider = GPSProvider.getInstance();
-        gpsProvider.startLocationUpdates(this);
-        sendButton.setEnabled(false);
 
-        // TODO show "sablier" + test
+        CheckBox locationBox = (CheckBox)v;
 
-        gpsProvider.addObserver(new GPSProvider.Observer() {
-            @Override
-            public void update(Location newLocation) {
-                currentLocation = newLocation;
-                sendButton.setEnabled(true);
-                gpsProvider.removeObserver(this);
-                // TODO ConcurrentModificationException
-                // because set modified during notify iteration
-                // normally solved now, but wait and see
-                GPSProvider.getInstance().stopLocationUpdates();
-            }
-        });
+        if(locationBox.isChecked()) {
+            // will start updates if settings ok, if not dialog, onActivityResult etc
+            GPSProvider.getInstance().checkSettingsAndLaunchIfOK(this);
 
+            sendButton.setEnabled(false);
+
+            // TODO show "sablier" + test
+
+            gpsProvider.addObserver(new GPSProvider.Observer() {
+                @Override
+                public void update(Location newLocation) {
+                    currentLocation = newLocation;
+                    sendButton.setEnabled(true);
+                    gpsProvider.removeObserver(this);
+                    // TODO ConcurrentModificationException
+                    // because set modified during notify iteration
+                    // normally solved now, but wait and see
+                    GPSProvider.getInstance().stopLocationUpdates();
+                }
+            });
+        } else {
+            sendButton.setEnabled(true);
+        }
     }
 
     public void privateChecked(View v) {
