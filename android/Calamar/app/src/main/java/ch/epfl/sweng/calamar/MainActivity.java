@@ -87,10 +87,13 @@ public class MainActivity extends BaseActivity {
         viewPager.setCurrentItem(tabId);
         //choose account dialog
         // TODO if possible get rid of this deprecated call, see javadoc
-        Intent accountIntent = AccountManager.newChooseAccountIntent(null, null,
-                new String[]{"com.google"}, true, null, null,
-                null, null);
-        startActivityForResult(accountIntent, BaseActivity.ACCOUNT_CHOOSEN);
+        // Javadoc says that we need to go to api 23 to get rid of deprecated
+        if(CalamarApplication.getInstance().getCurrentUserID() == -1) {
+            Intent accountIntent = AccountManager.newChooseAccountIntent(null, null,
+                    new String[]{"com.google"}, true, null, null,
+                    null, null);
+            startActivityForResult(accountIntent, BaseActivity.ACCOUNT_CHOOSEN);
+        }
     }
     // *********************************************************************************************
 

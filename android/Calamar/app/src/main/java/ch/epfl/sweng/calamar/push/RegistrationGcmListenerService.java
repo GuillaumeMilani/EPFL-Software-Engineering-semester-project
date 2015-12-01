@@ -50,31 +50,25 @@ public class RegistrationGcmListenerService extends GcmListenerService {
     public void onMessageReceived(String from, Bundle data) {
         String message = "You have received a new ";
 
-        try{
-            Item.Type type = Item.Type.valueOf(data.getString("type"));
-            //Log.d(TAG, "From: " + from);
-            Log.d(TAG, "Message: " + type);
+        Item.Type type = Item.Type.valueOf(data.getString("type"));
+        //Log.d(TAG, "From: " + from);
+        Log.d(TAG, "Message: " + type);
 
-            switch (type) {
-                case SIMPLETEXTITEM:
-                    message += "chat item.";
-                    break;
-                case FILEITEM:
-                    message += "file item";
-                    break;
-                case IMAGEITEM:
-                    message += "image item";
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown type");
+        switch (type) {
+            case SIMPLETEXTITEM:
+                message += "chat item.";
+                break;
+            case FILEITEM:
+                message += "file item";
+                break;
+            case IMAGEITEM:
+                message += "image item";
+                break;
+            default:
+                Log.e(TAG,"wrong type");
             }
 
             sendNotification(message);
-        }
-        catch (IllegalArgumentException e)
-        {
-            Log.e(TAG,"wrong type");
-        }
 
     }
     // [END receive_message]
