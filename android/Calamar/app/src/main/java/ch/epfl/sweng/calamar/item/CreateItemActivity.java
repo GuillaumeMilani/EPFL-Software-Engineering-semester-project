@@ -161,8 +161,6 @@ public class CreateItemActivity extends BaseActivity {
             // will start updates if settings ok, if not dialog, onActivityResult etc
             GPSProvider.getInstance().checkSettingsAndLaunchIfOK(this);
 
-            sendButton.setEnabled(false);
-
             locationProgressBar.setVisibility(ProgressBar.VISIBLE);
             sendButton.setEnabled(false);
 

@@ -87,10 +87,11 @@ public abstract class BaseActivity extends AppCompatActivity
 
     @Override
     protected void onStop() {
-        GoogleApiClient googleApiClient = app.getGoogleApiClient();
-        if (googleApiClient.isConnected()) {
-            googleApiClient.disconnect();
-        }
+        // TODO maybe rethink later
+//        GoogleApiClient googleApiClient = app.getGoogleApiClient();
+//        if (googleApiClient.isConnected()) {
+//            googleApiClient.disconnect();
+//        }
         super.onStop();
     }
     // *********************************************************************************************
@@ -156,7 +157,7 @@ public abstract class BaseActivity extends AppCompatActivity
                 switch (resultCode) {
                     case Activity.RESULT_OK:
 
-                        Log.e(TAG, "SETTINGS FIXED ? : startUpdates");
+                        Log.i(TAG, "LOCATION SETTINGS FIXED ? : startUpdates");
                         // start only the updates, settings should have been fixed now
                         GPSProvider.getInstance().startLocationUpdates();
 

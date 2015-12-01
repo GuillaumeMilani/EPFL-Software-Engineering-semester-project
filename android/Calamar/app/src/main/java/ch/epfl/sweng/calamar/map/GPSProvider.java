@@ -227,10 +227,10 @@ public final class GPSProvider implements LocationListener {
 
         // request the most precise location possible. The location services
         // are more likely to use GPS to determine the location.
-        if(!BuildConfig.DEBUG) {
-            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            locationRequest.setSmallestDisplacement(3); // 3 meters
-        }
+
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setSmallestDisplacement(3); // 3 meters
+
 
 
         // PRIORITY_HIGH_ACCURACY, combined with the ACCESS_FINE_LOCATION permission setting,
