@@ -100,8 +100,6 @@ public abstract class BaseActivity extends AppCompatActivity
     @Override
     public void onConnected(Bundle arg0) {
         Log.i(TAG, "google API client connected");
-        Intent intent = new Intent(this, RegistrationIntentService.class);
-        startService(intent);
     }
 
     @Override
@@ -187,7 +185,6 @@ public abstract class BaseActivity extends AppCompatActivity
                     case Activity.RESULT_OK:
                         // get account name
                         String accountName = data.getExtras().getString(AccountManager.KEY_ACCOUNT_NAME);
-                        Log.i(TAG, accountName);
                         CalamarApplication.getInstance().setCurrentUserName(accountName);
                         afterAccountAuthentication();
                         break;
@@ -252,6 +249,9 @@ public abstract class BaseActivity extends AppCompatActivity
      */
     private void afterAccountAuthentication() {
         new createNewUserTask(CalamarApplication.getInstance().getCurrentUserName(), this).execute();
+        // The user need to be authenticated before registration
+        Intent intent = new Intent(this, RegistrationIntentService.class);
+        startService(intent);
     }
 
 

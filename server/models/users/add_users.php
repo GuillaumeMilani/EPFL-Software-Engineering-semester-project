@@ -58,12 +58,7 @@ function add_recipientUser($ID,$name,$devID)
 	$query->bindParam(':id',$id,PDO::PARAM_INT);
 	$query->bindParam(':device',$devID,PDO::PARAM_STR);
 	$query->bindParam(':email',$name,PDO::PARAM_STR);
-	if($query->execute() == true)
-	{
-		return array('ID' => $id);
-	}
-	else
-	{
-		throw new Exception("Query wasn't executed into user table");
-	}
+	$query->execute();
+	
+	return array('ID' => $id);
 }

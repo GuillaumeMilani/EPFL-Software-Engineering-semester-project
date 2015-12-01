@@ -61,8 +61,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `tb_metadata_position` (
   `ID` INT NOT NULL,
   `latitude` FLOAT( 10, 6 ) NOT NULL ,
-  `longitude` FLOAT( 10, 6 ) NOT NULL,
-  `radius` FLOAT NOT NULL,
+  `longitude` FLOAT( 10, 6 ) NOT NULL
   PRIMARY KEY (`ID`),
   CONSTRAINT `ct_id_metadata_position`
     FOREIGN KEY (`ID`)
@@ -145,4 +144,4 @@ FROM tb_item itm, tb_item_text txt WHERE itm.id = txt.id;
 DROP TABLE IF EXISTS `view_user`;
 
 CREATE OR REPLACE VIEW `view_user` AS
-SELECT rec.ID, rec.name FROM tb_recipient rec, tb_recipient_user usr WHERE rec.id = usr.id;
+SELECT rec.ID, rec.name,usr.registrationToken FROM tb_recipient rec, tb_recipient_user usr WHERE rec.id = usr.id;
