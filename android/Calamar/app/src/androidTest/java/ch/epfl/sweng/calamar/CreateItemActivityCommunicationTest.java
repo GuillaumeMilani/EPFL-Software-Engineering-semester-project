@@ -103,7 +103,7 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
 
         onView(withId(R.id.privateCheck)).perform(click());
         onView(withId(R.id.contactSpinner)).perform(click());
-        onView(withText("bob")).perform(click());
+        onView(withText(BOB.getName())).perform(click());
 
         onView(withId(R.id.createButton)).perform(click());
 
@@ -169,14 +169,14 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
     public void testIntentAreCorrectlyProcessed(){
         Intent conversation = new Intent();
         conversation.putExtra(CreateItemActivity.CREATE_ITEM_RECIPIENT_EXTRA_ID, 1);
-        conversation.putExtra(CreateItemActivity.CREATE_ITEM_RECIPIENT_EXTRA_NAME, "bob");
+        conversation.putExtra(CreateItemActivity.CREATE_ITEM_RECIPIENT_EXTRA_NAME, BOB.getName());
         setActivityIntent(conversation);
 
         CalamarApplication.getInstance().getDatabaseHandler().addRecipient(BOB);
         getActivity();
 
 
-        onView(withText("bob")).check(matches(isDisplayed()));
+        onView(withText(BOB.getName())).check(matches(isDisplayed()));
     }
 
     @Test
@@ -189,8 +189,8 @@ public class CreateItemActivityCommunicationTest extends ActivityInstrumentation
         onView(withId(R.id.privateCheck)).perform(click());
         onView(withId(R.id.contactSpinner)).perform(click());
 
-        onView(withText("bob")).check(matches(isDisplayed()));
-        onView(withText("calamar")).check(matches(isDisplayed()));
+        onView(withText(BOB.getName())).check(matches(isDisplayed()));
+        onView(withText(CALAMAR.getName())).check(matches(isDisplayed()));
     }
 
 }

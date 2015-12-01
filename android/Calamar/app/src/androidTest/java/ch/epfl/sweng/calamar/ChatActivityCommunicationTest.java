@@ -117,9 +117,6 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
         setActivityIntent(conversation);
         getActivity();
 
-        //Wait that the local refresh end
-        SystemClock.sleep(10000);
-
         onView(withId(R.id.refreshButton)).perform(click());
         onView(withText("Unable to refresh")).check(matches(ViewMatchers.isDisplayed()));
     }

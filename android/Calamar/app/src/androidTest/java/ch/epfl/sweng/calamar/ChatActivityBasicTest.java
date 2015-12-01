@@ -184,6 +184,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
         onView(withId(R.id.chatSendButton)).check(matches(not(isEnabled())));
 
         onView(withId(R.id.messageEdit)).perform(typeText(HELLO_ALICE));
+        onView(withId(R.id.chatSendButton)).check(matches(isEnabled()));
         onView(withId(R.id.chatSendButton)).perform(click());
 
         onView(withId(R.id.chatSendButton)).check(matches(not(isEnabled())));
