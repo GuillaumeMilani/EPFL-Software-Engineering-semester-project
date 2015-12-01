@@ -1,5 +1,6 @@
 <?php
 include_once('models/users/add_users.php');
+include_once('models/users/retrieve_users.php');
 
 // Retrieve post data
 $content = urldecode(file_get_contents('php://input'));

@@ -16,6 +16,7 @@ import java.util.Date;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
+import ch.epfl.sweng.calamar.utils.Compresser;
 
 /**
  * Created by pierre on 11/12/15.
@@ -23,8 +24,6 @@ import ch.epfl.sweng.calamar.recipient.User;
 public final class ImageItem extends FileItem {
 
     protected final static Type ITEM_TYPE = Type.IMAGEITEM;
-
-    private final Bitmap bitmap;
 
     /**
      * Instantiates a new ImageItem with the following parameters
@@ -34,27 +33,60 @@ public final class ImageItem extends FileItem {
      * @param to        the 'to' field of the Item (recipient)
      * @param date      the creation/posting date of the Item
      * @param condition the content (text message)
-     * @param data      the image
-     * @see Item#Item(int, User, Recipient, Date, Condition)
+     * @param data      the image as a byte array
+     * @param path      the path of the image
+     * @param message   the message of the image
+     * @see Item#Item(int, User, Recipient, Date, Condition, String)
      */
-    public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String name) {
-        super(ID, from, to, date, condition, data, name);
-        this.bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+    public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path, String message) {
+        super(ID, from, to, date, condition, data, path, message);
     }
 
     /**
-     * Instantiates a new ImageItem with the following parameters (condition will be always true)
+     * Instantiates a new ImageItem with the following parameters
      *
-     * @param ID     the id
-     * @param from   the 'from' field of the Item (sender)
-     * @param to     the 'to' field of the Item (recipient)
-     * @param date   the creation/posting date of the Item
-     * @param bitmap the image
-     * @see Item#Item(int, User, Recipient, Date)
+     * @param ID      the id
+     * @param from    the 'from' field of the Item (sender)
+     * @param to      the 'to' field of the Item (recipient)
+     * @param date    the creation/posting date of the Item
+     * @param data    the image as a byte array
+     * @param path    the path of the image
+     * @param message the message of the image
+     * @see Item#Item(int, User, Recipient, Date, Condition, String)
      */
-    public ImageItem(int ID, User from, Recipient to, Date date, byte[] bitmap, String name) {
-        super(ID, from, to, date, bitmap, name);
-        this.bitmap = BitmapFactory.decodeByteArray(bitmap, 0, bitmap.length);
+    public ImageItem(int ID, User from, Recipient to, Date date, byte[] data, String path, String message) {
+        this(ID, from, to, date, Condition.trueCondition(), data, path, message);
+    }
+
+    /**
+     * Instantiates a new ImageItem with the following parameters
+     *
+     * @param ID        the id
+     * @param from      the 'from' field of the Item (sender)
+     * @param to        the 'to' field of the Item (recipient)
+     * @param date      the creation/posting date of the Item
+     * @param condition the content (text message)
+     * @param data      the image as a byte array
+     * @param path      the path of the image
+     * @see Item#Item(int, User, Recipient, Date, Condition, String)
+     */
+    public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path) {
+        this(ID, from, to, date, condition, data, path, "");
+    }
+
+    /**
+     * Instantiates a new ImageItem with the following parameters
+     *
+     * @param ID   the id
+     * @param from the 'from' field of the Item (sender)
+     * @param to   the 'to' field of the Item (recipient)
+     * @param date the creation/posting date of the Item
+     * @param data the image as a byte array
+     * @param path the path of the image
+     * @see Item#Item(int, User, Recipient, Date, Condition, String)
+     */
+    public ImageItem(int ID, User from, Recipient to, Date date, byte[] data, String path) {
+        this(ID, from, to, date, Condition.trueCondition(), data, path, "");
     }
 
     /**
@@ -68,9 +100,15 @@ public final class ImageItem extends FileItem {
     }
 
     @Override
-    protected View getItemView(Context context) {
+    public View getItemView(Context context) {
         ImageView view = new ImageView(context);
-        view.setImageBitmap(bitmap);
+        view.setImageBitmap(getBitmap());
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivityForFile(ImageItem.this);
+            }
+        });
         return view;
     }
 
@@ -82,7 +120,7 @@ public final class ImageItem extends FileItem {
      * @throws JSONException
      */
     @Override
-    public void compose(JSONObject json) throws JSONException {
+    protected void compose(JSONObject json) throws JSONException {
         super.compose(json);
         json.put("type", ITEM_TYPE.name());
     }
@@ -95,6 +133,7 @@ public final class ImageItem extends FileItem {
      * @throws JSONException
      * @see Item#fromJSON(JSONObject) Recipient.fromJSON
      */
+
     public static ImageItem fromJSON(JSONObject json) throws JSONException {
         return new ImageItem.Builder().parse(json).build();
     }
@@ -108,6 +147,16 @@ public final class ImageItem extends FileItem {
         JSONObject ret = new JSONObject();
         this.compose(ret);
         return ret;
+    }
+
+    /**
+     * Returns the image of the item
+     *
+     * @return a bitmap
+     */
+    public Bitmap getBitmap() {
+        byte[] tempData = Compresser.decompress(getData());
+        return BitmapFactory.decodeByteArray(tempData, 0, tempData.length);
     }
 
 
@@ -151,7 +200,7 @@ public final class ImageItem extends FileItem {
         }
 
         public ImageItem build() {
-            return new ImageItem(super.ID, super.from, super.to, super.date, super.condition, super.data, super.name);
+            return new ImageItem(super.ID, super.from, super.to, super.date, super.condition, super.data, super.path, super.message);
         }
     }
 }

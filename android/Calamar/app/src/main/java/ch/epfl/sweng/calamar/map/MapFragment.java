@@ -4,10 +4,7 @@ package ch.epfl.sweng.calamar.map;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -30,15 +27,22 @@ import com.google.android.gms.maps.model.VisibleRegion;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
-import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.condition.PositionCondition;
+import ch.epfl.sweng.calamar.item.FileItem;
+import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.recipient.User;
+import ch.epfl.sweng.calamar.utils.StorageCallbacks;
+
 
 /**
  * A simple {@link Fragment} subclass holding the calamar map !.
@@ -46,18 +50,29 @@ import ch.epfl.sweng.calamar.item.Item;
 public class MapFragment extends android.support.v4.app.Fragment implements OnMapReadyCallback {
 
     public static final String TAG = MapFragment.class.getSimpleName();
-    public static final String POSITIONKEY = MapFragment.class.getCanonicalName() + ":POSITION";
+    public static final String LATITUDEKEY = PositionCondition.class.getCanonicalName() + ":LATITUDEKEY";
+    public static final String LONGITUDEKEY = PositionCondition.class.getCanonicalName() + ":LONGITUDEKEY";
 
-    //TODO : add two buttons begin checks stop checks
+    // TODO maybe change for release or future
+    public static final double DEFAULTLATITUDE = 46.518797; // guess ^^;
+    public static final double DEFAULTLONGITUDE = 6.561908;
+
+    private double initialLat;
+    private double initialLong;
+
+
+    // public static final String POSITIONKEY = MapFragment.class.getCanonicalName() + ":POSITION";
+
+    // TODO : add two buttons begin checks stop checks
     // that will : checklocation settings + startlocation updates
-    //TODO : manage activity lifecycle : start stop location updates when not needed, plus many potential problems
-    //TODO : do we save state of fragment/map using a bundle ?
+    // TODO : manage activity lifecycle : start stop location updates when not needed, plus many potential problems
+    // TODO : do we save state of fragment/map using a bundle ?
 
 
-    //TODO : Use a bidirectional map ?
+    // TODO : Use a bidirectional map ?
     private Map<Item, Marker> markers;
-    // TODO : Create a set of items to avoid diplaying the same items multiple time
     private Map<Marker, Item> itemFromMarkers;
+    private Set<Item> items;
 
 
     private GoogleMap map; // Might be null if Google Play services APK is not available.
@@ -70,7 +85,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     private final GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
         @Override
         public void update(Location newLocation) {
-            if(null == map) {
+            if (null == map) {
                 throw new IllegalStateException(
                         "map should be initialized and ready before accessed by location updater");
             }
@@ -81,6 +96,16 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             map.moveCamera(CameraUpdateFactory.zoomTo(18.0f));
         }
     };
+//    private GPSProvider gpsProvider;
+//    private final GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
+//        @Override
+//        public void update(Location newLocation) {
+//            if(null == map) {
+//                throw new IllegalStateException(
+//                        "map should be initialized and ready before accessed by location updater");
+//            }
+//        }
+//    };
 
 
     // The condition is updated when the location change and if the value(true/false) of the
@@ -90,15 +115,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         @Override
         public void update(Item item) {
             Marker updatedMarker = markers.get(item);
-            Bitmap icon;
-            if (item.getCondition().getValue()) {
-                updatedMarker.setTitle("Unlocked");
-                icon = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.unlock);
-            } else {
-                updatedMarker.setTitle("Locked");
-                icon = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.lock);
-            }
-            updatedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(icon));
+            updatedMarker.setIcon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
         }
     };
 
@@ -114,9 +131,11 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             detailsViewDialog.addView(itemView);
         }
     };
+
     public MapFragment() {
-        // Required empty public constructor
+        // required
     }
+
 
     // *********************************************************************************************
     // map fragment lifecycle callbacks
@@ -128,7 +147,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      * @param inflater
      * @param container
      * @param savedInstanceState
-     * @return
+     * @returnS
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -136,9 +155,14 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         super.onCreateView(inflater, container, savedInstanceState);
         markers = new HashMap<>();
         itemFromMarkers = new HashMap<>();
+        items = new HashSet<>();
 
         detailsViewDialog = new LinearLayout(getActivity());
         detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
+
+        Bundle args = getArguments();
+        initialLat = args.getDouble(MapFragment.LATITUDEKEY);
+        initialLong = args.getDouble(MapFragment.LONGITUDEKEY);
 
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_map, container, false);
@@ -155,53 +179,22 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                 addAllItemsInRegionToMap();
             }
         });
+
         setUpMapIfNeeded();
     }
 
     // map setup here :
     @Override
-    public void onMapReady(GoogleMap map) {
+    public void onMapReady(final GoogleMap map) {
         this.map = map;
+        // setUpGPS();
+
         map.setMyLocationEnabled(true);
-        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                final Item item = itemFromMarkers.get(marker);
-
-                AlertDialog.Builder itemDescription = new AlertDialog.Builder(getActivity());
-                itemDescription.setTitle(R.string.item_details_alertDialog_title);
-
-                itemDescription.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        item.removeObserver(detailsItemObserver);
-                    }
-                });
-
-                //OnCancel is called when we press the back button.
-                itemDescription.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        item.removeObserver(detailsItemObserver);
-                    }
-                });
-
-                //Create a new view
-                detailsViewDialog = new LinearLayout(getActivity());
-                detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
-
-                detailsViewDialog.addView(item.getView(getActivity()));
+        map.setOnMarkerClickListener(new MarkerWithStorageCallBackListener());
+        LatLng initialLoc = new LatLng(initialLat, initialLong);
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(initialLoc, 18.0f));
 
 
-                itemDescription.setView(detailsViewDialog);
-
-                item.addObserver(detailsItemObserver);
-
-                itemDescription.show();
-
-                return false;
-            }
-        });
-        setUpGPS();
         addAllItemsInRegionToMap();
     }
 
@@ -229,37 +222,58 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         } else {
             throw new IllegalStateException("map not ready when refresh");
         }
-        
     }
 
     /**
      * Add an item to the googleMap, and fill the map markers
      */
-    private void addItemToMap(Item i) {
-        Condition condition = i.getCondition();
-        if (condition.hasLocation()) {
-            Location location = condition.getLocation();
+    private void addItemToMap(Item item) {
+        if (!item.hasLocation()) {
+            throw new IllegalStateException("Ecublens we have a problem : item on map hasn't any location");
+        }
+        Location location = item.getLocation();
 
-            MarkerOptions marker = new MarkerOptions()
-                    .position(new LatLng(location.getLatitude(), location.getLongitude()));
+        MarkerOptions marker = new MarkerOptions()
+                .position(new LatLng(location.getLatitude(), location.getLongitude()));
+        marker.icon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
 
-            marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
-            marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.lock));
+        // TODO set correct label
+        marker.title(getString(R.string.label_locked_item));
 
-            marker.title("Locked");
+        item.addObserver(itemObserver);
 
-            i.addObserver(itemObserver);
+        Marker finalMarker = map.addMarker(marker);
+        markers.put(item, finalMarker);
+        itemFromMarkers.put(finalMarker, item);
+    }
 
-            Marker finalMarker = map.addMarker(marker);
-            markers.put(i, finalMarker);
-            itemFromMarkers.put(finalMarker, i);
+    /**
+     * Return the id of the lock (private/public and lock/unlock) for a given item.
+     *
+     * @param i Item for which we want the id.
+     * @return id of the lock
+     */
+    private int getLockIdForItem(Item i) {
+        if (i.getTo().getID() == User.PUBLIC_ID) {
+            if (i.getCondition().getValue()) {
+                return R.drawable.unlock;
+            } else {
+                return R.drawable.lock;
+            }
+        } else {
+            //The item is private !
+            if (i.getCondition().getValue()) {
+                return R.drawable.unlock_private;
+            } else {
+                return R.drawable.lock_private;
+            }
         }
     }
 
     /**
      * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
      * installed) and the map has not already been instantiated.. This will ensure that we only ever
-     * call {@link #setUpGPS()} once when {@link #map} is not null.
+     * access map once when {@link #map} is not null.
      * <p/>
      * If it isn't installed {@link SupportMapFragment} (and
      * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
@@ -280,11 +294,12 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         }
     }
 
-    private void setUpGPS() {
-        gpsProvider = GPSProvider.getInstance();
-        gpsProvider.addObserver(gpsObserver);
-        gpsProvider.startLocationUpdates(getActivity());
-    }
+//    private void setUpGPS() {
+//        gpsProvider = GPSProvider.getInstance();
+//        gpsProvider.addObserver(gpsObserver);
+//        gpsProvider.startLocationUpdates(getActivity());
+//    }
+
 
     /**
      * Async task for refreshing / getting new localized items.
@@ -304,36 +319,37 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
         @Override
         protected List<Item> doInBackground(Void... v) {
-                try {
+            try {
+                // TODO enhancement: custom request specifying the items already fetched
+                // + bundle saving state of fragment
+                // now all items in region are fetched, and if not already in set, displayed
+                // on map
+                return DatabaseClientLocator.getDatabaseClient().getAllItems(
+                        CalamarApplication.getInstance().getCurrentUser(),
+                        new Date(0),
+                        visibleRegion);
 
-                    return DatabaseClientLocator.getDatabaseClient().getAllItems(
-                            CalamarApplication.getInstance().getCurrentUser(),
-                            new Date(0), //TODO need to ask others what are we going to do with the local database
-                            //lastrefresh and etc...
-                            //or we don't store them in local db and everytime we refresh we flush the map
-                            //before re adding all the items in visible range
-                            //I think it can make sense ..
-                            visibleRegion);
-
-                } catch (DatabaseClientException e) {
-                    Log.e(MapFragment.TAG, e.getMessage());
-                    return null;
-                }
+            } catch (DatabaseClientException e) {
+                Log.e(MapFragment.TAG, e.getMessage());
+                return null;
+            }
         }
 
         @Override
-        protected void onPostExecute(List<Item> items) {
-            if (items != null) {
+        protected void onPostExecute(List<Item> receivedItems) {
+            if (receivedItems != null) {
 
-                for(Item item : items){
-                    addItemToMap(item);
+                for (Item item : receivedItems) {
+                    if (!items.contains(item)) {
+                        items.add(item);
+                        addItemToMap(item);
+                    }
                 }
 
                 Log.i(MapFragment.TAG, "map refreshed");
 
                 Toast.makeText(context, R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();
-
             } else {
                 Log.e(MapFragment.TAG, "unable to refresh");
                 AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
@@ -346,6 +362,74 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                 newUserAlert.show();
             }
         }
-
     }
+
+
+    private class MarkerWithStorageCallBackListener implements GoogleMap.OnMarkerClickListener, StorageCallbacks {
+
+        private AlertDialog dialog;
+        private Item item;
+
+        @Override
+        public boolean onMarkerClick(Marker marker) {
+            final Item item = itemFromMarkers.get(marker);
+            CalamarApplication.getInstance().getStorageManager().getCompleteItem(item, this);
+
+            AlertDialog.Builder itemDescription = new AlertDialog.Builder(getActivity());
+            itemDescription.setTitle(R.string.item_details_alertDialog_title);
+
+            itemDescription.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    item.removeObserver(detailsItemObserver);
+                }
+            });
+
+            //OnCancel is called when we press the back button.
+            itemDescription.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    item.removeObserver(detailsItemObserver);
+                }
+            });
+
+            //Create a new view
+            detailsViewDialog = new LinearLayout(getActivity());
+            detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
+
+            detailsViewDialog.addView(item.getView(getActivity()));
+
+
+            itemDescription.setView(detailsViewDialog);
+
+            item.addObserver(detailsItemObserver);
+
+            itemDescription.show();
+            return false;
+        }
+
+
+        @Override
+        public void onItemRetrieved(Item i) {
+            item = i;
+            dialog.setView(item.getView(MapFragment.this.getActivity()));
+        }
+
+        @Override
+        public void onDataRetrieved(byte[] data) {
+            switch (item.getType()) {
+                case SIMPLETEXTITEM:
+                    break;
+                case FILEITEM:
+                    item = new FileItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, ((FileItem) item).getPath());
+                    break;
+                case IMAGEITEM:
+                    item = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, ((ImageItem) item).getPath());
+                    break;
+                default:
+                    throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unknown_item_type));
+            }
+            dialog.setView(item.getView(MapFragment.this.getActivity()));
+        }
+    }
+
 }

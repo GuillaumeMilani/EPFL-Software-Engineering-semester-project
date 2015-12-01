@@ -112,7 +112,7 @@ public class CreateItemActivity extends BaseActivity {
             }
         });
 
-        final String[] imgExt = {"png", "PNG", "jpg", "jpeg", "JPG", "JPEG", "bmp", "BMP"};
+        final String[] imgExt = {"png", "jpg", "jpeg", "bmp"};
         imageExt = new HashSet<>(Arrays.asList(imgExt));
         file = null;
         currentLocation = null;
@@ -193,7 +193,7 @@ public class CreateItemActivity extends BaseActivity {
             String name = file.getName();
             int extIndex = name.lastIndexOf('.');
             String ext = extIndex > 0 ? name.substring(extIndex + 1) : "";
-            if (imageExt.contains(ext)) {
+            if (imageExt.contains(ext.toLowerCase())) {
                 toSendBuilder = new ImageItem.Builder().setFile(file);
             } else {
                 toSendBuilder = new FileItem.Builder().setFile(file);
@@ -201,14 +201,11 @@ public class CreateItemActivity extends BaseActivity {
         } else {
             toSendBuilder = new SimpleTextItem.Builder();
         }
-        if (!message.getText().toString().equals("")) {
-            ((SimpleTextItem.Builder) toSendBuilder).setMessage(message.getText().toString());
-        } else {
-            if (toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
-                Toast.makeText(getApplicationContext(), getString(R.string.item_create_invalid),
-                        Toast.LENGTH_SHORT).show();
-                return;
-            }
+        if (message.getText().toString().equals("") && toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
+
+            Toast.makeText(getApplicationContext(), getString(R.string.item_create_invalid),
+                    Toast.LENGTH_SHORT).show();
+            return;
         }
         if (privateCheck.isChecked()) {
             // TODO clean this..........
@@ -227,6 +224,7 @@ public class CreateItemActivity extends BaseActivity {
         }
         toSendBuilder.setFrom(CalamarApplication.getInstance().getCurrentUser());
         toSendBuilder.setDate(new Date().getTime());
+        toSendBuilder.setMessage(message.getText().toString());
         Item toSend = toSendBuilder.build();
         new SendItemTask(toSend).execute();
         this.finish();
@@ -256,7 +254,7 @@ public class CreateItemActivity extends BaseActivity {
         @Override
         protected void onPostExecute(Item item) {
             if (item != null) {
-                CalamarApplication.getInstance().getDatabaseHandler().addItem(item);
+                CalamarApplication.getInstance().getStorageManager().storeItem(item, null);
                 Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getApplicationContext(), getString(R.string.item_send_error),

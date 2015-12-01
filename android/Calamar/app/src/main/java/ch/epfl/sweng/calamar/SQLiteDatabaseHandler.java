@@ -43,7 +43,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static long lastUpdateTime;
     private static long lastItemTime;
 
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
     private static final String DATABASE_NAME = "CalamarDB";
 
     private static final int MAX_PLACEHOLDERS_COUNT = 99;
@@ -58,8 +58,8 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static final String ITEMS_KEY_CONDITION = "condition";
     private static final String ITEMS_KEY_TEXT = "text";
     private static final String ITEMS_KEY_DATA = "data";
-    private static final String ITEMS_KEY_NAME = "name";
-    private static final String[] ITEMS_COLUMNS = {ITEMS_KEY_TYPE, ITEMS_KEY_ID, ITEMS_KEY_FROM, ITEMS_KEY_TO, ITEMS_KEY_TIME, ITEMS_KEY_CONDITION, ITEMS_KEY_TEXT, ITEMS_KEY_DATA, ITEMS_KEY_NAME};
+    private static final String ITEMS_KEY_PATH = "path";
+    private static final String[] ITEMS_COLUMNS = {ITEMS_KEY_TYPE, ITEMS_KEY_ID, ITEMS_KEY_FROM, ITEMS_KEY_TO, ITEMS_KEY_TIME, ITEMS_KEY_CONDITION, ITEMS_KEY_TEXT, ITEMS_KEY_DATA, ITEMS_KEY_PATH};
 
     private static final String RECIPIENTS_TABLE = "tb_Recipients";
     private static final String RECIPIENTS_KEY_ID = "id";
@@ -85,12 +85,12 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     private SQLiteDatabaseHandler() {
         super(app, DATABASE_NAME, null, DATABASE_VERSION);
+        lastItemTime = app.getLastItemsRefresh().getTime();
+        lastUpdateTime = app.getLastItemsRefresh().getTime();
         db = getReadableDatabase(app.getCurrentUser().getPassword());
         this.pendingRecipients = new HashMap<>();
         this.pendingItems = new HashMap<>();
         this.FULL_PLACEHOLDERS = createPlaceholders(MAX_PLACEHOLDERS_COUNT);
-        lastItemTime = app.getLastItemsRefresh().getTime();
-        lastUpdateTime = app.getLastItemsRefresh().getTime();
 
     }
 
@@ -105,12 +105,16 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 + ITEMS_KEY_CONDITION + " TEXT NOT NULL, "
                 + ITEMS_KEY_TEXT + " TEXT, "
                 + ITEMS_KEY_DATA + " BLOB, "
-                + ITEMS_KEY_NAME + " TEXT)";
+                + ITEMS_KEY_PATH + " TEXT)";
         db.execSQL(createMessagesTable);
         final String createRecipientsTable = "CREATE TABLE " + RECIPIENTS_TABLE + " ("
                 + RECIPIENTS_KEY_ID + " INTEGER PRIMARY KEY NOT NULL,"
                 + RECIPIENTS_KEY_NAME + " TEXT NOT NULL)";
         db.execSQL(createRecipientsTable);
+        lastUpdateTime = 0;
+        lastItemTime = 0;
+        app.resetLastItemsRefresh();
+        app.resetLastUsersRefresh();
     }
 
     @Override
@@ -118,8 +122,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         //TODO only recreates db at the moment
         db.execSQL("DROP TABLE IF EXISTS " + ITEMS_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + RECIPIENTS_TABLE);
-        lastUpdateTime = 0;
-        lastItemTime = 0;
         app.setLastItemsRefresh(lastUpdateTime);
         app.setLastUsersRefresh(lastUpdateTime);
         onCreate(db);
@@ -132,6 +134,8 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         pendingItems.clear();
         db = getWritableIfNotOpen();
         db.delete(ITEMS_TABLE, null, null);
+        lastUpdateTime = lastItemTime;
+        app.setLastItemsRefresh(lastUpdateTime);
     }
 
     /**
@@ -389,7 +393,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
                 if (!mapIds.contains(cursor.getInt(1))) {
-                    SimpleTextItem item = (SimpleTextItem) createItem(cursor);
+                    Item item = createItem(cursor);
                     items.add(item);
                 }
                 hasNext = cursor.moveToNext();
@@ -430,7 +434,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             hasNext = cursor.moveToFirst();
             while (hasNext) {
                 if (!mapIds.contains(cursor.getInt(1))) {
-                    SimpleTextItem item = (SimpleTextItem) createItem(cursor);
+                    Item item = createItem(cursor);
                     items.add(item);
                 }
                 hasNext = cursor.moveToNext();
@@ -517,6 +521,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         pendingRecipients.clear();
         db = getWritableIfNotOpen();
         db.delete(RECIPIENTS_TABLE, null, null);
+        app.setLastUsersRefresh(lastItemTime);
     }
 
     /**
@@ -739,7 +744,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * Closes the database.
      */
     public synchronized void closeDatabase() {
-        this.db.close();
+        if (db.isOpen()) {
+            this.db.close();
+        }
     }
 
     /**
@@ -868,12 +875,15 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        if (item.getType() == Item.Type.SIMPLETEXTITEM) {
-            values.put(ITEMS_KEY_TEXT, ((SimpleTextItem) item).getMessage());
-        } else if (item.getType() == Item.Type.FILEITEM || item.getType() == Item.Type.IMAGEITEM) {
-            values.put(ITEMS_KEY_DATA, ((FileItem) item).getData());
-            values.put(ITEMS_KEY_NAME, ((FileItem) item).getName());
-        } else {
+        values.put(ITEMS_KEY_TEXT, item.getMessage());
+
+        if (item.getType() == Item.Type.FILEITEM || item.getType() == Item.Type.IMAGEITEM) {
+            byte[] data = ((FileItem) item).getData();
+            if (data.length != 0) {
+                values.put(ITEMS_KEY_DATA, ((FileItem) item).getData());
+            }
+            values.put(ITEMS_KEY_PATH, ((FileItem) item).getPath());
+        } else if (item.getType() != Item.Type.SIMPLETEXTITEM) {
             throw new IllegalArgumentException("Unknown item type");
         }
         return values;
@@ -898,14 +908,14 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         }
         String text = cursor.getString(6);
         byte[] data = cursor.getBlob(7);
-        String name = cursor.getString(8);
+        String path = cursor.getString(8);
         switch (type) {
             case SIMPLETEXTITEM:
                 return new SimpleTextItem(id, from, to, time, condition, text);
             case FILEITEM:
-                return new FileItem(id, from, to, time, condition, data, name);
+                return new FileItem(id, from, to, time, condition, data, path, text);
             case IMAGEITEM:
-                return new ImageItem(id, from, to, time, condition, data, name);
+                return new ImageItem(id, from, to, time, condition, data, path, text);
             default:
                 throw new UnsupportedOperationException("Unexpected Item type");
         }
@@ -926,7 +936,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     private void addOrUpdateRecipientWithItem(Item item) {
         pendingRecipients.put(item.getFrom().getID(), new Pair<>(Operation.ADD, (Recipient) item.getFrom()));
-        pendingRecipients.put(item.getTo().getID(), new Pair<>(Operation.ADD, item.getTo()));
+        if (!(item.getTo().getID() == User.PUBLIC_ID)) {
+            pendingRecipients.put(item.getTo().getID(), new Pair<>(Operation.ADD, item.getTo()));
+        }
     }
 
     private void manageItemUpdate(Item item) {

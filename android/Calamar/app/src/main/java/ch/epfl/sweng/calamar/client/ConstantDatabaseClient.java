@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -21,13 +23,16 @@ public class ConstantDatabaseClient implements DatabaseClient {
     private final User alice = new User(1, "Alice");
     private final User bob = new User(2, "Bob");
 
-    private final Item itemFrom = new SimpleTextItem(1, alice, bob, new Date(1445198510), "Hello Bob, it's Alice !");
-    private final Item itemTo = new SimpleTextItem(1, bob, alice, new Date(1445198510), "Hello Alice, it's Bob !");
+    List<Item> toRetrieve = new ArrayList<>();
+
+    private final Location location = new Location("abc");
+
+    private final Item itemFrom = new SimpleTextItem(1, alice, bob, new Date(1445198510), Condition.trueCondition(), "Hello Bob, it's Alice !");
+    private final Item itemTo = new SimpleTextItem(1, bob, alice, new Date(1445198510), Condition.and(Condition.falseCondition(), new PositionCondition(location)), "Hello Alice, it's Bob !");
 
     @Override
     public List<Item> getAllItems(Recipient recipient, Date from, VisibleRegion visibleRegion)
-            throws DatabaseClientException
-    {
+            throws DatabaseClientException {
         return getAllItems(null, null);
     }
 
@@ -36,6 +41,7 @@ public class ConstantDatabaseClient implements DatabaseClient {
         List<Item> items = new ArrayList<>();
         items.add(itemFrom);
         items.add(itemTo);
+        items.addAll(toRetrieve);
         return items;
     }
 
@@ -52,5 +58,9 @@ public class ConstantDatabaseClient implements DatabaseClient {
     @Override
     public int newUser(String email, String deviceId) throws DatabaseClientException {
         return 0;
+    }
+
+    public void addItem(Item i) {
+        toRetrieve.add(i);
     }
 }

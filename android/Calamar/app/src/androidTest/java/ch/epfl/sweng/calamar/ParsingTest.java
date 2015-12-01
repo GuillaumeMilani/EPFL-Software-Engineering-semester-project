@@ -65,7 +65,7 @@ public class ParsingTest {
 
     @Test
     public void testImageItemParsing() throws JSONException {
-        helperItemParsing(new ImageItem(42, testUser1, testUser2, testDate, Condition.trueCondition(), testContent, "ImageItem"));
+        helperItemParsing(new ImageItem(42, testUser1, testUser2, testDate, Condition.trueCondition(), testContent, "/ImageItem"));
     }
 
     @Test
@@ -76,7 +76,7 @@ public class ParsingTest {
 
     @Test
     public void testFileItemParsing() throws JSONException {
-        helperItemParsing(new FileItem(42, testUser1, testUser2, testDate, Condition.trueCondition(), testContent, "FileItem"));
+        helperItemParsing(new FileItem(42, testUser1, testUser2, testDate, Condition.trueCondition(), testContent, "/FileItem"));
     }
 
     @Test

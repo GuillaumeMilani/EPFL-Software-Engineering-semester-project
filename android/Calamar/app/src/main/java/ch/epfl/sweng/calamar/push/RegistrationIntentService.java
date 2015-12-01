@@ -40,6 +40,7 @@ import com.google.android.gms.iid.InstanceID;
 
 import java.io.IOException;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DefaultNetworkProvider;
 
@@ -104,13 +105,9 @@ public class RegistrationIntentService extends IntentService {
         // TODO Send with login parts to the server
         NetworkRegistrationClient client = new NetworkRegistrationClient("HTTP://calamar.japan-impact.ch", new DefaultNetworkProvider());
         try {
-            //TODO would be better if we can be sure that getCurrentUserName, give us a real user
-            // client.send(token,CalamarApplication.getInstance().getCurrentUserName());
-            //Get google account email
-            AccountManager manager = AccountManager.get(this);
-            Account[] list = manager.getAccountsByType("com.google");
-            client.send(token, list[0].name);
-            Log.i(TAG, "(token,name) is (" + token + "," + list[0].name + ")");
+            String accountName = CalamarApplication.getInstance().getCurrentUserName();
+            client.send(token,accountName);
+            Log.i(TAG,"(token,name) is (" + token +","+ accountName+")");
         } catch (RegisterClientException e) {
             e.printStackTrace();
             Log.e("Token", "couldn't reach the server");
