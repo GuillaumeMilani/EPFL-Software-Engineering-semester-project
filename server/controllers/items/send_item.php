@@ -36,8 +36,8 @@ try {
 		$condition_id = add_condition($condition);
 		
 		foreach ($metadata as $data) {
-			if ($data['type'] == "position" && isset($data['latitude']) && isset($data['longitude']) && isset($data['radius'])) {
-				add_metadata_position($condition_id, $data['latitude'], $data['longitude'], $data['radius']);
+			if ($data['type'] == "POSITIONCONDITION" && isset($data['latitude']) && isset($data['longitude'])) {
+				add_metadata_position($condition_id, $data['latitude'], $data['longitude']);
 			} else {
 				$pdo->rollBack();
 				http_response_code(400);
@@ -56,4 +56,4 @@ try {
 }
 
 http_response_code(201);
-echo json_encode(array("ID" => $result, "type" => $type, "from" => $from, "to" => $to, "date" => $date, "message" => $message, "condition" => json_decode($condition), "message" => $message));
+echo json_encode(array("ID" => $result, "type" => $type, "from" => $from, "to" => $to, "date" => $date, "message" => $message, "condition" => json_decode($condition)));
