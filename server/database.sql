@@ -61,8 +61,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `tb_metadata_position` (
   `ID` INT NOT NULL,
   `latitude` FLOAT( 10, 6 ) NOT NULL ,
-  `longitude` FLOAT( 10, 6 ) NOT NULL,
-  `radius` FLOAT NOT NULL,
+  `longitude` FLOAT( 10, 6 ) NOT NULL
   PRIMARY KEY (`ID`),
   CONSTRAINT `ct_id_metadata_position`
     FOREIGN KEY (`ID`)
