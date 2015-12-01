@@ -34,7 +34,7 @@ public final class SimpleTextItem extends Item {
     public SimpleTextItem(int ID, User from, Recipient to, Date date, Condition condition, String message) {
         super(ID, from, to, date, condition, message);
         if (null == message || message.length() == 0) {
-            throw new IllegalArgumentException("field 'message' cannot be null");
+            throw new IllegalArgumentException("field 'message' cannot be null or empty");
         }
     }
 

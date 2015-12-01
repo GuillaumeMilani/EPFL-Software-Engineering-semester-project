@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar;
 
+import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
@@ -28,9 +29,11 @@ import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.recipient.User;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.clearText;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
@@ -41,6 +44,8 @@ import static org.hamcrest.Matchers.not;
  */
 @RunWith(AndroidJUnit4.class)
 public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<ChatActivity> {
+
+    private final static String HELLO_ALICE = "Hello Alice !";
 
     private static final byte[] testContent = {(byte) 0x89, (byte) 0x50, (byte) 0x4e, (byte) 0x47,
             (byte) 0x0d, (byte) 0x0a, (byte) 0x1a, (byte) 0x0a, (byte) 0x00, (byte) 0x00,
@@ -101,8 +106,8 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
      */
     @Test
     public void testCanWriteInMessageEdit() {
-        onView(withId(R.id.messageEdit)).perform(typeText("Hello Alice !"));
-        onView(withId(R.id.messageEdit)).check(matches(withText("Hello Alice !")));
+        onView(withId(R.id.messageEdit)).perform(typeText(HELLO_ALICE));
+        onView(withId(R.id.messageEdit)).check(matches(withText(HELLO_ALICE)));
     }
 
     /**
@@ -121,7 +126,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
      */
     @Test
     public void testMessageEditIsEmptyWhenSend() {
-        onView(withId(R.id.messageEdit)).perform(typeText("Hello Alice !"));
+        onView(withId(R.id.messageEdit)).perform(typeText(HELLO_ALICE));
         onView(withId(R.id.chatSendButton)).perform(click());
         onView(allOf(withId(R.id.messageEdit), withText("")));
     }
@@ -133,10 +138,10 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
     public void testMessageIsDisplayedWhenSend() {
         ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
         int before = list.getCount();
-        onView(withId(R.id.messageEdit)).perform(typeText("Hello Alice !"));
+        onView(withId(R.id.messageEdit)).perform(typeText(HELLO_ALICE));
         onView(withId(R.id.chatSendButton)).perform(click());
         assertEquals(list.getCount(), before + 1);
-        onView(withText("Hello Alice !")).check(matches(ViewMatchers.isDisplayed()));
+        onView(withText(HELLO_ALICE)).check(matches(ViewMatchers.isDisplayed()));
     }
 
     /**
@@ -146,6 +151,13 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
     public void testContentOfMessageLockedIsNotDisplayed() {
         onView(withId(R.id.refreshButton)).perform(click());
         onView(withText("You have to fill the conditions to see the message !")).check(matches(ViewMatchers.isDisplayed()));
+
+        try {
+            onView(withText("Hello Alice, it's Bob !")).check(matches(ViewMatchers.isDisplayed()));
+            throw new AssertionError("The content of a lock message should not be displayed");
+        } catch (NoMatchingViewException e){
+            //Good
+        }
     }
 
     /**
@@ -157,11 +169,29 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
         onView(withText("Hello Bob, it's Alice !")).perform(click());
 
         // We test the content of the view in ItemsDetailsTests
-
         //If we can click on OK, the dialog is displayed !
         onView(withText("Item description")).check(matches(ViewMatchers.isDisplayed()));
 
         onView(withText("OK")).perform(click());
         not(onView(withText("Item description")));
+    }
+
+    /**
+     * Test that we have a refresh button
+     */
+    @Test
+    public void testCanNotSendEmptyMessages() {
+        onView(withId(R.id.chatSendButton)).check(matches(not(isEnabled())));
+
+        onView(withId(R.id.messageEdit)).perform(typeText(HELLO_ALICE));
+        onView(withId(R.id.chatSendButton)).check(matches(isEnabled()));
+        onView(withId(R.id.chatSendButton)).perform(click());
+
+        onView(withId(R.id.chatSendButton)).check(matches(not(isEnabled())));
+
+        onView(withId(R.id.messageEdit)).perform(typeText(HELLO_ALICE));
+        onView(withId(R.id.messageEdit)).perform(clearText());
+
+        onView(withId(R.id.chatSendButton)).check(matches(not(isEnabled())));
     }
 }

@@ -13,7 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.RadioGroup;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -41,8 +41,8 @@ import ch.epfl.sweng.calamar.recipient.User;
 public class CreateItemActivity extends BaseActivity {
 
     private static final int PICK_FILE_REQUEST = 1;
-    private static final String RECIPIENT_EXTRA_ID = "ID";
-    private static final String RECIPIENT_EXTRA_NAME = "Name";
+    public static final String CREATE_ITEM_RECIPIENT_EXTRA_ID = "ch.epfl.sweng.calamar.RECIPIENT_ID";
+    public static final String CREATE_ITEM_RECIPIENT_EXTRA_NAME = "ch.epfl.sweng.calamar.RECIPIENT_NAME";
 
     private static final String TAG = CreateItemActivity.class.getSimpleName();
 
@@ -54,10 +54,11 @@ public class CreateItemActivity extends BaseActivity {
     private File file;
     private List<Recipient> contacts;
     private Location currentLocation;
-    private RadioGroup timeGroup;
-    private CheckBox timeCheck;
+    //private RadioGroup timeGroup;
+    //private CheckBox timeCheck;
     private Button browseButton;
     private Button sendButton;
+    private ProgressBar locationProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +67,8 @@ public class CreateItemActivity extends BaseActivity {
 
         privateCheck = (CheckBox) findViewById(R.id.privateCheck);
         locationCheck = (CheckBox) findViewById(R.id.locationCheck);
+        locationProgressBar = (ProgressBar) findViewById(R.id.locationProgressBar);
+        locationProgressBar.setVisibility(ProgressBar.INVISIBLE);
         message = (EditText) findViewById(R.id.createItemActivity_messageText);
 
         contacts = CalamarApplication.getInstance().getDatabaseHandler().getAllRecipients();
@@ -78,14 +81,14 @@ public class CreateItemActivity extends BaseActivity {
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, contactsName);
         contactsSpinner.setAdapter(spinnerAdapter);
 
-        timeCheck = (CheckBox) findViewById(R.id.timeCheck);
-        timeGroup = (RadioGroup) findViewById(R.id.timeGroup);
-        timeGroup.setVisibility(View.INVISIBLE);
+        //timeCheck = (CheckBox) findViewById(R.id.timeCheck);
+        //timeGroup = (RadioGroup) findViewById(R.id.timeGroup);
+        //timeGroup.setVisibility(View.INVISIBLE);
 
         Intent intent = getIntent();
-        final int id = intent.getIntExtra(RECIPIENT_EXTRA_ID, -1);
+        final int id = intent.getIntExtra(CREATE_ITEM_RECIPIENT_EXTRA_ID, -1);
         if (id != -1) {
-            final String name = intent.getStringExtra(RECIPIENT_EXTRA_NAME);
+            final String name = intent.getStringExtra(CREATE_ITEM_RECIPIENT_EXTRA_NAME);
             contactsSpinner.setVisibility(View.VISIBLE);
             privateCheck.setChecked(true);
             contactsSpinner.setSelection(contacts.indexOf(new User(id, name)));
@@ -154,7 +157,8 @@ public class CreateItemActivity extends BaseActivity {
         gpsProvider.startLocationUpdates(this);
         sendButton.setEnabled(false);
 
-        // TODO show "sablier" + test
+        locationProgressBar.setVisibility(ProgressBar.VISIBLE);
+        sendButton.setEnabled(false);
 
         gpsProvider.addObserver(new GPSProvider.Observer() {
             @Override
@@ -162,9 +166,8 @@ public class CreateItemActivity extends BaseActivity {
                 currentLocation = newLocation;
                 sendButton.setEnabled(true);
                 gpsProvider.removeObserver(this);
-                // TODO ConcurrentModificationException
-                // because set modified during notify iteration
-                // normally solved now, but wait and see
+                locationProgressBar.setVisibility(ProgressBar.INVISIBLE);
+                sendButton.setEnabled(true);
                 GPSProvider.getInstance().stopLocationUpdates();
             }
         });
@@ -179,13 +182,14 @@ public class CreateItemActivity extends BaseActivity {
         }
     }
 
+    /*
     public void timeChecked(View v) {
         if (timeCheck.isChecked()) {
             timeGroup.setVisibility(View.VISIBLE);
         } else {
             timeGroup.setVisibility(View.INVISIBLE);
         }
-    }
+    }*/
 
     private void createAndSend() throws IOException {
         Item.Builder toSendBuilder;
@@ -202,13 +206,10 @@ public class CreateItemActivity extends BaseActivity {
             toSendBuilder = new SimpleTextItem.Builder();
         }
         if (message.getText().toString().equals("") && toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
-
-            Toast.makeText(getApplicationContext(), getString(R.string.item_create_invalid),
-                    Toast.LENGTH_SHORT).show();
+            displayErrorMessage(getString(R.string.item_create_invalid));
             return;
         }
         if (privateCheck.isChecked()) {
-            // TODO clean this..........
             int contactPosition = contactsSpinner.getSelectedItemPosition();
             if (contactPosition != -1) {
                 Recipient to = contacts.get(contactsSpinner.getSelectedItemPosition());
@@ -257,8 +258,7 @@ public class CreateItemActivity extends BaseActivity {
                 CalamarApplication.getInstance().getStorageManager().storeItem(item, null);
                 Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(getApplicationContext(), getString(R.string.item_send_error),
-                        Toast.LENGTH_SHORT).show();
+                displayErrorMessage(getString(R.string.item_send_error));
             }
         }
     }
