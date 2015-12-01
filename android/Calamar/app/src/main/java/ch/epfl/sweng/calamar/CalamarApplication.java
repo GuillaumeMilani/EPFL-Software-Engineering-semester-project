@@ -103,9 +103,24 @@ public final class CalamarApplication extends Application implements Application
         return storageManager;
     }
 
-    public void setTokenSent(boolean bool){
-        editor.putBoolean(RegistrationIntentService.SENT_TOKEN_TO_SERVER,bool).apply();
+    /**
+     * Set if the token was sent to server
+     *
+     * @param bool the bool to be set
+     */
+    public void setTokenSent(boolean bool) {
+        editor.putBoolean(RegistrationIntentService.SENT_TOKEN_TO_SERVER, bool).apply();
     }
+
+    /**
+     * Returns if the registration token was sent to server
+     *
+     * @return the boolean
+     */
+    public boolean getTokenSent() {
+        return sp.getBoolean(RegistrationIntentService.SENT_TOKEN_TO_SERVER, false);
+    }
+
     /**
      * Set the last time the application refreshed the users.
      *
