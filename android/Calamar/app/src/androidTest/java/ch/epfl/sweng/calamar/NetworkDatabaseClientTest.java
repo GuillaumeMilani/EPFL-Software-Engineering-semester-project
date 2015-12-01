@@ -10,7 +10,6 @@ import org.junit.runners.JUnit4;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -19,8 +18,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-
-import javax.annotation.concurrent.Immutable;
 
 import ch.epfl.sweng.calamar.client.DatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
@@ -31,7 +28,6 @@ import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
-import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
 
@@ -183,13 +179,13 @@ public class NetworkDatabaseClientTest {
                 "   \"condition\": {\n" +
                 "       \"type\":\"or\",\n" +
                 "       \"a\":{\n" +
-                "           \"type\":\"position\",\n" +
+                "           \"type\":\"POSITIONCONDITION\",\n" +
                 "           \"latitude\":46.495,\n" +
                 "           \"longitude\":6.513,\n" +
                 "           \"radius\":10\n" +
                 "       },\n" +
                 "       \"b\":{\n" +
-                "           \"type\":\"position\",\n" +
+                "           \"type\":\"POSITIONCONDITION\",\n" +
                 "           \"latitude\":47.495,\n" +
                 "           \"longitude\":7.513,\n" +
                 "           \"radius\":10\n" +
@@ -232,7 +228,7 @@ public class NetworkDatabaseClientTest {
 
         doReturn(response).when(mockConnection).getInputStream();
         doReturn(new ByteArrayOutputStream()).when(mockConnection).getOutputStream();  // wtf...
-        doReturn(200).when(mockConnection).getResponseCode();
+        doReturn(201).when(mockConnection).getResponseCode();
         doReturn(mockConnection).when(networkProvider).getConnection(url);
 
 
