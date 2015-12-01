@@ -16,6 +16,7 @@ import com.securepreferences.SecurePreferences;
 import java.util.Calendar;
 import java.util.Date;
 
+import ch.epfl.sweng.calamar.push.RegistrationIntentService;
 import ch.epfl.sweng.calamar.recipient.User;
 import ch.epfl.sweng.calamar.utils.StorageManager;
 
@@ -102,6 +103,9 @@ public final class CalamarApplication extends Application implements Application
         return storageManager;
     }
 
+    public void setTokenSent(boolean bool){
+        editor.putBoolean(RegistrationIntentService.SENT_TOKEN_TO_SERVER,bool).apply();
+    }
     /**
      * Set the last time the application refreshed the users.
      *
