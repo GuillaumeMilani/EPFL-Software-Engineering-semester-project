@@ -211,8 +211,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
                 return dbHandler.getItemsForContact(correspondent);
             } else {
                 try {
-                    List<Item> items = DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, app.getLastItemsRefresh());
-                    return items;
+                    return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, app.getLastItemsRefresh());
                 } catch (DatabaseClientException e) {
                     Log.e(ChatActivity.TAG, e.getMessage());
                     return null;
