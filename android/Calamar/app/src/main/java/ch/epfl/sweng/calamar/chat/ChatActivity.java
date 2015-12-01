@@ -93,7 +93,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
         editText.addTextChangedListener(new TextWatcher() {
             public void afterTextChanged(Editable s) {
-                if(s.length() == 0){
+                if (s.length() == 0) {
                     sendButton.setEnabled(false);
                 } else {
                     sendButton.setEnabled(true);
@@ -211,8 +211,8 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
                 return dbHandler.getItemsForContact(correspondent);
             } else {
                 try {
-
-                    return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, app.getLastItemsRefresh());
+                    List<Item> items = DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, app.getLastItemsRefresh());
+                    return items;
                 } catch (DatabaseClientException e) {
                     Log.e(ChatActivity.TAG, e.getMessage());
                     return null;

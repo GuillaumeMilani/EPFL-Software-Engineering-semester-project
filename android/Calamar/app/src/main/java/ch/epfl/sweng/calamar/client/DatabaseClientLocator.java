@@ -13,8 +13,8 @@ public class DatabaseClientLocator {
         return DatabaseClientLocator.itemClient;
     }
 
-    public static void setDatabaseClient(DatabaseClient quizClient) {
-        DatabaseClientLocator.itemClient = quizClient;
+    public static void setDatabaseClient(DatabaseClient client) {
+        DatabaseClientLocator.itemClient = client;
     }
 
     public static void resetDatabaseClient() {

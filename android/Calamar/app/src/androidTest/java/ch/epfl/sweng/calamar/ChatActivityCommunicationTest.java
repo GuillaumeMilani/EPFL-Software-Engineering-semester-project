@@ -1,15 +1,12 @@
 package ch.epfl.sweng.calamar;
 
 import android.content.Intent;
-import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -91,8 +88,8 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
      * Test the behaviour with a faulty network when we send an item.
      */
     @Test
-    public void testFaultyNetworkItemSend(){
-        DatabaseClient client = Mockito.mock(FaultyDatabaseClient.class);
+    public void testFaultyNetworkItemSend() {
+        DatabaseClient client = new FaultyDatabaseClient();
         DatabaseClientLocator.setDatabaseClient(client);
         setActivityIntent(conversation);
         getActivity();
@@ -109,16 +106,17 @@ public class ChatActivityCommunicationTest extends ActivityInstrumentationTestCa
     /**
      * Test the behaviour with a faulty network when we refresh.
      */
-    //TODO : Check with Guillaume
-    @Ignore
-    public void testFaultyNetworkItemRefresh(){
-        DatabaseClient client = Mockito.mock(FaultyDatabaseClient.class);
+    @Test
+    public void testFaultyNetworkItemRefresh() throws InterruptedException {
+        DatabaseClient client = new FaultyDatabaseClient();
         DatabaseClientLocator.setDatabaseClient(client);
         setActivityIntent(conversation);
         getActivity();
-
+        synchronized (this) {
+            wait(1000);
+        }
         onView(withId(R.id.refreshButton)).perform(click());
-        onView(withText("Unable to refresh")).check(matches(ViewMatchers.isDisplayed()));
+        onView(withText(CalamarApplication.getInstance().getString(R.string.unable_to_refresh_message))).check(matches(ViewMatchers.isDisplayed()));
     }
 
     /**

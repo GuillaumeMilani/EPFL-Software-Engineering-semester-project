@@ -1,7 +1,5 @@
 package ch.epfl.sweng.calamar.client;
 
-import android.provider.ContactsContract;
-
 import com.google.android.gms.maps.model.VisibleRegion;
 
 import java.util.Date;
