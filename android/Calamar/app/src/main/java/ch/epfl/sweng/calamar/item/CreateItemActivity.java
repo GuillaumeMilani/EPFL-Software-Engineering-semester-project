@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -154,24 +155,30 @@ public class CreateItemActivity extends BaseActivity {
 
     public void locationChecked(View v) {
         final GPSProvider gpsProvider = GPSProvider.getInstance();
-        gpsProvider.startLocationUpdates(this);
-        sendButton.setEnabled(false);
 
-        locationProgressBar.setVisibility(ProgressBar.VISIBLE);
-        sendButton.setEnabled(false);
+        CheckBox locationBox = (CheckBox)v;
 
-        gpsProvider.addObserver(new GPSProvider.Observer() {
-            @Override
-            public void update(Location newLocation) {
-                currentLocation = newLocation;
-                sendButton.setEnabled(true);
-                gpsProvider.removeObserver(this);
+        if(locationBox.isChecked()) {
+            // will start updates if settings ok, if not dialog, onActivityResult etc
+            GPSProvider.getInstance().checkSettingsAndLaunchIfOK(this);
+
+            locationProgressBar.setVisibility(ProgressBar.VISIBLE);
+            sendButton.setEnabled(false);
+
+            gpsProvider.addObserver(new GPSProvider.Observer() {
+                @Override
+                public void update(Location newLocation) {
+                    currentLocation = newLocation;
+                    sendButton.setEnabled(true);
+                    gpsProvider.removeObserver(this);
                 locationProgressBar.setVisibility(ProgressBar.INVISIBLE);
                 sendButton.setEnabled(true);
-                GPSProvider.getInstance().stopLocationUpdates();
-            }
-        });
-
+                    GPSProvider.getInstance().stopLocationUpdates();
+                }
+            });
+        } else {
+            sendButton.setEnabled(true);
+        }
     }
 
     public void privateChecked(View v) {
@@ -228,7 +235,6 @@ public class CreateItemActivity extends BaseActivity {
         toSendBuilder.setMessage(message.getText().toString());
         Item toSend = toSendBuilder.build();
         new SendItemTask(toSend).execute();
-        this.finish();
     }
 
     /**
@@ -237,7 +243,6 @@ public class CreateItemActivity extends BaseActivity {
     private class SendItemTask extends AsyncTask<Void, Void, Item> {
 
         private final Item item;
-
         public SendItemTask(Item item) {
             this.item = item;
         }
@@ -257,6 +262,7 @@ public class CreateItemActivity extends BaseActivity {
             if (item != null) {
                 CalamarApplication.getInstance().getStorageManager().storeItem(item, null);
                 Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
+                CreateItemActivity.this.finish();
             } else {
                 displayErrorMessage(getString(R.string.item_send_error));
             }

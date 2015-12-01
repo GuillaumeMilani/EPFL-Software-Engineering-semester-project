@@ -10,12 +10,13 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.chat.ChatFragment;
-import ch.epfl.sweng.calamar.condition.PositionCondition;
+import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.map.MapFragment;
 
 /**
@@ -85,8 +86,9 @@ public class MainActivity extends BaseActivity {
         // get front tab from intent or set it to Map (default)
         int tabId = getIntent().getIntExtra(MainActivity.TABKEY, TabID.MAP.ordinal());
         viewPager.setCurrentItem(tabId);
+
+
         //choose account dialog
-        // TODO if possible get rid of this deprecated call, see javadoc
         // Javadoc says that we need to go to api 23 to get rid of deprecated
         if(CalamarApplication.getInstance().getCurrentUserID() == -1) {
             Intent accountIntent = AccountManager.newChooseAccountIntent(null, null,
@@ -99,6 +101,8 @@ public class MainActivity extends BaseActivity {
 
     private void setupViewPager(ViewPager viewPager, Intent intent) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+
+
 
         // initial map position, either default or set from intent (activity started from item's
         // detail view)
@@ -115,6 +119,28 @@ public class MainActivity extends BaseActivity {
         adapter.addFragment(mapFragment, TabID.MAP.toString());
         adapter.addFragment(new ChatFragment(), TabID.CHAT.toString());
         viewPager.setAdapter(adapter);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                //do nothing
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if(position == TabID.MAP.ordinal()) {
+                    Log.i(MainActivity.TAG, "MAP FRAGMENT SELECTED");
+                    GPSProvider.getInstance().checkSettingsAndLaunchIfOK(MainActivity.this);
+                } else {
+                    Log.i(MainActivity.TAG, "CHAT FRAGMENT SELECTED");
+                    GPSProvider.getInstance().stopLocationUpdates();
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                //do nothing
+            }
+        });
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
