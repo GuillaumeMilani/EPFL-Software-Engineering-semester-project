@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -234,7 +235,6 @@ public class CreateItemActivity extends BaseActivity {
         toSendBuilder.setMessage(message.getText().toString());
         Item toSend = toSendBuilder.build();
         new SendItemTask(toSend).execute();
-        this.finish();
     }
 
     /**
@@ -243,7 +243,6 @@ public class CreateItemActivity extends BaseActivity {
     private class SendItemTask extends AsyncTask<Void, Void, Item> {
 
         private final Item item;
-
         public SendItemTask(Item item) {
             this.item = item;
         }
@@ -263,6 +262,7 @@ public class CreateItemActivity extends BaseActivity {
             if (item != null) {
                 CalamarApplication.getInstance().getStorageManager().storeItem(item, null);
                 Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
+                CreateItemActivity.this.finish();
             } else {
                 displayErrorMessage(getString(R.string.item_send_error));
             }

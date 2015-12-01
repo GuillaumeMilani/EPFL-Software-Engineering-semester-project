@@ -136,16 +136,19 @@ public abstract class BaseActivity extends AppCompatActivity
         }
     }
 
+    // TODO test all use don't crash
     public void displayErrorMessage(String message){
         Log.e(TAG,message);
-        AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
-        errorDialog.setTitle(message);
-        errorDialog.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                //OK
-            }
-        });
-        errorDialog.show();
+        if(!this.isFinishing()) {
+            AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
+            errorDialog.setTitle(message);
+            errorDialog.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    //OK
+                }
+            });
+            errorDialog.show();
+        }
     }
 
     // *********************************************************************************************
