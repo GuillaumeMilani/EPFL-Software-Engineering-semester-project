@@ -120,7 +120,7 @@ public final class ImageItem extends FileItem {
      * @throws JSONException
      */
     @Override
-    public void compose(JSONObject json) throws JSONException {
+    protected void compose(JSONObject json) throws JSONException {
         super.compose(json);
         json.put("type", ITEM_TYPE.name());
     }

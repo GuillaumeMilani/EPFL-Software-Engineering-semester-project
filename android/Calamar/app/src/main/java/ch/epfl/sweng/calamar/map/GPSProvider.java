@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import ch.epfl.sweng.calamar.BuildConfig;
 import ch.epfl.sweng.calamar.CalamarApplication;
 
 
@@ -120,6 +121,14 @@ public final class GPSProvider implements LocationListener {
      */
     public boolean removeObserver(GPSProvider.Observer observer) {
         return this.observers.remove(observer);
+    }
+
+    public void setMockLocation(Location location) {
+        if(BuildConfig.DEBUG) {
+            notifyObservers(location);
+        } else {
+            throw new RuntimeException("can't set mock Location in release version");
+        }
     }
 
     private GPSProvider() {
