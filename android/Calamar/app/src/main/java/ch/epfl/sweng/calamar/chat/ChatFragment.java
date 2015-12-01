@@ -1,7 +1,5 @@
 package ch.epfl.sweng.calamar.chat;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -9,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -109,10 +106,9 @@ public class ChatFragment extends android.support.v4.app.Fragment {
      * @deprecated to be removed
      */
     public void setActualUser() {
-        if(!app.getCurrentUserName().equals("")) {
+        if (!app.getCurrentUserName().equals("")) {
             actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
-        }
-        else {
+        } else {
             // TODO ok ???
            // getActivity().finish();
         }
@@ -120,6 +116,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
 
     private void getContacts() {
         contacts.addAll(app.getDatabaseHandler().getAllRecipients());
+        contacts.remove(app.getCurrentUser());
     }
 
     private void addNewContact() {
