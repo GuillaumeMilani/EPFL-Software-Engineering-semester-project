@@ -14,7 +14,6 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -169,9 +168,6 @@ public class CreateItemActivity extends BaseActivity {
                 gpsProvider.removeObserver(this);
                 locationProgressBar.setVisibility(ProgressBar.INVISIBLE);
                 sendButton.setEnabled(true);
-                // TODO ConcurrentModificationException
-                // because set modified during notify iteration
-                // normally solved now, but wait and see
                 GPSProvider.getInstance().stopLocationUpdates();
             }
         });
@@ -214,7 +210,6 @@ public class CreateItemActivity extends BaseActivity {
             return;
         }
         if (privateCheck.isChecked()) {
-            // TODO clean this..........
             int contactPosition = contactsSpinner.getSelectedItemPosition();
             if (contactPosition != -1) {
                 Recipient to = contacts.get(contactsSpinner.getSelectedItemPosition());
