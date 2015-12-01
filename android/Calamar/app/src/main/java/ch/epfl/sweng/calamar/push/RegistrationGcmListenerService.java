@@ -1,14 +1,5 @@
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
- * <<<<<<< HEAD:android/Calamar/app/src/main/java/ch/epfl/sweng/calamar/RegistrationGcmListenerService.java
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * =======
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +26,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Switch;
 
 import com.google.android.gms.gcm.GcmListenerService;
 
 import ch.epfl.sweng.calamar.MainActivity;
+import ch.epfl.sweng.calamar.R;
+import ch.epfl.sweng.calamar.item.Item;
 
 public class RegistrationGcmListenerService extends GcmListenerService {
 
@@ -54,30 +48,28 @@ public class RegistrationGcmListenerService extends GcmListenerService {
     // [START receive_message]
     @Override
     public void onMessageReceived(String from, Bundle data) {
-        String message = data.getString("message");
-        Log.d(TAG, "From: " + from);
-        Log.d(TAG, "Message: " + message);
+        String message = "You have received a new ";
 
-        if (from.startsWith("/topics/")) {
-            // message received from some topic.
-        } else {
-            // normal downstream message.
-        }
+        Item.Type type = Item.Type.valueOf(data.getString("type"));
+        //Log.d(TAG, "From: " + from);
+        Log.d(TAG, "Message: " + type);
 
-        // [START_EXCLUDE]
-        /**
-         * Production applications would usually process the message here.
-         * Eg: - Syncing with server.
-         *     - Store message in local database.
-         *     - Update UI.
-         */
+        switch (type) {
+            case SIMPLETEXTITEM:
+                message += "chat item.";
+                break;
+            case FILEITEM:
+                message += "file item";
+                break;
+            case IMAGEITEM:
+                message += "image item";
+                break;
+            default:
+                Log.e(TAG,"wrong type");
+            }
 
-        /**
-         * In some cases it may be useful to show a notification indicating to the user
-         * that a message was received.
-         */
-        sendNotification(message);
-        // [END_EXCLUDE]
+            sendNotification(message);
+
     }
     // [END receive_message]
 
@@ -88,6 +80,7 @@ public class RegistrationGcmListenerService extends GcmListenerService {
      */
     private void sendNotification(String message) {
         //TODO improve the methods
+        Log.i(TAG, "notification " + message);
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
@@ -95,11 +88,13 @@ public class RegistrationGcmListenerService extends GcmListenerService {
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                .setContentTitle("GCM Message")
+                .setContentTitle("Calamar : New item !")
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
-                .setContentIntent(pendingIntent);
+                .setContentIntent(pendingIntent)
+                .setSmallIcon(R.drawable.calamar);
+
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);

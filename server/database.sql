@@ -144,4 +144,4 @@ FROM tb_item itm, tb_item_text txt WHERE itm.id = txt.id;
 DROP TABLE IF EXISTS `view_user`;
 
 CREATE OR REPLACE VIEW `view_user` AS
-SELECT rec.ID, rec.name FROM tb_recipient rec, tb_recipient_user usr WHERE rec.id = usr.id;
+SELECT rec.ID, rec.name,usr.registrationToken FROM tb_recipient rec, tb_recipient_user usr WHERE rec.id = usr.id;
