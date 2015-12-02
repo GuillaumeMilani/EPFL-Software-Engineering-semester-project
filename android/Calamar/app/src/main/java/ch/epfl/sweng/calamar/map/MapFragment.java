@@ -86,6 +86,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         @Override
         public void update(Item item) {
             Marker updatedMarker = markers.get(item);
+            updatedMarker.setTitle(getLockStringForItem(item));
             updatedMarker.setIcon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
         }
     };
@@ -207,9 +208,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                 .position(new LatLng(location.getLatitude(), location.getLongitude()));
         marker.icon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
 
-        // TODO set correct label
-        marker.title(getString(R.string.label_locked_item));
-
+        marker.title(getLockStringForItem(item));
         item.addObserver(itemObserver);
 
         Marker finalMarker = map.addMarker(marker);
@@ -225,19 +224,28 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      */
     private int getLockIdForItem(Item i) {
         if (i.getTo().getID() == User.PUBLIC_ID) {
-            if (i.getCondition().getValue()) {
-                return R.drawable.unlock;
-            } else {
+            if (i.isLocked()) {
                 return R.drawable.lock;
+            } else {
+                return R.drawable.unlock;
             }
         } else {
             //The item is private !
-            if (i.getCondition().getValue()) {
-                return R.drawable.unlock_private;
-            } else {
+            if (i.isLocked()) {
                 return R.drawable.lock_private;
+            } else {
+                return R.drawable.unlock_private;
             }
         }
+    }
+
+    /**
+     * @param item
+     * @return the correct lock label for <i>item</i>
+     */
+    private String getLockStringForItem(Item item) {
+        return item.isLocked() ? getString(R.string.label_locked_item) :
+                getString(R.string.label_unlocked_item);
     }
 
     /**

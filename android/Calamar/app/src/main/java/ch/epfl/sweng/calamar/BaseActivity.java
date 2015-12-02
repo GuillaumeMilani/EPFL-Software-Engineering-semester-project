@@ -166,7 +166,7 @@ public abstract class BaseActivity extends AppCompatActivity
 
                         break;
                     default:
-                        Log.e(TAG, "google API client definitely can't connect...");
+                        Log.e(TAG, "cannot do much without gps..bye...");
                         finish();//TODO maybe refine ?
                 }
                 break;
