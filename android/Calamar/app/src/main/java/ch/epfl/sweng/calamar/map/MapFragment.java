@@ -336,7 +336,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         @Override
         public boolean onMarkerClick(Marker marker) {
             final Item item = itemFromMarkers.get(marker);
-            this.item=item;
+            this.item = item;
             CalamarApplication.getInstance().getStorageManager().getCompleteItem(item, this);
 
             AlertDialog.Builder itemDescription = new AlertDialog.Builder(getActivity());

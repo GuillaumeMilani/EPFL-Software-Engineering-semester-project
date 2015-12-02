@@ -140,11 +140,9 @@ public class CreateItemActivity extends BaseActivity {
                         file = new File(path);
                         String name = file.getName();
                         if (name.length() > 15) {
-                            String text = name.substring(0, 15) + "...";
-                            browseButton.setText(text);
-                        } else {
-                            browseButton.setText(name);
+                            name = name.substring(0, 15) + "...";
                         }
+                        browseButton.setText(name);
                     } else {
                         Toast.makeText(this, R.string.select_local_file, Toast.LENGTH_SHORT).show();
                     }
