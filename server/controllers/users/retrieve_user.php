@@ -12,7 +12,7 @@ try {
     http_response_code(201);
     echo format_array($response);
 	//send push to the user retrieved
-	send_push_to($response['user']['ID'],"RETRIEVE");
+	send_push_to($response['user']['ID'],"RETRIEVE",$response);
 } catch (Exception $e) {
 
     echo format_array(array('error' => $e->getMessage()));

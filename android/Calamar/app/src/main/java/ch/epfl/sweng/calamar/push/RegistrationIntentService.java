@@ -31,6 +31,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -108,11 +109,21 @@ public class RegistrationIntentService extends IntentService {
      */
     private void sendRegistrationToServer(String token) {
         try {
-            String accountName = CalamarApplication.getInstance().getCurrentUserName();
+            final String accountName = CalamarApplication.getInstance().getCurrentUserName();
             Log.i(TAG, "(token,name) is (" + token + "," + accountName + ")");
           //  client.send(token, accountName);
 
             DatabaseClientLocator.getDatabaseClient().newUser(accountName,token);
+
+            //show toast
+            Handler mHandler = new Handler(getMainLooper());
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), "Connected as " + accountName, Toast.LENGTH_SHORT).show();
+                }
+            });
+
         } catch (DatabaseClientException e) {
             e.printStackTrace();
             Log.e("Token", "couldn't reach the server");

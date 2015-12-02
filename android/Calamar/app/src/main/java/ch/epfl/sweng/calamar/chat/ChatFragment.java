@@ -2,12 +2,15 @@ package ch.epfl.sweng.calamar.chat;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,6 +86,12 @@ public class ChatFragment extends android.support.v4.app.Fragment {
                 addNewContact();
             }
         });
+
+        //Create BroadCastReceiver
+      //  ChatBroadcastReceiver  mReceiver = new ChatBroadcastReceiver();
+        getContext().registerReceiver(new ChatBroadcastReceiver(),new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
+     //   LocalBroadcastManager.getInstance(getActivity()).registerReceiver(new ChatBroadcastReceiver(),new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
+
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -92,6 +102,18 @@ public class ChatFragment extends android.support.v4.app.Fragment {
         EditText input = (EditText) newContactAlertDialog.findViewById(R.id.newContactInput);
         newContactAlertDialog.dismiss();
         new retrieveUserTask(input.getText().toString(), getActivity()).execute();
+    }
+
+    /**
+     * Add the user in the contact list
+     */
+    private void addUserInContact(User user)
+    {
+        adapter.add(user);
+        contacts.add(user);
+        adapter.notifyDataSetChanged();
+        //Add in memory
+        app.getDatabaseHandler().addRecipient(user);
     }
 
     /**
@@ -166,11 +188,8 @@ public class ChatFragment extends android.support.v4.app.Fragment {
         @Override
         protected void onPostExecute(User newUser) {
             if (newUser != null) {
-                adapter.add(newUser);
-                contacts.add(newUser);
-                adapter.notifyDataSetChanged();
-                //Add in memory
-                app.getDatabaseHandler().addRecipient(newUser);
+                //add the user in the contact list
+                addUserInContact(newUser);
             } else {
                 AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
                 newUserAlert.setTitle(R.string.add_new_contact_impossible);
@@ -181,6 +200,18 @@ public class ChatFragment extends android.support.v4.app.Fragment {
                 });
                 newUserAlert.show();
             }
+        }
+    }
+
+    public class ChatBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // retrieve the user data
+            User user = new User(Integer.valueOf(intent.getStringExtra("id")),
+                                intent.getStringExtra("user"));
+            //add the user in the contact list
+            addUserInContact(user);
         }
     }
 
