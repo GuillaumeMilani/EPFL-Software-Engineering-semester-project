@@ -29,6 +29,7 @@ import ch.epfl.sweng.calamar.item.Item;
  * A Singleton managing storing, retrieving and deleting items on local storage.
  */
 //TODO Make toasts on UI thread, RuntimeException otherwise
+//TODO Runs dbHandler.get in AsyncTask !
 public class StorageManager {
 
     private static final Set<WritingTask> currentWritingTasks = new CopyOnWriteArraySet<>();
@@ -209,6 +210,7 @@ public class StorageManager {
      *
      * @param ID the id of the item to delete
      */
+    @Deprecated
     public void deleteItemWithDatabase(int ID) {
         Item item = dbHandler.getItem(ID);
         deleteItemWithDatabase(item);
@@ -219,6 +221,7 @@ public class StorageManager {
      *
      * @param ID The id of the item to delete
      */
+    @Deprecated
     public void deleteItemWithoutDatabase(int ID) {
         Item item = dbHandler.getItem(ID);
         deleteItemWithoutDatabase(item);
@@ -227,6 +230,7 @@ public class StorageManager {
     /**
      * Deletes all stored items (even in database)
      */
+    @Deprecated
     public void deleteAllItemsWithDatabase() {
         List<Item> items = dbHandler.getAllItems();
         for (Item i : items) {
@@ -238,6 +242,7 @@ public class StorageManager {
     /**
      * Deletes all stored items (without deleting anything in database)
      */
+    @Deprecated
     public void deleteAllItemsWithoutDatabase() {
         List<Item> items = dbHandler.getAllItems();
         for (Item i : items) {
@@ -250,6 +255,7 @@ public class StorageManager {
      *
      * @param ids the ids of the items to delete
      */
+    @Deprecated
     public void deleteItemsForIdsWithDatabase(List<Integer> ids) {
         List<Item> toDelete = dbHandler.getItems(ids);
         deleteItemsWithDatabase(toDelete);
@@ -271,6 +277,7 @@ public class StorageManager {
      *
      * @param ids the ids of the items to delete
      */
+    @Deprecated
     public void deleteItemsForIdsWithoutDatabase(List<Integer> ids) {
         List<Item> toDelete = dbHandler.getItems(ids);
         deleteItemsWithoutDatabase(toDelete);
@@ -344,6 +351,7 @@ public class StorageManager {
      * @param ID     The id of the item
      * @param caller The Activity who called this method
      */
+    @Deprecated
     public void getCompleteItem(int ID, StorageCallbacks caller) {
         Item i = dbHandler.getItem(ID);
         getCompleteItem(i, caller);
