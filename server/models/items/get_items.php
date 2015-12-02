@@ -1,22 +1,24 @@
 <?php
 include('models/users/retrieve_users.php');
 
-define('TYPES', array(
-		array('name' => 'SIMPLETEXTITEM', 'table' => 'tb_item_text', 'fields' => ''),
-		array('name' => 'IMAGEITEM', 'table' => 'tb_item_image', 'fields' => ', type.`data`'),
-		array('name' => 'FILEITEM', 'table' => 'tb_item_file', 'fields' => ', type.`data`'),
-));
+global $types;
+// List of item types with some of their characteristics
+$types = array(
+	array('name' => '"SIMPLETEXTITEM"', 'table' => 'tb_item_text', 'fields' => ''),
+	array('name' => '"IMAGEITEM"', 'table' => 'tb_item_image', 'fields' => ', type.`data`'),
+	array('name' => '"FILEITEM"', 'table' => 'tb_item_file', 'fields' => ', type.`data`'),
+);
 
-// List of the fields to select in the DB for an item
+// List of the fields to select in the DB for a localized item
 define('LOCATION_WHERE','
 		    AND pos.latitude <= :latitude_max
 			AND pos.latitude >= :latitude_min
 			AND pos.longitude <= :longitude_max
 			AND pos.longitude >= :longitude_min
 			AND pos.ID = mtd.ID
-			AND mtd.condition = cnd.ID
-			AND	(itm.to = :to OR itm.to IS NULL)');
-    		
+			AND mtd.condition = cnd.ID');
+
+// List of the tables to select a localized item
 define('LOCATION_FROM',', tb_metadata as mtd, tb_metadata_position as pos');
 
 /**
@@ -25,23 +27,27 @@ define('LOCATION_FROM',', tb_metadata as mtd, tb_metadata_position as pos');
  * @return array of items (indexed by column name)
  */
 function get_items($recipient, $last_refresh, $type, $location_params = '') {
+	global $pdo;
+	
 	$location_where = '';
 	$location_from = '';
-	
-	if (isset($location_params)) {
+	$to = 'itm.to = :to';
+
+	if ($location_params != '') {
 		$location_where = LOCATION_WHERE;
 		$location_from = LOCATION_FROM;
+		$to = '(itm.to = :to OR itm.to IS NULL)';
 	}
 	
 	$query = $pdo->prepare('
 			SELECT
-				itm.`ID`, itm.`from`, itm.`to`, itm.`date`, cnd.`condition`, itm.`message` '.$type['fields'].','.$type['name'].' as "type"
+				itm.`ID`, itm.`from`, itm.`to`, itm.`date`, cnd.`condition`, itm.`message` '.$type['fields'].', '.$type['name'].' as "type"
     		FROM
 				tb_item as itm, '.$type['table'].' as type, tb_condition as cnd '.$location_from.'
 			WHERE
 				itm.ID = type.ID
 			AND	itm.condition = cnd.ID
-			AND	itm.to = :to
+			AND	'.$to.'
     		AND itm.date > :last_refresh
 			'.$location_where);
 	
@@ -84,7 +90,7 @@ function get_items($recipient, $last_refresh, $type, $location_params = '') {
  */
 function get_item_with_location($recipient, $last_refresh, $latitude_min, $latitude_max, 
 		$longitude_min, $longitude_max) {
-	global $pdo;
+	global $types;
 	
 	$location_params = array(
 			'latitude_min' => $latitude_min,
@@ -95,19 +101,20 @@ function get_item_with_location($recipient, $last_refresh, $latitude_min, $latit
 	
 	$ret = array();
 	
-	foreach (TYPES as $type) {
+	foreach ($types as $type) {
 		$ret = array_merge($ret,get_items($recipient, $last_refresh, $type, $location_params));
 	}
 	
 	return $ret;
 }
 
-/*
+/**
  * Retrieve all PRIVATE items sent to the specified recipient
+ * @param int $recipient
+ * @param float $last_refresh
+ * @return array of items
  */
-function get_all_private_items($recipient, $last_refresh) {
-	global $pdo;
-	
+function get_all_private_items($recipient, $last_refresh) {	
 	$ret = array();
 	
 	foreach (TYPES as $type) {
