@@ -171,7 +171,6 @@ public class FileItem extends Item {
     protected void compose(JSONObject object) throws JSONException {
         super.compose(object);
         object.accumulate("data", byteArrayToBase64String(data));
-        object.accumulate("path", path);
         object.accumulate("type", ITEM_TYPE.name());
     }
 
@@ -258,7 +257,7 @@ public class FileItem extends Item {
                 throw new IllegalArgumentException("expected " + FileItem.ITEM_TYPE.name() + " was : " + type);
             }
             data = Compresser.decompress(base64StringToByteArray(json.getString("data")));
-            path = json.getString("path");
+            path = "/dummy";
             return this;
         }
 
