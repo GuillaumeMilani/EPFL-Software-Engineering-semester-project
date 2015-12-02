@@ -15,26 +15,18 @@ function retrieve_user($name)
 	
 	$query = $pdo->prepare('SELECT `ID`,`email` FROM `tb_recipient_user` WHERE `email` = :email');
 	$query->bindParam(':email',$name,PDO::PARAM_STR);
+	$query->execute();
 	
-	if($query->execute() == true) // if the query was correctly execute and we have only one ID returned
+	
+	$result = $query->fetch(PDO::FETCH_ASSOC);
+	if($result['ID'] == null)
 	{
-		if($query->rowCount() == 1)
-		{
-		$result = $query->fetch(PDO::FETCH_ASSOC);
-		$responseData = array('name' => $name,
-		 'ID' => $result['ID'],
-		 'type' => 'user');
-		return array('user' => $responseData);
-		}
-		else
-		{
-			throw new Exception("User not found");
-		}
+		throw new RuntimeException("No user where found for name ".$name);
 	}
-	else
-	{
-		throw new Exception("Query wasn't executed");
-	}
+	$responseData = array('name' => $name,
+	 'ID' => $result['ID'],
+	 'type' => 'user');
+	return array('user' => $responseData);
 }
 
 /**

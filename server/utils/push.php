@@ -31,6 +31,7 @@ function send_push($registrationIds,$type)
 	$msg = array
 	(
 		'message' 	=> $type,
+		'type'		=> $type,
 		'title'		=> 'New Item',
 		'tickerText'	=> 'You have received a new item',
 		'vibrate'	=> 1,

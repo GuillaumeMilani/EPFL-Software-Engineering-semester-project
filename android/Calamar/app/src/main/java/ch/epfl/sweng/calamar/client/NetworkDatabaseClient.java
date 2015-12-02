@@ -90,7 +90,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
 
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
-            
+            Log.e(TAG,response);
             JSONObject object = new JSONObject(response);
             return object.getInt("ID");
         } catch (IOException | JSONException e) {
@@ -206,7 +206,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
         int responseCode = connection.getResponseCode();
 
         if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
-            throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )");
+//            throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )");
         }
 
         //get result
