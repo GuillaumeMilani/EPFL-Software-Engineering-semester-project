@@ -79,13 +79,13 @@ public class NetworkDatabaseClient implements DatabaseClient {
     }
 
     @Override
-    public int newUser(String email, String deviceId) throws DatabaseClientException {
+    public int newUser(String email, String token) throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.NEW_USER_PATH);
 
             JSONObject jsonParameter = new JSONObject();
-            jsonParameter.accumulate("deviceID", deviceId);
+            jsonParameter.accumulate("token", token);
             jsonParameter.accumulate("name", email);
 
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
