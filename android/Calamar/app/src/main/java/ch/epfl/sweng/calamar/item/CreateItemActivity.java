@@ -103,14 +103,7 @@ public class CreateItemActivity extends BaseActivity {
                 } catch (IOException e) {
                     // TODO untested code, simulate IOException
                     Log.e(CreateItemActivity.TAG, e.getMessage());
-                    AlertDialog.Builder newUserAlert = new AlertDialog.Builder(CreateItemActivity.this);
-                    newUserAlert.setTitle(R.string.unable_to_create_item);
-                    newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            //OK
-                        }
-                    });
-                    newUserAlert.show();
+                    displayErrorMessage(getString(R.string.unable_to_create_item), false);
                 }
             }
         });
@@ -211,7 +204,7 @@ public class CreateItemActivity extends BaseActivity {
             toSendBuilder = new SimpleTextItem.Builder();
         }
         if (message.getText().toString().equals("") && toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
-            displayErrorMessage(getString(R.string.item_create_invalid));
+            displayErrorMessage(getString(R.string.item_create_invalid), false);
             return;
         }
         if (privateCheck.isChecked()) {
@@ -263,7 +256,7 @@ public class CreateItemActivity extends BaseActivity {
                 Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
                 CreateItemActivity.this.finish();
             } else {
-                displayErrorMessage(getString(R.string.item_send_error));
+                displayErrorMessage(getString(R.string.item_send_error), false);
             }
         }
     }

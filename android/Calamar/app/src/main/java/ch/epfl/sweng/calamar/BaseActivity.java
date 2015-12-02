@@ -137,16 +137,27 @@ public abstract class BaseActivity extends AppCompatActivity
     }
 
     // TODO test all use don't crash
-    public void displayErrorMessage(String message) {
-        Log.e(TAG, message);
+    public void displayErrorMessage(String message, final boolean criticalError) {
+        Log.e(BaseActivity.TAG, message);
         if (!this.isFinishing()) {
             AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
             errorDialog.setTitle(message);
             errorDialog.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
                     //OK
+                    if (criticalError) {
+                        BaseActivity.this.finish();
+                    }
                 }
             });
+//            if (criticalError) {
+//                errorDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+//                    @Override
+//                    public void onDismiss(DialogInterface dialog) {
+//                        BaseActivity.this.finish();
+//                    }
+//                });
+//            }
             errorDialog.show();
         }
     }
@@ -160,14 +171,12 @@ public abstract class BaseActivity extends AppCompatActivity
                 switch (resultCode) {
                     case Activity.RESULT_OK:
 
-                        Log.i(TAG, "LOCATION SETTINGS FIXED ? : startUpdates");
+                        Log.i(TAG, "LOCATION SETTINGS FIXED (?) : startUpdates");
                         // start only the updates, settings should have been fixed now
                         GPSProvider.getInstance().startLocationUpdates();
-
                         break;
                     default:
-                        Log.e(TAG, "cannot do much without gps..bye...");
-                        finish();//TODO maybe refine ?
+                        displayErrorMessage("cannot do much without gps.....", true);
                 }
                 break;
             case ERROR_RESOLUTION_REQUEST:
@@ -182,8 +191,7 @@ public abstract class BaseActivity extends AppCompatActivity
                         }
                         break;
                     default:
-                        Log.e(TAG, "google API client definitely can't connect...");
-                        finish();//TODO maybe refine ?
+                        displayErrorMessage("google API client definitely can't connect...", true);
                 }
                 break;
             case ACCOUNT_CHOOSEN:
@@ -195,8 +203,7 @@ public abstract class BaseActivity extends AppCompatActivity
                         afterAccountAuthentication();
                         break;
                     default:
-                        Log.e(BaseActivity.TAG, "Didn't choose an account");
-                        finish();
+                        displayErrorMessage("Didn't choose an account, account is compulsory", true);
                 }
                 break;
             default:

@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.BuildConfig;
 import ch.epfl.sweng.calamar.CalamarApplication;
 
@@ -153,7 +154,7 @@ public final class GPSProvider implements LocationListener {
      * if OK, location updates are requested
      * is NOT called by startLocationUpdates()
      * */
-    public void checkSettingsAndLaunchIfOK(final Activity parentActivity) {
+    public void checkSettingsAndLaunchIfOK(final BaseActivity parentActivity) {
         googleApiClient.connect();//if already connected does nothing
 
         // build location settings status requests
@@ -183,12 +184,10 @@ public final class GPSProvider implements LocationListener {
                         // Location settings are not satisfied. But could be fixed by showing the user
                         // a dialog.
                         try {
-                            // Show the dialog and check the result in onActivityResult().
+                            // Show the dialog, onActivityResult() callback in activity will be called
+                            // with result of user action
                             Log.e(GPSProvider.TAG, "Location settings not satisfied");
                             status.startResolutionForResult(parentActivity, CHECK_SETTINGS_REQUEST);
-
-                            // onActivityResult() callback in activity will be called with result
-                            // of user action
 
                         } catch (IntentSender.SendIntentException e) {
                             // Ignore the error.
@@ -197,9 +196,8 @@ public final class GPSProvider implements LocationListener {
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                         // Location settings are not satisfied. However, we have no way to fix the
                         // settings so we won't show the dialog.
-                        Log.e(GPSProvider.TAG, "LOCATION SETTINGS CHANGE UNAVAILABLE.. but mandatory..");
-                        //parentActivity.finish();
-                        //TODO decide what to do ? toast plus finish ?
+                        parentActivity.displayErrorMessage(
+                                "LOCATION SETTINGS CHANGE UNAVAILABLE.. but mandatory..", true);
                         break;
                 }
             }
