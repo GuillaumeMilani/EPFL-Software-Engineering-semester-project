@@ -59,3 +59,21 @@ function add_items_file($ID, $data)
 
 	return $ID;
 }
+
+/**
+ *	Add an item of type image into the database
+ */
+function add_items_image($ID, $data)
+{
+	global $pdo;
+
+	$ID = (int) $ID;
+	$data = $data;
+
+	$query = $pdo->prepare('INSERT INTO `tb_item_image` (`ID`, `data`) VALUES (:id, :data)');
+	$query->bindParam(':id',$ID,PDO::PARAM_INT);
+	$query->bindParam(':data',$data,PDO::PARAM_STR);
+	$query->execute();
+
+	return $ID;
+}

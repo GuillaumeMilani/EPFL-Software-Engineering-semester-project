@@ -20,7 +20,7 @@ if (isset($data['type']) && isset($data['from']) && isset($data['to']) && isset(
 		
 		if ($type == "SIMPLETEXTITEM") {
 		
-		} else if ($type == "FILEITEM" && isset($data['data'])) {
+		} else if (($type == "FILEITEM" || $type == "IMAGEITEM") && isset($data['data'])) {
 			$item_data = $data['data'];
 			$return_array['data'] = $item_data;
 		} else {
@@ -67,6 +67,8 @@ try {
 		add_items_text($item_id);
 	} else if ($type == "FILEITEM") {
 		add_items_file($item_id, $item_data);
+	} else if ($type == "IMAGEITEM") {
+		add_items_image($item_id, $item_data);
 	}
 	
 	$pdo->commit();
