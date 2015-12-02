@@ -43,7 +43,6 @@ public abstract class Item {
     private final Condition condition;
     private final String message;
 
-
     public enum Type {SIMPLETEXTITEM, IMAGEITEM, FILEITEM}
 
     private Set<Item.Observer> observers = new HashSet<>();
@@ -200,6 +199,13 @@ public abstract class Item {
      */
     public final boolean hasLocation() {
         return getCondition().hasLocation();
+    }
+
+    /**
+     * @return true if the item is locked, i.e. its condition {@link Condition#getValue() value} is false
+     */
+    public final boolean isLocked() {
+        return !getCondition().getValue();
     }
 
     /**
