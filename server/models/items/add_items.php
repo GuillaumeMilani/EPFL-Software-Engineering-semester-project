@@ -24,7 +24,6 @@ function add_items($from,$to,$date,$type,$message,$condition_id)
 	$query->execute();
 	$item_id = $pdo->lastInsertId();
 	
-	add_items_text($item_id);
 	return $item_id;
 }
 /**
@@ -40,5 +39,23 @@ function add_items_text($ID)
 	$query->bindParam(':id',$ID,PDO::PARAM_INT);
 	$query->execute();
 	
+	return $ID;
+}
+
+/**
+ *	Add an item of type file into the database
+ */
+function add_items_file($ID, $data)
+{
+	global $pdo;
+
+	$ID = (int) $ID;
+	$data = $data;
+	
+	$query = $pdo->prepare('INSERT INTO `tb_item_file` (`ID`, `data) VALUES (:id, :data)');
+	$query->bindParam(':id',$ID,PDO::PARAM_INT);
+	$query->bindParam(':data',$data,PDO::PARAM_STR);
+	$query->execute();
+
 	return $ID;
 }

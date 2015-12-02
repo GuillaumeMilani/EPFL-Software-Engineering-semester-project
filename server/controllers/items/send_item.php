@@ -5,6 +5,7 @@ include_once('utils/push.php');
 global $pdo;
 
 $data = get_post_JSON();
+$return_array;
 
 // Extract decoded data
 if (isset($data['message']) && isset($data['type']) && isset($data['from']) && isset($data['to']) && isset($data['condition'])) {
@@ -14,6 +15,18 @@ if (isset($data['message']) && isset($data['type']) && isset($data['from']) && i
 		$to = $data['to'];
 		$date = time();
 		$condition = $data['condition'];
+		
+		$return_array = array("type" => $type, "from" => $from, "to" => $to, "date" => $date, "message" => $message);
+		
+		if ($type == "SIMPLETEXTITEM") {
+		
+		} else if ($type == "FILEITEM" && isset($data['data'])) {
+			$item_data = $data['data'];
+			$return_array['data'] = $item_data;
+		} else {
+			http_response_code(400);
+			die("Error : json malformed");
+		}
 } else {
 	http_response_code(400);
 	die("Error : json malformed");
@@ -48,7 +61,13 @@ try {
 	}
 		
 	// add the data into the db
-	$result = add_items($from['ID'],$to['ID'],$date,$type,$message,$condition_id);
+	$item_id = add_items($from['ID'],$to['ID'],$date,$type,$message,$condition_id);
+	
+	if ($type == "SIMPLETEXTITEM") {
+		add_items_text($item_id);
+	} else if ($type == "FILEITEM") {
+		add_items_file($item_id, $item_data);
+	}
 	
 	$pdo->commit();
 } catch (Exception $e) {
@@ -57,5 +76,7 @@ try {
 }
 
 http_response_code(201);
-echo json_encode(array("ID" => $result, "type" => $type, "from" => $from, "to" => $to, "date" => $date, "message" => $message, "condition" => json_decode($condition)));
+$return_array['ID'] = $item_id;
+$return_array['condition'] = json_decode($condition);
+echo json_encode($return_array);
 send_push_to($to,$type);
