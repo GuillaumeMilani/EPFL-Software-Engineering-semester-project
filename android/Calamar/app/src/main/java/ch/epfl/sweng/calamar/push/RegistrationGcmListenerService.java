@@ -61,25 +61,23 @@ public class RegistrationGcmListenerService extends GcmListenerService {
         if(pushType.equals(RETRIEVE))
         {
             // add a new contact
-            User addUser;
             try {
+                //extract data
                 JSONObject resp = new JSONObject(data.getString("extra"));
-                //Log.e(TAG, response);
-                addUser = User.fromJSON(resp.getJSONObject("user"));
 
+                User addUser = User.fromJSON(resp.getJSONObject("user"));
+
+                // Send a broadcast message to ChatFragment$ChatBroadcastReceiver
                 Intent i = new Intent();
                 i.setAction("ch.epfl.sweng.UPDATE_INTENT");
                 i.putExtra("user",addUser.getName());
                 i.putExtra("id",String.valueOf(addUser.getID()));
                 sendBroadcast(i);
-
             }
             catch (JSONException e)
             {
                 Log.e(TAG,"json extract failed");
             }
-
-
 
             message += "contact";
         }

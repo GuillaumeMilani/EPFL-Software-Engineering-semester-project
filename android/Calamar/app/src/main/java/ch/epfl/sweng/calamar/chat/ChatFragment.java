@@ -101,18 +101,6 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     }
 
     /**
-     * Add the user in the contact list
-     */
-    private void addUserInContact(User user)
-    {
-        adapter.add(user);
-        contacts.add(user);
-        adapter.notifyDataSetChanged();
-        //Add in memory
-        app.getDatabaseHandler().addRecipient(user);
-    }
-
-    /**
      * Called by button OnClickListener
      */
     public void cancelNewContact() {
@@ -159,6 +147,18 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     }
 
     /**
+     * Add the user in the contact list
+     */
+    private void addUserInContact(User user)
+    {
+        adapter.add(user);
+        contacts.add(user);
+        adapter.notifyDataSetChanged();
+        //Add in memory
+        app.getDatabaseHandler().addRecipient(user);
+    }
+
+    /**
      * Async task for retrieving a new user.
      */
     private class retrieveUserTask extends AsyncTask<Void, Void, User> {
@@ -199,6 +199,9 @@ public class ChatFragment extends android.support.v4.app.Fragment {
         }
     }
 
+    /**
+     *  Receive Broadcast Message and update chat accordingly
+     */
     public class ChatBroadcastReceiver extends BroadcastReceiver {
 
         @Override
