@@ -513,6 +513,9 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
                 storageManager.deleteItemWithDatabase(item.getID());
             }
         });
+        synchronized (this) {
+            wait(1000);
+        }
         assertEquals(dbHandler.getItem(item.getID()), null);
         adapter.update(item);
         final CountDownLatch latch4 = new CountDownLatch(1);
