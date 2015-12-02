@@ -28,6 +28,14 @@ import ch.epfl.sweng.calamar.recipient.User;
  * Item is immutable
  */
 public abstract class Item {
+
+    private static final String JSON_ID = "ID";
+    private static final String JSON_FROM = "from";
+    private static final String JSON_TO = "to";
+    private static final String JSON_DATE = "date";
+    private static final String JSON_CONDITION = "condition";
+    private static final String JSON_MESSAGE = "message";
+    protected static final String JSON_TYPE = "type";
     private final int ID;
     private final User from;
     private final Recipient to;
@@ -205,12 +213,12 @@ public abstract class Item {
      * @throws JSONException
      */
     protected void compose(JSONObject json) throws JSONException {
-        json.accumulate("ID", ID);
-        json.accumulate("from", from.toJSON());
-        json.accumulate("to", to.toJSON());
-        json.accumulate("date", date.getTime());
-        json.accumulate("condition", condition.toJSON());
-        json.accumulate("message", message);
+        json.accumulate(JSON_ID, ID);
+        json.accumulate(JSON_FROM, from.toJSON());
+        json.accumulate(JSON_TO, to.toJSON());
+        json.accumulate(JSON_DATE, date.getTime());
+        json.accumulate(JSON_CONDITION, condition.toJSON());
+        json.accumulate(JSON_MESSAGE, message);
     }
 
     /**
@@ -230,11 +238,11 @@ public abstract class Item {
      * @throws JSONException
      */
     public static Item fromJSON(JSONObject json) throws JSONException, IllegalArgumentException {
-        if (null == json || json.isNull("type")) {
+        if (null == json || json.isNull(JSON_TYPE)) {
             throw new IllegalArgumentException("malformed json, either null or no 'type' value");
         }
         Item item;
-        String type = json.getString("type");
+        String type = json.getString(JSON_TYPE);
         switch (Type.valueOf(type)) {
             case SIMPLETEXTITEM:
                 item = SimpleTextItem.fromJSON(json);
@@ -298,20 +306,20 @@ public abstract class Item {
         protected String message;
 
         public Builder parse(JSONObject o) throws JSONException {
-            ID = o.getInt("ID");
-            from = User.fromJSON(o.getJSONObject("from"));
-            if (o.isNull("to")) {
+            ID = o.getInt(JSON_ID);
+            from = User.fromJSON(o.getJSONObject(JSON_FROM));
+            if (o.isNull(JSON_TO)) {
                 to = new User(User.PUBLIC_ID, User.PUBLIC_NAME);
             } else {
-                to = Recipient.fromJSON(o.getJSONObject("to"));
+                to = Recipient.fromJSON(o.getJSONObject(JSON_TO));
             }
-            message = o.getString("message");
-            date = new Date(o.getLong("date"));
+            message = o.getString(JSON_MESSAGE);
+            date = new Date(o.getLong(JSON_DATE));
 
-            if (o.isNull("condition")) {
+            if (o.isNull(JSON_CONDITION)) {
                 condition = Condition.trueCondition();
             } else {
-                condition = Condition.fromJSON(new JSONObject(o.getString("condition")));
+                condition = Condition.fromJSON(new JSONObject(o.getString(JSON_CONDITION)));
             }
 
             return this;
