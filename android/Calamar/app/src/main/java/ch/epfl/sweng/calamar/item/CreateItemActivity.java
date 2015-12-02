@@ -1,6 +1,5 @@
 package ch.epfl.sweng.calamar.item;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -139,12 +138,11 @@ public class CreateItemActivity extends BaseActivity {
                     String path = FileUtils.getPath(this, fileUri);
                     if (path != null) {
                         file = new File(path);
-                        if (file.getName().length() > 15) {
-                            String text = file.getName().substring(0, 15) + "...";
-                            browseButton.setText(text);
-                        } else {
-                            browseButton.setText(file.getName());
+                        String name = file.getName();
+                        if (name.length() > 15) {
+                            name = name.substring(0, 15) + "...";
                         }
+                        browseButton.setText(name);
                     } else {
                         Toast.makeText(this, R.string.select_local_file, Toast.LENGTH_SHORT).show();
                     }
@@ -156,9 +154,9 @@ public class CreateItemActivity extends BaseActivity {
     public void locationChecked(View v) {
         final GPSProvider gpsProvider = GPSProvider.getInstance();
 
-        CheckBox locationBox = (CheckBox)v;
+        CheckBox locationBox = (CheckBox) v;
 
-        if(locationBox.isChecked()) {
+        if (locationBox.isChecked()) {
             // will start updates if settings ok, if not dialog, onActivityResult etc
             GPSProvider.getInstance().checkSettingsAndLaunchIfOK(this);
 
@@ -171,8 +169,8 @@ public class CreateItemActivity extends BaseActivity {
                     currentLocation = newLocation;
                     sendButton.setEnabled(true);
                     gpsProvider.removeObserver(this);
-                locationProgressBar.setVisibility(ProgressBar.INVISIBLE);
-                sendButton.setEnabled(true);
+                    locationProgressBar.setVisibility(ProgressBar.INVISIBLE);
+                    sendButton.setEnabled(true);
                     GPSProvider.getInstance().stopLocationUpdates();
                 }
             });
@@ -243,6 +241,7 @@ public class CreateItemActivity extends BaseActivity {
     private class SendItemTask extends AsyncTask<Void, Void, Item> {
 
         private final Item item;
+
         public SendItemTask(Item item) {
             this.item = item;
         }

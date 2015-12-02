@@ -86,6 +86,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         @Override
         public void update(Item item) {
             Marker updatedMarker = markers.get(item);
+            updatedMarker.setTitle(getLockStringForItem(item));
             updatedMarker.setIcon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
         }
     };
@@ -145,7 +146,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         super.onResume();
         GPSProvider gpsProvider = GPSProvider.getInstance();
 
-        if(!gpsProvider.isStarted()) {
+        if (!gpsProvider.isStarted()) {
             gpsProvider.checkSettingsAndLaunchIfOK(getActivity());
         }
 
@@ -164,7 +165,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     public void onPause() {
         super.onPause();
         GPSProvider gpsProvider = GPSProvider.getInstance();
-        if(gpsProvider.isStarted()) {
+        if (gpsProvider.isStarted()) {
             GPSProvider.getInstance().stopLocationUpdates();
         }
     }
@@ -207,9 +208,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                 .position(new LatLng(location.getLatitude(), location.getLongitude()));
         marker.icon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
 
-        // TODO set correct label
-        marker.title(getString(R.string.label_locked_item));
-
+        marker.title(getLockStringForItem(item));
         item.addObserver(itemObserver);
 
         Marker finalMarker = map.addMarker(marker);
@@ -225,19 +224,28 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      */
     private int getLockIdForItem(Item i) {
         if (i.getTo().getID() == User.PUBLIC_ID) {
-            if (i.getCondition().getValue()) {
-                return R.drawable.unlock;
-            } else {
+            if (i.isLocked()) {
                 return R.drawable.lock;
+            } else {
+                return R.drawable.unlock;
             }
         } else {
             //The item is private !
-            if (i.getCondition().getValue()) {
-                return R.drawable.unlock_private;
-            } else {
+            if (i.isLocked()) {
                 return R.drawable.lock_private;
+            } else {
+                return R.drawable.unlock_private;
             }
         }
+    }
+
+    /**
+     * @param item
+     * @return the correct lock label for <i>item</i>
+     */
+    private String getLockStringForItem(Item item) {
+        return item.isLocked() ? getString(R.string.label_locked_item) :
+                getString(R.string.label_unlocked_item);
     }
 
     /**
@@ -263,7 +271,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                     .getMapAsync(this);
         }
     }
-    
+
     /**
      * Async task for refreshing / getting new localized items.
      */
@@ -336,6 +344,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         @Override
         public boolean onMarkerClick(Marker marker) {
             final Item item = itemFromMarkers.get(marker);
+            this.item = item;
             CalamarApplication.getInstance().getStorageManager().getCompleteItem(item, this);
 
             AlertDialog.Builder itemDescription = new AlertDialog.Builder(getActivity());
@@ -359,14 +368,14 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             detailsViewDialog = new LinearLayout(getActivity());
             detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
 
-            detailsViewDialog.addView(item.getView(getActivity()));
+            detailsViewDialog.addView(this.item.getView(getActivity()));
 
 
             itemDescription.setView(detailsViewDialog);
 
             item.addObserver(detailsItemObserver);
 
-            itemDescription.show();
+            dialog = itemDescription.show();
             return false;
         }
 
@@ -374,7 +383,10 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         @Override
         public void onItemRetrieved(Item i) {
             item = i;
-            dialog.setView(item.getView(MapFragment.this.getActivity()));
+            //getCompleteItem may return item before dialog is created
+            if (dialog != null) {
+                dialog.setView(item.getView(MapFragment.this.getActivity()));
+            }
         }
 
         @Override

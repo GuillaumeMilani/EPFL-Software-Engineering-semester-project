@@ -140,6 +140,9 @@ public abstract class Condition {
         }
     }
 
+    /**
+     * @return the value of the condition, true if condition fulfilled false otherwise
+     */
     public boolean getValue() {
         return value;
     }

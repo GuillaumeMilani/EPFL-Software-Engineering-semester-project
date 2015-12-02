@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +30,7 @@ import ch.epfl.sweng.calamar.item.Item;
  * A Singleton managing storing, retrieving and deleting items on local storage.
  */
 //TODO Make toasts on UI thread, RuntimeException otherwise
+//TODO Runs dbHandler.get in AsyncTask !
 public class StorageManager {
 
     private static final Set<WritingTask> currentWritingTasks = new CopyOnWriteArraySet<>();
@@ -38,6 +40,10 @@ public class StorageManager {
 
     private static final int RETRY_TIME = 10000;
     private static final int MAX_ITER = 20;
+
+    private static final int OPERATION_READ = 1;
+    private static final int OPERATION_DELETE_WITHOUT_DB = 2;
+    private static final int OPERATION_DELETE_WITH_DB = 3;
 
     private static final String ROOT_FOLDER_NAME = "Calamar/";
     private static final String IMAGE_FOLDER_NAME = ROOT_FOLDER_NAME + "Images/";
@@ -210,8 +216,8 @@ public class StorageManager {
      * @param ID the id of the item to delete
      */
     public void deleteItemWithDatabase(int ID) {
-        Item item = dbHandler.getItem(ID);
-        deleteItemWithDatabase(item);
+        Integer[] tempArr = {ID};
+        new GetItemFromIDTask(null, OPERATION_DELETE_WITH_DB).execute(tempArr);
     }
 
     /**
@@ -220,13 +226,15 @@ public class StorageManager {
      * @param ID The id of the item to delete
      */
     public void deleteItemWithoutDatabase(int ID) {
-        Item item = dbHandler.getItem(ID);
-        deleteItemWithoutDatabase(item);
+        Integer[] tempArr = {ID};
+        new GetItemFromIDTask(null, OPERATION_DELETE_WITHOUT_DB).execute(tempArr);
     }
 
     /**
      * Deletes all stored items (even in database)
+     * Deprecated, must be improved
      */
+    @Deprecated
     public void deleteAllItemsWithDatabase() {
         List<Item> items = dbHandler.getAllItems();
         for (Item i : items) {
@@ -237,7 +245,9 @@ public class StorageManager {
 
     /**
      * Deletes all stored items (without deleting anything in database)
+     * Deprecated, must be improved
      */
+    @Deprecated
     public void deleteAllItemsWithoutDatabase() {
         List<Item> items = dbHandler.getAllItems();
         for (Item i : items) {
@@ -251,8 +261,7 @@ public class StorageManager {
      * @param ids the ids of the items to delete
      */
     public void deleteItemsForIdsWithDatabase(List<Integer> ids) {
-        List<Item> toDelete = dbHandler.getItems(ids);
-        deleteItemsWithDatabase(toDelete);
+        new GetItemFromIDTask(null, OPERATION_DELETE_WITH_DB).execute(ids.toArray(new Integer[ids.size()]));
     }
 
     /**
@@ -272,8 +281,7 @@ public class StorageManager {
      * @param ids the ids of the items to delete
      */
     public void deleteItemsForIdsWithoutDatabase(List<Integer> ids) {
-        List<Item> toDelete = dbHandler.getItems(ids);
-        deleteItemsWithoutDatabase(toDelete);
+        new GetItemFromIDTask(null, OPERATION_DELETE_WITHOUT_DB).execute(ids.toArray(new Integer[ids.size()]));
     }
 
     /**
@@ -345,8 +353,7 @@ public class StorageManager {
      * @param caller The Activity who called this method
      */
     public void getCompleteItem(int ID, StorageCallbacks caller) {
-        Item i = dbHandler.getItem(ID);
-        getCompleteItem(i, caller);
+        new GetItemFromIDTask(caller, OPERATION_READ).execute(ID);
     }
 
     /**
@@ -366,7 +373,7 @@ public class StorageManager {
      * @param data   The data retrieved
      * @param caller The Activity who asked for reading
      */
-    private void onDataRetrieved(FileItem i, byte[] data, StorageCallbacks caller) {
+    private void onCompleteItemRetrieved(FileItem i, byte[] data, StorageCallbacks caller) {
         if (data != null && data.length != 0) {
             if (i == null) {
                 caller.onDataRetrieved(data);
@@ -382,6 +389,47 @@ public class StorageManager {
                         throw new IllegalArgumentException(app.getString(R.string.expected_fileitem));
                 }
             }
+        }
+    }
+
+    private void onItemRetrieved(List<Item> items, StorageCallbacks caller, int operation) {
+        switch (operation) {
+            case OPERATION_DELETE_WITHOUT_DB:
+                deleteItemsWithoutDatabase(items);
+                break;
+            case OPERATION_DELETE_WITH_DB:
+                deleteItemsWithDatabase(items);
+                break;
+            case OPERATION_READ:
+                for (Item i : items) {
+                    getCompleteItem(i, caller);
+                }
+                break;
+            default:
+                throw new IllegalArgumentException(app.getString(R.string.storage_unknown_operation));
+        }
+    }
+
+    private class GetItemFromIDTask extends AsyncTask<Integer, Void, Item[]> {
+
+        private final StorageCallbacks caller;
+        private final int operation;
+
+        private GetItemFromIDTask(StorageCallbacks caller, int operation) {
+            this.caller = caller;
+            this.operation = operation;
+        }
+
+        @Override
+        protected Item[] doInBackground(Integer... params) {
+            List<Integer> toGet = Arrays.asList(params);
+            List<Item> retrieved = dbHandler.getItems(toGet);
+            return retrieved.toArray(new Item[retrieved.size()]);
+        }
+
+        @Override
+        protected void onPostExecute(Item... params) {
+            onItemRetrieved(Arrays.asList(params), caller, operation);
         }
     }
 
@@ -407,7 +455,7 @@ public class StorageManager {
 
         @Override
         protected void onPostExecute(byte[] data) {
-            onDataRetrieved(f, data, caller);
+            onCompleteItemRetrieved(f, data, caller);
         }
     }
 

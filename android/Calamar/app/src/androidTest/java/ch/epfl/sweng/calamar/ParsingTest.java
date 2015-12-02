@@ -51,6 +51,8 @@ public class ParsingTest {
     private final User testUser1 = new User(69, "Jean Luc");
     private final User testUser2 = new User(666, "Albert Danton");
 
+    private final String dummyPath = FileItem.DUMMY_PATH;
+
     @Test
     public void testUserParsing() throws JSONException {
         helperRecipientParsing(testUser1);
@@ -65,7 +67,7 @@ public class ParsingTest {
 
     @Test
     public void testImageItemParsing() throws JSONException {
-        helperItemParsing(new ImageItem(42, testUser1, testUser2, testDate, Condition.trueCondition(), testContent, "/ImageItem"));
+        helperItemParsing(new ImageItem(42, testUser1, testUser2, testDate, Condition.trueCondition(), testContent, dummyPath));
     }
 
     @Test
@@ -76,7 +78,7 @@ public class ParsingTest {
 
     @Test
     public void testFileItemParsing() throws JSONException {
-        helperItemParsing(new FileItem(42, testUser1, testUser2, testDate, Condition.trueCondition(), testContent, "/FileItem"));
+        helperItemParsing(new FileItem(42, testUser1, testUser2, testDate, Condition.trueCondition(), testContent, dummyPath));
     }
 
     @Test

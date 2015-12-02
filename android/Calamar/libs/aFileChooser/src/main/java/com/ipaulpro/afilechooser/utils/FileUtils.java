@@ -271,8 +271,12 @@ public class FileUtils {
             );
 
         final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+        String path=null;
         if (isKitKat) {
-            return getPathForKitKat(context, uri);
+            path = getPathForKitKat(context, uri);
+        }
+        if (path!=null) {
+            return path;
         }
 
         // MediaStore (and general)

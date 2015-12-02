@@ -47,8 +47,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
 
     @Override
     public List<Item> getAllItems(Recipient recipient, Date from, VisibleRegion visibleRegion)
-            throws DatabaseClientException
-    {
+            throws DatabaseClientException {
         if (null == visibleRegion) {
             throw new IllegalArgumentException("getAllItems: visibleRegion is null");
         }
@@ -101,7 +100,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
     }
 
     @Override
-    public User findUserByName(String name) throws DatabaseClientException{
+    public User findUserByName(String name) throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_USER_PATH);
@@ -122,8 +121,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
     }
 
     private List<Item> getItems(Recipient recipient, Date from, VisibleRegion visibleRegion)
-            throws DatabaseClientException
-    {
+            throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_PATH);
@@ -132,7 +130,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
             jsonParameter.accumulate("recipient", recipient.toJSON().toString());
             jsonParameter.accumulate("lastRefresh", from.getTime());
 
-            if(visibleRegion != null) {
+            if (visibleRegion != null) {
                 double left = visibleRegion.latLngBounds.southwest.longitude;
                 double top = visibleRegion.latLngBounds.northeast.latitude;
                 double right = visibleRegion.latLngBounds.northeast.longitude;
@@ -228,7 +226,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
         List<Item> result = new ArrayList<>();
 
         JSONArray array = new JSONArray(response);
-        for(int i = 0; i < array.length(); ++i) {
+        for (int i = 0; i < array.length(); ++i) {
             result.add(Item.fromJSON(array.getJSONObject(i)));
         }
 
