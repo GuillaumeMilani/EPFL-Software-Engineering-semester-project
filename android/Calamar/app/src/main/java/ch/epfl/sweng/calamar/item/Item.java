@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar.item;
 
 import android.app.Activity;
 import android.content.Context;
+import android.location.Location;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -32,7 +33,8 @@ public abstract class Item {
     private final Recipient to;
     private final Date date; //posix date
     private final Condition condition;
-    
+    private final String message;
+
 
     public enum Type {SIMPLETEXTITEM, IMAGEITEM, FILEITEM}
 
@@ -48,9 +50,14 @@ public abstract class Item {
         }
     };
 
-    protected Item(int ID, User from, Recipient to, Date date, Condition condition) {
+    protected Item(int ID, User from, Recipient to, Date date, Condition condition, String message) {
         if (null == from || null == to || null == condition || null == date) {
             throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' and/or 'date' cannot be null");
+        }
+        if (message == null) {
+            this.message = "";
+        } else {
+            this.message = message;
         }
         this.ID = ID;
         this.from = from; //User is immutable
@@ -61,14 +68,20 @@ public abstract class Item {
         condition.addObserver(conditionObserver);
     }
 
-    protected Item(int ID, User from, Recipient to, Date date) {
-        this(ID, from, to, date, Condition.trueCondition());
+    protected Item(int ID, User from, Recipient to, Date date, String message) {
+        this(ID, from, to, date, Condition.trueCondition(), message);
     }
 
     public abstract Type getType();
 
-    protected abstract View getItemView(Context context);
+    public abstract View getItemView(Context context);
 
+    /**
+     * @return the text content (message) of the Item
+     */
+    public String getMessage() {
+        return this.message;
+    }
 
     /**
      * Get the complete view of the item. ( With condition(s) )
@@ -109,13 +122,24 @@ public abstract class Item {
     public View getPreView(final Context context) {
         final LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
-
+        int childCount = 0;
         if (condition.getValue()) {
-            view.addView(getItemView(context), 0);
+            View itemView = getItemView(context);
+            if (itemView != null) {
+                view.addView(itemView, childCount);
+                childCount += 1;
+            }
+            if (!message.equals("")) {
+                TextView text = new TextView(context);
+                text.setText(message);
+                view.addView(text, childCount);
+                childCount += 1;
+            }
         } else {
             TextView lockMessage = new TextView(context);
             lockMessage.setText(R.string.item_is_locked_getview);
-            view.addView(lockMessage, 0);
+            view.addView(lockMessage, childCount);
+            childCount += 1;
         }
 
         return view;
@@ -124,33 +148,50 @@ public abstract class Item {
     /**
      * @return the 'condition' field of the Item
      */
-    public Condition getCondition() {
+    public final Condition getCondition() {
         return condition;
     }
 
     /**
      * @return the 'from' field of the Item (sender)
      */
-    public User getFrom() {
+    public final User getFrom() {
         return from;
     }
 
     /**
      * @return the 'to' field of the Item (recipient)
      */
-    public Recipient getTo() {
+    public final Recipient getTo() {
         return to;
     }
 
     /**
      * @return the creation/posting date of the Item
      */
-    public Date getDate() {
+    public final Date getDate() {
         return date;
     }
 
-    public int getID() {
+    public final int getID() {
         return ID;
+    }
+
+    /**
+     * @return the item's location if {@link #hasLocation()} is true.
+     * (simple shortcut for condition.getLocation)
+     * @see Condition#getLocation()
+     */
+    public final Location getLocation() {
+        return getCondition().getLocation();
+    }
+
+    /**
+     * @return true if the item's condition contains at least one location, false otherwise
+     * @see Condition#getLocation()
+     */
+    public final boolean hasLocation() {
+        return getCondition().hasLocation();
     }
 
     /**
@@ -169,6 +210,7 @@ public abstract class Item {
         json.accumulate("to", to.toJSON());
         json.accumulate("date", date.getTime());
         json.accumulate("condition", condition.toJSON());
+        json.accumulate("message", message);
     }
 
     /**
@@ -222,7 +264,8 @@ public abstract class Item {
         if (!(o instanceof Item)) return false;
         Item that = (Item) o;
         return that.ID == ID && that.from.equals(from) && that.to.equals(to) &&
-                that.date.getTime() == date.getTime() && this.condition.equals(that.condition);
+                that.date.getTime() == date.getTime() &&
+                that.message.equals(this.message);
     }
 
     /**
@@ -232,12 +275,13 @@ public abstract class Item {
      */
     @Override
     public int hashCode() {
-        return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date.getTime()) * 479 + condition.hashCode() * 503;
+        return ID + from.hashCode() * 89 + to.hashCode() * 197 + ((int) date.getTime()) * 479 + (message != null ? message.hashCode() : 0) * 701;
     }
 
     @Override
     public String toString() {
-        return "id : " + ID + " , from : (" + from + ") , to : (" + to + ") , at : " + date;
+        return "id : " + ID + " , from : (" + from + ") , to : (" + to + ") , at : " + date
+                + " message : " + message;
     }
 
     /**
@@ -245,14 +289,15 @@ public abstract class Item {
      * is used by the child builders (in {@link SimpleTextItem} or...) to build the "Item
      * part of the object". currently only used to parse JSON (little overkill..but ..)
      */
-    protected abstract static class Builder {
+    public abstract static class Builder {
         protected int ID;
         protected User from;
         protected Recipient to;
         protected Date date;
         protected Condition condition = Condition.trueCondition();
+        protected String message;
 
-        protected Builder parse(JSONObject o) throws JSONException {
+        public Builder parse(JSONObject o) throws JSONException {
             ID = o.getInt("ID");
             from = User.fromJSON(o.getJSONObject("from"));
             if (o.isNull("to")) {
@@ -260,10 +305,10 @@ public abstract class Item {
             } else {
                 to = Recipient.fromJSON(o.getJSONObject("to"));
             }
-
+            message = o.getString("message");
             date = new Date(o.getLong("date"));
 
-            if(o.isNull("condition")) {
+            if (o.isNull("condition")) {
                 condition = Condition.trueCondition();
             } else {
                 condition = Condition.fromJSON(new JSONObject(o.getString("condition")));
@@ -272,34 +317,38 @@ public abstract class Item {
             return this;
         }
 
-        protected Builder setID(int ID) {
+        public Builder setID(int ID) {
             this.ID = ID;
             return this;
         }
 
-        protected Builder setFrom(User from) {
+        public Builder setFrom(User from) {
             this.from = from;
             return this;
         }
 
-        protected Builder setTo(Recipient to) {
+        public Builder setTo(Recipient to) {
             this.to = to;
             return this;
         }
 
-        protected Builder setDate(long date) {
+        public Builder setDate(long date) {
             this.date = new Date(date);
             return this;
         }
 
-        protected Builder setDate(Date date) {
+        public Builder setDate(Date date) {
             this.date = date;
             return this;
         }
 
-        protected Builder setCondition(Condition condition) {
+        public Builder setCondition(Condition condition) {
             this.condition = condition;
             return this;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
         }
 
         protected abstract Item build();

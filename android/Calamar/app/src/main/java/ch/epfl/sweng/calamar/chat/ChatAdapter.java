@@ -13,7 +13,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
@@ -30,12 +29,8 @@ public class ChatAdapter extends BaseAdapter {
     public ChatAdapter(Activity context, List<Item> messages) {
         assert (context != null && messages != null);
         this.context = context;
-        this.messages = new ArrayList<>();
+        this.messages = messages;
 
-        //Add the items
-        for (Item i : messages) {
-            addItem(i);
-        }
     }
 
     @Override
@@ -68,7 +63,7 @@ public class ChatAdapter extends BaseAdapter {
 
 
         boolean ingoing = item.getTo().getID() == CalamarApplication.getInstance().getCurrentUserID();
-        setAlignment(holder, ingoing,item.getCondition().getValue());
+        setAlignment(holder, ingoing, item.getCondition().getValue());
         holder.itemView.removeAllViews();
         holder.itemView.addView(item.getPreView(context));
         holder.textTime.setText(item.getDate().toString());
@@ -81,7 +76,7 @@ public class ChatAdapter extends BaseAdapter {
      * @param message the message to be added
      */
     public void add(Item message) {
-        addItem(message);
+        this.messages.add(message);
     }
 
     /**
@@ -90,14 +85,38 @@ public class ChatAdapter extends BaseAdapter {
      * @param messages the list of messages
      */
     public void add(List<Item> messages) {
-        for (Item i : messages) {
-            addItem(i);
+        this.messages.addAll(messages);
+    }
+
+    /**
+     * Updates an item of the adapter (StorageManager has found the complete data)
+     *
+     * @param message the item to update
+     */
+    public void update(Item message) {
+        boolean found = false;
+        for (int i = 0; i < messages.size() && !found; ++i) {
+            if (messages.get(i).getID() == message.getID()) {
+                messages.set(i, message);
+                found = true;
+            }
         }
     }
 
-    private void addItem(Item i) {
-        this.messages.add(i);
+    /**
+     * Removes an item from the list
+     *
+     * @param message the message to delete
+     */
+    public void delete(Item message) {
+        for (Item i : messages) {
+            if (i.equals(message)) {
+                messages.remove(i);
+                break;
+            }
+        }
     }
+
 
     /**
      * Set the alignment of the messages, depending on if the message is outgoing or ingoing.
@@ -105,7 +124,7 @@ public class ChatAdapter extends BaseAdapter {
      * @param holder  The ViewHolder containing the necessary attributes
      * @param ingoing True if the message is received by the user, false if it is sent.
      */
-    private void setAlignment(ViewHolder holder, boolean ingoing,boolean unlocked) {
+    private void setAlignment(ViewHolder holder, boolean ingoing, boolean unlocked) {
         if (ingoing) {
             holder.contentWithBG.setBackgroundResource(unlocked ? R.drawable.in_message_bg : R.drawable.in_message_bg_lock);
             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) holder.contentWithBG.getLayoutParams();
@@ -129,7 +148,7 @@ public class ChatAdapter extends BaseAdapter {
             layoutParams.gravity = Gravity.START;
             holder.textTime.setLayoutParams(layoutParams);
         } else {
-            holder.contentWithBG.setBackgroundResource(unlocked ? R.drawable.out_message_bg : R.drawable.out_message_bg_lock );
+            holder.contentWithBG.setBackgroundResource(unlocked ? R.drawable.out_message_bg : R.drawable.out_message_bg_lock);
             LinearLayout.LayoutParams layoutParams =
                     (LinearLayout.LayoutParams) holder.contentWithBG.getLayoutParams();
             layoutParams.gravity = Gravity.END;

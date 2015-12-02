@@ -20,7 +20,7 @@
     <application
         android:name=".CalamarApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/calamar"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -45,24 +45,20 @@
             android:name=".chat.ChatActivity"
             android:label="@string/title_activity_chat"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity
+
+        <!-- <activity
             android:name=".map.MapsActivity"
-            android:label="@string/title_activity_maps" />
+            android:label="@string/title_activity_maps" /> -->
 
         <activity
             android:name=".MainActivity"
-            android:label="Tabbed"
+            android:label="Calamar"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".BaseActivity"
-            android:label="Base"
-            android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
             android:name=".item.CreateItemActivity"

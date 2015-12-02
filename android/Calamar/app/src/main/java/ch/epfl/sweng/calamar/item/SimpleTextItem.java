@@ -2,7 +2,6 @@ package ch.epfl.sweng.calamar.item;
 
 import android.content.Context;
 import android.view.View;
-import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,7 +17,6 @@ import ch.epfl.sweng.calamar.recipient.User;
  * SimpleTextItem is immutable
  */
 public final class SimpleTextItem extends Item {
-    private final String message;
     private final static Type ITEM_TYPE = Type.SIMPLETEXTITEM;
 
     /**
@@ -30,26 +28,18 @@ public final class SimpleTextItem extends Item {
      * @param date      the creation/posting date of the Item
      * @param message   the content (text message)
      * @param condition the condition
-     * @see Item#Item(int, User, Recipient, Date, Condition)
+     * @see Item#Item(int, User, Recipient, Date, Condition, String)
      */
 
     public SimpleTextItem(int ID, User from, Recipient to, Date date, Condition condition, String message) {
-        super(ID, from, to, date, condition);
-        if (null == message) {
-            throw new IllegalArgumentException("field 'message' cannot be null");
+        super(ID, from, to, date, condition, message);
+        if (null == message || message.length() == 0) {
+            throw new IllegalArgumentException("field 'message' cannot be null or empty");
         }
-        this.message = message;
     }
 
     public SimpleTextItem(int ID, User from, Recipient to, Date date, String message) {
         this(ID, from, to, date, Condition.trueCondition(), message);
-    }
-
-    /**
-     * @return the text content (message) of the Item
-     */
-    public String getMessage() {
-        return this.message;
     }
 
     @Override
@@ -58,10 +48,8 @@ public final class SimpleTextItem extends Item {
     }
 
     @Override
-    protected View getItemView(Context context) {
-        TextView res = new TextView(context);
-        res.setText(message);
-        return res;
+    public View getItemView(Context context) {
+        return null;
     }
 
     /**
@@ -72,9 +60,8 @@ public final class SimpleTextItem extends Item {
      * @throws JSONException
      */
     @Override
-    public void compose(JSONObject json) throws JSONException {
+    protected void compose(JSONObject json) throws JSONException {
         super.compose(json);
-        json.accumulate("message", message);
         json.accumulate("type", ITEM_TYPE.name());
     }
 
@@ -86,6 +73,7 @@ public final class SimpleTextItem extends Item {
      * @throws JSONException
      * @see Item#fromJSON(JSONObject) Recipient.fromJSON
      */
+
     public static SimpleTextItem fromJSON(JSONObject json) throws JSONException {
         return new SimpleTextItem.Builder().parse(json).build();
     }
@@ -112,7 +100,7 @@ public final class SimpleTextItem extends Item {
         if (this == o) return true;
         if (!(o instanceof SimpleTextItem)) return false;
         SimpleTextItem that = (SimpleTextItem) o;
-        return super.equals(that) && that.message.equals(message);
+        return super.equals(that);
     }
 
     /**
@@ -122,12 +110,12 @@ public final class SimpleTextItem extends Item {
      */
     @Override
     public int hashCode() {
-        return super.hashCode() * 73 + (message != null ? message.hashCode() : 0);
+        return super.hashCode();
     }
 
     @Override
     public String toString() {
-        return super.toString() + " message : " + message;
+        return super.toString();
     }
 
     /**
@@ -136,24 +124,18 @@ public final class SimpleTextItem extends Item {
      * @see Item.Builder
      */
     protected static class Builder extends Item.Builder {
-        private String message = "default message";
 
-        protected Builder parse(JSONObject json) throws JSONException {
+        public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString("type");
             if (!type.equals(SimpleTextItem.ITEM_TYPE.name())) {
                 throw new IllegalArgumentException("expected " + SimpleTextItem.ITEM_TYPE.name() + " was : " + type);
             }
-            message = json.getString("message");
             return this;
         }
 
         protected SimpleTextItem build() {
-            return new SimpleTextItem(super.ID, super.from, super.to, super.date, super.condition, message);
-        }
-
-        protected void setMessage(String message) {
-            this.message = message;
+            return new SimpleTextItem(super.ID, super.from, super.to, super.date, super.condition, super.message);
         }
     }
 }

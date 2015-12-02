@@ -1,7 +1,5 @@
 package ch.epfl.sweng.calamar.chat;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -9,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -59,7 +56,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
         getContacts();
 
         actualUserTextView = (TextView) getView().findViewById(R.id.actualUserName);
-        setActualUser();
+      //  setActualUser();
 
         contactsView = (ListView) getView().findViewById(R.id.contactsList);
         contactsView.setSelector(R.drawable.list_selector);
@@ -105,28 +102,21 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     }
 
     /**
-     * Return the actual user of the app.
+     * prints the actual user of the app on textview.
+     * @deprecated to be removed
      */
-    private void setActualUser() {
-        //TODO : Remove when you use a real device.
-        app.setCurrentUserID(11);
-        app.setCurrentUserName("calamaremulator@gmail.com");
-
-        if (app.getCurrentUserID() == -1) {
-            String name = null;
-            //Get google account email
-            AccountManager manager = AccountManager.get(getActivity());
-            Account[] list = manager.getAccountsByType("com.google");
-            if (list.length > 0) {
-                name = list[0].name;
-            }
-            new createNewUserTask(name, getActivity()).execute();
+    public void setActualUser() {
+        if (!app.getCurrentUserName().equals("")) {
+            actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
+        } else {
+            // TODO ok ???
+           // getActivity().finish();
         }
-        actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
     }
 
     private void getContacts() {
         contacts.addAll(app.getDatabaseHandler().getAllRecipients());
+        contacts.remove(app.getCurrentUser());
     }
 
     private void addNewContact() {
@@ -149,57 +139,6 @@ public class ChatFragment extends android.support.v4.app.Fragment {
         });
         newContactAlertDialog.show();
     }
-
-    /**
-     * Async task for sending a message.
-     */
-    private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
-        private String name = null;
-        private final Context context;
-
-        public createNewUserTask(String name, Context context) {
-            this.name = name;
-            this.context = context;
-        }
-
-        @Override
-        protected Integer doInBackground(Void... v) {
-            try {
-                //Get the device id.
-                return DatabaseClientLocator.getDatabaseClient().newUser(name, Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
-            } catch (DatabaseClientException e) {
-                Log.e(ChatFragment.TAG, e.getMessage());
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Integer id) {
-            if (id != null) {
-                app.setCurrentUserID(id);
-                app.setCurrentUserName(name);
-                actualUserTextView.setText("Actual user : " + name);
-                AlertDialog.Builder newUser = new AlertDialog.Builder(context);
-                newUser.setTitle(getString(R.string.new_account_creation_success) + name);
-                newUser.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        //OK
-                    }
-                });
-                newUser.show();
-            } else {
-                AlertDialog.Builder newUser = new AlertDialog.Builder(context);
-                newUser.setTitle(R.string.new_account_creation_fail);
-                newUser.setPositiveButton(R.string.new_account_creation_retry, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        new createNewUserTask(name, context).execute();
-                    }
-                });
-                newUser.show();
-            }
-        }
-    }
-
 
     /**
      * Async task for retrieving a new user.

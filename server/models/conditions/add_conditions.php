@@ -22,7 +22,7 @@ function add_condition($condition)
 /**
 *	Add an item of type text into the database
 */
-function add_metadata_position($condition_id,$latitude,$longitude,$radius)
+function add_metadata_position($condition_id,$latitude,$longitude)
 {
 	global $pdo;
 	
@@ -31,12 +31,11 @@ function add_metadata_position($condition_id,$latitude,$longitude,$radius)
 	
 	try {
 		$query = $pdo->prepare('INSERT INTO `tb_metadata_position` 
-				(`ID`, `latitude`, `longitude`, `radius`) VALUES 
-				(:id, :latitude, :longitude, :radius)');
+				(`ID`, `latitude`, `longitude`) VALUES 
+				(:id, :latitude, :longitude)');
 		$query->bindParam(':id',$ID,PDO::PARAM_INT);
 		$query->bindParam(':latitude',$latitude,PDO::PARAM_STR);
 		$query->bindParam(':longitude',$longitude,PDO::PARAM_STR);
-		$query->bindParam(':radius',$radius,PDO::PARAM_STR);
 		
 		return $query->execute();
 	} catch (Exception $e) {

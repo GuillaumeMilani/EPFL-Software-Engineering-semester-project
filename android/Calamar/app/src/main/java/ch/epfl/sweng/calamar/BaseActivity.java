@@ -1,24 +1,33 @@
 package ch.epfl.sweng.calamar;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
+import ch.epfl.sweng.calamar.client.DatabaseClientException;
+import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.item.CreateItemActivity;
+import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.push.RegistrationIntentService;
 
-public class BaseActivity extends AppCompatActivity
+public abstract class BaseActivity extends AppCompatActivity
         implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private CalamarApplication app;
 
@@ -27,7 +36,8 @@ public class BaseActivity extends AppCompatActivity
 
     // activity request codes
     private static final int ERROR_RESOLUTION_REQUEST = 1001;
-    private static final int REQUEST_CODE_PICK_ACCOUNT = 1002;
+    protected static final int ACCOUNT_CHOOSEN = 3001;
+
 
     // google api related stuff
     private boolean resolvingError;
@@ -63,8 +73,7 @@ public class BaseActivity extends AppCompatActivity
         GoogleApiClient googleApiClient = app.getGoogleApiClient();
         if (!resolvingError &&
                 !googleApiClient.isConnected() &&
-                !googleApiClient.isConnecting())
-        {
+                !googleApiClient.isConnecting()) {
             googleApiClient.connect();
             // if errors, such as no google play apk, onConnectionFailed will handle the errors
         }
@@ -78,10 +87,11 @@ public class BaseActivity extends AppCompatActivity
 
     @Override
     protected void onStop() {
-        GoogleApiClient googleApiClient = app.getGoogleApiClient();
-        if(googleApiClient.isConnected()) {
-            googleApiClient.disconnect();
-        }
+        // TODO maybe rethink later
+//        GoogleApiClient googleApiClient = app.getGoogleApiClient();
+//        if (googleApiClient.isConnected()) {
+//            googleApiClient.disconnect();
+//        }
         super.onStop();
     }
     // *********************************************************************************************
@@ -91,8 +101,6 @@ public class BaseActivity extends AppCompatActivity
     @Override
     public void onConnected(Bundle arg0) {
         Log.i(TAG, "google API client connected");
-        Intent intent = new Intent(this, RegistrationIntentService.class);
-        startService(intent);
     }
 
     @Override
@@ -102,6 +110,8 @@ public class BaseActivity extends AppCompatActivity
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
+        // TODO potential corner case double dialog if google shows dialog when acount selection
+        // maybe let google do the work, now that we have account selection
         if (resolvingError) {
             // Already attempting to resolve an error.
             return;
@@ -125,11 +135,41 @@ public class BaseActivity extends AppCompatActivity
             showGoogleApiErrorDialog(connectionResult.getErrorCode());
         }
     }
+
+    // TODO test all use don't crash
+    public void displayErrorMessage(String message){
+        Log.e(TAG,message);
+        if(!this.isFinishing()) {
+            AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
+            errorDialog.setTitle(message);
+            errorDialog.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    //OK
+                }
+            });
+            errorDialog.show();
+        }
+    }
+
     // *********************************************************************************************
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
+            case GPSProvider.CHECK_SETTINGS_REQUEST:
+                switch (resultCode) {
+                    case Activity.RESULT_OK:
+
+                        Log.i(TAG, "LOCATION SETTINGS FIXED ? : startUpdates");
+                        // start only the updates, settings should have been fixed now
+                        GPSProvider.getInstance().startLocationUpdates();
+
+                        break;
+                    default:
+                        Log.e(TAG, "google API client definitely can't connect...");
+                        finish();//TODO maybe refine ?
+                }
+                break;
             case ERROR_RESOLUTION_REQUEST:
                 resolvingError = false;
                 switch (resultCode) {
@@ -146,19 +186,18 @@ public class BaseActivity extends AppCompatActivity
                         finish();//TODO maybe refine ?
                 }
                 break;
-            //TODO code 1002 http://www.androiddesignpatterns.com/2013/01/google-play-services-setup.html
-            case REQUEST_CODE_PICK_ACCOUNT:
-                /*
-                if (resultCode == RESULT_OK) {
-                    String accountName = data.getStringExtra(
-                            AccountManager.KEY_ACCOUNT_NAME);
-                    AccountUtils.setAccountName(this, accountName);
-                } else if (resultCode == RESULT_CANCELED) {
-                    Toast.makeText(this, "This application requires a Google account.",
-                            Toast.LENGTH_SHORT).show();
-                    finish();
+            case ACCOUNT_CHOOSEN:
+                switch (resultCode) {
+                    case Activity.RESULT_OK:
+                        // get account name
+                        String accountName = data.getExtras().getString(AccountManager.KEY_ACCOUNT_NAME);
+                        CalamarApplication.getInstance().setCurrentUserName(accountName);
+                        afterAccountAuthentication();
+                        break;
+                    default:
+                        Log.e(BaseActivity.TAG, "Didn't choose an account");
+                        finish();
                 }
-                */
                 break;
             default:
                 throw new IllegalStateException("onActivityResult : unknown request ! ");
@@ -206,9 +245,20 @@ public class BaseActivity extends AppCompatActivity
     private synchronized void buildGoogleApiClient() {
         app.setGoogleApiClient(
                 new GoogleApiClient.Builder(app)
-                        .addApi(LocationServices.API)//TODO add service push TONY
+                        .addApi(LocationServices.API)
                         .addConnectionCallbacks(this)
                         .addOnConnectionFailedListener(this).build());
+    }
+
+    /**
+     * Called after the account was authenticated
+     */
+    private void afterAccountAuthentication() {
+        new createNewUserTask(CalamarApplication.getInstance().getCurrentUserName(), this).execute();
+
+        // The user need to be authenticated before registration
+        Intent intent = new Intent(this, RegistrationIntentService.class);
+        startService(intent);
     }
 
 
@@ -220,5 +270,54 @@ public class BaseActivity extends AppCompatActivity
     public void createItem(View v) {
         Intent intent = new Intent(this, CreateItemActivity.class);
         startActivity(intent);
+    }
+
+
+    private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
+        private String name = null;
+        private Context context;
+
+        public createNewUserTask(String name, Context context) {
+            this.name = name;
+            this.context = context;
+        }
+
+        @Override
+        protected Integer doInBackground(Void... v) {
+            try {
+                //Get the device id.
+                return DatabaseClientLocator.getDatabaseClient().newUser(name,
+                        Settings.Secure.getString(getContentResolver(),
+                                Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
+            } catch (DatabaseClientException e) {
+                e.printStackTrace();
+                // TODO make it works like the other asynctask,
+                // and make use of context safe
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Integer id) {
+            if (id != null) {
+                CalamarApplication.getInstance().setCurrentUserID(id);
+                // Show toast
+                Context context = getApplicationContext();
+                CharSequence text = "Connected as " + name;
+                int duration = Toast.LENGTH_SHORT;
+
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
+            } else {
+                AlertDialog.Builder newUser = new AlertDialog.Builder(context);
+                newUser.setTitle(R.string.new_account_creation_fail);
+                newUser.setPositiveButton(R.string.new_account_creation_retry, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        new createNewUserTask(name, context).execute();
+                    }
+                });
+                newUser.show();
+            }
+        }
     }
 }

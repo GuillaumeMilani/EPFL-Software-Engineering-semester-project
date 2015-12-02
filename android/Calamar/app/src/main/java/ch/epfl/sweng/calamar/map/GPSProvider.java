@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import ch.epfl.sweng.calamar.BuildConfig;
 import ch.epfl.sweng.calamar.CalamarApplication;
 
 
@@ -29,8 +30,7 @@ import ch.epfl.sweng.calamar.CalamarApplication;
  * Created by LPI on 06.11.2015.
  */
 @SuppressWarnings("FinalStaticMethod")
-public final class GPSProvider implements LocationListener
-{
+public final class GPSProvider implements LocationListener {
     private static volatile GPSProvider instance = null;
     private static final String TAG = GPSProvider.class.getSimpleName();
     public static final int CHECK_SETTINGS_REQUEST = 1002;
@@ -42,6 +42,7 @@ public final class GPSProvider implements LocationListener
     private final LocationRequest locationRequest = createLocationRequest();
 
     private final GoogleApiClient googleApiClient;
+    private boolean isStarted = false;
 
     // TODO, seems to be one possible soluce to avoid (or maybe luck....)
     // https://stackoverflow.com/questions/24201356/avoiding-concurrent-modification-in-observer-pattern
@@ -65,22 +66,23 @@ public final class GPSProvider implements LocationListener
     }
 
     /**
-     * Checks location settings and starts the location updates if no issue found. <br>
+     * Starts the location updates. <br>
      * Registered observers will get new location periodically through their
      * {@link GPSProvider.Observer#update(Location) update} method. <br><br>
      *
-     * <b>Warning :</b> if settings are not OK, nothing done, caller <i>parentActivity</i>
-     * should implement {@link Activity#onActivityResult(int, int, Intent)} to react to the user actions.
-     * <br>
-     *     request code : {@link #CHECK_SETTINGS_REQUEST}
-     *     TODO describe result code and actions
+     *     WARNING: caller should call checkSettingsAndLaunchIfOK instead
+     *
+     * @throws IllegalStateException when google api client not connected
      */
-    public void startLocationUpdates(Activity parentActivity) {
-        checkLocationSettings(parentActivity);
-        // TODO...I don't manage to find a good solution....rethink
-        // here if settings KO and user sets them OK, caller will recall this, and settings will be checked
-        // again .........if I split them apart, in case of settings OK,
-        // need to decide on a way to inform caller that settings ok (callback..)
+    public void startLocationUpdates() {
+        if(googleApiClient.isConnected()) { // else call cause illegalstateexception
+            LocationServices.FusedLocationApi.requestLocationUpdates(
+                    googleApiClient, locationRequest, GPSProvider.instance);
+            isStarted = true;
+            Log.i(TAG, "GPS request started");
+        } else {
+            throw new IllegalStateException("startLocationUpdates: client not connected");
+        }
     }
 
     /**
@@ -91,18 +93,11 @@ public final class GPSProvider implements LocationListener
         if(googleApiClient.isConnected()) { // else call cause illegalstateexception
             LocationServices.FusedLocationApi.removeLocationUpdates(
                     googleApiClient, this);
-        } // TODO else ??? we need to think when we start / stop / connect / disconnect
-    }
-
-    /**
-     * @return the last received location <br>(<b>WARNING</b>, can be null if {@link #startLocationUpdates(Activity)}
-     * hasn't been called, or can be stale if {@link #stopLocationUpdates()} has been called and ...)
-     */
-    public Location getLastLocation() {
-        //TODO mybe check lastupdatetime and return null if too old
-        //use get last location of underlying fusedlocation provider + make
-        // al checks in gps demo
-        return lastLocation;
+            isStarted = false;
+            Log.i(TAG, "GPS request stopped");
+        } else {
+            throw new IllegalStateException("stopLocationUpdates: client not connected");
+        }
     }
 
     /**
@@ -134,6 +129,18 @@ public final class GPSProvider implements LocationListener
         return this.observers.remove(observer);
     }
 
+    public void setMockLocation(Location location) {
+        if(BuildConfig.DEBUG) {
+            notifyObservers(location);
+        } else {
+            throw new RuntimeException("can't set mock Location in release version");
+        }
+    }
+
+    public boolean isStarted() {
+        return isStarted;
+    }
+
     private GPSProvider() {
         // get the GoogleApi client,
         // creation plus play services availability checks are done in MainActivity at app startup
@@ -141,11 +148,12 @@ public final class GPSProvider implements LocationListener
     }
 
     /**
-     * Verifies location services availability on the device, and initiate location updates if OK
+     * Verifies location services availability on the device
      * if KO, attempt to resolve error by showing user a dialog. <br>
-     * is called by startLocationUpdates()
+     * if OK, location updates are requested
+     * is NOT called by startLocationUpdates()
      * */
-    private void checkLocationSettings(final Activity parentActivity) {
+    public void checkSettingsAndLaunchIfOK(final Activity parentActivity) {
         googleApiClient.connect();//if already connected does nothing
 
         // build location settings status requests
@@ -168,10 +176,8 @@ public final class GPSProvider implements LocationListener
                         // All location settings are satisfied. The client can initialize location
                         // requests.
                         Log.i(GPSProvider.TAG, "Location settings OK");
-
                         //  start location requests
-                        LocationServices.FusedLocationApi.requestLocationUpdates(
-                                googleApiClient, locationRequest, GPSProvider.instance);
+                        startLocationUpdates();
                         break;
                     case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
                         // Location settings are not satisfied. But could be fixed by showing the user
@@ -221,8 +227,11 @@ public final class GPSProvider implements LocationListener
 
         // request the most precise location possible. The location services
         // are more likely to use GPS to determine the location.
+
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         locationRequest.setSmallestDisplacement(3); // 3 meters
+
+
 
         // PRIORITY_HIGH_ACCURACY, combined with the ACCESS_FINE_LOCATION permission setting,
         // and a fast update interval of 5 seconds, causes the fused location provider to return

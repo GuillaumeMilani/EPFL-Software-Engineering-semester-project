@@ -1,5 +1,6 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,7 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.RadioGroup;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -41,8 +42,8 @@ import ch.epfl.sweng.calamar.recipient.User;
 public class CreateItemActivity extends BaseActivity {
 
     private static final int PICK_FILE_REQUEST = 1;
-    private static final String RECIPIENT_EXTRA_ID = "ID";
-    private static final String RECIPIENT_EXTRA_NAME = "Name";
+    public static final String CREATE_ITEM_RECIPIENT_EXTRA_ID = "ch.epfl.sweng.calamar.RECIPIENT_ID";
+    public static final String CREATE_ITEM_RECIPIENT_EXTRA_NAME = "ch.epfl.sweng.calamar.RECIPIENT_NAME";
 
     private static final String TAG = CreateItemActivity.class.getSimpleName();
 
@@ -54,10 +55,11 @@ public class CreateItemActivity extends BaseActivity {
     private File file;
     private List<Recipient> contacts;
     private Location currentLocation;
-    private RadioGroup timeGroup;
-    private CheckBox timeCheck;
+    //private RadioGroup timeGroup;
+    //private CheckBox timeCheck;
     private Button browseButton;
     private Button sendButton;
+    private ProgressBar locationProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +68,8 @@ public class CreateItemActivity extends BaseActivity {
 
         privateCheck = (CheckBox) findViewById(R.id.privateCheck);
         locationCheck = (CheckBox) findViewById(R.id.locationCheck);
+        locationProgressBar = (ProgressBar) findViewById(R.id.locationProgressBar);
+        locationProgressBar.setVisibility(ProgressBar.INVISIBLE);
         message = (EditText) findViewById(R.id.createItemActivity_messageText);
 
         contacts = CalamarApplication.getInstance().getDatabaseHandler().getAllRecipients();
@@ -78,14 +82,14 @@ public class CreateItemActivity extends BaseActivity {
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, contactsName);
         contactsSpinner.setAdapter(spinnerAdapter);
 
-        timeCheck = (CheckBox) findViewById(R.id.timeCheck);
-        timeGroup = (RadioGroup) findViewById(R.id.timeGroup);
-        timeGroup.setVisibility(View.INVISIBLE);
+        //timeCheck = (CheckBox) findViewById(R.id.timeCheck);
+        //timeGroup = (RadioGroup) findViewById(R.id.timeGroup);
+        //timeGroup.setVisibility(View.INVISIBLE);
 
         Intent intent = getIntent();
-        final int id = intent.getIntExtra(RECIPIENT_EXTRA_ID, -1);
+        final int id = intent.getIntExtra(CREATE_ITEM_RECIPIENT_EXTRA_ID, -1);
         if (id != -1) {
-            final String name = intent.getStringExtra(RECIPIENT_EXTRA_NAME);
+            final String name = intent.getStringExtra(CREATE_ITEM_RECIPIENT_EXTRA_NAME);
             contactsSpinner.setVisibility(View.VISIBLE);
             privateCheck.setChecked(true);
             contactsSpinner.setSelection(contacts.indexOf(new User(id, name)));
@@ -112,7 +116,7 @@ public class CreateItemActivity extends BaseActivity {
             }
         });
 
-        final String[] imgExt = {"png", "PNG", "jpg", "jpeg", "JPG", "JPEG", "bmp", "BMP"};
+        final String[] imgExt = {"png", "jpg", "jpeg", "bmp"};
         imageExt = new HashSet<>(Arrays.asList(imgExt));
         file = null;
         currentLocation = null;
@@ -151,24 +155,30 @@ public class CreateItemActivity extends BaseActivity {
 
     public void locationChecked(View v) {
         final GPSProvider gpsProvider = GPSProvider.getInstance();
-        gpsProvider.startLocationUpdates(this);
-        sendButton.setEnabled(false);
 
-        // TODO show "sablier" + test
+        CheckBox locationBox = (CheckBox)v;
 
-        gpsProvider.addObserver(new GPSProvider.Observer() {
-            @Override
-            public void update(Location newLocation) {
-                currentLocation = newLocation;
+        if(locationBox.isChecked()) {
+            // will start updates if settings ok, if not dialog, onActivityResult etc
+            GPSProvider.getInstance().checkSettingsAndLaunchIfOK(this);
+
+            locationProgressBar.setVisibility(ProgressBar.VISIBLE);
+            sendButton.setEnabled(false);
+
+            gpsProvider.addObserver(new GPSProvider.Observer() {
+                @Override
+                public void update(Location newLocation) {
+                    currentLocation = newLocation;
+                    sendButton.setEnabled(true);
+                    gpsProvider.removeObserver(this);
+                locationProgressBar.setVisibility(ProgressBar.INVISIBLE);
                 sendButton.setEnabled(true);
-                gpsProvider.removeObserver(this);
-                // TODO ConcurrentModificationException
-                // because set modified during notify iteration
-                // normally solved now, but wait and see
-                GPSProvider.getInstance().stopLocationUpdates();
-            }
-        });
-
+                    GPSProvider.getInstance().stopLocationUpdates();
+                }
+            });
+        } else {
+            sendButton.setEnabled(true);
+        }
     }
 
     public void privateChecked(View v) {
@@ -179,13 +189,14 @@ public class CreateItemActivity extends BaseActivity {
         }
     }
 
+    /*
     public void timeChecked(View v) {
         if (timeCheck.isChecked()) {
             timeGroup.setVisibility(View.VISIBLE);
         } else {
             timeGroup.setVisibility(View.INVISIBLE);
         }
-    }
+    }*/
 
     private void createAndSend() throws IOException {
         Item.Builder toSendBuilder;
@@ -193,7 +204,7 @@ public class CreateItemActivity extends BaseActivity {
             String name = file.getName();
             int extIndex = name.lastIndexOf('.');
             String ext = extIndex > 0 ? name.substring(extIndex + 1) : "";
-            if (imageExt.contains(ext)) {
+            if (imageExt.contains(ext.toLowerCase())) {
                 toSendBuilder = new ImageItem.Builder().setFile(file);
             } else {
                 toSendBuilder = new FileItem.Builder().setFile(file);
@@ -201,17 +212,11 @@ public class CreateItemActivity extends BaseActivity {
         } else {
             toSendBuilder = new SimpleTextItem.Builder();
         }
-        if (!message.getText().toString().equals("")) {
-            ((SimpleTextItem.Builder) toSendBuilder).setMessage(message.getText().toString());
-        } else {
-            if (toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
-                Toast.makeText(getApplicationContext(), getString(R.string.item_create_invalid),
-                        Toast.LENGTH_SHORT).show();
-                return;
-            }
+        if (message.getText().toString().equals("") && toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
+            displayErrorMessage(getString(R.string.item_create_invalid));
+            return;
         }
         if (privateCheck.isChecked()) {
-            // TODO clean this..........
             int contactPosition = contactsSpinner.getSelectedItemPosition();
             if (contactPosition != -1) {
                 Recipient to = contacts.get(contactsSpinner.getSelectedItemPosition());
@@ -227,9 +232,9 @@ public class CreateItemActivity extends BaseActivity {
         }
         toSendBuilder.setFrom(CalamarApplication.getInstance().getCurrentUser());
         toSendBuilder.setDate(new Date().getTime());
+        toSendBuilder.setMessage(message.getText().toString());
         Item toSend = toSendBuilder.build();
         new SendItemTask(toSend).execute();
-        this.finish();
     }
 
     /**
@@ -238,7 +243,6 @@ public class CreateItemActivity extends BaseActivity {
     private class SendItemTask extends AsyncTask<Void, Void, Item> {
 
         private final Item item;
-
         public SendItemTask(Item item) {
             this.item = item;
         }
@@ -256,11 +260,11 @@ public class CreateItemActivity extends BaseActivity {
         @Override
         protected void onPostExecute(Item item) {
             if (item != null) {
-                CalamarApplication.getInstance().getDatabaseHandler().addItem(item);
+                CalamarApplication.getInstance().getStorageManager().storeItem(item, null);
                 Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
+                CreateItemActivity.this.finish();
             } else {
-                Toast.makeText(getApplicationContext(), getString(R.string.item_send_error),
-                        Toast.LENGTH_SHORT).show();
+                displayErrorMessage(getString(R.string.item_send_error));
             }
         }
     }
