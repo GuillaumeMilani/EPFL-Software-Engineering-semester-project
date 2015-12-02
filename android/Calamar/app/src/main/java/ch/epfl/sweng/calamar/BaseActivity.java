@@ -137,9 +137,9 @@ public abstract class BaseActivity extends AppCompatActivity
     }
 
     // TODO test all use don't crash
-    public void displayErrorMessage(String message){
-        Log.e(TAG,message);
-        if(!this.isFinishing()) {
+    public void displayErrorMessage(String message) {
+        Log.e(TAG, message);
+        if (!this.isFinishing()) {
             AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
             errorDialog.setTitle(message);
             errorDialog.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
