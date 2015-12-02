@@ -52,7 +52,7 @@ function add_items_file($ID, $data)
 	$ID = (int) $ID;
 	$data = $data;
 	
-	$query = $pdo->prepare('INSERT INTO `tb_item_file` (`ID`, `data) VALUES (:id, :data)');
+	$query = $pdo->prepare('INSERT INTO `tb_item_file` (`ID`, `data`) VALUES (:id, :data)');
 	$query->bindParam(':id',$ID,PDO::PARAM_INT);
 	$query->bindParam(':data',$data,PDO::PARAM_STR);
 	$query->execute();

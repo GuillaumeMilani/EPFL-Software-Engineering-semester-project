@@ -8,7 +8,7 @@ $data = get_post_JSON();
 $return_array;
 
 // Extract decoded data
-if (isset($data['message']) && isset($data['type']) && isset($data['from']) && isset($data['to']) && isset($data['condition'])) {
+if (isset($data['type']) && isset($data['from']) && isset($data['to']) && isset($data['condition'])) {
 		$message = $data['message'];
 		$type = $data['type'];
 		$from = $data['from'];
