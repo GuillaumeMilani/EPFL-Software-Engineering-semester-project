@@ -316,6 +316,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
         @Override
         public void onItemRetrieved(Item i) {
+            item=i;
             if (dialog != null) {
                 dialog.setView(item.getView(ChatActivity.this));
             }
