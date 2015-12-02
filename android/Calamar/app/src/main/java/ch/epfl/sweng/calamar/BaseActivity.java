@@ -258,9 +258,6 @@ public abstract class BaseActivity extends AppCompatActivity
         Intent intent = new Intent(this, RegistrationIntentService.class);
         startService(intent);
 
-        //TODO remove
-    //    new createNewUserTask(CalamarApplication.getInstance().getCurrentUserName(), this).execute();
-
     }
 
 

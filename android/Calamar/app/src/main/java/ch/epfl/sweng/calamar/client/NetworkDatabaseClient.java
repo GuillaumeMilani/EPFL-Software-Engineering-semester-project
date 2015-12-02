@@ -90,7 +90,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
 
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
-            Log.e(TAG,response);
+
             JSONObject object = new JSONObject(response);
             return object.getInt("ID");
         } catch (IOException | JSONException e) {

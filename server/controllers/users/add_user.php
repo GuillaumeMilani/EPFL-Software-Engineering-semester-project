@@ -9,8 +9,6 @@ $data= get_post_JSON();
 $token= $data['token'];
 $name= $data['name'];
 
-echo "patate";
-
 try {
     $response = add_recipient($name,$token);
     http_response_code(201);

@@ -42,7 +42,9 @@ import com.google.android.gms.iid.InstanceID;
 
 import java.io.IOException;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.MainActivity;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
@@ -105,34 +107,16 @@ public class RegistrationIntentService extends IntentService {
      * @param token The new token.
      */
     private void sendRegistrationToServer(String token) {
-        NetworkRegistrationClient client = new NetworkRegistrationClient("HTTP://calamar.japan-impact.ch", new DefaultNetworkProvider());
         try {
             String accountName = CalamarApplication.getInstance().getCurrentUserName();
             Log.i(TAG, "(token,name) is (" + token + "," + accountName + ")");
           //  client.send(token, accountName);
 
             DatabaseClientLocator.getDatabaseClient().newUser(accountName,token);
-
-            displayToast(accountName);
-
         } catch (DatabaseClientException e) {
             e.printStackTrace();
             Log.e("Token", "couldn't reach the server");
         }
-    }
-
-    /**
-     * Display a toast when the user is connected
-     * @param name name of the new user
-     * */
-    private void displayToast(String name)
-    {
-        Context context = getApplicationContext();
-        CharSequence text = "Connected as " + name;
-        int duration = Toast.LENGTH_SHORT;
-
-        Toast toast = Toast.makeText(context, text, duration);
-        toast.show();
     }
 
     /**
