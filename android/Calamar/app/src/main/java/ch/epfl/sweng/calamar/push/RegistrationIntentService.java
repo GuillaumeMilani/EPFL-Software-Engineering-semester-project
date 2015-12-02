@@ -25,14 +25,9 @@
  */
 package ch.epfl.sweng.calamar.push;
 
-import android.app.AlertDialog;
 import android.app.IntentService;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Handler;
-import android.provider.Settings;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -43,13 +38,10 @@ import com.google.android.gms.iid.InstanceID;
 
 import java.io.IOException;
 
-import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
-import ch.epfl.sweng.calamar.MainActivity;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
-import ch.epfl.sweng.calamar.client.DefaultNetworkProvider;
 
 public class RegistrationIntentService extends IntentService {
 

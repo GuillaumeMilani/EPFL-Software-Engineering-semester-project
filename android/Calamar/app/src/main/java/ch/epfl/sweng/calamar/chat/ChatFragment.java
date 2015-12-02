@@ -10,7 +10,6 @@ import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,7 +18,6 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,9 +86,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
         });
 
         //Create BroadCastReceiver
-      //  ChatBroadcastReceiver  mReceiver = new ChatBroadcastReceiver();
         getContext().registerReceiver(new ChatBroadcastReceiver(),new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
-     //   LocalBroadcastManager.getInstance(getActivity()).registerReceiver(new ChatBroadcastReceiver(),new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
 
         super.onActivityCreated(savedInstanceState);
     }

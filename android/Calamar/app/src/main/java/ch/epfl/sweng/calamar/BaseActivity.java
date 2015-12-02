@@ -4,25 +4,19 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
-import ch.epfl.sweng.calamar.client.DatabaseClientException;
-import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.item.CreateItemActivity;
 import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.push.RegistrationIntentService;
@@ -257,7 +251,6 @@ public abstract class BaseActivity extends AppCompatActivity
         // The user need to be authenticated before registration
         Intent intent = new Intent(this, RegistrationIntentService.class);
         startService(intent);
-
     }
 
 
