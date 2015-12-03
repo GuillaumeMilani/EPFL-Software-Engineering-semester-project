@@ -2,7 +2,7 @@
 include_once('models/users/retrieve_users.php');
 include_once('functions.php');
 
-function send_push_to($id,$type)
+function send_push_to($id,$type,$extra = null)
 {
 	// retrieve registration id
 	try {
@@ -10,7 +10,7 @@ function send_push_to($id,$type)
 		var_dump($user);
 		if(checkToken($user['registrationToken']))
 		{
-			send_push(array($user['registrationToken']),$type);
+			send_push(array($user['registrationToken']),$type,$extra);
 		}
 	
 	} catch (Exception $e) {
@@ -20,7 +20,7 @@ function send_push_to($id,$type)
 }
 
 // TODO look at testNotification.php
-function send_push($registrationIds,$type)
+function send_push($registrationIds,$type,$extra)
 {
 
 	if(!is_array($registrationIds))
@@ -31,6 +31,8 @@ function send_push($registrationIds,$type)
 	$msg = array
 	(
 		'message' 	=> $type,
+		'type'		=> $type,
+		'extra' 	=> $extra,
 		'title'		=> 'New Item',
 		'tickerText'	=> 'You have received a new item',
 		'vibrate'	=> 1,

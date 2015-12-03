@@ -2,9 +2,11 @@ package ch.epfl.sweng.calamar.chat;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -82,6 +84,10 @@ public class ChatFragment extends android.support.v4.app.Fragment {
                 addNewContact();
             }
         });
+
+        //Create BroadCastReceiver
+        getContext().registerReceiver(new ChatBroadcastReceiver(),new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
+
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -141,6 +147,18 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     }
 
     /**
+     * Add the user in the contact list
+     */
+    private void addUserInContact(User user)
+    {
+        adapter.add(user);
+        contacts.add(user);
+        adapter.notifyDataSetChanged();
+        //Add in memory
+        app.getDatabaseHandler().addRecipient(user);
+    }
+
+    /**
      * Async task for retrieving a new user.
      */
     private class retrieveUserTask extends AsyncTask<Void, Void, User> {
@@ -166,11 +184,8 @@ public class ChatFragment extends android.support.v4.app.Fragment {
         @Override
         protected void onPostExecute(User newUser) {
             if (newUser != null) {
-                adapter.add(newUser);
-                contacts.add(newUser);
-                adapter.notifyDataSetChanged();
-                //Add in memory
-                app.getDatabaseHandler().addRecipient(newUser);
+                //add the user in the contact list
+                addUserInContact(newUser);
             } else {
                 AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
                 newUserAlert.setTitle(R.string.add_new_contact_impossible);
@@ -181,6 +196,24 @@ public class ChatFragment extends android.support.v4.app.Fragment {
                 });
                 newUserAlert.show();
             }
+        }
+    }
+
+    /**
+     *  Receive Broadcast Message and update chat accordingly
+     */
+    public class ChatBroadcastReceiver extends BroadcastReceiver {
+
+        public final static String BROADCAST_EXTRA_USER = "user";
+        public final static String BROADCAST_EXTRA_ID = "id";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // retrieve the user data
+            User user = new User(Integer.valueOf(intent.getStringExtra(BROADCAST_EXTRA_ID)),
+                                intent.getStringExtra(BROADCAST_EXTRA_USER));
+            //add the user in the contact list
+            addUserInContact(user);
         }
     }
 
