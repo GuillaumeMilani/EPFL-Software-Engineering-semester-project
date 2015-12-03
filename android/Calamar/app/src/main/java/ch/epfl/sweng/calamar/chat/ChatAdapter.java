@@ -19,7 +19,6 @@ import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.item.Item;
 
-//TODO : Support other item types
 
 public class ChatAdapter extends BaseAdapter {
 
@@ -76,7 +75,9 @@ public class ChatAdapter extends BaseAdapter {
      * @param message the message to be added
      */
     public void add(Item message) {
-        this.messages.add(message);
+        if(!messages.contains(message)){
+            this.messages.add(message);
+        }
     }
 
     /**
@@ -85,7 +86,9 @@ public class ChatAdapter extends BaseAdapter {
      * @param messages the list of messages
      */
     public void add(List<Item> messages) {
-        this.messages.addAll(messages);
+        for(Item m : messages){
+            add(m);
+        }
     }
 
     /**

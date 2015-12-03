@@ -79,7 +79,6 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
         app = CalamarApplication.getInstance();
         correspondent = new User(correspondentID, correspondentName);
 
-
         sendButton = (Button) findViewById(R.id.chatSendButton);
         sendButton.setEnabled(false);
         sendButton.setOnClickListener(new View.OnClickListener() {
@@ -127,7 +126,11 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
         storageManager = app.getStorageManager();
         dbHandler = app.getDatabaseHandler();
+    }
 
+    @Override
+    protected void onResume(){
+        super.onResume();
         boolean offline = true;
         refresh(offline);
     }
@@ -151,7 +154,6 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
         editText.setText("");
         new SendItemTask(textMessage).execute();
     }
-
 
     /**
      * Async task for sending a message.
@@ -225,7 +227,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
                 if (!offline) {
                     storageManager.storeItems(items, ChatActivity.this);
                 }
-                messagesHistory.addAll(items);
+                adapter.add(items);
                 adapter.notifyDataSetChanged();
                 for (Item item : items) {
                     storageManager.getCompleteItem(item, ChatActivity.this);
