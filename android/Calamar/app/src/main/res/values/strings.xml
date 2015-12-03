@@ -69,4 +69,5 @@
     <string name="label_locked_item">Locked</string>
     <string name="label_unlocked_item">Unlocked</string>
     <string name="storage_unknown_operation">Unknown operation</string>
+    <string name="public_without_condition">A public item must have a location.</string>
 </resources>

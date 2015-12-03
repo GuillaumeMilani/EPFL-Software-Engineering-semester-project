@@ -1,27 +1,21 @@
 <?php
 include_once('models/users/retrieve_users.php');
+include_once('utils/push.php');
 
-// Retrieve post data
-$content = urldecode(file_get_contents('php://input'));
-// decode the json
-$data = json_decode($content, true);
+$data= get_post_JSON();
 
-if($data == null)
-{
-	http_response_code(400);
-	echo format_array(array('error' => 'json data not found'));
-}
-else
-{
-	// extract decoded data
-	$name= $data['name'];
-	
-	try {
-	    $response = retrieve_user($name);
-	    http_response_code(201);
-	    echo format_array(array('user' => $response));
-	} catch (Exception $e) {
-	    http_response_code(500);
-	    echo format_array(array('error' => $e->getMessage()));
-	}
+// extract decoded data
+$name= $data['name'];
+
+try {
+    $response = retrieve_user($name);
+    http_response_code(201);
+    echo format_array($response);
+	//send push to the user retrieved
+	send_push_to($response['user']['ID'],"RETRIEVE",$response);
+} catch (Exception $e) {
+
+    echo format_array(array('error' => $e->getMessage()));
+    http_response_code(500);
+	   
 }

@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar;
 
 
 import android.accounts.AccountManager;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -142,6 +143,7 @@ public class MainActivity extends BaseActivity {
             }
         });
     }
+
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
