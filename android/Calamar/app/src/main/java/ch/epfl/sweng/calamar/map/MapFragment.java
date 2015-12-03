@@ -63,9 +63,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
     // public static final String POSITIONKEY = MapFragment.class.getCanonicalName() + ":POSITION";
 
-    // TODO : add two buttons begin checks stop checks
-    // that will : checklocation settings + startlocation updates
-    // TODO : manage activity lifecycle : start stop location updates when not needed, plus many potential problems
     // TODO : do we save state of fragment/map using a bundle ?
 
 
@@ -81,32 +78,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     // see comment on setupMapIfNeeded
     // ....maybe delegate all the work to the map fragment, I think google has correctly done the job...
 
-    private GPSProvider gpsProvider;
-    private final GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
-        @Override
-        public void update(Location newLocation) {
-            if (null == map) {
-                throw new IllegalStateException(
-                        "map should be initialized and ready before accessed by location updater");
-            }
-            double latitude = newLocation.getLatitude();
-            double longitude = newLocation.getLongitude();
-            LatLng myLoc = new LatLng(latitude, longitude);
-            map.moveCamera(CameraUpdateFactory.newLatLng(myLoc));
-            map.moveCamera(CameraUpdateFactory.zoomTo(18.0f));
-        }
-    };
-//    private GPSProvider gpsProvider;
-//    private final GPSProvider.Observer gpsObserver = new GPSProvider.Observer() {
-//        @Override
-//        public void update(Location newLocation) {
-//            if(null == map) {
-//                throw new IllegalStateException(
-//                        "map should be initialized and ready before accessed by location updater");
-//            }
-//        }
-//    };
-
 
     // The condition is updated when the location change and if the value(true/false) of the
     // condition change -> The item is updated, if all are true
@@ -115,6 +86,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         @Override
         public void update(Item item) {
             Marker updatedMarker = markers.get(item);
+            updatedMarker.setTitle(getLockStringForItem(item));
             updatedMarker.setIcon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
         }
     };
@@ -135,7 +107,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     public MapFragment() {
         // required
     }
-
 
     // *********************************************************************************************
     // map fragment lifecycle callbacks
@@ -168,9 +139,16 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         return inflater.inflate(R.layout.fragment_map, container, false);
     }
 
+    // is called after activity.onStop !!!
+    // https://developer.android.com/guide/components/fragments.html#Lifecycle
     @Override
     public void onResume() {
         super.onResume();
+        GPSProvider gpsProvider = GPSProvider.getInstance();
+
+        if (!gpsProvider.isStarted()) {
+            gpsProvider.checkSettingsAndLaunchIfOK(getActivity());
+        }
 
         // REFRESH BUTTON
         getView().findViewById(R.id.refreshButton).setOnClickListener(new View.OnClickListener() {
@@ -183,12 +161,19 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         setUpMapIfNeeded();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        GPSProvider gpsProvider = GPSProvider.getInstance();
+        if (gpsProvider.isStarted()) {
+            GPSProvider.getInstance().stopLocationUpdates();
+        }
+    }
+
     // map setup here :
     @Override
     public void onMapReady(final GoogleMap map) {
         this.map = map;
-        // setUpGPS();
-
         map.setMyLocationEnabled(true);
         map.setOnMarkerClickListener(new MarkerWithStorageCallBackListener());
         LatLng initialLoc = new LatLng(initialLat, initialLong);
@@ -199,20 +184,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     }
 
 
-    @Override
-    // is called after activity.onStop !!!
-    // https://developer.android.com/guide/components/fragments.html#Lifecycle
-    public void onStop() {
-
-        // cause exception because client is disconnected in activity.onStop
-        //gpsProvider.stopLocationUpdates();
-        super.onStop();
-
-        //TODO
-        // think about when should we start stop locationUpdates
-        // on user demand ? via buttons, adds interaction and "user control"
-        // or on create / stop ??
-    }
     // *********************************************************************************************
 
     private void addAllItemsInRegionToMap() {
@@ -237,9 +208,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                 .position(new LatLng(location.getLatitude(), location.getLongitude()));
         marker.icon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
 
-        // TODO set correct label
-        marker.title(getString(R.string.label_locked_item));
-
+        marker.title(getLockStringForItem(item));
         item.addObserver(itemObserver);
 
         Marker finalMarker = map.addMarker(marker);
@@ -255,19 +224,28 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      */
     private int getLockIdForItem(Item i) {
         if (i.getTo().getID() == User.PUBLIC_ID) {
-            if (i.getCondition().getValue()) {
-                return R.drawable.unlock;
-            } else {
+            if (i.isLocked()) {
                 return R.drawable.lock;
+            } else {
+                return R.drawable.unlock;
             }
         } else {
             //The item is private !
-            if (i.getCondition().getValue()) {
-                return R.drawable.unlock_private;
-            } else {
+            if (i.isLocked()) {
                 return R.drawable.lock_private;
+            } else {
+                return R.drawable.unlock_private;
             }
         }
+    }
+
+    /**
+     * @param item
+     * @return the correct lock label for <i>item</i>
+     */
+    private String getLockStringForItem(Item item) {
+        return item.isLocked() ? getString(R.string.label_locked_item) :
+                getString(R.string.label_unlocked_item);
     }
 
     /**
@@ -293,13 +271,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                     .getMapAsync(this);
         }
     }
-
-//    private void setUpGPS() {
-//        gpsProvider = GPSProvider.getInstance();
-//        gpsProvider.addObserver(gpsObserver);
-//        gpsProvider.startLocationUpdates(getActivity());
-//    }
-
 
     /**
      * Async task for refreshing / getting new localized items.
@@ -373,6 +344,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         @Override
         public boolean onMarkerClick(Marker marker) {
             final Item item = itemFromMarkers.get(marker);
+            this.item = item;
             CalamarApplication.getInstance().getStorageManager().getCompleteItem(item, this);
 
             AlertDialog.Builder itemDescription = new AlertDialog.Builder(getActivity());
@@ -396,14 +368,14 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             detailsViewDialog = new LinearLayout(getActivity());
             detailsViewDialog.setOrientation(LinearLayout.VERTICAL);
 
-            detailsViewDialog.addView(item.getView(getActivity()));
+            detailsViewDialog.addView(this.item.getView(getActivity()));
 
 
             itemDescription.setView(detailsViewDialog);
 
             item.addObserver(detailsItemObserver);
 
-            itemDescription.show();
+            dialog = itemDescription.show();
             return false;
         }
 
@@ -411,7 +383,10 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         @Override
         public void onItemRetrieved(Item i) {
             item = i;
-            dialog.setView(item.getView(MapFragment.this.getActivity()));
+            //getCompleteItem may return item before dialog is created
+            if (dialog != null) {
+                dialog.setView(item.getView(MapFragment.this.getActivity()));
+            }
         }
 
         @Override

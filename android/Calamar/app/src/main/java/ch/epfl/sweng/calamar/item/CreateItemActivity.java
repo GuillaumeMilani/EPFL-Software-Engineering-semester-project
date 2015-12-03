@@ -138,12 +138,11 @@ public class CreateItemActivity extends BaseActivity {
                     String path = FileUtils.getPath(this, fileUri);
                     if (path != null) {
                         file = new File(path);
-                        if (file.getName().length() > 15) {
-                            String text = file.getName().substring(0, 15) + "...";
-                            browseButton.setText(text);
-                        } else {
-                            browseButton.setText(file.getName());
+                        String name = file.getName();
+                        if (name.length() > 15) {
+                            name = name.substring(0, 15) + "...";
                         }
+                        browseButton.setText(name);
                     } else {
                         Toast.makeText(this, R.string.select_local_file, Toast.LENGTH_SHORT).show();
                     }
@@ -154,24 +153,30 @@ public class CreateItemActivity extends BaseActivity {
 
     public void locationChecked(View v) {
         final GPSProvider gpsProvider = GPSProvider.getInstance();
-        gpsProvider.startLocationUpdates(this);
-        sendButton.setEnabled(false);
 
-        locationProgressBar.setVisibility(ProgressBar.VISIBLE);
-        sendButton.setEnabled(false);
+        CheckBox locationBox = (CheckBox) v;
 
-        gpsProvider.addObserver(new GPSProvider.Observer() {
-            @Override
-            public void update(Location newLocation) {
-                currentLocation = newLocation;
-                sendButton.setEnabled(true);
-                gpsProvider.removeObserver(this);
-                locationProgressBar.setVisibility(ProgressBar.INVISIBLE);
-                sendButton.setEnabled(true);
-                GPSProvider.getInstance().stopLocationUpdates();
-            }
-        });
+        if (locationBox.isChecked()) {
+            // will start updates if settings ok, if not dialog, onActivityResult etc
+            GPSProvider.getInstance().checkSettingsAndLaunchIfOK(this);
 
+            locationProgressBar.setVisibility(ProgressBar.VISIBLE);
+            sendButton.setEnabled(false);
+
+            gpsProvider.addObserver(new GPSProvider.Observer() {
+                @Override
+                public void update(Location newLocation) {
+                    currentLocation = newLocation;
+                    sendButton.setEnabled(true);
+                    gpsProvider.removeObserver(this);
+                    locationProgressBar.setVisibility(ProgressBar.INVISIBLE);
+                    sendButton.setEnabled(true);
+                    GPSProvider.getInstance().stopLocationUpdates();
+                }
+            });
+        } else {
+            sendButton.setEnabled(true);
+        }
     }
 
     public void privateChecked(View v) {
@@ -228,7 +233,6 @@ public class CreateItemActivity extends BaseActivity {
         toSendBuilder.setMessage(message.getText().toString());
         Item toSend = toSendBuilder.build();
         new SendItemTask(toSend).execute();
-        this.finish();
     }
 
     /**
@@ -257,6 +261,7 @@ public class CreateItemActivity extends BaseActivity {
             if (item != null) {
                 CalamarApplication.getInstance().getStorageManager().storeItem(item, null);
                 Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
+                CreateItemActivity.this.finish();
             } else {
                 displayErrorMessage(getString(R.string.item_send_error));
             }
