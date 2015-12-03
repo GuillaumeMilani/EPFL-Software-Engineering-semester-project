@@ -445,6 +445,21 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     /**
+     * Return all localized items
+     *
+     * @return a list of localized item
+     */
+    public synchronized List<Item> getAllLocalizedItem(){
+        List<Item> localizedItem = new ArrayList<>();
+        for(Item i : getAllItems()){
+            if(i.hasLocation()){
+                localizedItem.add(i);
+            }
+        }
+        return localizedItem;
+    }
+
+    /**
      * Adds a Recipient to the database
      *
      * @param recipient the recipient to add
