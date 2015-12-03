@@ -122,7 +122,7 @@ public final class ImageItem extends FileItem {
     @Override
     protected void compose(JSONObject json) throws JSONException {
         super.compose(json);
-        json.put("type", ITEM_TYPE.name());
+        json.put(JSON_TYPE, ITEM_TYPE.name());
     }
 
     /**
@@ -192,7 +192,7 @@ public final class ImageItem extends FileItem {
 
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
-            String type = json.getString("type");
+            String type = json.getString(JSON_TYPE);
             if (!type.equals(ImageItem.ITEM_TYPE.name())) {
                 throw new IllegalArgumentException("expected " + ImageItem.ITEM_TYPE.name() + " was : " + type);
             }

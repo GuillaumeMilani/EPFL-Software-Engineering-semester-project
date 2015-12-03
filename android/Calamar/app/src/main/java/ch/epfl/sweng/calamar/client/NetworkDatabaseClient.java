@@ -37,8 +37,19 @@ public class NetworkDatabaseClient implements DatabaseClient {
     private final static String RETRIEVE_USER_PATH = "/users.php?action=retrieve";
     private final static String NEW_USER_PATH = "/users.php?action=add";
 
-    private final static String SEND_TOKEN = "token";
-    private final static String SEND_NAME = "name";
+    private final static String JSON_TOKEN = "token";
+    private final static String JSON_ID = "ID";
+    private final static String JSON_NAME = "name";
+    private final static String JSON_USER = "user";
+    private final static String JSON_RECIPIENT = "recipient";
+    private final static String JSON_LAST_REFRESH = "lastRefresh";
+    private final static String JSON_LONGITUDE_MIN = "longitudeMin";
+    private final static String JSON_LONGITUDE_MAX = "longitudeMax";
+    private final static String JSON_LATITUDE_MIN = "latitudeMin";
+    private final static String JSON_LATITUDE_MAX = "latitudeMax";
+
+    private final static String CONNECTION_CONTENT_TYPE = "application/json";
+    private final static String CONNECTION_REQUEST_METHOD = "POST";
 
     public NetworkDatabaseClient(String serverUrl, NetworkProvider networkProvider) {
         if (null == serverUrl || null == networkProvider) {
@@ -87,14 +98,14 @@ public class NetworkDatabaseClient implements DatabaseClient {
             URL url = new URL(serverUrl + NetworkDatabaseClient.NEW_USER_PATH);
 
             JSONObject jsonParameter = new JSONObject();
-            jsonParameter.accumulate(SEND_TOKEN, token);
-            jsonParameter.accumulate(SEND_NAME, email);
+            jsonParameter.accumulate(JSON_TOKEN, token);
+            jsonParameter.accumulate(JSON_NAME, email);
 
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
 
             JSONObject object = new JSONObject(response);
-            return object.getInt("ID");
+            return object.getInt(JSON_ID);
         } catch (IOException | JSONException e) {
             throw new DatabaseClientException(e);
         } finally {
@@ -109,13 +120,13 @@ public class NetworkDatabaseClient implements DatabaseClient {
             URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_USER_PATH);
 
             JSONObject jsonParameter = new JSONObject();
-            jsonParameter.accumulate("name", name);
+            jsonParameter.accumulate(JSON_NAME, name);
 
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
             JSONObject resp = new JSONObject(response);
             //Log.e(TAG, response);
-            return User.fromJSON(resp.getJSONObject("user"));
+            return User.fromJSON(resp.getJSONObject(JSON_USER));
         } catch (IOException | JSONException e) {
             throw new DatabaseClientException(e);
         } finally {
@@ -130,18 +141,18 @@ public class NetworkDatabaseClient implements DatabaseClient {
             URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_PATH);
 
             JSONObject jsonParameter = new JSONObject();
-            jsonParameter.accumulate("recipient", recipient.toJSON().toString());
-            jsonParameter.accumulate("lastRefresh", from.getTime());
+            jsonParameter.accumulate(JSON_RECIPIENT, recipient.toJSON().toString());
+            jsonParameter.accumulate(JSON_LAST_REFRESH, from.getTime());
 
             if (visibleRegion != null) {
                 double left = visibleRegion.latLngBounds.southwest.longitude;
                 double top = visibleRegion.latLngBounds.northeast.latitude;
                 double right = visibleRegion.latLngBounds.northeast.longitude;
                 double bottom = visibleRegion.latLngBounds.southwest.latitude;
-                jsonParameter.accumulate("longitudeMin", left < right ? left : right);
-                jsonParameter.accumulate("latitudeMin", top < bottom ? top : bottom);
-                jsonParameter.accumulate("longitudeMax", left < right ? right : left);
-                jsonParameter.accumulate("latitudeMax", top < bottom ? bottom : top);
+                jsonParameter.accumulate(JSON_LONGITUDE_MIN, left < right ? left : right);
+                jsonParameter.accumulate(JSON_LATITUDE_MIN, top < bottom ? top : bottom);
+                jsonParameter.accumulate(JSON_LONGITUDE_MAX, left < right ? right : left);
+                jsonParameter.accumulate(JSON_LATITUDE_MAX, top < bottom ? bottom : top);
             }
 
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
@@ -190,9 +201,9 @@ public class NetworkDatabaseClient implements DatabaseClient {
      */
     private static String post(HttpURLConnection connection, String jsonParameter)
             throws IOException, DatabaseClientException {
-        connection.setRequestMethod("POST");
+        connection.setRequestMethod(CONNECTION_REQUEST_METHOD);
         connection.setRequestProperty("Content-Type",
-                "application/json");
+                CONNECTION_CONTENT_TYPE);
         connection.setRequestProperty("Content-Length",
                 Integer.toString(jsonParameter.getBytes().length));
         connection.setDoInput(true);//to retrieve result
@@ -234,10 +245,5 @@ public class NetworkDatabaseClient implements DatabaseClient {
         }
 
         return result;
-    }
-
-    private int idFromJson(String response) throws JSONException {
-        JSONObject object = new JSONObject(response);
-        return object.getInt("ID");
     }
 }
