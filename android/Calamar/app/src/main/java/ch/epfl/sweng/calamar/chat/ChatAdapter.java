@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
@@ -25,10 +26,10 @@ public class ChatAdapter extends BaseAdapter {
     private final List<Item> messages;
     private final Activity context;
 
-    public ChatAdapter(Activity context, List<Item> messages) {
-        assert (context != null && messages != null);
+    public ChatAdapter(Activity context) {
+        assert (context != null);
         this.context = context;
-        this.messages = messages;
+        this.messages = new ArrayList<>();
 
     }
 
@@ -78,6 +79,20 @@ public class ChatAdapter extends BaseAdapter {
         if(!messages.contains(message)){
             this.messages.add(message);
         }
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Add a message to the adapter to a given position
+     *
+     * @param message the message to be added
+     * @param position the position of the new object
+     */
+    public void addAt(Item message,int position) {
+        if(!messages.contains(message)){
+            this.messages.set(position, message);
+        }
+        notifyDataSetChanged();
     }
 
     /**
@@ -89,6 +104,7 @@ public class ChatAdapter extends BaseAdapter {
         for(Item m : messages){
             add(m);
         }
+        notifyDataSetChanged();
     }
 
     /**
@@ -118,6 +134,24 @@ public class ChatAdapter extends BaseAdapter {
                 break;
             }
         }
+    }
+
+    /**
+     * Returns a copy of the messages history
+     *
+     * @return the messages history
+     */
+    public List<Item> getHistory() {
+        return new ArrayList<>(messages);
+    }
+
+
+    /**
+     * Clear the chat messages.
+     */
+    public void clear() {
+        messages.clear();
+        notifyDataSetChanged();
     }
 
 
