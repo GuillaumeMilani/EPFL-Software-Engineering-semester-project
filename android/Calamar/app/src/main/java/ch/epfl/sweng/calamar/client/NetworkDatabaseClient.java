@@ -37,6 +37,9 @@ public class NetworkDatabaseClient implements DatabaseClient {
     private final static String RETRIEVE_USER_PATH = "/users.php?action=retrieve";
     private final static String NEW_USER_PATH = "/users.php?action=add";
 
+    private final static String SEND_TOKEN = "token";
+    private final static String SEND_NAME = "name";
+
     public NetworkDatabaseClient(String serverUrl, NetworkProvider networkProvider) {
         if (null == serverUrl || null == networkProvider) {
             throw new IllegalArgumentException("'serverUrl' or 'networkProvider' is null");
@@ -78,14 +81,14 @@ public class NetworkDatabaseClient implements DatabaseClient {
     }
 
     @Override
-    public int newUser(String email, String deviceId) throws DatabaseClientException {
+    public int newUser(String email, String token) throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.NEW_USER_PATH);
 
             JSONObject jsonParameter = new JSONObject();
-            jsonParameter.accumulate("deviceID", deviceId);
-            jsonParameter.accumulate("name", email);
+            jsonParameter.accumulate(SEND_TOKEN, token);
+            jsonParameter.accumulate(SEND_NAME, email);
 
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
@@ -204,7 +207,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
         int responseCode = connection.getResponseCode();
 
         if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
-            throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )");
+//            throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )");
         }
 
         //get result
