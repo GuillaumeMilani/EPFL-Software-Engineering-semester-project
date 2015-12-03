@@ -151,7 +151,7 @@ public class StorageManager {
                 }
                 break;
             default:
-                throw new IllegalArgumentException(app.getString(R.string.unknown_item_type));
+                throw new IllegalArgumentException(app.getString(R.string.unexpected_item_type, i.getType().name()));
         }
 
     }
@@ -186,7 +186,7 @@ public class StorageManager {
                 dbHandler.deleteItem(item);
                 break;
             default:
-                throw new IllegalArgumentException(app.getString(R.string.unknown_item_type));
+                throw new IllegalArgumentException(app.getString(R.string.unexpected_item_type, item.getType().name()));
         }
     }
 
@@ -206,7 +206,7 @@ public class StorageManager {
                 new DeleteTask((ImageItem) item).execute();
                 break;
             default:
-                throw new IllegalArgumentException(app.getString(R.string.unknown_item_type));
+                throw new IllegalArgumentException(app.getString(R.string.unexpected_item_type, item.getType().name()));
         }
     }
 
@@ -341,7 +341,7 @@ public class StorageManager {
                     new ReadTask((ImageItem) i, ((ImageItem) i).getPath(), caller).execute();
                     break;
                 default:
-                    throw new IllegalArgumentException(app.getString(R.string.unknown_item_type));
+                    throw new IllegalArgumentException(app.getString(R.string.unexpected_item_type, i.getType().name()));
             }
         }
     }

@@ -93,7 +93,7 @@
     <string name="failed_token_refresh">Failed to complete token refresh</string>
     <string name="connected_as_toast">"Connected as %s"</string>
     <string name="couldnt_reach_server">Couldn\'t reach the server</string>
-    <string name="token_name_is">(token,name) is (%s, %s)</string>
+    <string name="token_name_is">(token,name) is (%1$s, %2$s)</string>
     <string name="token">Token</string>
 
     <!-- Conditions -->
@@ -150,7 +150,7 @@
 
     <!-- Item -->
     <string name="unexpected_item_type">Unexpected Item type : %s</string>
-    <string name="expected_but_was">"Expected : %s, but was : %s"</string>
+    <string name="expected_but_was">"Expected : %1$s, but was : %2$s"</string>
     <string name="bad_path_fileitem">"Bad path of file : %s"</string>
     <string name="no_handler_found">No handler for this type of file.</string>
     <string name="item_field_null">Field \'from\' and/or \'to\' and/or \'condition\' and/or \'date\' cannot be null</string>

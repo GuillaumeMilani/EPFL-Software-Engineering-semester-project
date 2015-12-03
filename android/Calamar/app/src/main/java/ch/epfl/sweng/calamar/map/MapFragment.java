@@ -401,7 +401,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                     item = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, ((ImageItem) item).getPath());
                     break;
                 default:
-                    throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unknown_item_type));
+                    throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unexpected_item_type, item.getType().name()));
             }
             dialog.setView(item.getView(MapFragment.this.getActivity()));
         }

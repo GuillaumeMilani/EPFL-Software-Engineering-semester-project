@@ -884,7 +884,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             values.put(ITEMS_KEY_PATH, ((FileItem) item).getPath());
         } else if (item.getType() != Item.Type.SIMPLETEXTITEM) {
-            throw new IllegalArgumentException(app.getString(R.string.unknown_item_type, item.getType()));
+            throw new IllegalArgumentException(app.getString(R.string.unexpected_item_type, item.getType()));
         }
         return values;
     }

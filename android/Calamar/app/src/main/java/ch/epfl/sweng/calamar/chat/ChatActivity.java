@@ -315,7 +315,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
         @Override
         public void onItemRetrieved(Item i) {
-            item=i;
+            item = i;
             if (dialog != null) {
                 dialog.setView(item.getView(ChatActivity.this));
             }
@@ -333,7 +333,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
                     item = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, ((ImageItem) item).getPath());
                     break;
                 default:
-                    throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unknown_item_type));
+                    throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unexpected_item_type, item.getType().name()));
             }
             dialog.setView(item.getView(ChatActivity.this));
         }
