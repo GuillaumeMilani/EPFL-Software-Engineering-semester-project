@@ -56,10 +56,10 @@ public interface DatabaseClient {
      * Create a new user on the database
      *
      * @param email    email of the new user.
-     * @param deviceId device id of the new user.
+     * @param token    registration token of the new user .
      * @return the id of the new user given by the database
      * @throws DatabaseClientException
      */
 
-    int newUser(String email, String deviceId) throws DatabaseClientException;
+    int newUser(String email, String token) throws DatabaseClientException;
 }
