@@ -199,7 +199,7 @@ public final class GPSProvider implements LocationListener {
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                         // Location settings are not satisfied. However, we have no way to fix the
                         // settings so we won't show the dialog.
-                        Log.e(GPSProvider.TAG, CalamarApplication.getInstance().getString(R.string.location_settings_change_unavailabe_mandatory));
+                        Log.e(GPSProvider.TAG, CalamarApplication.getInstance().getString(R.string.location_settings_change_unavailable_mandatory));
                         //parentActivity.finish();
                         //TODO decide what to do ? toast plus finish ?
                         break;
