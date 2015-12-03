@@ -4,14 +4,15 @@ import android.support.test.InstrumentationRegistry;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.ListView;
 
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import ch.epfl.sweng.calamar.chat.ChatUsersListActivity;
 import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
@@ -29,26 +30,45 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.mockito.Mockito.verify;
 
 /**
- * Test for the chat user list activity
+ * Created by Quentin Jaquier, sciper 235825 on 27.11.2015.
+ *
+ * One can run these tests on a real device.
+ *
+ * We ignore these tests on an emulator for many reason :
+ * - The gps always shows a popup asking to change settings to have a better precision.
+ * Unsuccessful tries have been made to remove these.
+ * - The account creation popup always shows on a new emulator.
+ * It is really hard to set a google account on the emulator on jenkins.
+ * - I did not manage to found a way to directly test android.support.v4.app.Fragment.
+ * As I understood this kind of fragment can not be tested the same way as others fragment.
  */
+@Ignore
 @RunWith(JUnit4.class)
-public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<ChatUsersListActivity> {
+public class ChatFragmentTest extends ActivityInstrumentationTestCase2<MainActivity> {
 
-    public ChatUserListActivityTest() {
-        super(ChatUsersListActivity.class);
+    public ChatFragmentTest() {
+        super(MainActivity.class);
     }
 
-    CalamarApplication app;
+    private CalamarApplication app;
 
     private final Recipient bob = new User(1, "bob");
     private final Recipient alice = new User(2, "alice");
 
-    @Override
+    private final String CHAT_FRAGMENT_NAME = "Chat";
+
     @Before
+    @Override
     public void setUp() throws Exception {
         super.setUp();
-        injectInstrumentation(InstrumentationRegistry.getInstrumentation());
         app = (CalamarApplication) InstrumentationRegistry.getTargetContext().getApplicationContext();
+        app.getDatabaseHandler().deleteAllRecipients();
+        injectInstrumentation(InstrumentationRegistry.getInstrumentation());
+    }
+
+    @After
+    public void tearDown(){
+        app.getDatabaseHandler().deleteAllRecipients();
     }
 
     /**
@@ -57,6 +77,8 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
     @Test
     public void testNewContactButtonName() {
         getActivity();
+        onView(withText(CHAT_FRAGMENT_NAME)).perform(click());
+
         onView(withId(R.id.newContact))
                 .check(matches(withText("New")));
     }
@@ -66,9 +88,8 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
      */
     @Test
     public void testDisplayContactIsEmptyWhenNoContact() {
-        app.getDatabaseHandler().deleteAllRecipients();
-
         getActivity();
+        onView(withText(CHAT_FRAGMENT_NAME)).perform(click());
 
         ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
         assertEquals(list.getCount(), 0);
@@ -79,17 +100,15 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
      */
     @Test
     public void testDisplayTwoContact() {
-        app.getDatabaseHandler().deleteAllRecipients();
         app.getDatabaseHandler().addRecipient(bob);
         app.getDatabaseHandler().addRecipient(alice);
 
         getActivity();
+        onView(withText(CHAT_FRAGMENT_NAME)).perform(click());
 
         ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
 
         assertEquals(list.getCount(), 2);
-
-        app.getDatabaseHandler().deleteAllRecipients();
     }
 
     /**
@@ -97,9 +116,8 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
      */
     @Test
     public void testCreateContactCanBeCancelled() {
-        app.getDatabaseHandler().deleteAllRecipients();
-
         getActivity();
+        onView(withText(CHAT_FRAGMENT_NAME)).perform(click());
 
         onView(withId(R.id.newContact)).perform(click());
 
@@ -107,37 +125,15 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
     }
 
     /**
-     * Test that we can correctly add a contact.
-     */
-    @Test
-    public void testCreateContactIsCorrectlyCreated() {
-        app.getDatabaseHandler().deleteAllRecipients();
-
-        DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
-
-        getActivity();
-
-        ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
-        final int before = list.getCount();
-
-        onView(withId(R.id.newContact)).perform(click());
-
-        onView(withText("Add")).perform(click());
-
-        assertEquals(before + 1, list.getCount());
-    }
-
-    /**
      * Test that we send correct data as parameter to the database client
      */
     @Test
     public void testCreateContactSendCorrectParameter() throws DatabaseClientException {
-        app.getDatabaseHandler().deleteAllRecipients();
-
         DatabaseClient client = Mockito.mock(ConstantDatabaseClient.class);
         DatabaseClientLocator.setDatabaseClient(client);
 
         getActivity();
+        onView(withText(CHAT_FRAGMENT_NAME)).perform(click());
 
         onView(withId(R.id.newContact)).perform(click());
 
@@ -152,4 +148,26 @@ public class ChatUserListActivityTest extends ActivityInstrumentationTestCase2<C
         assertEquals("calamar@gmail.com", argument.getValue());
     }
 
+    /**
+     * Test that we can correctly add a contact.
+     */
+    @Test
+    public void testCreateContactIsCorrectlyCreated() {
+        getActivity();
+        DatabaseClient client = new ConstantDatabaseClient();
+        DatabaseClientLocator.setDatabaseClient(client);
+
+        onView(withText(CHAT_FRAGMENT_NAME)).perform(click());
+
+        ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
+        final int before = list.getCount();
+
+        onView(withId(R.id.newContact)).perform(click());
+
+        onView(withText("Add")).perform(click());
+
+        assertEquals(before + 1, list.getCount());
+    }
+
 }
+
