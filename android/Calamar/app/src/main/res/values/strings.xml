@@ -1,16 +1,22 @@
 <resources>
     <string name="app_name">Calamar</string>
+    <!-- Recipient -->
+    <string name="recipient">Her/Him</string>
+    <!-- ChatActivity -->
     <string name="title_activity_chat">chat</string>
     <string name="message_edit_hint">Type your message.</string>
-    <string name="recipient">Her/Him</string>
     <string name="send_message">Send</string>
     <string name="refresh_button">Refresh</string>
     <string name="item_send_error">Impossible to send the message</string>
+    <!-- ChatUsersList -->
     <string name="add_new_contact_title">Add a new contact</string>
     <string name="add_new_contact_message">Enter the mail of the new contact</string>
     <string name="add_new_contact_hint">Mail</string>
     <string name="add_new_contact_positive_button">Add</string>
     <string name="add_new_contact_negative_button">Cancel</string>
+    <!-- JSON related -->
+
+
     <string name="alert_dialog_default_positive_button">OK</string>
     <string name="title_activity_chat_users_list">ChatUsersListActivity</string>
     <string name="new_account_creation_fail">Your account creation has failed, check your internet connection.</string>
@@ -121,14 +127,13 @@
     <string name="google_api_client_failed_auto_resolution">"google API client failed to connect: automatic resolution started, error = %s"</string>
     <string name="google_api_client_failed_no_resolution">"google API client failed to connect: no automatic resolution, error = %s"</string>
     <string name="location_settings_fixed">LOCATION SETTINGS FIXED ? : startUpdates</string>
-    <string name="cannot_do_without_gps">Cannot do much without gps. Bye...</string>
-    <string name="google_api_client_cant_connect">Google API client definitely can\'t connect...</string>
+    <string name="cannot_do_without_gps">Cannot do much without gps. Bye…</string>
+    <string name="google_api_client_cant_connect">Google API client definitely can\'t connect…</string>
     <string name="didnt_choose_account">Didn\'t choose an account</string>
     <string name="unknown_onActivityResult_request">"onActivityResult : unknown request ! "</string>
     <string name="error_dialog_cancelled">error dialog cancelled</string>
     <string name="application_null">Application is null</string>
     <string name="get_google_client_not_created">getGoogleApiClient : google api client has not been created !</string>
-    <string name="calamar">Calamar</string>
     <string name="map_fragment_selected">MAP FRAGMENT SELECTED</string>
     <string name="chat_fragment_selected">CHAT FRAGMENT SELECTED</string>
 </resources>

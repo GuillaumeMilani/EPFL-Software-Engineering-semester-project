@@ -128,8 +128,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
         storageManager = app.getStorageManager();
         dbHandler = app.getDatabaseHandler();
 
-        boolean offline = true;
-        refresh(offline);
+        refresh(true);
     }
 
     /**

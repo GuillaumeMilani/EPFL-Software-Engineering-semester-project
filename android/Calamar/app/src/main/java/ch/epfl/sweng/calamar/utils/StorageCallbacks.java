@@ -12,12 +12,12 @@ public interface StorageCallbacks {
      *
      * @param i the item
      */
-    public void onItemRetrieved(Item i);
+    void onItemRetrieved(Item i);
 
     /**
      * Does things with the data retrieved by the StorageManager
      *
      * @param data the data
      */
-    public void onDataRetrieved(byte[] data);
+    void onDataRetrieved(byte[] data);
 }

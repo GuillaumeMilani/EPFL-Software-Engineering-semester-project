@@ -373,7 +373,7 @@ public abstract class Condition {
                     @Override
                     public void update(Condition c) {
                         setValue(c1.value || c2.value);
-                        if (getValue() == true) {
+                        if (getValue()) {
                             c1.removeObserver(this);
                             c2.removeObserver(this);
                         }

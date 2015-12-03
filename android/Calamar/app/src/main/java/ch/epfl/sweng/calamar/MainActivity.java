@@ -78,7 +78,7 @@ public class MainActivity extends BaseActivity {
         // Layout
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle(R.string.calamar);
+        getSupportActionBar().setTitle(R.string.app_name);
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         setupViewPager(viewPager, getIntent());
