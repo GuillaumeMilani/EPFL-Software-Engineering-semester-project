@@ -4,6 +4,7 @@ import android.support.test.InstrumentationRegistry;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.ListView;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -54,12 +55,20 @@ public class ChatFragmentTest extends ActivityInstrumentationTestCase2<MainActiv
     private final Recipient bob = new User(1, "bob");
     private final Recipient alice = new User(2, "alice");
 
+    private final String CHAT_FRAGMENT_NAME = "Chat";
+
     @Before
     @Override
     public void setUp() throws Exception {
         super.setUp();
         app = (CalamarApplication) InstrumentationRegistry.getTargetContext().getApplicationContext();
+        app.getDatabaseHandler().deleteAllRecipients();
         injectInstrumentation(InstrumentationRegistry.getInstrumentation());
+    }
+
+    @After
+    public void tearDown(){
+        app.getDatabaseHandler().deleteAllRecipients();
     }
 
     /**
@@ -68,7 +77,7 @@ public class ChatFragmentTest extends ActivityInstrumentationTestCase2<MainActiv
     @Test
     public void testNewContactButtonName() {
         getActivity();
-        onView(withText("Chat")).perform(click());
+        onView(withText(CHAT_FRAGMENT_NAME)).perform(click());
 
         onView(withId(R.id.newContact))
                 .check(matches(withText("New")));
@@ -79,9 +88,8 @@ public class ChatFragmentTest extends ActivityInstrumentationTestCase2<MainActiv
      */
     @Test
     public void testDisplayContactIsEmptyWhenNoContact() {
-        app.getDatabaseHandler().deleteAllRecipients();
         getActivity();
-        onView(withText("Chat")).perform(click());
+        onView(withText(CHAT_FRAGMENT_NAME)).perform(click());
 
         ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
         assertEquals(list.getCount(), 0);
@@ -92,18 +100,15 @@ public class ChatFragmentTest extends ActivityInstrumentationTestCase2<MainActiv
      */
     @Test
     public void testDisplayTwoContact() {
-        app.getDatabaseHandler().deleteAllRecipients();
         app.getDatabaseHandler().addRecipient(bob);
         app.getDatabaseHandler().addRecipient(alice);
 
         getActivity();
-        onView(withText("Chat")).perform(click());
+        onView(withText(CHAT_FRAGMENT_NAME)).perform(click());
 
         ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
 
         assertEquals(list.getCount(), 2);
-
-        app.getDatabaseHandler().deleteAllRecipients();
     }
 
     /**
@@ -111,10 +116,8 @@ public class ChatFragmentTest extends ActivityInstrumentationTestCase2<MainActiv
      */
     @Test
     public void testCreateContactCanBeCancelled() {
-        app.getDatabaseHandler().deleteAllRecipients();
-
         getActivity();
-        onView(withText("Chat")).perform(click());
+        onView(withText(CHAT_FRAGMENT_NAME)).perform(click());
 
         onView(withId(R.id.newContact)).perform(click());
 
@@ -126,13 +129,11 @@ public class ChatFragmentTest extends ActivityInstrumentationTestCase2<MainActiv
      */
     @Test
     public void testCreateContactSendCorrectParameter() throws DatabaseClientException {
-        app.getDatabaseHandler().deleteAllRecipients();
-
         DatabaseClient client = Mockito.mock(ConstantDatabaseClient.class);
         DatabaseClientLocator.setDatabaseClient(client);
 
         getActivity();
-        onView(withText("Chat")).perform(click());
+        onView(withText(CHAT_FRAGMENT_NAME)).perform(click());
 
         onView(withId(R.id.newContact)).perform(click());
 
@@ -152,13 +153,11 @@ public class ChatFragmentTest extends ActivityInstrumentationTestCase2<MainActiv
      */
     @Test
     public void testCreateContactIsCorrectlyCreated() {
-        app.getDatabaseHandler().deleteAllRecipients();
-
         getActivity();
         DatabaseClient client = new ConstantDatabaseClient();
         DatabaseClientLocator.setDatabaseClient(client);
 
-        onView(withText("Chat")).perform(click());
+        onView(withText(CHAT_FRAGMENT_NAME)).perform(click());
 
         ListView list = (ListView) getActivity().findViewById(R.id.contactsList);
         final int before = list.getCount();
