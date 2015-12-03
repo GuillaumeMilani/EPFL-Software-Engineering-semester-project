@@ -137,9 +137,9 @@ public abstract class BaseActivity extends AppCompatActivity
     }
 
     // TODO test all use don't crash
-    public void displayErrorMessage(String message){
-        Log.e(TAG,message);
-        if(!this.isFinishing()) {
+    public void displayErrorMessage(String message) {
+        Log.e(TAG, message);
+        if (!this.isFinishing()) {
             AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
             errorDialog.setTitle(message);
             errorDialog.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
@@ -166,7 +166,7 @@ public abstract class BaseActivity extends AppCompatActivity
 
                         break;
                     default:
-                        Log.e(TAG, "google API client definitely can't connect...");
+                        Log.e(TAG, "cannot do much without gps..bye...");
                         finish();//TODO maybe refine ?
                 }
                 break;

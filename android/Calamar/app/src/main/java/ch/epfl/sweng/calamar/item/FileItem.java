@@ -38,6 +38,8 @@ public class FileItem extends Item {
     private final byte[] data;
     private final int hash;
 
+    public static final String DUMMY_PATH = "/dummy";
+
     /**
      * Instantiates a new FileItem with the given parameters
      *
@@ -171,7 +173,6 @@ public class FileItem extends Item {
     protected void compose(JSONObject object) throws JSONException {
         super.compose(object);
         object.accumulate("data", byteArrayToBase64String(data));
-        object.accumulate("path", path);
         object.accumulate("type", ITEM_TYPE.name());
     }
 
@@ -258,7 +259,7 @@ public class FileItem extends Item {
                 throw new IllegalArgumentException("expected " + FileItem.ITEM_TYPE.name() + " was : " + type);
             }
             data = Compresser.decompress(base64StringToByteArray(json.getString("data")));
-            path = json.getString("path");
+            path = DUMMY_PATH;
             return this;
         }
 

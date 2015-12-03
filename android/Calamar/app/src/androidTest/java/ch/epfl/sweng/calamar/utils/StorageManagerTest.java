@@ -507,7 +507,15 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         });
         latch3.await(10, TimeUnit.SECONDS);
         assertEquals(activity.getHistory().get(0), itemFull);
-        storageManager.deleteItemWithDatabase(item.getID());
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                storageManager.deleteItemWithDatabase(item.getID());
+            }
+        });
+        synchronized (this) {
+            wait(1000);
+        }
         assertEquals(dbHandler.getItem(item.getID()), null);
         adapter.update(item);
         final CountDownLatch latch4 = new CountDownLatch(1);
