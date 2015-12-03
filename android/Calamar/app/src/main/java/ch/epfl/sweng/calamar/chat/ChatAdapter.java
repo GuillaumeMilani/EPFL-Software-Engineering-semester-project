@@ -76,7 +76,7 @@ public class ChatAdapter extends BaseAdapter {
      * @param message the message to be added
      */
     public void add(Item message) {
-        if(!messages.contains(message)){
+        if (!messages.contains(message)) {
             this.messages.add(message);
         }
         notifyDataSetChanged();
@@ -85,11 +85,11 @@ public class ChatAdapter extends BaseAdapter {
     /**
      * Add a message to the adapter to a given position
      *
-     * @param message the message to be added
+     * @param message  the message to be added
      * @param position the position of the new object
      */
-    public void addAt(Item message,int position) {
-        if(!messages.contains(message)){
+    public void set(Item message, int position) {
+        if (!messages.contains(message)) {
             this.messages.set(position, message);
         }
         notifyDataSetChanged();
@@ -101,7 +101,7 @@ public class ChatAdapter extends BaseAdapter {
      * @param messages the list of messages
      */
     public void add(List<Item> messages) {
-        for(Item m : messages){
+        for (Item m : messages) {
             add(m);
         }
         notifyDataSetChanged();
@@ -120,6 +120,7 @@ public class ChatAdapter extends BaseAdapter {
                 found = true;
             }
         }
+        notifyDataSetChanged();
     }
 
     /**
@@ -134,6 +135,7 @@ public class ChatAdapter extends BaseAdapter {
                 break;
             }
         }
+        notifyDataSetChanged();
     }
 
     /**

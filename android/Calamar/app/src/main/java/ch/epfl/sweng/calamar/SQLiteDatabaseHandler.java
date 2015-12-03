@@ -449,14 +449,15 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @return a list of localized item
      */
-    public synchronized List<Item> getAllLocalizedItem(){
-        List<Item> localizedItem = new ArrayList<>();
-        for(Item i : getAllItems()){
-            if(i.hasLocation()){
-                localizedItem.add(i);
+    public synchronized List<Item> getAllLocalizedItems() {
+        List<Item> localizedItems = new ArrayList<>();
+        List<Item> allItems = getAllItems();
+        for (Item i : allItems) {
+            if (i.hasLocation()) {
+                localizedItems.add(i);
             }
         }
-        return localizedItem;
+        return localizedItems;
     }
 
     /**

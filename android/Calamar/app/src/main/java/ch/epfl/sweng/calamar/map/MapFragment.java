@@ -188,7 +188,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     // *********************************************************************************************
     private void addAllPrivateItem() {
         if (null != map) {
-            for(Item i : CalamarApplication.getInstance().getDatabaseHandler().getAllLocalizedItem()){
+            List<Item> localizedItems = CalamarApplication.getInstance().getDatabaseHandler().getAllLocalizedItems();
+            for (Item i : localizedItems) {
                 addItemToMap(i);
             }
         }

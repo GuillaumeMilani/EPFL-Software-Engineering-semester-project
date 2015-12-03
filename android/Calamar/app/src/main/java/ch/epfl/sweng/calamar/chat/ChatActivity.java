@@ -124,7 +124,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
         refresh(true);
     }
@@ -142,7 +142,6 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
     private void sendTextItem() {
         String message = editText.getText().toString();
         Item textMessage = new SimpleTextItem(1, app.getCurrentUser(), correspondent, new Date(), message);
-        editText.setText("");
         new SendItemTask(textMessage).execute();
     }
 
@@ -170,6 +169,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
         @Override
         protected void onPostExecute(Item item) {
             if (item != null) {
+                editText.setText("");
                 adapter.add(item);
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 storageManager.storeItem(item, ChatActivity.this);
@@ -242,7 +242,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
     /**
      * Updates the item in the messages history
-     
+     *
      * @param item the item to be updated
      */
     @Override
@@ -250,7 +250,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
         boolean notFound = true;
         for (int i = adapter.getCount() - 1; i >= 0 && notFound; --i) {
             if (item.getID() == adapter.getItem(i).getID()) {
-                adapter.addAt(item,i);
+                adapter.set(item, i);
                 notFound = false;
             }
         }
@@ -305,7 +305,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
         @Override
         public void onItemRetrieved(Item i) {
-            item=i;
+            item = i;
             if (dialog != null) {
                 dialog.setView(item.getView(ChatActivity.this));
             }
