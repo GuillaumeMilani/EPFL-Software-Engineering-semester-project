@@ -38,6 +38,7 @@ import java.util.List;
 
 import ch.epfl.sweng.calamar.MainActivity;
 import ch.epfl.sweng.calamar.R;
+import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.recipient.User;
 
@@ -70,8 +71,8 @@ public class RegistrationGcmListenerService extends GcmListenerService {
                 // Send a broadcast message to ChatFragment$ChatBroadcastReceiver
                 Intent i = new Intent();
                 i.setAction("ch.epfl.sweng.UPDATE_INTENT");
-                i.putExtra("user",addUser.getName());
-                i.putExtra("id",String.valueOf(addUser.getID()));
+                i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_USER,addUser.getName());
+                i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_ID,String.valueOf(addUser.getID()));
                 sendBroadcast(i);
             }
             catch (JSONException e)

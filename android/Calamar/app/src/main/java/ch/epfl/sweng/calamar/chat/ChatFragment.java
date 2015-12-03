@@ -204,11 +204,14 @@ public class ChatFragment extends android.support.v4.app.Fragment {
      */
     public class ChatBroadcastReceiver extends BroadcastReceiver {
 
+        public final static String BROADCAST_EXTRA_USER = "user";
+        public final static String BROADCAST_EXTRA_ID = "id";
+
         @Override
         public void onReceive(Context context, Intent intent) {
             // retrieve the user data
-            User user = new User(Integer.valueOf(intent.getStringExtra("id")),
-                                intent.getStringExtra("user"));
+            User user = new User(Integer.valueOf(intent.getStringExtra(BROADCAST_EXTRA_ID)),
+                                intent.getStringExtra(BROADCAST_EXTRA_USER));
             //add the user in the contact list
             addUserInContact(user);
         }
