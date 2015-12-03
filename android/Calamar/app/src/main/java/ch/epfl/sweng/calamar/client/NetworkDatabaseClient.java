@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
@@ -27,9 +29,8 @@ import ch.epfl.sweng.calamar.recipient.User;
  */
 public class NetworkDatabaseClient implements DatabaseClient {
 
-    private static final String TAG = NetworkDatabaseClient.class.getSimpleName();
-    private final String serverUrl;
-    private final NetworkProvider networkProvider;
+    private final static String TAG = NetworkDatabaseClient.class.getSimpleName();
+
     private final static int HTTP_SUCCESS_START = 200;
     private final static int HTTP_SUCCESS_END = 299;
     private final static String SEND_PATH = "/items.php?action=send";
@@ -48,12 +49,18 @@ public class NetworkDatabaseClient implements DatabaseClient {
     private final static String JSON_LATITUDE_MIN = "latitudeMin";
     private final static String JSON_LATITUDE_MAX = "latitudeMax";
 
+    private final static String CONTENT_TYPE = "Content-Type";
+    private final static String CONTENT_LENGTH = "Content-Length";
+
     private final static String CONNECTION_CONTENT_TYPE = "application/json";
     private final static String CONNECTION_REQUEST_METHOD = "POST";
 
+    private final String serverUrl;
+    private final NetworkProvider networkProvider;
+
     public NetworkDatabaseClient(String serverUrl, NetworkProvider networkProvider) {
         if (null == serverUrl || null == networkProvider) {
-            throw new IllegalArgumentException("'serverUrl' or 'networkProvider' is null");
+            throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.network_db_client_null));
         }
         this.serverUrl = serverUrl;
         this.networkProvider = networkProvider;
@@ -63,7 +70,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
     public List<Item> getAllItems(Recipient recipient, Date from, VisibleRegion visibleRegion)
             throws DatabaseClientException {
         if (null == visibleRegion) {
-            throw new IllegalArgumentException("getAllItems: visibleRegion is null");
+            throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.network_db_client_visibleregion_null));
         }
         return getItems(recipient, from, visibleRegion);
     }
@@ -180,8 +187,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
             }
 
             String result = out.toString();
-            Log.d("HTTPFetchContent", "Fetched string of length "
-                    + result.length());
+            Log.d("HTTPFetchContent", CalamarApplication.getInstance().getString(R.string.network_db_client_log_fetched_length, result.length()));
             return result;
         } finally {
             if (reader != null) {
@@ -202,9 +208,9 @@ public class NetworkDatabaseClient implements DatabaseClient {
     private static String post(HttpURLConnection connection, String jsonParameter)
             throws IOException, DatabaseClientException {
         connection.setRequestMethod(CONNECTION_REQUEST_METHOD);
-        connection.setRequestProperty("Content-Type",
+        connection.setRequestProperty(CONTENT_TYPE,
                 CONNECTION_CONTENT_TYPE);
-        connection.setRequestProperty("Content-Length",
+        connection.setRequestProperty(CONTENT_LENGTH,
                 Integer.toString(jsonParameter.getBytes().length));
         connection.setDoInput(true);//to retrieve result
         connection.setDoOutput(true);//to send request
@@ -217,6 +223,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
 
         int responseCode = connection.getResponseCode();
 
+        //TODO Should print message or something ?
         if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
 //            throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )");
         }

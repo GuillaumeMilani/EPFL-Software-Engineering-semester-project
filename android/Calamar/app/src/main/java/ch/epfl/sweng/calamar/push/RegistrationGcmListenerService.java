@@ -1,12 +1,12 @@
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
- * <p>
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
+ * <p/>
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ * <p/>
  * >>>>>>> dc774c0b4e22aff9aa7e58950946e847eb05e6d8:android/Calamar/app/src/main/java/ch/epfl/sweng/calamar/push/RegistrationGcmListenerService.java
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -46,6 +46,12 @@ public class RegistrationGcmListenerService extends GcmListenerService {
 
     private static final String TAG = "RegGcmListenerService";
     private static final String RETRIEVE = "RETRIEVE";
+    private static final String BUNDLE_TYPE = "type";
+    private static final String BUNDLE_EXTRA = "extra";
+    private static final String INTENT_ACTION = "ch.epfl.sweng.UPDATE_INTENT";
+    private static final String JSON_USER = "user";
+    private static final int REQUEST_CODE = 0;
+    private static final int NOTIFICATION_ID = 0;
 
     /**
      * Called when message is received.
@@ -57,48 +63,44 @@ public class RegistrationGcmListenerService extends GcmListenerService {
     // [START receive_message]
     @Override
     public void onMessageReceived(String from, Bundle data) {
-        String message = "You have received a new ";
-        String pushType = data.getString("type");
-        if(pushType.equals(RETRIEVE))
-        {
+        String message = getString(R.string.you_received_new);
+        String pushType = data.getString(BUNDLE_TYPE);
+        if (pushType != null && pushType.equals(RETRIEVE)) {
             // add a new contact
             try {
                 //extract data
-                JSONObject resp = new JSONObject(data.getString("extra"));
+                JSONObject resp = new JSONObject(data.getString(BUNDLE_EXTRA));
 
-                User addUser = User.fromJSON(resp.getJSONObject("user"));
+                User addUser = User.fromJSON(resp.getJSONObject(JSON_USER));
 
                 // Send a broadcast message to ChatFragment$ChatBroadcastReceiver
                 Intent i = new Intent();
-                i.setAction("ch.epfl.sweng.UPDATE_INTENT");
-                i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_USER,addUser.getName());
-                i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_ID,String.valueOf(addUser.getID()));
+                i.setAction(INTENT_ACTION);
+                i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_USER, addUser.getName());
+                i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_ID, String.valueOf(addUser.getID()));
                 sendBroadcast(i);
-            }
-            catch (JSONException e)
-            {
-                Log.e(TAG,"json extract failed");
+            } catch (JSONException e) {
+                Log.e(TAG, getString(R.string.json_extract_failed));
             }
 
-            message += "contact";
-        }
-        else {
+            message += getString(R.string.contact);
+        } else {
             Item.Type type = Item.Type.valueOf(pushType);
             //Log.d(TAG, "From: " + from);
-            Log.d(TAG, "Message: " + type);
+            Log.d(TAG, getString(R.string.message_type, type));
 
             switch (type) {
                 case SIMPLETEXTITEM:
-                    message += "chat item.";
+                    message += getString(R.string.chat_item);
                     break;
                 case FILEITEM:
-                    message += "file item";
+                    message += getString(R.string.file_item);
                     break;
                 case IMAGEITEM:
-                    message += "image item";
+                    message += getString(R.string.image_item);
                     break;
                 default:
-                    Log.e(TAG, "wrong type");
+                    Log.e(TAG, getString(R.string.unexpected_item_type, type.name()));
             }
         }
 
@@ -114,15 +116,15 @@ public class RegistrationGcmListenerService extends GcmListenerService {
      */
     private void sendNotification(String message) {
         //TODO improve the methods
-        Log.i(TAG, "notification " + message);
+        Log.i(TAG, getString(R.string.notification_message, message));
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, REQUEST_CODE, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                .setContentTitle("Calamar : New item !")
+                .setContentTitle(getString(R.string.new_item_notification))
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
@@ -133,14 +135,14 @@ public class RegistrationGcmListenerService extends GcmListenerService {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
     }
 
     private static List<Item> itemsFromJSON(String response) throws JSONException {
         List<Item> result = new ArrayList<>();
 
         JSONArray array = new JSONArray(response);
-        for(int i = 0; i < array.length(); ++i) {
+        for (int i = 0; i < array.length(); ++i) {
             result.add(Item.fromJSON(array.getJSONObject(i)));
         }
 

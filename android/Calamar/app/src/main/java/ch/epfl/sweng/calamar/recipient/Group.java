@@ -7,12 +7,17 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
+
 /**
  * Models a Group (of users). <br><br>
  * Group is immutable.
  * Created by LPI on 16.10.2015.
  */
 public final class Group extends Recipient {
+
+    private static final String JSON_USERS = "users";
     private final List<User> users;
     private final static String RECIPIENT_TYPE = "group";
 
@@ -61,7 +66,7 @@ public final class Group extends Recipient {
     public Group(int ID, String name, List<User> users) {
         super(ID, name);
         if (null == users) {
-            throw new IllegalArgumentException("field 'users' cannot be null");
+            throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.field_users_null));
         }
         this.users = new ArrayList<>(users);//User is immutable
     }
@@ -87,12 +92,12 @@ public final class Group extends Recipient {
     @Override
     protected void compose(JSONObject json) throws JSONException {
         super.compose(json);//adds parent fields (Recipient)
-        json.accumulate("type", Group.RECIPIENT_TYPE);
+        json.accumulate(JSON_TYPE, Group.RECIPIENT_TYPE);
         if (users.size() == 1) {
-            json.accumulate("users", new JSONArray().put(users.get(0).toJSON()));
+            json.accumulate(JSON_USERS, new JSONArray().put(users.get(0).toJSON()));
         } else {
             for (User user : users) {
-                json.accumulate("users", user.toJSON());
+                json.accumulate(JSON_USERS, user.toJSON());
                 //TODO problem here I wanted to use append !! but not available why ????? FAACK method is hidden....
                 //the problem is that if we have a single user accumulate will not generate a jsonarray
                 //hence I test size of list and manually wrap the single user in a jsonarray
@@ -123,12 +128,12 @@ public final class Group extends Recipient {
 
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
-            String type = json.getString("type");
+            String type = json.getString(JSON_TYPE);
             if (!type.equals(Group.RECIPIENT_TYPE)) {
-                throw new IllegalArgumentException("expected " + Group.RECIPIENT_TYPE + " was : " + type);
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.expected_but_was, RECIPIENT_TYPE, type));
             }
             //TODO test, maybe problem if group of a single USER...see remark above in toJSON
-            JSONArray jsonUsers = json.getJSONArray("users");
+            JSONArray jsonUsers = json.getJSONArray(JSON_USERS);
             users = new ArrayList<>();
             for (int i = 0; i < jsonUsers.length(); ++i) {
                 users.add(User.fromJSON(jsonUsers.getJSONObject(i)));

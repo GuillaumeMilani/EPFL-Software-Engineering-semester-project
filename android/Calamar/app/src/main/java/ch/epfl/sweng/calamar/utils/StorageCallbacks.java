@@ -2,6 +2,9 @@ package ch.epfl.sweng.calamar.utils;
 
 import ch.epfl.sweng.calamar.item.Item;
 
+/**
+ * Interface for classes which asks StorageManager to retrieve items
+ */
 public interface StorageCallbacks {
 
     /**

@@ -2,7 +2,6 @@ package ch.epfl.sweng.calamar;
 
 
 import android.accounts.AccountManager;
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -26,17 +25,13 @@ import ch.epfl.sweng.calamar.map.MapFragment;
 
 public class MainActivity extends BaseActivity {
 
-    // Tabs related stuff
-    private Toolbar toolbar;
-    private TabLayout tabLayout;
-    private ViewPager viewPager;
+    public static final String TABKEY = MainActivity.class.getCanonicalName() + ":TABID";
 
     // LogCat tag
     private static final String TAG = MainActivity.class.getSimpleName();
-    // *********************************************************************************************
 
+    private static final String INTENT_COM_GOOGLE = "com.google";
 
-    public static final String TABKEY = MainActivity.class.getCanonicalName() +  ":TABID";
     public enum TabID {
 
         MAP(CalamarApplication.getInstance().getString(R.string.label_map_tab)),
@@ -52,7 +47,14 @@ public class MainActivity extends BaseActivity {
         public String toString() {
             return this.label;
         }
-    };
+    }
+
+    // Tabs related stuff
+    private Toolbar toolbar;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
+    // *********************************************************************************************
+
 
     //TODO check activity lifecycle and pertinent action to make when entering new states
     // regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
@@ -76,7 +78,7 @@ public class MainActivity extends BaseActivity {
         // Layout
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Calamar");
+        getSupportActionBar().setTitle(R.string.calamar);
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         setupViewPager(viewPager, getIntent());
@@ -91,9 +93,9 @@ public class MainActivity extends BaseActivity {
 
         //choose account dialog
         // Javadoc says that we need to go to api 23 to get rid of deprecated
-        if(CalamarApplication.getInstance().getCurrentUserID() == -1) {
+        if (CalamarApplication.getInstance().getCurrentUserID() == -1) {
             Intent accountIntent = AccountManager.newChooseAccountIntent(null, null,
-                    new String[]{"com.google"}, true, null, null,
+                    new String[]{INTENT_COM_GOOGLE}, true, null, null,
                     null, null);
             startActivityForResult(accountIntent, BaseActivity.ACCOUNT_CHOOSEN);
         }
@@ -102,7 +104,6 @@ public class MainActivity extends BaseActivity {
 
     private void setupViewPager(ViewPager viewPager, Intent intent) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-
 
 
         // initial map position, either default or set from intent (activity started from item's
@@ -128,11 +129,11 @@ public class MainActivity extends BaseActivity {
 
             @Override
             public void onPageSelected(int position) {
-                if(position == TabID.MAP.ordinal()) {
-                    Log.i(MainActivity.TAG, "MAP FRAGMENT SELECTED");
+                if (position == TabID.MAP.ordinal()) {
+                    Log.i(MainActivity.TAG, getString(R.string.map_fragment_selected));
                     GPSProvider.getInstance().checkSettingsAndLaunchIfOK(MainActivity.this);
                 } else {
-                    Log.i(MainActivity.TAG, "CHAT FRAGMENT SELECTED");
+                    Log.i(MainActivity.TAG, getString(R.string.chat_fragment_selected));
                     GPSProvider.getInstance().stopLocationUpdates();
                 }
             }

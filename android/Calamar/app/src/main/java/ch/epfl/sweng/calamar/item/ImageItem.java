@@ -13,6 +13,8 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
@@ -194,7 +196,7 @@ public final class ImageItem extends FileItem {
             super.parse(json);
             String type = json.getString(JSON_TYPE);
             if (!type.equals(ImageItem.ITEM_TYPE.name())) {
-                throw new IllegalArgumentException("expected " + ImageItem.ITEM_TYPE.name() + " was : " + type);
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.expected_but_was, ImageItem.ITEM_TYPE.name(), type));
             }
             return this;
         }

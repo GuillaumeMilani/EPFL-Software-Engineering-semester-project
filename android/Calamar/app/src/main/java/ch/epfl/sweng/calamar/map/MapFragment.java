@@ -191,7 +191,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             VisibleRegion visibleRegion = map.getProjection().getVisibleRegion();
             new RefreshTask(visibleRegion, getActivity()).execute();
         } else {
-            throw new IllegalStateException("map not ready when refresh");
+            throw new IllegalStateException(CalamarApplication.getInstance().getString(R.string.map_refreshed_not_ready));
         }
     }
 
@@ -200,7 +200,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      */
     private void addItemToMap(Item item) {
         if (!item.hasLocation()) {
-            throw new IllegalStateException("Ecublens we have a problem : item on map hasn't any location");
+            throw new IllegalStateException(CalamarApplication.getInstance().getString(R.string.item_map_no_location));
         }
         Location location = item.getLocation();
 
@@ -282,7 +282,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
         public RefreshTask(VisibleRegion visibleRegion, Activity context) {
             if (null == visibleRegion || null == context) {
-                throw new IllegalArgumentException("RefreshTask: visibleRegion or context is null");
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.refreshtask_visibleregion_or_context_null));
             }
             this.visibleRegion = visibleRegion;
             this.context = context;
@@ -317,12 +317,12 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                     }
                 }
 
-                Log.i(MapFragment.TAG, "map refreshed");
+                Log.i(MapFragment.TAG, context.getString(R.string.map_refreshed));
 
                 Toast.makeText(context, R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();
             } else {
-                Log.e(MapFragment.TAG, "unable to refresh");
+                Log.e(MapFragment.TAG, context.getString(R.string.unable_refresh));
                 AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
                 newUserAlert.setTitle(R.string.unable_to_refresh_message);
                 newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {

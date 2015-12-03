@@ -45,10 +45,11 @@ import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 
 public class RegistrationIntentService extends IntentService {
 
-    private static final String TAG = "RegIntentService";
-    private static final String[] TOPICS = {"global"};
     public static final String SENT_TOKEN_TO_SERVER = "sent_token_to_server_gcm";
     public static final String REGISTRATION_COMPLETE = "registration_complete_gcm";
+    private static final String TAG = "RegIntentService";
+    private static final String[] TOPICS = {"global"};
+    private static final String TOPICS_STR = "/topics/";
 
     public RegistrationIntentService() {
         super(TAG);
@@ -68,7 +69,7 @@ public class RegistrationIntentService extends IntentService {
             String token = instanceID.getToken(getString(R.string.gcm_defaultSenderId),
                     GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
             // [END get_token]
-            Log.i(TAG, "GCM Registration Token: " + token);
+            Log.i(TAG, getString(R.string.gcm_registration_token, token));
             sendRegistrationToServer(token);
 
             // Subscribe to topic channels
@@ -80,7 +81,7 @@ public class RegistrationIntentService extends IntentService {
             CalamarApplication.getInstance().setTokenSent(true);
             // [END register_for_gcm]
         } catch (Exception e) {
-            Log.d(TAG, "Failed to complete token refresh", e);
+            Log.d(TAG, getString(R.string.failed_token_refresh), e);
             e.printStackTrace();
             // If an exception happens while fetching the new token or updating our registration data
             // on a third-party server, this ensures that we'll attempt the update at a later time.
@@ -102,23 +103,23 @@ public class RegistrationIntentService extends IntentService {
     private void sendRegistrationToServer(String token) {
         try {
             final String accountName = CalamarApplication.getInstance().getCurrentUserName();
-            Log.i(TAG, "(token,name) is (" + token + "," + accountName + ")");
-          //  client.send(token, accountName);
+            Log.i(TAG, getString(R.string.token_name_is, token, accountName));
+            //  client.send(token, accountName);
 
-            DatabaseClientLocator.getDatabaseClient().newUser(accountName,token);
+            DatabaseClientLocator.getDatabaseClient().newUser(accountName, token);
 
             //show toast
             Handler mHandler = new Handler(getMainLooper());
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(getApplicationContext(), "Connected as " + accountName, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), getString(R.string.connected_as_toast, accountName), Toast.LENGTH_SHORT).show();
                 }
             });
 
         } catch (DatabaseClientException e) {
             e.printStackTrace();
-            Log.e("Token", "couldn't reach the server");
+            Log.e(getString(R.string.token), getString(R.string.couldnt_reach_server));
         }
     }
 
@@ -132,7 +133,7 @@ public class RegistrationIntentService extends IntentService {
     private void subscribeTopics(String token) throws IOException {
         GcmPubSub pubSub = GcmPubSub.getInstance(this);
         for (String topic : TOPICS) {
-            pubSub.subscribe(token, "/topics/" + topic, null);
+            pubSub.subscribe(token, TOPICS_STR + topic, null);
         }
     }
     // [END subscribe_topics]

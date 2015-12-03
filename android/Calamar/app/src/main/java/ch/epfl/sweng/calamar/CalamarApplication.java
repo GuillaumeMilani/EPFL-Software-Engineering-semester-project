@@ -22,24 +22,26 @@ import ch.epfl.sweng.calamar.utils.StorageManager;
 
 public final class CalamarApplication extends Application implements Application.ActivityLifecycleCallbacks, ComponentCallbacks2 {
 
-    //TODO Why volatile?
-    private static volatile CalamarApplication instance;
-    private SQLiteDatabaseHandler dbHandler;
-    private StorageManager storageManager;
-    private static final int UPDATE_DB_TIME = 60000;
-    private SharedPreferences sp;
-    private SharedPreferences.Editor editor;
-    private Calendar calendar;
-    private int day;
-
     private static final String LAST_USERS_REFRESH_SP = "lastUsersRefresh";
     private static final String LAST_ITEMS_REFRESH_SP = "lastItemsRefresh";
     private static final String CURRENT_USER_ID_SP = "currentUserID";
     private static final String CURRENT_USER_NAME_SP = "currentUserName";
     private static final String TODAY_IMAGE_COUNT_SP = "todayImageCount";
     private static final String TODAY_FILE_COUNT_SP = "todayFileCount";
+    private static final String USER_PREF_NAME = "user_pref.xml";
 
     private static final String TAG = CalamarApplication.class.getSimpleName();
+    private static final int UPDATE_DB_TIME = 60000;
+
+    //TODO Why volatile?
+    private static volatile CalamarApplication instance;
+
+    private SQLiteDatabaseHandler dbHandler;
+    private StorageManager storageManager;
+    private SharedPreferences sp;
+    private SharedPreferences.Editor editor;
+    private Calendar calendar;
+    private int day;
 
     // Google client to interact with Google API
     //https://developers.google.com/android/guides/api-client
@@ -60,7 +62,8 @@ public final class CalamarApplication extends Application implements Application
      */
     public static CalamarApplication getInstance() {
         if (instance == null) {
-            throw new IllegalStateException("Application is null");
+            //TODO No way to get string resource without instance I guess ?
+            throw new IllegalStateException(instance.getString(R.string.application_null));
         }
         return instance;
     }
@@ -72,7 +75,7 @@ public final class CalamarApplication extends Application implements Application
         super.onCreate();
         User test = new User(1, "Bob");
         instance = this;
-        sp = new SecurePreferences(this, test.getPassword(), "user_pref.xml");
+        sp = new SecurePreferences(this, test.getPassword(), USER_PREF_NAME);
         editor = sp.edit();
         handler = new Handler();
         dbHandler = SQLiteDatabaseHandler.getInstance();
@@ -361,8 +364,8 @@ public final class CalamarApplication extends Application implements Application
      */
     public GoogleApiClient getGoogleApiClient() {
         if (null == googleApiClient) {
-            Log.e(CalamarApplication.TAG, "getGoogleApiClient : google api client has not been created !");
-            throw new IllegalStateException("getGoogleApiClient : google api client has not been created !");
+            Log.e(CalamarApplication.TAG, getString(R.string.get_google_client_not_created));
+            throw new IllegalStateException(getString(R.string.get_google_client_not_created));
         }
         return googleApiClient;
     }

@@ -1,7 +1,6 @@
 package ch.epfl.sweng.calamar.map;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Location;
 import android.util.Log;
@@ -18,12 +17,12 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import ch.epfl.sweng.calamar.BuildConfig;
 import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
 
 
 /**
@@ -56,7 +55,7 @@ public final class GPSProvider implements LocationListener {
         // avoid call to synchronized if already instantiated
         if (GPSProvider.instance == null) {
             // avoid multiple instantiations by different threads
-            synchronized(GPSProvider.class) {
+            synchronized (GPSProvider.class) {
                 if (GPSProvider.instance == null) {
                     GPSProvider.instance = new GPSProvider();
                 }
@@ -69,39 +68,40 @@ public final class GPSProvider implements LocationListener {
      * Starts the location updates. <br>
      * Registered observers will get new location periodically through their
      * {@link GPSProvider.Observer#update(Location) update} method. <br><br>
-     *
-     *     WARNING: caller should call checkSettingsAndLaunchIfOK instead
+     * <p/>
+     * WARNING: caller should call checkSettingsAndLaunchIfOK instead
      *
      * @throws IllegalStateException when google api client not connected
      */
     public void startLocationUpdates() {
-        if(googleApiClient.isConnected()) { // else call cause illegalstateexception
+        if (googleApiClient.isConnected()) { // else call cause illegalstateexception
             LocationServices.FusedLocationApi.requestLocationUpdates(
                     googleApiClient, locationRequest, GPSProvider.instance);
             isStarted = true;
-            Log.i(TAG, "GPS request started");
+            Log.i(TAG, CalamarApplication.getInstance().getString(R.string.gps_request_started));
         } else {
-            throw new IllegalStateException("startLocationUpdates: client not connected");
+            throw new IllegalStateException(CalamarApplication.getInstance().getString(R.string.start_location_updates_client_disconnected));
         }
     }
 
     /**
      * Stops the location updates. <br>
-     *     If you only want to unsubscribe, please call {@link #removeObserver(Observer)}
+     * If you only want to unsubscribe, please call {@link #removeObserver(Observer)}
      */
     public void stopLocationUpdates() {
-        if(googleApiClient.isConnected()) { // else call cause illegalstateexception
+        if (googleApiClient.isConnected()) { // else call cause illegalstateexception
             LocationServices.FusedLocationApi.removeLocationUpdates(
                     googleApiClient, this);
             isStarted = false;
-            Log.i(TAG, "GPS request stopped");
+            Log.i(TAG, CalamarApplication.getInstance().getString(R.string.gps_request_stopped));
         } else {
-            throw new IllegalStateException("stopLocationUpdates: client not connected");
+            throw new IllegalStateException(CalamarApplication.getInstance().getString(R.string.stop_location_updates_client_disconnected));
         }
     }
 
     /**
      * FusedLocationApi callback method
+     *
      * @param location the new location
      */
     @Override
@@ -114,6 +114,7 @@ public final class GPSProvider implements LocationListener {
 
     /**
      * Register a new observer to observable GPSProvider
+     *
      * @param observer the new observer
      */
     public void addObserver(GPSProvider.Observer observer) {
@@ -122,6 +123,7 @@ public final class GPSProvider implements LocationListener {
 
     /**
      * Unsubscribe an observer from GPSProvider observable
+     *
      * @param observer the observer to remove
      * @return true if observer was present and correctly removed
      */
@@ -130,10 +132,10 @@ public final class GPSProvider implements LocationListener {
     }
 
     public void setMockLocation(Location location) {
-        if(BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG) {
             notifyObservers(location);
         } else {
-            throw new RuntimeException("can't set mock Location in release version");
+            throw new RuntimeException(CalamarApplication.getInstance().getString(R.string.set_mock_release_exception));
         }
     }
 
@@ -152,7 +154,7 @@ public final class GPSProvider implements LocationListener {
      * if KO, attempt to resolve error by showing user a dialog. <br>
      * if OK, location updates are requested
      * is NOT called by startLocationUpdates()
-     * */
+     */
     public void checkSettingsAndLaunchIfOK(final Activity parentActivity) {
         googleApiClient.connect();//if already connected does nothing
 
@@ -175,7 +177,7 @@ public final class GPSProvider implements LocationListener {
                     case LocationSettingsStatusCodes.SUCCESS:
                         // All location settings are satisfied. The client can initialize location
                         // requests.
-                        Log.i(GPSProvider.TAG, "Location settings OK");
+                        Log.i(GPSProvider.TAG, CalamarApplication.getInstance().getString(R.string.location_settings_ok));
                         //  start location requests
                         startLocationUpdates();
                         break;
@@ -184,7 +186,7 @@ public final class GPSProvider implements LocationListener {
                         // a dialog.
                         try {
                             // Show the dialog and check the result in onActivityResult().
-                            Log.e(GPSProvider.TAG, "Location settings not satisfied");
+                            Log.e(GPSProvider.TAG, CalamarApplication.getInstance().getString(R.string.unsatisfied_location_settings));
                             status.startResolutionForResult(parentActivity, CHECK_SETTINGS_REQUEST);
 
                             // onActivityResult() callback in activity will be called with result
@@ -197,7 +199,7 @@ public final class GPSProvider implements LocationListener {
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                         // Location settings are not satisfied. However, we have no way to fix the
                         // settings so we won't show the dialog.
-                        Log.e(GPSProvider.TAG, "LOCATION SETTINGS CHANGE UNAVAILABLE.. but mandatory..");
+                        Log.e(GPSProvider.TAG, CalamarApplication.getInstance().getString(R.string.location_settings_change_unavailabe_mandatory));
                         //parentActivity.finish();
                         //TODO decide what to do ? toast plus finish ?
                         break;
@@ -208,7 +210,7 @@ public final class GPSProvider implements LocationListener {
 
     /**
      * Creates location request
-     * */
+     */
     private LocationRequest createLocationRequest() {
         // TODO tweak constants
         LocationRequest locationRequest = new LocationRequest();
@@ -232,7 +234,6 @@ public final class GPSProvider implements LocationListener {
         locationRequest.setSmallestDisplacement(3); // 3 meters
 
 
-
         // PRIORITY_HIGH_ACCURACY, combined with the ACCESS_FINE_LOCATION permission setting,
         // and a fast update interval of 5 seconds, causes the fused location provider to return
         // location updates that are accurate to within a few feet.
@@ -244,10 +245,11 @@ public final class GPSProvider implements LocationListener {
     /**
      * Notify (call the {@link GPSProvider.Observer#update(Location) update}
      * method of) the registered observers
+     *
      * @param location the new location
      */
     private void notifyObservers(Location location) {
-        for(GPSProvider.Observer observer : observers) {
+        for (GPSProvider.Observer observer : observers) {
             observer.update(location);
         }
     }
@@ -256,7 +258,7 @@ public final class GPSProvider implements LocationListener {
      * Defines observer to GPSProvider ...
      */
     public abstract static class Observer {
-        abstract public void update(Location  newLocation);
+        abstract public void update(Location newLocation);
     }
 }
 

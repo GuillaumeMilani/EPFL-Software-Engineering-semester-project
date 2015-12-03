@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
@@ -64,7 +65,7 @@ public class FileItem extends Item {
         }
         final int idx = path.lastIndexOf('/');
         if (idx == -1) {
-            throw new IllegalArgumentException("Bad path of file : " + path);
+            throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.bad_path_fileitem, path));
         } else {
             this.path = path;
             this.name = path.substring(idx + 1);
@@ -240,7 +241,7 @@ public class FileItem extends Item {
         try {
             CalamarApplication.getInstance().startActivity(newIntent);
         } catch (ActivityNotFoundException e) {
-            Toast.makeText(CalamarApplication.getInstance(), "No handler for this type of file.", Toast.LENGTH_LONG).show();
+            Toast.makeText(CalamarApplication.getInstance(), R.string.no_handler_found, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -259,7 +260,7 @@ public class FileItem extends Item {
             super.parse(json);
             String type = json.getString(JSON_TYPE);
             if (!(type.equals(FileItem.ITEM_TYPE.name()) || type.equals(ImageItem.ITEM_TYPE.name()))) {
-                throw new IllegalArgumentException("expected " + FileItem.ITEM_TYPE.name() + " was : " + type);
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.expected_but_was, FileItem.ITEM_TYPE.name(), type));
             }
             data = Compresser.decompress(base64StringToByteArray(json.getString(JSON_DATA)));
             path = DUMMY_PATH;
@@ -298,7 +299,7 @@ public class FileItem extends Item {
             this.path = path;
             final int idx = path.lastIndexOf('/');
             if (idx == -1) {
-                throw new IllegalArgumentException("Bad path of file : " + path);
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.bad_path_fileitem, path));
             } else {
                 this.path = path;
             }

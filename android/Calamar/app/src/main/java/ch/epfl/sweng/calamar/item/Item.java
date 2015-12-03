@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -59,10 +60,10 @@ public abstract class Item {
 
     protected Item(int ID, User from, Recipient to, Date date, Condition condition, String message) {
         if (null == from || null == to || null == condition || null == date) {
-            throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' and/or 'date' cannot be null");
+            throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.item_field_null));
         }
         if (message == null) {
-            this.message = "";
+            this.message = CalamarApplication.getInstance().getString(R.string.empty_string);
         } else {
             this.message = message;
         }
@@ -136,7 +137,7 @@ public abstract class Item {
                 view.addView(itemView, childCount);
                 childCount += 1;
             }
-            if (!message.equals("")) {
+            if (!message.equals(CalamarApplication.getInstance().getString(R.string.empty_string))) {
                 TextView text = new TextView(context);
                 text.setText(message);
                 view.addView(text, childCount);
@@ -245,7 +246,7 @@ public abstract class Item {
      */
     public static Item fromJSON(JSONObject json) throws JSONException, IllegalArgumentException {
         if (null == json || json.isNull(JSON_TYPE)) {
-            throw new IllegalArgumentException("malformed json, either null or no 'type' value");
+            throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.malformed_json));
         }
         Item item;
         String type = json.getString(JSON_TYPE);
@@ -260,7 +261,7 @@ public abstract class Item {
                 item = FileItem.fromJSON(json);
                 break;
             default:
-                throw new IllegalArgumentException("Unexpected Item type (" + type + ")");
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unexpected_item_type, type));
         }
         return item;
     }

@@ -23,7 +23,14 @@ import ch.epfl.sweng.calamar.map.MapFragment;
  */
 public class PositionCondition extends Condition {
 
-    private final static double DEFAULT_RADIUS = 20;
+    private final static int DEFAULT_RADIUS = 20;
+    private final static int MIN_LAT = -90;
+    private final static int MAX_LAT = 90;
+    private final static int MIN_LON = -180;
+    private final static int MAX_LON = 180;
+    private final static String JSON_LAT = "latitude";
+    private final static String JSON_LON = "longitude";
+    private final static String JSON_RADIUS = "radius";
     public static final String TAG = PositionCondition.class.getSimpleName();
 
 
@@ -37,8 +44,8 @@ public class PositionCondition extends Condition {
      * @param radius
      */
     public PositionCondition(Location location, double radius) {
-        if(null == location) {
-            throw new IllegalArgumentException("PositionCondition: location cannot be null");
+        if (null == location) {
+            throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.positioncondition_location_null));
         }
         this.location = location;
         this.radius = radius;
@@ -47,7 +54,7 @@ public class PositionCondition extends Condition {
             @Override
             public void update(Location newLocation) {
                 setValue(newLocation.distanceTo(getLocation()) < getRadius());
-                if(getValue()) {
+                if (getValue()) {
                     GPSProvider.getInstance().removeObserver(this);
                 }
             }
@@ -78,11 +85,11 @@ public class PositionCondition extends Condition {
      * @return Location in this place
      */
     private static Location makeLocation(double latitude, double longitude) {
-        if(-90 > latitude || latitude > 90 || -180 > longitude || longitude > 180) {
-            throw new IllegalArgumentException("invalid latitude or longitude");
+        if (MIN_LAT > latitude || latitude > MAX_LAT || MIN_LON > longitude || longitude > MAX_LON) {
+            throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.invalid_longitude_latitude));
         }
 
-        Location loc = new Location("calamarTeam");
+        Location loc = new Location(CalamarApplication.getInstance().getString(R.string.calamar_location_provider));
         loc.setLatitude(latitude);
         loc.setLongitude(longitude);
         return loc;
@@ -112,10 +119,10 @@ public class PositionCondition extends Condition {
     @Override // WARNING, if modified maintain TestCondPosition, DIRTY copy paste to work around
     // problem of google api client in tests // TODO check way to test without that kind of ugly things
     protected void compose(JSONObject json) throws JSONException {
-        json.accumulate("type", getType().name());
-        json.accumulate("latitude", location.getLatitude());
-        json.accumulate("longitude", location.getLongitude());
-        json.accumulate("radius", radius);
+        json.accumulate(JSON_TYPE, getType().name());
+        json.accumulate(JSON_LAT, location.getLatitude());
+        json.accumulate(JSON_LON, location.getLongitude());
+        json.accumulate(JSON_RADIUS, radius);
     }
 
     @Override
@@ -137,13 +144,13 @@ public class PositionCondition extends Condition {
     }
 
     @Override // WARNING, if modified maintain TestCondPosition, DIRTY copy paste to work around
-              // problem of google api client in tests // TODO check way to test without that kind of ugly things
+    // problem of google api client in tests // TODO check way to test without that kind of ugly things
     public JSONArray getMetadata() throws JSONException {
         JSONArray array = new JSONArray();
         JSONObject jObject = new JSONObject();
-        jObject.accumulate("type", getType().name());
-        jObject.accumulate("latitude", location.getLatitude());
-        jObject.accumulate("longitude", location.getLongitude());
+        jObject.accumulate(JSON_TYPE, getType().name());
+        jObject.accumulate(JSON_LAT, location.getLatitude());
+        jObject.accumulate(JSON_LON, location.getLongitude());
         array.put(jObject);
         return array;
     }
@@ -158,7 +165,7 @@ public class PositionCondition extends Condition {
         positionText.setText(this.toString());
         positionText.setTextSize(15);
         view.addView(positionText, 0);
-        if(!context.getClass().equals(MainActivity.class)) {
+        if (!context.getClass().equals(MainActivity.class)) {
             Button button = new Button(context);
             button.setText(context.getResources().getString(R.string.condition_position));
             button.setOnClickListener(new View.OnClickListener() {
@@ -209,14 +216,13 @@ public class PositionCondition extends Condition {
         @Override
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
-            String type = json.getString("type");
-            if(Type.valueOf(type) != Type.POSITIONCONDITION) {
-                throw new IllegalArgumentException("expected : " + Type.POSITIONCONDITION.name() +
-                        " was : "+type);
+            String type = json.getString(JSON_TYPE);
+            if (Type.valueOf(type) != Type.POSITIONCONDITION) {
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.expected_but_was, Type.POSITIONCONDITION.name(), type));
             }
-            latitude = json.getDouble("latitude");
-            longitude = json.getDouble("longitude");
-            radius = json.getDouble("radius");
+            latitude = json.getDouble(JSON_LAT);
+            longitude = json.getDouble(JSON_LON);
+            radius = json.getDouble(JSON_RADIUS);
             return this;
         }
 

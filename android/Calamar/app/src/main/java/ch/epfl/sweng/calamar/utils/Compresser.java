@@ -11,6 +11,8 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.item.FileItem;
 import ch.epfl.sweng.calamar.item.ImageItem;
 
@@ -125,7 +127,7 @@ public class Compresser {
             case IMAGEITEM:
                 return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), getImageThumbnail((ImageItem) f), f.getPath());
             default:
-                throw new IllegalArgumentException("Expected FileItem");
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.expected_fileitem));
         }
     }
 
@@ -141,7 +143,7 @@ public class Compresser {
             }
             return stream.toByteArray();
         }
-        Log.d("Bitmap", "Bitmap of " + i + " is null.");
+        Log.d("Bitmap", CalamarApplication.getInstance().getString(R.string.bitmap_of_is_null, i));
         return null;
     }
 
