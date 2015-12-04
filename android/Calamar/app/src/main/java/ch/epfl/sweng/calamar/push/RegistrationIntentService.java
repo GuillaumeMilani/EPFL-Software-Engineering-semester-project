@@ -25,9 +25,14 @@
  */
 package ch.epfl.sweng.calamar.push;
 
+import android.app.AlertDialog;
 import android.app.IntentService;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -38,7 +43,9 @@ import com.google.android.gms.iid.InstanceID;
 
 import java.io.IOException;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.MainActivity;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
@@ -100,26 +107,10 @@ public class RegistrationIntentService extends IntentService {
      * @param token The new token.
      */
     private void sendRegistrationToServer(String token) {
-        try {
             final String accountName = CalamarApplication.getInstance().getCurrentUserName();
             Log.i(TAG, "(token,name) is (" + token + "," + accountName + ")");
-          //  client.send(token, accountName);
 
-            DatabaseClientLocator.getDatabaseClient().newUser(accountName,token);
-
-            //show toast
-            Handler mHandler = new Handler(getMainLooper());
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(), "Connected as " + accountName, Toast.LENGTH_SHORT).show();
-                }
-            });
-
-        } catch (DatabaseClientException e) {
-            e.printStackTrace();
-            Log.e("Token", "couldn't reach the server");
-        }
+            new createNewUserTask(accountName,token).execute();
     }
 
     /**
@@ -136,4 +127,63 @@ public class RegistrationIntentService extends IntentService {
         }
     }
     // [END subscribe_topics]
+
+    private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
+        private String name = null;
+        private String token = null;
+
+        public createNewUserTask(String name,String token) {
+            this.name = name;
+            this.token = token;
+        }
+
+        @Override
+        protected Integer doInBackground(Void... v) {
+            try {
+                //Get the device id.
+                return DatabaseClientLocator.getDatabaseClient().newUser(name,
+                        token);//"aaaaaaaaaaaaaaaa",354436053190805
+            } catch (DatabaseClientException e) {
+                e.printStackTrace();
+                // and make use of context safe
+                return null;
+            }
+        }
+        @Override
+        protected void onPostExecute(Integer id) {
+            Handler mHandler = new Handler(getMainLooper());
+            if (id != null) {
+                CalamarApplication.getInstance().setCurrentUserID(id);
+
+                //show toast
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Show toast
+                        Context context = getApplicationContext();
+                        CharSequence text = "Connected as " + name;
+                        int duration = Toast.LENGTH_SHORT;
+                        Toast toast = Toast.makeText(context, text, duration);
+                        toast.show();
+                    }
+                });
+
+
+            } else {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        // Show toast
+                        Context context = getApplicationContext();
+                        CharSequence text = "Not connected ";
+                        int duration = Toast.LENGTH_SHORT;
+                        Toast toast = Toast.makeText(context, text, duration);
+                        toast.show();
+                    }
+                });
+
+            }
+        }
+    }
 }

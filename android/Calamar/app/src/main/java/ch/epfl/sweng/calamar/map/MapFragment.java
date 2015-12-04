@@ -161,6 +161,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         });
 
         setUpMapIfNeeded();
+        addAllPrivateItem();
     }
 
     @Override
@@ -179,12 +180,20 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         LatLng initialLoc = new LatLng(initialLat, initialLong);
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(initialLoc, 18.0f));
 
-
         addAllItemsInRegionToMap();
+        addAllPrivateItem();
     }
 
 
     // *********************************************************************************************
+    private void addAllPrivateItem() {
+        if (null != map) {
+            List<Item> localizedItems = CalamarApplication.getInstance().getDatabaseHandler().getAllLocalizedItems();
+            for (Item i : localizedItems) {
+                addItemToMap(i);
+            }
+        }
+    }
 
     private void addAllItemsInRegionToMap() {
         if (null != map) {
@@ -214,6 +223,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         Marker finalMarker = map.addMarker(marker);
         markers.put(item, finalMarker);
         itemFromMarkers.put(finalMarker, item);
+        items.add(item);
     }
 
     /**
@@ -312,7 +322,6 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
                 for (Item item : receivedItems) {
                     if (!items.contains(item)) {
-                        items.add(item);
                         addItemToMap(item);
                     }
                 }
