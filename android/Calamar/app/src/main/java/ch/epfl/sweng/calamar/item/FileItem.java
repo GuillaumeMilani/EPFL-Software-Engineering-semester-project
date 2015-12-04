@@ -178,7 +178,7 @@ public class FileItem extends Item {
     protected void compose(JSONObject object) throws JSONException {
         super.compose(object);
         try {
-            object.accumulate(JSON_DATA, URLEncoder.encode(byteArrayToBase64String(data), "UTF-8"));
+            object.accumulate(JSON_DATA, URLEncoder.encode(byteArrayToBase64String(data), UTF8_CHARSET));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
