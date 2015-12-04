@@ -16,6 +16,8 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
@@ -175,7 +177,11 @@ public class FileItem extends Item {
     @Override
     protected void compose(JSONObject object) throws JSONException {
         super.compose(object);
-        object.accumulate(JSON_DATA, byteArrayToBase64String(data));
+        try {
+            object.accumulate(JSON_DATA, URLEncoder.encode(byteArrayToBase64String(data), "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         object.accumulate(JSON_TYPE, ITEM_TYPE.name());
     }
 

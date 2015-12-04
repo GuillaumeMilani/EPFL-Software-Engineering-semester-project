@@ -79,6 +79,8 @@ public class NetworkDatabaseClient implements DatabaseClient {
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.SEND_PATH);
             String jsonParameter = item.toJSON().toString();
+            System.out.println("JSON : " + jsonParameter);
+
             //Log.v(NetworkDatabaseClient.TAG, jsonParameter);
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter);
