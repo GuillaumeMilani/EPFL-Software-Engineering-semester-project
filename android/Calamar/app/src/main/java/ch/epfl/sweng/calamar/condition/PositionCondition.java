@@ -151,7 +151,7 @@ public class PositionCondition extends Condition {
     @Override
     public View getView(final Activity context) {
         LinearLayout view = (LinearLayout) (super.getView(context));
-        view.setOrientation(LinearLayout.HORIZONTAL);
+        view.setOrientation(LinearLayout.VERTICAL);
 
         // TODO make this looks better, and inflate from xml instead of like now :
         TextView positionText = new TextView(context);
