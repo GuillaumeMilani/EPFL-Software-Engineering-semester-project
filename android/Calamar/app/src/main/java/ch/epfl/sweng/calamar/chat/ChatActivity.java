@@ -222,9 +222,16 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
         @Override
         protected void onPostExecute(List<Item> items) {
             if (items != null) {
-                if (!offline) {
-                    storageManager.storeItems(items, ChatActivity.this);
-                    dbHandler.setLastItemTime(items.get(items.size() - 1).getDate().getTime());
+                if (!items.isEmpty()) {
+                    if (!offline) {
+                        storageManager.storeItems(items, ChatActivity.this);
+                        dbHandler.setLastItemTime(items.get(items.size() - 1).getDate().getTime());
+                    }
+                    adapter.add(items);
+                    for (Item item : items) {
+                        storageManager.getCompleteItem(item, ChatActivity.this);
+                    }
+                    messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 }
                 //The sever sends back all new item, if we have items from an other correspondent,
                 //we don't want to display them in the actual chat.
