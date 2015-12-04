@@ -106,21 +106,6 @@ public final class SimpleTextItem extends Item {
     }
 
     /**
-     * hash the SimpleTextItem
-     *
-     * @return hash of the SimpleTextItem
-     */
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return super.toString();
-    }
-
-    /**
      * A Builder for {@link SimpleTextItem}, currently only used to parse JSON (little overkill..but ..)
      *
      * @see Item.Builder

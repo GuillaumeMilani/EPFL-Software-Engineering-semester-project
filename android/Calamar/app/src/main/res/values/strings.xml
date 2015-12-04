@@ -167,4 +167,5 @@
     <string name="chat_item">chat item.</string>
     <string name="file_item">file item</string>
     <string name="image_item">image item</string>
+    <string name="getview_fragment_null">getView is null</string>
 </resources>

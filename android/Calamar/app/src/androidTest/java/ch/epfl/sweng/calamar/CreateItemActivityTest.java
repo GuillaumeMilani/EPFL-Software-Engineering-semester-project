@@ -36,7 +36,7 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
 
     private final Recipient BOB = new User(1, "bob");
 
-    CalamarApplication app;
+    private CalamarApplication app;
 
     @Rule
     public final ActivityTestRule<CreateItemActivity> mActivityRule = new ActivityTestRule<>(

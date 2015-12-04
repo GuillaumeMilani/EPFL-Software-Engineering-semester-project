@@ -85,7 +85,7 @@ public class FileItem extends Item {
      * @param path      The path of the file
      */
     public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path) {
-        this(ID, from, to, date, condition, data, path, "");
+        this(ID, from, to, date, condition, data, path, CalamarApplication.getInstance().getString(R.string.empty_string));
     }
 
     /**
@@ -114,7 +114,7 @@ public class FileItem extends Item {
      * @param path The path of the file
      */
     public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String path) {
-        this(ID, from, to, date, Condition.trueCondition(), data, path, "");
+        this(ID, from, to, date, Condition.trueCondition(), data, path, CalamarApplication.getInstance().getString(R.string.empty_string));
     }
 
     /**

@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,16 +33,19 @@ public class ChatFragment extends android.support.v4.app.Fragment {
 
     public final static String EXTRA_CORRESPONDENT_NAME = "ch.epfl.sweng.calamar.CORRESPONDENT_NAME";
     public final static String EXTRA_CORRESPONDENT_ID = "ch.epfl.sweng.calamar.CORRESPONDENT_ID";
-    private static final String TAG = ChatFragment.class.getSimpleName();
+    private final static String TAG = ChatFragment.class.getSimpleName();
 
-    private ListView contactsView;
     private List<Recipient> contacts;
     private ChatUsersListAdapter adapter;
-    private TextView actualUserTextView;
 
     private CalamarApplication app;
 
     private Dialog newContactAlertDialog;
+
+
+    public ChatFragment() {
+        // Required empty public constructor
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -57,10 +59,14 @@ public class ChatFragment extends android.support.v4.app.Fragment {
         contacts = new ArrayList<>();
         getContacts();
 
-        actualUserTextView = (TextView) getView().findViewById(R.id.actualUserName);
-      //  setActualUser();
+        final View view = getView();
+        final ListView contactsView;
+        if (view != null) {
+            contactsView = (ListView) view.findViewById(R.id.contactsList);
 
-        contactsView = (ListView) getView().findViewById(R.id.contactsList);
+        } else {
+            throw new IllegalStateException(app.getString(R.string.getview_fragment_null));
+        }
         contactsView.setSelector(R.drawable.list_selector);
         adapter = new ChatUsersListAdapter(getActivity(), contacts);
         contactsView.setAdapter(adapter);
@@ -86,7 +92,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
         });
 
         //Create BroadCastReceiver
-        getContext().registerReceiver(new ChatBroadcastReceiver(),new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
+        getContext().registerReceiver(new ChatBroadcastReceiver(), new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
 
         super.onActivityCreated(savedInstanceState);
     }
@@ -94,7 +100,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     /**
      * Called by button OnClickListener
      */
-    public void addContact() {
+    private void addContact() {
         EditText input = (EditText) newContactAlertDialog.findViewById(R.id.newContactInput);
         newContactAlertDialog.dismiss();
         new retrieveUserTask(input.getText().toString(), getActivity()).execute();
@@ -103,21 +109,8 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     /**
      * Called by button OnClickListener
      */
-    public void cancelNewContact() {
+    private void cancelNewContact() {
         newContactAlertDialog.dismiss();
-    }
-
-    /**
-     * prints the actual user of the app on textview.
-     * @deprecated to be removed
-     */
-    public void setActualUser() {
-        if (!app.getCurrentUserName().equals("")) {
-            actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
-        } else {
-            // TODO ok ???
-           // getActivity().finish();
-        }
     }
 
     private void getContacts() {
@@ -149,8 +142,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     /**
      * Add the user in the contact list
      */
-    private void addUserInContact(User user)
-    {
+    private void addUserInContact(User user) {
         adapter.add(user);
         contacts.add(user);
         adapter.notifyDataSetChanged();
@@ -200,25 +192,21 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     }
 
     /**
-     *  Receive Broadcast Message and update chat accordingly
+     * Receive Broadcast Message and update chat accordingly
      */
-    public class ChatBroadcastReceiver extends BroadcastReceiver {
+    private class ChatBroadcastReceiver extends BroadcastReceiver {
 
-        public final static String BROADCAST_EXTRA_USER = "user";
-        public final static String BROADCAST_EXTRA_ID = "id";
+        private final static String BROADCAST_EXTRA_USER = "user";
+        private final static String BROADCAST_EXTRA_ID = "id";
 
         @Override
         public void onReceive(Context context, Intent intent) {
             // retrieve the user data
             User user = new User(Integer.valueOf(intent.getStringExtra(BROADCAST_EXTRA_ID)),
-                                intent.getStringExtra(BROADCAST_EXTRA_USER));
+                    intent.getStringExtra(BROADCAST_EXTRA_USER));
             //add the user in the contact list
             addUserInContact(user);
         }
-    }
-
-    public ChatFragment() {
-        // Required empty public constructor
     }
 
 

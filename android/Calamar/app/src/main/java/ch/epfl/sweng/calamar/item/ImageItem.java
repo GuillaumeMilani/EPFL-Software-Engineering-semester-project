@@ -73,7 +73,7 @@ public final class ImageItem extends FileItem {
      * @see Item#Item(int, User, Recipient, Date, Condition, String)
      */
     public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path) {
-        this(ID, from, to, date, condition, data, path, "");
+        this(ID, from, to, date, condition, data, path, CalamarApplication.getInstance().getString(R.string.empty_string));
     }
 
     /**
@@ -88,7 +88,7 @@ public final class ImageItem extends FileItem {
      * @see Item#Item(int, User, Recipient, Date, Condition, String)
      */
     public ImageItem(int ID, User from, Recipient to, Date date, byte[] data, String path) {
-        this(ID, from, to, date, Condition.trueCondition(), data, path, "");
+        this(ID, from, to, date, Condition.trueCondition(), data, path, CalamarApplication.getInstance().getString(R.string.empty_string));
     }
 
     /**

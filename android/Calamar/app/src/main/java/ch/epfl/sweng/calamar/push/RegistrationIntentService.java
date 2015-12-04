@@ -46,7 +46,7 @@ import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 public class RegistrationIntentService extends IntentService {
 
     public static final String SENT_TOKEN_TO_SERVER = "sent_token_to_server_gcm";
-    public static final String REGISTRATION_COMPLETE = "registration_complete_gcm";
+    private static final String REGISTRATION_COMPLETE = "registration_complete_gcm";
     private static final String TAG = "RegIntentService";
     private static final String[] TOPICS = {"global"};
     private static final String TOPICS_STR = "/topics/";

@@ -25,11 +25,11 @@ public abstract class Condition {
 
     // TODO make tostring usable ^^
 
-    protected static final String JSON_METADATA = "metadata";
     protected static final String JSON_TYPE = "type";
-    protected static final String JSON_VALUE = "val";
-    protected static final String JSON_LEFT = "a";
-    protected static final String JSON_RIGHT = "b";
+    private static final String JSON_METADATA = "metadata";
+    private static final String JSON_VALUE = "val";
+    private static final String JSON_LEFT = "a";
+    private static final String JSON_RIGHT = "b";
     private static final int GREEN = Color.rgb(0, 155, 0);
     private static final int RED = Color.rgb(155, 0, 0);
 

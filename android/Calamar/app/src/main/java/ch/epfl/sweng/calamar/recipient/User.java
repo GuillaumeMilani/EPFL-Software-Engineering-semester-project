@@ -79,16 +79,6 @@ public final class User extends Recipient {
     }
 
     /**
-     * java hash function
-     *
-     * @return hash of the Object
-     */
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    /**
      * Returns the password of the user to decrypt data on the phone.
      *
      * @return a constant String "password" for now.

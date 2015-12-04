@@ -50,7 +50,6 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
     private EditText editText;
     private Button sendButton;
-    private Button refreshButton;
     private List<Item> messagesHistory;
     private ListView messagesContainer;
     private ChatAdapter adapter;
@@ -59,7 +58,6 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
     private StorageManager storageManager;
     private SQLiteDatabaseHandler dbHandler;
-
     private CalamarApplication app;
 
 
@@ -70,10 +68,10 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
         Intent intent = getIntent();
         String correspondentName = intent.getStringExtra(ChatFragment.EXTRA_CORRESPONDENT_NAME);
-        int correspondentID = intent.getIntExtra(ChatFragment.EXTRA_CORRESPONDENT_ID, -1); // -1 = default value
+        int correspondentID = intent.getIntExtra(ChatFragment.EXTRA_CORRESPONDENT_ID, Recipient.DEFAULT_ID);
 
         if (correspondentName == null) {
-            correspondentName = "";
+            correspondentName = getString(R.string.empty_string);
         }
 
         app = CalamarApplication.getInstance();
@@ -107,7 +105,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
             }
         });
 
-        refreshButton = (Button) findViewById(R.id.refreshButton);
+        final Button refreshButton = (Button) findViewById(R.id.refreshButton);
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -143,11 +141,11 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
      */
     private void sendTextItem() {
         String message = editText.getText().toString();
-        Item textMessage = new SimpleTextItem(1, app.getCurrentUser(), correspondent, new Date(), message);
+        Item textMessage = new SimpleTextItem(Item.DUMMY_ID, app.getCurrentUser(), correspondent, new Date(), message);
         messagesHistory.add(textMessage);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
-        editText.setText("");
+        editText.setText(getString(R.string.empty_string));
         new SendItemTask(textMessage).execute();
     }
 

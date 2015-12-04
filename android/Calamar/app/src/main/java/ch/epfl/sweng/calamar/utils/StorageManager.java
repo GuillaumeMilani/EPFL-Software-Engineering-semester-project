@@ -570,10 +570,10 @@ public class StorageManager {
         switch (f.getType()) {
             case FILEITEM:
                 File filePath = Environment.getExternalStoragePublicDirectory(FILE_FOLDER_NAME);
-                return new FileItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), f.getData(), filePath.getAbsolutePath() + '/' + FILENAME + "" + formatDate() + NAME_SUFFIX + app.getTodayFileCount());
+                return new FileItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), f.getData(), filePath.getAbsolutePath() + '/' + FILENAME + app.getString(R.string.empty_string) + formatDate() + NAME_SUFFIX + app.getTodayFileCount());
             case IMAGEITEM:
                 File imagePath = Environment.getExternalStoragePublicDirectory(IMAGE_FOLDER_NAME);
-                return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), f.getData(), imagePath.getAbsolutePath() + '/' + IMAGENAME + "" + formatDate() + NAME_SUFFIX + app.getTodayImageCount());
+                return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), f.getData(), imagePath.getAbsolutePath() + '/' + IMAGENAME + app.getString(R.string.empty_string) + formatDate() + NAME_SUFFIX + app.getTodayImageCount());
             default:
                 throw new IllegalArgumentException(app.getString(R.string.expected_fileitem));
         }
@@ -585,7 +585,7 @@ public class StorageManager {
      * @return the String, used in rePath
      */
     private String formatDate() {
-        return calendar.get(Calendar.DAY_OF_MONTH) + "" + (calendar.get(Calendar.MONTH) + 1) + "" + calendar.get(Calendar.YEAR);
+        return calendar.get(Calendar.DAY_OF_MONTH) + app.getString(R.string.empty_string) + (calendar.get(Calendar.MONTH) + 1) + app.getString(R.string.empty_string) + calendar.get(Calendar.YEAR);
     }
 
     /**
@@ -593,8 +593,8 @@ public class StorageManager {
      */
     protected class WritingTask extends AsyncTask<Void, Void, Boolean> {
 
-        private int iterCount;
-        private FileItem f;
+        private final int iterCount;
+        private final FileItem f;
 
         protected WritingTask(FileItem f, int iterCount) {
             this.iterCount = iterCount;

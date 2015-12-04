@@ -17,6 +17,7 @@ import ch.epfl.sweng.calamar.R;
  */
 public abstract class Recipient {
 
+    public final static int DEFAULT_ID = -1;
     protected final static String JSON_TYPE = "type";
     private final static String JSON_ID = "ID";
     private final static String JSON_NAME = "name";

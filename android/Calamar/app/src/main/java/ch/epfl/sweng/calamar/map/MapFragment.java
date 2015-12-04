@@ -49,13 +49,14 @@ import ch.epfl.sweng.calamar.utils.StorageCallbacks;
  */
 public class MapFragment extends android.support.v4.app.Fragment implements OnMapReadyCallback {
 
-    public static final String TAG = MapFragment.class.getSimpleName();
     public static final String LATITUDEKEY = PositionCondition.class.getCanonicalName() + ":LATITUDEKEY";
     public static final String LONGITUDEKEY = PositionCondition.class.getCanonicalName() + ":LONGITUDEKEY";
 
     // TODO maybe change for release or future
     public static final double DEFAULTLATITUDE = 46.518797; // guess ^^;
     public static final double DEFAULTLONGITUDE = 6.561908;
+
+    private static final String TAG = MapFragment.class.getSimpleName();
 
     private double initialLat;
     private double initialLong;

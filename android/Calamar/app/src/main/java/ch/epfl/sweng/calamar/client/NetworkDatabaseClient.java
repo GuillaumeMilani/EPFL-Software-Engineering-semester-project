@@ -27,7 +27,7 @@ import ch.epfl.sweng.calamar.recipient.User;
 /**
  * Created by LPI on 19.10.2015.
  */
-public class NetworkDatabaseClient implements DatabaseClient {
+public final class NetworkDatabaseClient implements DatabaseClient {
 
     private final static String TAG = NetworkDatabaseClient.class.getSimpleName();
 
@@ -124,9 +124,9 @@ public class NetworkDatabaseClient implements DatabaseClient {
     public User findUserByName(String name) throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
-            URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_USER_PATH);
+            final URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_USER_PATH);
 
-            JSONObject jsonParameter = new JSONObject();
+            final JSONObject jsonParameter = new JSONObject();
             jsonParameter.accumulate(JSON_NAME, name);
 
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
@@ -206,7 +206,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
      * @throws DatabaseClientException
      */
     private static String post(HttpURLConnection connection, String jsonParameter)
-            throws IOException, DatabaseClientException {
+            throws IOException {
         connection.setRequestMethod(CONNECTION_REQUEST_METHOD);
         connection.setRequestProperty(CONTENT_TYPE,
                 CONNECTION_CONTENT_TYPE);

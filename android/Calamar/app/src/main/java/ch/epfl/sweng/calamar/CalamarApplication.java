@@ -238,7 +238,7 @@ public final class CalamarApplication extends Application implements Application
      * @return the name of the user
      */
     public String getCurrentUserName() {
-        return sp.getString(CURRENT_USER_NAME_SP, "");
+        return sp.getString(CURRENT_USER_NAME_SP, getString(R.string.empty_string));
     }
 
     /**
@@ -286,7 +286,7 @@ public final class CalamarApplication extends Application implements Application
      * Resets the Username to an empty String.
      */
     public void resetUsername() {
-        setCurrentUserName("");
+        setCurrentUserName(getString(R.string.empty_string));
     }
 
     /**

@@ -202,7 +202,7 @@ public class CreateItemActivity extends BaseActivity {
         if (file != null) {
             String name = file.getName();
             int extIndex = name.lastIndexOf('.');
-            String ext = extIndex > 0 ? name.substring(extIndex + 1) : "";
+            String ext = extIndex > 0 ? name.substring(extIndex + 1) : getString(R.string.empty_string);
             if (imageExt.contains(ext.toLowerCase())) {
                 toSendBuilder = new ImageItem.Builder().setFile(file);
             } else {
@@ -211,7 +211,7 @@ public class CreateItemActivity extends BaseActivity {
         } else {
             toSendBuilder = new SimpleTextItem.Builder();
         }
-        if (message.getText().toString().equals("") && toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
+        if (message.getText().toString().equals(getString(R.string.empty_string)) && toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
             displayErrorMessage(getString(R.string.item_create_invalid));
             return;
         }
