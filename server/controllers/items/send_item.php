@@ -4,6 +4,7 @@ include_once('models/conditions/add_conditions.php');
 include_once('utils/push.php');
 global $pdo;
 
+$content = urldecode(file_get_contents('php://input'));
 $data = get_post_JSON();
 $return_array;
 
@@ -13,13 +14,13 @@ if (isset($data['type']) && isset($data['from']) && isset($data['to']) && isset(
 		$type = $data['type'];
 		$from = $data['from'];
 		$to = $data['to'];
-		$date = time();
+		$date = round(microtime(true) * 1000);
 		$condition = $data['condition'];
-		
+
 		$return_array = array("type" => $type, "from" => $from, "to" => $to, "date" => $date, "message" => $message);
-		
+
 		if ($type == "SIMPLETEXTITEM") {
-		
+
 		} else if (($type == "FILEITEM" || $type == "IMAGEITEM") && isset($data['data'])) {
 			$item_data = $data['data'];
 			$return_array['data'] = $item_data;
@@ -36,9 +37,10 @@ $condition_id = -1;
 
 try {
 	$pdo->beginTransaction();
-	
+
 	if ($condition['type'] == "true") {
 		$condition_id = null;
+		$condition = json_encode($condition);
 	} else {
 		// If metadata are specified, extract them from the JSON and store the condition as a String
 		if (isset($condition['metadata'])) {
@@ -46,9 +48,9 @@ try {
 			unset($condition['metadata']);
 		}
 		$condition = json_encode($condition);
-				
+
 		$condition_id = add_condition($condition);
-		
+
 		foreach ($metadata as $data) {
 			if ($data['type'] == "POSITIONCONDITION" && isset($data['latitude']) && isset($data['longitude'])) {
 				add_metadata_position($condition_id, $data['latitude'], $data['longitude']);
@@ -57,12 +59,12 @@ try {
 				http_response_code(400);
 				die("Error : json malformed");
 			}
-		}			
+		}
 	}
-		
+
 	// add the data into the db
 	$item_id = add_items($from['ID'],$to['ID'],$date,$type,$message,$condition_id);
-	
+
 	if ($type == "SIMPLETEXTITEM") {
 		add_items_text($item_id);
 	} else if ($type == "FILEITEM") {
@@ -70,7 +72,7 @@ try {
 	} else if ($type == "IMAGEITEM") {
 		add_items_image($item_id, $item_data);
 	}
-	
+
 	$pdo->commit();
 } catch (Exception $e) {
 	http_response_code(500);
