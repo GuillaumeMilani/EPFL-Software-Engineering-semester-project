@@ -62,7 +62,7 @@ public final class SimpleTextItem extends Item {
     @Override
     protected void compose(JSONObject json) throws JSONException {
         super.compose(json);
-        json.accumulate("type", ITEM_TYPE.name());
+        json.accumulate(JSON_TYPE, ITEM_TYPE.name());
     }
 
     /**
@@ -127,7 +127,7 @@ public final class SimpleTextItem extends Item {
 
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
-            String type = json.getString("type");
+            String type = json.getString(JSON_TYPE);
             if (!type.equals(SimpleTextItem.ITEM_TYPE.name())) {
                 throw new IllegalArgumentException("expected " + SimpleTextItem.ITEM_TYPE.name() + " was : " + type);
             }

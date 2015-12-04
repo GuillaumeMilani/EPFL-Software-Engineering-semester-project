@@ -38,6 +38,9 @@ public class FileItem extends Item {
     private final byte[] data;
     private final int hash;
 
+    private static final String JSON_DATA = "data";
+    private static final String UTF8_CHARSET = "UTF-8";
+
     public static final String DUMMY_PATH = "/dummy";
 
     /**
@@ -172,8 +175,8 @@ public class FileItem extends Item {
     @Override
     protected void compose(JSONObject object) throws JSONException {
         super.compose(object);
-        object.accumulate("data", byteArrayToBase64String(data));
-        object.accumulate("type", ITEM_TYPE.name());
+        object.accumulate(JSON_DATA, byteArrayToBase64String(data));
+        object.accumulate(JSON_TYPE, ITEM_TYPE.name());
     }
 
     /**
@@ -254,11 +257,11 @@ public class FileItem extends Item {
         @Override
         public FileItem.Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
-            String type = json.getString("type");
+            String type = json.getString(JSON_TYPE);
             if (!(type.equals(FileItem.ITEM_TYPE.name()) || type.equals(ImageItem.ITEM_TYPE.name()))) {
                 throw new IllegalArgumentException("expected " + FileItem.ITEM_TYPE.name() + " was : " + type);
             }
-            data = Compresser.decompress(base64StringToByteArray(json.getString("data")));
+            data = Compresser.decompress(base64StringToByteArray(json.getString(JSON_DATA)));
             path = DUMMY_PATH;
             return this;
         }
@@ -281,7 +284,7 @@ public class FileItem extends Item {
          * @return the builder
          */
         public FileItem.Builder setData(String str) {
-            this.data = str.getBytes(Charset.forName("UTF-8"));
+            this.data = str.getBytes(Charset.forName(UTF8_CHARSET));
             return this;
         }
 

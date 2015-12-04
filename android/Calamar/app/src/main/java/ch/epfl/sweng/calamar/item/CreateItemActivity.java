@@ -189,6 +189,7 @@ public class CreateItemActivity extends BaseActivity {
         }
     }*/
 
+    //TODO enhancement not recreate everything each time, look for changes instead
     private void createAndSend() throws IOException {
         Item.Builder toSendBuilder;
         if (file != null) {
@@ -225,7 +226,11 @@ public class CreateItemActivity extends BaseActivity {
         toSendBuilder.setDate(new Date().getTime());
         toSendBuilder.setMessage(message.getText().toString());
         Item toSend = toSendBuilder.build();
-        new SendItemTask(toSend).execute();
+        if (!toSend.hasLocation() && toSend.getTo().getID() == User.PUBLIC_ID) {
+            displayErrorMessage(getString(R.string.public_without_condition));
+        } else {
+            new SendItemTask(toSend).execute();
+        }
     }
 
     /**

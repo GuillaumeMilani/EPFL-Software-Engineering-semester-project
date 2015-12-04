@@ -26,17 +26,26 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.widget.Switch;
 
 import com.google.android.gms.gcm.GcmListenerService;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import ch.epfl.sweng.calamar.MainActivity;
 import ch.epfl.sweng.calamar.R;
+import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.recipient.User;
 
 public class RegistrationGcmListenerService extends GcmListenerService {
 
     private static final String TAG = "RegGcmListenerService";
+    private static final String RETRIEVE = "RETRIEVE";
 
     /**
      * Called when message is received.
@@ -49,26 +58,51 @@ public class RegistrationGcmListenerService extends GcmListenerService {
     @Override
     public void onMessageReceived(String from, Bundle data) {
         String message = "You have received a new ";
+        String pushType = data.getString("type");
+        if(pushType.equals(RETRIEVE))
+        {
+            // add a new contact
+            try {
+                //extract data
+                JSONObject resp = new JSONObject(data.getString("extra"));
 
-        Item.Type type = Item.Type.valueOf(data.getString("type"));
-        //Log.d(TAG, "From: " + from);
-        Log.d(TAG, "Message: " + type);
+                User addUser = User.fromJSON(resp.getJSONObject("user"));
 
-        switch (type) {
-            case SIMPLETEXTITEM:
-                message += "chat item.";
-                break;
-            case FILEITEM:
-                message += "file item";
-                break;
-            case IMAGEITEM:
-                message += "image item";
-                break;
-            default:
-                Log.e(TAG,"wrong type");
+                // Send a broadcast message to ChatFragment$ChatBroadcastReceiver
+                Intent i = new Intent();
+                i.setAction("ch.epfl.sweng.UPDATE_INTENT");
+                i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_USER,addUser.getName());
+                i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_ID,String.valueOf(addUser.getID()));
+                sendBroadcast(i);
+            }
+            catch (JSONException e)
+            {
+                Log.e(TAG,"json extract failed");
             }
 
-            sendNotification(message);
+            message += "contact";
+        }
+        else {
+            Item.Type type = Item.Type.valueOf(pushType);
+            //Log.d(TAG, "From: " + from);
+            Log.d(TAG, "Message: " + type);
+
+            switch (type) {
+                case SIMPLETEXTITEM:
+                    message += "chat item.";
+                    break;
+                case FILEITEM:
+                    message += "file item";
+                    break;
+                case IMAGEITEM:
+                    message += "image item";
+                    break;
+                default:
+                    Log.e(TAG, "wrong type");
+            }
+        }
+
+        sendNotification(message);
 
     }
     // [END receive_message]
@@ -100,5 +134,16 @@ public class RegistrationGcmListenerService extends GcmListenerService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+    }
+
+    private static List<Item> itemsFromJSON(String response) throws JSONException {
+        List<Item> result = new ArrayList<>();
+
+        JSONArray array = new JSONArray(response);
+        for(int i = 0; i < array.length(); ++i) {
+            result.add(Item.fromJSON(array.getJSONObject(i)));
+        }
+
+        return result;
     }
 }

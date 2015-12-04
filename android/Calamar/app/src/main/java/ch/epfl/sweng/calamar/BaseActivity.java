@@ -4,25 +4,19 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
-import ch.epfl.sweng.calamar.client.DatabaseClientException;
-import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.item.CreateItemActivity;
 import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.push.RegistrationIntentService;
@@ -261,8 +255,6 @@ public abstract class BaseActivity extends AppCompatActivity
      * Called after the account was authenticated
      */
     private void afterAccountAuthentication() {
-        new createNewUserTask(CalamarApplication.getInstance().getCurrentUserName(), this).execute();
-
         // The user need to be authenticated before registration
         Intent intent = new Intent(this, RegistrationIntentService.class);
         startService(intent);
@@ -277,54 +269,5 @@ public abstract class BaseActivity extends AppCompatActivity
     public void createItem(View v) {
         Intent intent = new Intent(this, CreateItemActivity.class);
         startActivity(intent);
-    }
-
-
-    private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
-        private String name = null;
-        private Context context;
-
-        public createNewUserTask(String name, Context context) {
-            this.name = name;
-            this.context = context;
-        }
-
-        @Override
-        protected Integer doInBackground(Void... v) {
-            try {
-                //Get the device id.
-                return DatabaseClientLocator.getDatabaseClient().newUser(name,
-                        Settings.Secure.getString(getContentResolver(),
-                                Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
-            } catch (DatabaseClientException e) {
-                e.printStackTrace();
-                // TODO make it works like the other asynctask,
-                // and make use of context safe
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Integer id) {
-            if (id != null) {
-                CalamarApplication.getInstance().setCurrentUserID(id);
-                // Show toast
-                Context context = getApplicationContext();
-                CharSequence text = "Connected as " + name;
-                int duration = Toast.LENGTH_SHORT;
-
-                Toast toast = Toast.makeText(context, text, duration);
-                toast.show();
-            } else {
-                AlertDialog.Builder newUser = new AlertDialog.Builder(context);
-                newUser.setTitle(R.string.new_account_creation_fail);
-                newUser.setPositiveButton(R.string.new_account_creation_retry, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        new createNewUserTask(name, context).execute();
-                    }
-                });
-                newUser.show();
-            }
-        }
     }
 }

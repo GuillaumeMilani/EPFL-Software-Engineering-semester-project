@@ -26,7 +26,7 @@ function log_user_token($name,$token)
 	
 	//TODO need to know what to do if the email dosn't exist
 	
-	if($query->execute() && $query->rowCount() == 1)
+	if($query->execute())
 	{
 		return array('status' => 'Ack');
 	}

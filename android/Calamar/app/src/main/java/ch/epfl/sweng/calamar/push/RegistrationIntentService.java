@@ -27,8 +27,10 @@ package ch.epfl.sweng.calamar.push;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
@@ -38,7 +40,8 @@ import java.io.IOException;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
-import ch.epfl.sweng.calamar.client.DefaultNetworkProvider;
+import ch.epfl.sweng.calamar.client.DatabaseClientException;
+import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 
 public class RegistrationIntentService extends IntentService {
 
@@ -97,13 +100,23 @@ public class RegistrationIntentService extends IntentService {
      * @param token The new token.
      */
     private void sendRegistrationToServer(String token) {
-        NetworkRegistrationClient client = new NetworkRegistrationClient("HTTP://calamar.japan-impact.ch", new DefaultNetworkProvider());
         try {
-            String accountName = CalamarApplication.getInstance().getCurrentUserName();
+            final String accountName = CalamarApplication.getInstance().getCurrentUserName();
             Log.i(TAG, "(token,name) is (" + token + "," + accountName + ")");
-            client.send(token, accountName);
+          //  client.send(token, accountName);
 
-        } catch (RegisterClientException e) {
+            DatabaseClientLocator.getDatabaseClient().newUser(accountName,token);
+
+            //show toast
+            Handler mHandler = new Handler(getMainLooper());
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), "Connected as " + accountName, Toast.LENGTH_SHORT).show();
+                }
+            });
+
+        } catch (DatabaseClientException e) {
             e.printStackTrace();
             Log.e("Token", "couldn't reach the server");
         }
@@ -123,5 +136,4 @@ public class RegistrationIntentService extends IntentService {
         }
     }
     // [END subscribe_topics]
-
 }
