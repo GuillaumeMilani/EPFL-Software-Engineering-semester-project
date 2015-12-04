@@ -742,14 +742,16 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testFileItem() {
-        checkLastTime(0);
+        checkLastTime(0, 0);
         dbHandler.addItem(testFile);
+        dbHandler.setLastItemTime(testFile.getDate().getTime());
         assertEquals(dbHandler.getItem(testFile.getID()), testFile);
         dbHandler.applyPendingOperations();
         assertEquals(dbHandler.getItem(testFile.getID()), testFile);
-        checkLastTime(testFile.getDate().getTime());
+        checkLastTime(testFile.getDate().getTime(), testFile.getDate().getTime());
         FileItem updated = new FileItem(testFile.getID(), new User(5, "bla"), new User(6, "blo"), new Date(), Condition.falseCondition(), updatedTestContent, "/File");
         dbHandler.updateItem(updated);
+        dbHandler.setLastItemTime(updated.getDate().getTime());
         assertEquals(dbHandler.getItem(testFile.getID()), updated);
         dbHandler.applyPendingOperations();
         assertEquals(dbHandler.getItem(testFile.getID()), updated);
@@ -757,19 +759,21 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         assertEquals(dbHandler.getItem(testFile.getID()), null);
         dbHandler.applyPendingOperations();
         assertEquals(dbHandler.getItem(testFile.getID()), null);
-        checkLastTime(updated.getDate().getTime());
+        checkLastTime(updated.getDate().getTime(), updated.getDate().getTime());
     }
 
     @Test
     public void testImageItem() {
-        checkLastTime(0);
+        checkLastTime(0, 0);
         dbHandler.addItem(testImage);
+        dbHandler.setLastItemTime(testImage.getDate().getTime());
         assertEquals(dbHandler.getItem(testImage.getID()), testImage);
         dbHandler.applyPendingOperations();
         assertEquals(dbHandler.getItem(testImage.getID()), testImage);
-        checkLastTime(testImage.getDate().getTime());
+        checkLastTime(testImage.getDate().getTime(), testImage.getDate().getTime());
         ImageItem updated = new ImageItem(testImage.getID(), new User(5, "bla"), new User(6, "blo"), new Date(1000), Condition.falseCondition(), updatedTestContent, "/File");
         dbHandler.updateItem(updated);
+        dbHandler.setLastItemTime(updated.getDate().getTime());
         assertEquals(dbHandler.getItem(testImage.getID()), updated);
         dbHandler.applyPendingOperations();
         assertEquals(dbHandler.getItem(testImage.getID()), updated);
@@ -777,7 +781,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         assertEquals(dbHandler.getItem(testImage.getID()), null);
         dbHandler.applyPendingOperations();
         assertEquals(dbHandler.getItem(testImage.getID()), null);
-        checkLastTime(updated.getDate().getTime());
+        checkLastTime(updated.getDate().getTime(), updated.getDate().getTime());
     }
 
     @Test
@@ -831,43 +835,52 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
 
     @Test
     public void testLastUpdateTimeAlwaysApplying() {
-        checkLastTime(0);
+        checkLastTime(0, 0);
         Item item = new SimpleTextItem(1, new User(1, ""), new User(2, ""), new Date(1000), "a");
         dbHandler.addItem(item);
-        checkLastTime(0);
+        dbHandler.setLastItemTime(item.getDate().getTime());
+        checkLastTime(item.getDate().getTime(), 0);
         dbHandler.applyPendingOperations();
-        checkLastTime(1000);
+        checkLastTime(item.getDate().getTime(), item.getDate().getTime());
         Item item2 = new SimpleTextItem(2, new User(2, ""), new User(3, ""), new Date(0), "a");
         dbHandler.addItem(item2);
-        checkLastTime(1000);
+        dbHandler.setLastItemTime(item2.getDate().getTime());
+        checkLastTime(item.getDate().getTime(), item.getDate().getTime());
         dbHandler.applyPendingOperations();
-        checkLastTime(1000);
+        checkLastTime(item.getDate().getTime(), item.getDate().getTime());
         Item item3 = new SimpleTextItem(3, new User(3, ""), new User(1, ""), new Date(1001), "a");
         dbHandler.updateItem(item3);
-        checkLastTime(1000);
+        dbHandler.setLastItemTime(item3.getDate().getTime());
+        checkLastTime(item3.getDate().getTime(), item.getDate().getTime());
         dbHandler.applyPendingOperations();
-        checkLastTime(1001);
+        checkLastTime(item3.getDate().getTime(), item3.getDate().getTime());
     }
 
     @Test
     public void testLastUpdateTime() {
-        checkLastTime(0);
+        checkLastTime(0, 0);
         Item item = new SimpleTextItem(1, new User(1, ""), new User(2, ""), new Date(1000), "a");
         dbHandler.addItem(item);
-        checkLastTime(0);
+        dbHandler.setLastItemTime(item.getDate().getTime());
+        checkLastTime(item.getDate().getTime(), 0);
         Item item2 = new SimpleTextItem(2, new User(2, ""), new User(3, ""), new Date(0), "a");
         dbHandler.addItem(item2);
-        checkLastTime(0);
+        dbHandler.setLastItemTime(item2.getDate().getTime());
+        checkLastTime(item.getDate().getTime(), 0);
         Item item3 = new SimpleTextItem(3, new User(3, ""), new User(1, ""), new Date(1001), "a");
         dbHandler.updateItem(item3);
-        checkLastTime(0);
+        dbHandler.setLastItemTime(item3.getDate().getTime());
+        checkLastTime(item3.getDate().getTime(), 0);
         dbHandler.applyPendingOperations();
-        checkLastTime(1001);
+        checkLastTime(item3.getDate().getTime(), item3.getDate().getTime());
+        dbHandler.resetLastUpdateTime();
+        checkLastTime(0, item3.getDate().getTime());
     }
 
     @Ignore
-    private void checkLastTime(long time) {
-        assertEquals(dbHandler.getLastUpdateTime(), time);
+    private void checkLastTime(long dbTime, long prefTime) {
+        assertEquals(dbHandler.getLastItemTime(), dbTime);
+        assertEquals(app.getLastItemsRefresh().getTime(), prefTime);
     }
 
     @Ignore
