@@ -227,19 +227,14 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
                         storageManager.storeItems(items, ChatActivity.this);
                         dbHandler.setLastItemTime(items.get(items.size() - 1).getDate().getTime());
                     }
-                    adapter.add(items);
+                    //The sever sends back all new item, if we have items from an other correspondent,
+                    //we don't want to display them in the actual chat.
+                    adapter.add(filterMessageFromContact(items,correspondent));
                     for (Item item : items) {
                         storageManager.getCompleteItem(item, ChatActivity.this);
                     }
                     messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 }
-                //The sever sends back all new item, if we have items from an other correspondent,
-                //we don't want to display them in the actual chat.
-                adapter.add(filterMessageFromContact(items,correspondent));
-                for (Item item : items) {
-                    storageManager.getCompleteItem(item, ChatActivity.this);
-                }
-                messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 Toast.makeText(context, getString(R.string.refresh_message),
                         Toast.LENGTH_SHORT).show();
             } else {
