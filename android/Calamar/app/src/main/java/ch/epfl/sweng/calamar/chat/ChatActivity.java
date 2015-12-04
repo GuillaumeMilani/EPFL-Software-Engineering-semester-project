@@ -130,6 +130,13 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
         refresh(true);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //Save sent messages
+        app.new ApplyPendingDatabaseOperationsTask().execute();
+    }
+
     /**
      * Gets all messages and display them
      */
@@ -204,7 +211,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
                 return dbHandler.getItemsForContact(correspondent);
             } else {
                 try {
-                    return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, app.getLastItemsRefresh());
+                    return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, new Date(dbHandler.getLastItemTime()));
                 } catch (DatabaseClientException e) {
                     Log.e(ChatActivity.TAG, e.getMessage());
                     return null;
@@ -217,6 +224,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
             if (items != null) {
                 if (!offline) {
                     storageManager.storeItems(items, ChatActivity.this);
+                    dbHandler.setLastItemTime(items.get(items.size() - 1).getDate().getTime());
                 }
                 //The sever sends back all new item, if we have items from an other correspondent,
                 //we don't want to display them in the actual chat.
