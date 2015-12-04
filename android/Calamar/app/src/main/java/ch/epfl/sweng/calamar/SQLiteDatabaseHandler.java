@@ -40,7 +40,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private final Map<Integer, Pair<Operation, Item>> pendingItems;
     private final Map<Integer, Pair<Operation, Recipient>> pendingRecipients;
 
-    private static long lastUpdateTime;
     private static long lastItemTime;
 
     private static final int DATABASE_VERSION = 5;
@@ -86,7 +85,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private SQLiteDatabaseHandler() {
         super(app, DATABASE_NAME, null, DATABASE_VERSION);
         lastItemTime = app.getLastItemsRefresh().getTime();
-        lastUpdateTime = app.getLastItemsRefresh().getTime();
         db = getReadableDatabase(app.getCurrentUser().getPassword());
         this.pendingRecipients = new HashMap<>();
         this.pendingItems = new HashMap<>();
@@ -111,7 +109,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 + RECIPIENTS_KEY_ID + " INTEGER PRIMARY KEY NOT NULL,"
                 + RECIPIENTS_KEY_NAME + " TEXT NOT NULL)";
         db.execSQL(createRecipientsTable);
-        lastUpdateTime = 0;
         lastItemTime = 0;
         app.resetLastItemsRefresh();
         app.resetLastUsersRefresh();
@@ -122,8 +119,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         //TODO only recreates db at the moment
         db.execSQL("DROP TABLE IF EXISTS " + ITEMS_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + RECIPIENTS_TABLE);
-        app.setLastItemsRefresh(lastUpdateTime);
-        app.setLastUsersRefresh(lastUpdateTime);
         onCreate(db);
     }
 
@@ -134,8 +129,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         pendingItems.clear();
         db = getWritableIfNotOpen();
         db.delete(ITEMS_TABLE, null, null);
-        lastUpdateTime = lastItemTime;
-        app.setLastItemsRefresh(lastUpdateTime);
+        app.setLastItemsRefresh(lastItemTime);
     }
 
     /**
@@ -728,7 +722,8 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 pendingItems.clear();
                 pendingRecipients.clear();
-                lastUpdateTime = lastItemTime;
+                app.setLastItemsRefresh(lastItemTime);
+                app.setLastUsersRefresh(lastItemTime);
             } finally {
                 db.endTransaction();
             }
@@ -761,8 +756,8 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      *
      * @return the time as a long
      */
-    public synchronized long getLastUpdateTime() {
-        return lastUpdateTime;
+    public synchronized long getLastItemTime() {
+        return lastItemTime;
     }
 
     /**
@@ -770,7 +765,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public synchronized void resetLastUpdateTime() {
         lastItemTime = 0;
-        lastUpdateTime = 0;
     }
 
     //Helper methods for applyPendingOperations

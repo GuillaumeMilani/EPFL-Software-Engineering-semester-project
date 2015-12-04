@@ -448,7 +448,7 @@ public final class CalamarApplication extends Application implements Application
 
         @Override
         protected void onPostExecute(Void v) {
-            long time = dbHandler.getLastUpdateTime();
+            long time = dbHandler.getLastItemTime();
             instance.setLastUsersRefresh(time);
             instance.setLastItemsRefresh(time);
         }
