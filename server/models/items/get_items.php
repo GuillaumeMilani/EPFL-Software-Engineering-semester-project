@@ -48,15 +48,15 @@ function get_items($recipient, $last_refresh, $type, $location_params = '') {
 				itm.ID = type.ID
 			AND	itm.condition = cnd.ID
 			AND	'.$to.'
-    		AND itm.date > :last_refresh
+    		AND itm.date > 0
 			'.$location_where);
 	
 	$id = $recipient['ID'];
 	
 	$query->bindParam(':to', $id, PDO::PARAM_INT);
-	$query->bindParam(':last_refresh', $last_refresh, PDO::PARAM_STR);
+	// $query->bindParam(':last_refresh', $last_refresh, PDO::PARAM_STR);
 	
-	if (isset($location_params)) {
+	if ($location_params != '') {
 		$query->bindParam(':latitude_min', $location_params['latitude_min'], PDO::PARAM_STR);
 		$query->bindParam(':latitude_max', $location_params['latitude_max'], PDO::PARAM_STR);
 		$query->bindParam(':longitude_min', $location_params['longitude_min'], PDO::PARAM_STR);
@@ -114,12 +114,12 @@ function get_item_with_location($recipient, $last_refresh, $latitude_min, $latit
  * @param float $last_refresh
  * @return array of items
  */
-function get_all_private_items($recipient, $last_refresh) {	
+function get_all_private_items($recipient, $last_refresh) {
+	global $types;
 	$ret = array();
 	
-	foreach (TYPES as $type) {
+	foreach ($types as $type) {
 		$ret = array_merge($ret,get_items($recipient, $last_refresh, $type));
 	}
-	
 	return $ret;
 }
