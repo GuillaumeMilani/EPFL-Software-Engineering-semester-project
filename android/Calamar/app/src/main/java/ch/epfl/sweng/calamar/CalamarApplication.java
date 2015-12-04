@@ -438,7 +438,7 @@ public final class CalamarApplication extends Application implements Application
         return onForeground;
     }
 
-    private class ApplyPendingDatabaseOperationsTask extends AsyncTask<Void, Void, Void> {
+    public class ApplyPendingDatabaseOperationsTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... v) {

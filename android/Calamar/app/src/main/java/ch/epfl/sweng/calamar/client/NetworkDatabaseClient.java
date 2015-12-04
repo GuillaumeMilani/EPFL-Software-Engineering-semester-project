@@ -21,6 +21,7 @@ import java.util.List;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
+import ch.epfl.sweng.calamar.utils.Sorter;
 
 /**
  * Created by LPI on 19.10.2015.
@@ -243,7 +244,6 @@ public class NetworkDatabaseClient implements DatabaseClient {
         for (int i = 0; i < array.length(); ++i) {
             result.add(Item.fromJSON(array.getJSONObject(i)));
         }
-
-        return result;
+        return Sorter.sortItemList(result);
     }
 }

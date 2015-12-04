@@ -196,7 +196,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized void addItem(Item item) {
         pendingItems.put(item.getID(), new Pair<>(Operation.ADD, item));
         addOrUpdateRecipientWithItem(item);
-        updateTime(item);
     }
 
     /**
@@ -208,7 +207,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         for (Item item : items) {
             pendingItems.put(item.getID(), new Pair<>(Operation.ADD, item));
             addOrUpdateRecipientWithItem(item);
-            updateTime(item);
         }
     }
 
@@ -220,7 +218,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public synchronized void updateItem(Item item) {
         manageItemUpdate(item);
-        updateTime(item);
     }
 
     /**
@@ -232,7 +229,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized void updateItems(List<Item> items) {
         for (Item item : items) {
             manageItemUpdate(item);
-            updateTime(item);
         }
     }
 
@@ -750,6 +746,17 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     /**
+     * Sets the time of the last received item
+     *
+     * @param time the long
+     */
+    public synchronized void setLastItemTime(long time) {
+        if (lastItemTime < time) {
+            lastItemTime = time;
+        }
+    }
+
+    /**
      * Returns the time corresponding to the most recent item the database has updated/added.
      *
      * @return the time as a long
@@ -1032,13 +1039,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 builder.append(",?");
             }
             return builder.toString();
-        }
-    }
-
-    private void updateTime(Item i) {
-        long itemTime = i.getDate().getTime();
-        if (lastItemTime < itemTime) {
-            lastItemTime = itemTime;
         }
     }
 }

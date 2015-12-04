@@ -132,6 +132,13 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
         refresh(offline);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //Save sent messages
+        app.new ApplyPendingDatabaseOperationsTask().execute();
+    }
+
     /**
      * Gets all messages and display them
      */
@@ -224,6 +231,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
             if (items != null) {
                 if (!offline) {
                     storageManager.storeItems(items, ChatActivity.this);
+                    dbHandler.setLastItemTime(items.get(items.size() - 1).getDate().getTime());
                 }
                 messagesHistory.addAll(items);
                 adapter.notifyDataSetChanged();
@@ -316,7 +324,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
         @Override
         public void onItemRetrieved(Item i) {
-            item=i;
+            item = i;
             if (dialog != null) {
                 dialog.setView(item.getView(ChatActivity.this));
             }
