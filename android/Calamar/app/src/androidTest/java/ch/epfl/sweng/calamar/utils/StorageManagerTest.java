@@ -173,9 +173,14 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         final FileItem item3 = new FileItem(2, testUser, testRecipient, new Date(), tc, null, f3.getAbsolutePath());
         final ListView list = (ListView) activity.findViewById(R.id.messagesContainer);
         final ChatAdapter adapter = (ChatAdapter) list.getAdapter();
-        adapter.add(item);
-        adapter.add(item2);
-        adapter.add(item3);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.add(item);
+                adapter.add(item2);
+                adapter.add(item3);
+            }
+        });
         final List<Item> retrievedFirst = activity.getHistory();
         assertEquals(retrievedFirst.size(), 3);
         assertEquals(app.getTodayImageCount(), 0);
@@ -229,8 +234,13 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         final FileItem item2 = new FileItem(1, testUser, testRecipient, new Date(), fc, null, f2.getAbsolutePath());
         final ListView list = (ListView) activity.findViewById(R.id.messagesContainer);
         final ChatAdapter adapter = (ChatAdapter) list.getAdapter();
-        adapter.add(item);
-        adapter.add(item2);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.add(item);
+                adapter.add(item2);
+            }
+        });
         final List<Item> retrievedFirst = activity.getHistory();
         assertEquals(retrievedFirst.size(), 2);
         assertEquals(app.getTodayImageCount(), 0);
@@ -290,8 +300,13 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         final FileItem item2Empty = new FileItem(item2.getID(), item2.getFrom(), item2.getTo(), item2.getDate(), item2.getCondition(), null, item2.getPath());
         final ListView list = (ListView) activity.findViewById(R.id.messagesContainer);
         final ChatAdapter adapter = (ChatAdapter) list.getAdapter();
-        adapter.add(itemEmpty);
-        adapter.add(item2Empty);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.add(itemEmpty);
+                adapter.add(item2Empty);
+            }
+        });
         final List<Item> retrievedFirst = activity.getHistory();
         assertEquals(retrievedFirst.size(), 2);
         assertEquals(app.getTodayImageCount(), 0);
@@ -393,8 +408,13 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         final FileItem item2 = new FileItem(1, testUser, testRecipient, new Date(), tc, data, f2.getAbsolutePath());
         final ListView list = (ListView) activity.findViewById(R.id.messagesContainer);
         final ChatAdapter adapter = (ChatAdapter) list.getAdapter();
-        adapter.add(item);
-        adapter.add(item2);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.add(item);
+                adapter.add(item2);
+            }
+        });
         final List<Item> retrievedFirst = activity.getHistory();
         assertEquals(retrievedFirst.size(), 2);
         assertEquals(app.getTodayImageCount(), 0);
@@ -441,7 +461,12 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         final FileItem item2 = new FileItem(1, testUser, testRecipient, new Date(), tc, null, f2.getAbsolutePath());
         final ImageItem itemFull = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, item.getPath());
         final FileItem item2Full = new FileItem(item2.getID(), item2.getFrom(), item2.getTo(), item2.getDate(), item2.getCondition(), data, item2.getPath());
-        adapter.add(item);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.add(item);
+            }
+        });
         assertEquals(activity.getHistory().get(0), item);
         runTestOnUiThread(new Runnable() {
             @Override
@@ -464,7 +489,12 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         });
         latch.await(20, TimeUnit.SECONDS);
         assertEquals(activity.getHistory().get(0), itemFull);
-        adapter.update(item);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.update(item);
+            }
+        });
         storageManager.deleteItemWithoutDatabase(itemFull);
         assertEquals(dbHandler.getItem(item.getID()), item);
         final CountDownLatch latch2 = new CountDownLatch(1);
@@ -517,7 +547,12 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
             wait(1000);
         }
         assertEquals(dbHandler.getItem(item.getID()), null);
-        adapter.update(item);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.update(item);
+            }
+        });
         final CountDownLatch latch4 = new CountDownLatch(1);
         runTestOnUiThread(new Runnable() {
             @Override
