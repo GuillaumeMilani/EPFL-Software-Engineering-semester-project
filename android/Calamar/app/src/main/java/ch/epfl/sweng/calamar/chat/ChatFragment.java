@@ -22,6 +22,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
@@ -85,7 +86,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
             }
         });
 
-        //Create BroadCastReceiver
+        // Create BroadCastReceiver
         getContext().registerReceiver(new ChatBroadcastReceiver(),new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
 
         super.onActivityCreated(savedInstanceState);
@@ -97,7 +98,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     public void addContact() {
         EditText input = (EditText) newContactAlertDialog.findViewById(R.id.newContactInput);
         newContactAlertDialog.dismiss();
-        new retrieveUserTask(input.getText().toString(), getActivity()).execute();
+        new retrieveUserTask(input.getText().toString(), (BaseActivity) getActivity()).execute();
     }
 
     /**
@@ -164,9 +165,9 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     private class retrieveUserTask extends AsyncTask<Void, Void, User> {
 
         private String name = null;
-        private final Context context;
+        private final BaseActivity context;
 
-        public retrieveUserTask(String name, Context context) {
+        public retrieveUserTask(String name, BaseActivity context) {
             this.name = name;
             this.context = context;
         }
@@ -187,14 +188,9 @@ public class ChatFragment extends android.support.v4.app.Fragment {
                 //add the user in the contact list
                 addUserInContact(newUser);
             } else {
-                AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
-                newUserAlert.setTitle(R.string.add_new_contact_impossible);
-                newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        //OK
-                    }
-                });
-                newUserAlert.show();
+                if(isAdded()) {
+                    context.displayErrorMessage(getString(R.string.add_new_contact_impossible), false);
+                }
             }
         }
     }

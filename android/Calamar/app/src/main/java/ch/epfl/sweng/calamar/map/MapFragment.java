@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
@@ -85,9 +86,11 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     private final Item.Observer itemObserver = new Item.Observer() {
         @Override
         public void update(Item item) {
-            Marker updatedMarker = markers.get(item);
-            updatedMarker.setTitle(getLockStringForItem(item));
-            updatedMarker.setIcon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
+            if(isAdded()) { // otherwise IllegalStateException: Fragment MapFragment not attached to Activity
+                Marker updatedMarker = markers.get(item);
+                updatedMarker.setTitle(getLockStringForItem(item));
+                updatedMarker.setIcon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
+            }
         }
     };
 
@@ -144,10 +147,9 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     @Override
     public void onResume() {
         super.onResume();
-        GPSProvider gpsProvider = GPSProvider.getInstance();
 
-        if (!gpsProvider.isStarted()) {
-            gpsProvider.checkSettingsAndLaunchIfOK(getActivity());
+        if (isVisible()) {
+            GPSProvider.getInstance().checkSettingsAndLaunchIfOK((BaseActivity) getActivity());
         }
 
         // REFRESH BUTTON
@@ -164,10 +166,8 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     @Override
     public void onPause() {
         super.onPause();
-        GPSProvider gpsProvider = GPSProvider.getInstance();
-        if (gpsProvider.isStarted()) {
-            GPSProvider.getInstance().stopLocationUpdates();
-        }
+        // if provider started, stop
+        GPSProvider.getInstance().stopLocationUpdates();
     }
 
     // map setup here :
@@ -189,7 +189,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     private void addAllItemsInRegionToMap() {
         if (null != map) {
             VisibleRegion visibleRegion = map.getProjection().getVisibleRegion();
-            new RefreshTask(visibleRegion, getActivity()).execute();
+            new RefreshTask(visibleRegion, (BaseActivity)getActivity()).execute();
         } else {
             throw new IllegalStateException("map not ready when refresh");
         }
@@ -278,9 +278,9 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     private class RefreshTask extends AsyncTask<Void, Void, List<Item>> {
 
         private final VisibleRegion visibleRegion;
-        private final Activity context;
+        private final BaseActivity context;
 
-        public RefreshTask(VisibleRegion visibleRegion, Activity context) {
+        public RefreshTask(VisibleRegion visibleRegion, BaseActivity context) {
             if (null == visibleRegion || null == context) {
                 throw new IllegalArgumentException("RefreshTask: visibleRegion or context is null");
             }
@@ -322,15 +322,9 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                 Toast.makeText(context, R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();
             } else {
-                Log.e(MapFragment.TAG, "unable to refresh");
-                AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
-                newUserAlert.setTitle(R.string.unable_to_refresh_message);
-                newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        //OK
-                    }
-                });
-                newUserAlert.show();
+                if(isAdded()) {
+                    context.displayErrorMessage(getString(R.string.unable_to_refresh_message), false);
+                }
             }
         }
     }

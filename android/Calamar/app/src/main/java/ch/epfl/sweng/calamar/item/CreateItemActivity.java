@@ -227,7 +227,7 @@ public class CreateItemActivity extends BaseActivity {
         toSendBuilder.setMessage(message.getText().toString());
         Item toSend = toSendBuilder.build();
         if (!toSend.hasLocation() && toSend.getTo().getID() == User.PUBLIC_ID) {
-            displayErrorMessage(getString(R.string.public_without_condition));
+            displayErrorMessage(getString(R.string.public_without_condition), false);
         } else {
             new SendItemTask(toSend).execute();
         }
