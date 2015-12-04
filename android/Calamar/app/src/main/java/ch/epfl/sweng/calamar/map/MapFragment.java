@@ -158,7 +158,15 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
             }
         });
 
+
+        //TODO : Make it more efficient.
         setUpMapIfNeeded();
+        //We (indirectly) go through all items on the local database every times we resume on the
+        //main activity, I don't think it's an efficient idea, but it's the easiest way to directly
+        //update the map if we add a new private item.
+        //The problem is that we add a new item from an other activity ( create Item activity ),
+        //if we want to solve this problem, we have to find a way to only retrieve new private item.
+        //The same problem occurs on the chat activity, in a less severe way.
         addAllPrivateItem();
     }
 

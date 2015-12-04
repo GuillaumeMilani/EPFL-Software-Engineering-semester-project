@@ -241,7 +241,8 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
         }
 
         /**
-         * Return a list with only the items coming from the actual correspondent.
+         * Return a list with only the items coming from the actual correspondent or from the
+         * actual user.
          *
          * @param list list to filter
          * @return a list with item coming from actual correspondent
@@ -249,7 +250,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
         private List<Item> filterMessageFromContact(List<Item> list,Recipient u) {
             List<Item> filteredItem = new ArrayList<>();
             for(Item i : list) {
-                if(i.getFrom().equals(u)){
+                if(i.getFrom().equals(u) || i.getFrom().equals(CalamarApplication.getInstance().getCurrentUser())){
                     filteredItem.add(i);
                 }
             }
