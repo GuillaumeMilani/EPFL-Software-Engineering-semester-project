@@ -43,7 +43,9 @@ import com.google.android.gms.iid.InstanceID;
 
 import java.io.IOException;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.MainActivity;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
@@ -108,7 +110,7 @@ public class RegistrationIntentService extends IntentService {
             final String accountName = CalamarApplication.getInstance().getCurrentUserName();
             Log.i(TAG, "(token,name) is (" + token + "," + accountName + ")");
 
-            new createNewUserTask(accountName).execute();
+            new createNewUserTask(accountName,token).execute();
     }
 
     /**
@@ -128,9 +130,11 @@ public class RegistrationIntentService extends IntentService {
 
     private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
         private String name = null;
+        private String token = null;
 
-        public createNewUserTask(String name) {
+        public createNewUserTask(String name,String token) {
             this.name = name;
+            this.token = token;
         }
 
         @Override
@@ -138,8 +142,7 @@ public class RegistrationIntentService extends IntentService {
             try {
                 //Get the device id.
                 return DatabaseClientLocator.getDatabaseClient().newUser(name,
-                        Settings.Secure.getString(getContentResolver(),
-                                Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
+                        token);//"aaaaaaaaaaaaaaaa",354436053190805
             } catch (DatabaseClientException e) {
                 e.printStackTrace();
                 // and make use of context safe
@@ -170,16 +173,13 @@ public class RegistrationIntentService extends IntentService {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
+
                         // Show toast
                         Context context = getApplicationContext();
-                        AlertDialog.Builder newUser = new AlertDialog.Builder(context);
-                        newUser.setTitle(R.string.new_account_creation_fail);
-                        newUser.setPositiveButton(R.string.new_account_creation_retry, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                new createNewUserTask(name).execute();
-                            }
-                        });
-                        newUser.show();
+                        CharSequence text = "Not connected ";
+                        int duration = Toast.LENGTH_SHORT;
+                        Toast toast = Toast.makeText(context, text, duration);
+                        toast.show();
                     }
                 });
 
