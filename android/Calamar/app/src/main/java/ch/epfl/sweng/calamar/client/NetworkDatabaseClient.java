@@ -78,10 +78,10 @@ public class NetworkDatabaseClient implements DatabaseClient {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.SEND_PATH);
-            String jsonParameter = item.toJSON().toString();
+            JSONObject jsonParameter = item.toJSON();
             //Log.v(NetworkDatabaseClient.TAG, jsonParameter);
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
-            String response = NetworkDatabaseClient.post(connection, jsonParameter);
+            String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
             //Log.e(NetworkDatabaseClient.TAG, response);
             return Item.fromJSON(new JSONObject(response));
         } catch (IOException | JSONException e) {
@@ -141,7 +141,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
             URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_PATH);
 
             JSONObject jsonParameter = new JSONObject();
-            jsonParameter.accumulate(JSON_RECIPIENT, recipient.toJSON().toString());
+            jsonParameter.accumulate(JSON_RECIPIENT, recipient.toJSON());
             jsonParameter.accumulate(JSON_LAST_REFRESH, from.getTime());
 
             if (visibleRegion != null) {
@@ -218,7 +218,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
         int responseCode = connection.getResponseCode();
 
         if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
-//            throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )");
+            throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )");
         }
 
         //get result
