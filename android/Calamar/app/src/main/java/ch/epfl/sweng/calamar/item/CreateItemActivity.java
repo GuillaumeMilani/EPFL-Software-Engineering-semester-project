@@ -239,9 +239,11 @@ public class CreateItemActivity extends BaseActivity {
     private class SendItemTask extends AsyncTask<Void, Void, Item> {
 
         private final Item item;
+        private final String itemPath;
 
         public SendItemTask(Item item) {
             this.item = item;
+            itemPath = item.getType() != Item.Type.SIMPLETEXTITEM ? ((FileItem) item).getPath() : null;
         }
 
         @Override
@@ -257,7 +259,23 @@ public class CreateItemActivity extends BaseActivity {
         @Override
         protected void onPostExecute(Item item) {
             if (item != null) {
-                CalamarApplication.getInstance().getStorageManager().storeItem(item, null);
+                if (itemPath != null) {
+                    Item toStore;
+                    //TODO add methods "withPath / withData, etc " to Item for simplification
+                    switch (item.getType()) {
+                        case FILEITEM:
+                            toStore = new FileItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), ((FileItem) item).getData(), itemPath);
+                            break;
+                        case IMAGEITEM:
+                            toStore = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), ((ImageItem) item).getData(), itemPath);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Expected FileItem");
+                    }
+                    CalamarApplication.getInstance().getStorageManager().storeItem(toStore, null);
+                } else {
+                    CalamarApplication.getInstance().getStorageManager().storeItem(item, null);
+                }
                 Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
                 CreateItemActivity.this.finish();
             } else {
