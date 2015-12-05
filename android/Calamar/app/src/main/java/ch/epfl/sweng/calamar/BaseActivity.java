@@ -191,7 +191,7 @@ public abstract class BaseActivity extends AppCompatActivity
                         }
                         break;
                     default:
-                        displayErrorMessage("google API client definitely can't connect...", true);
+                        displayErrorMessage(getString(R.string.unable_to_connect_client_message), true);
                 }
                 break;
             case ACCOUNT_CHOOSEN:
@@ -203,7 +203,7 @@ public abstract class BaseActivity extends AppCompatActivity
                         afterAccountAuthentication();
                         break;
                     default:
-                        displayErrorMessage("Didn't choose an account, account is compulsory", true);
+                        displayErrorMessage(getString(R.string.account_not_chosen_message), true);
                 }
                 break;
             default:

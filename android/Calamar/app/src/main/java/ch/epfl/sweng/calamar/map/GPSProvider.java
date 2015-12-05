@@ -268,7 +268,7 @@ public final class GPSProvider implements LocationListener {
         Log.e(GPSProvider.TAG, "we need gps !!");
         if (!context.isFinishing() ){//&& !isPaused()) {
             final AlertDialog.Builder errorDialog = new AlertDialog.Builder(context);
-            errorDialog.setTitle("we need gps");
+            errorDialog.setTitle(context.getString(R.string.location_settings_unsatisfied_message));
             errorDialog.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
                     //OK
