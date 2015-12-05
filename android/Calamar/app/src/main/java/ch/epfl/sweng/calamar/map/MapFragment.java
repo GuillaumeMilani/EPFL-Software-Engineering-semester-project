@@ -1,7 +1,6 @@
 package ch.epfl.sweng.calamar.map;
 
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
@@ -32,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
@@ -141,10 +141,9 @@ public final class MapFragment extends android.support.v4.app.Fragment implement
     @Override
     public void onResume() {
         super.onResume();
-        GPSProvider gpsProvider = GPSProvider.getInstance();
 
-        if (!gpsProvider.isStarted()) {
-            gpsProvider.checkSettingsAndLaunchIfOK(getActivity());
+        if (isVisible()) {
+            GPSProvider.getInstance().checkSettingsAndLaunchIfOK((BaseActivity) getActivity());
         }
 
         // REFRESH BUTTON
@@ -167,10 +166,8 @@ public final class MapFragment extends android.support.v4.app.Fragment implement
     @Override
     public void onPause() {
         super.onPause();
-        GPSProvider gpsProvider = GPSProvider.getInstance();
-        if (gpsProvider.isStarted()) {
-            GPSProvider.getInstance().stopLocationUpdates();
-        }
+        // if provider started, stop
+        GPSProvider.getInstance().stopLocationUpdates();
     }
 
     // map setup here :
@@ -196,7 +193,9 @@ public final class MapFragment extends android.support.v4.app.Fragment implement
         if (null != map) {
             List<Item> localizedItems = CalamarApplication.getInstance().getDatabaseHandler().getAllLocalizedItems();
             for (Item i : localizedItems) {
-                addItemToMap(i);
+                if (!items.contains(i)) {
+                    addItemToMap(i);
+                }
             }
         }
     }
@@ -207,7 +206,7 @@ public final class MapFragment extends android.support.v4.app.Fragment implement
     private void addAllItemsInRegionToMap() {
         if (null != map) {
             VisibleRegion visibleRegion = map.getProjection().getVisibleRegion();
-            new RefreshTask(visibleRegion, getActivity()).execute();
+            new RefreshTask(visibleRegion, (BaseActivity) getActivity()).execute();
         } else {
             throw new IllegalStateException(CalamarApplication.getInstance().getString(R.string.map_refreshed_not_ready));
         }
@@ -299,9 +298,9 @@ public final class MapFragment extends android.support.v4.app.Fragment implement
     private class RefreshTask extends AsyncTask<Void, Void, List<Item>> {
 
         private final VisibleRegion visibleRegion;
-        private final Activity context;
+        private final BaseActivity context;
 
-        public RefreshTask(VisibleRegion visibleRegion, Activity context) {
+        public RefreshTask(VisibleRegion visibleRegion, BaseActivity context) {
             if (null == visibleRegion || null == context) {
                 throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.refreshtask_visibleregion_or_context_null));
             }
@@ -342,15 +341,9 @@ public final class MapFragment extends android.support.v4.app.Fragment implement
                 Toast.makeText(context, R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();
             } else {
-                Log.e(MapFragment.TAG, context.getString(R.string.unable_refresh));
-                AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
-                newUserAlert.setTitle(R.string.unable_to_refresh_message);
-                newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        //OK
-                    }
-                });
-                newUserAlert.show();
+                if (isAdded()) {
+                    context.displayErrorMessage(getString(R.string.unable_to_refresh_message), false);
+                }
             }
         }
     }

@@ -1,6 +1,7 @@
 package ch.epfl.sweng.calamar.map;
 
-import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.IntentSender;
 import android.location.Location;
 import android.util.Log;
@@ -20,6 +21,7 @@ import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.BuildConfig;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
@@ -41,6 +43,8 @@ public final class GPSProvider implements LocationListener {
 
     private final GoogleApiClient googleApiClient;
     private boolean isStarted = false;
+    private boolean isResolvingSettings = false;
+
 
     // TODO, seems to be one possible soluce to avoid (or maybe luck....)
     // https://stackoverflow.com/questions/24201356/avoiding-concurrent-modification-in-observer-pattern
@@ -73,13 +77,12 @@ public final class GPSProvider implements LocationListener {
      * @throws IllegalStateException when google api client not connected
      */
     public void startLocationUpdates() {
-        if (googleApiClient.isConnected()) { // else call cause illegalstateexception
+        if (!isStarted()) {
             LocationServices.FusedLocationApi.requestLocationUpdates(
                     googleApiClient, locationRequest, GPSProvider.instance);
             isStarted = true;
-            Log.i(TAG, CalamarApplication.getInstance().getString(R.string.gps_request_started));
-        } else {
-            throw new IllegalStateException(CalamarApplication.getInstance().getString(R.string.start_location_updates_client_disconnected));
+            isResolvingSettings = false;
+            Log.i(TAG, "GPS request started");
         }
     }
 
@@ -88,13 +91,11 @@ public final class GPSProvider implements LocationListener {
      * If you only want to unsubscribe, please call {@link #removeObserver(Observer)}
      */
     public void stopLocationUpdates() {
-        if (googleApiClient.isConnected()) { // else call cause illegalstateexception
+        if (isStarted()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(
                     googleApiClient, this);
             isStarted = false;
-            Log.i(TAG, CalamarApplication.getInstance().getString(R.string.gps_request_stopped));
-        } else {
-            throw new IllegalStateException(CalamarApplication.getInstance().getString(R.string.stop_location_updates_client_disconnected));
+            Log.i(TAG, "GPS request stopped");
         }
     }
 
@@ -151,6 +152,10 @@ public final class GPSProvider implements LocationListener {
         return isStarted;
     }
 
+    public boolean isResolvingSettings() {
+        return isResolvingSettings;
+    }
+
     private GPSProvider() {
         // get the GoogleApi client,
         // creation plus play services availability checks are done in MainActivity at app startup
@@ -159,61 +164,63 @@ public final class GPSProvider implements LocationListener {
 
     /**
      * Verifies location services availability on the device
-     * if KO, attempt to resolve error by showing user a dialog. <br>
-     * if OK, location updates are requested
-     * is NOT called by startLocationUpdates()
+     * if OK, location updates are requested, <br>
+     * is NOT called by startLocationUpdates(). <br>
+     * does nothing if already started
      */
-    public void checkSettingsAndLaunchIfOK(final Activity parentActivity) {
-        googleApiClient.connect();//if already connected does nothing
+    public void checkSettingsAndLaunchIfOK(final BaseActivity parentActivity) {
+        if (!isStarted() && !isResolvingSettings()) {
+            googleApiClient.connect();//if already connected does nothing
 
-        // build location settings status requests
-        LocationSettingsRequest request = new LocationSettingsRequest.Builder()
-                .addLocationRequest(locationRequest)
-                .build();
+            // build location settings status requests
+            LocationSettingsRequest request = new LocationSettingsRequest.Builder()
+                    .addLocationRequest(locationRequest)
+                    .build();
 
-        // checks the location settings using the client and request above
-        PendingResult<LocationSettingsResult> result =
-                LocationServices.SettingsApi.checkLocationSettings(googleApiClient, request);
+            // checks the location settings using the client and request above
+            PendingResult<LocationSettingsResult> result =
+                    LocationServices.SettingsApi.checkLocationSettings(googleApiClient, request);
 
-        // sets the callback for result
-        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
-            @Override
-            public void onResult(LocationSettingsResult result) {
-                final Status status = result.getStatus();
-                //  final LocationSettingsStates = result.getLocationSettingsStates();
-                switch (status.getStatusCode()) {
-                    case LocationSettingsStatusCodes.SUCCESS:
-                        // All location settings are satisfied. The client can initialize location
-                        // requests.
-                        Log.i(GPSProvider.TAG, CalamarApplication.getInstance().getString(R.string.location_settings_ok));
-                        //  start location requests
-                        startLocationUpdates();
-                        break;
-                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        // Location settings are not satisfied. But could be fixed by showing the user
-                        // a dialog.
-                        try {
-                            // Show the dialog and check the result in onActivityResult().
-                            Log.e(GPSProvider.TAG, CalamarApplication.getInstance().getString(R.string.unsatisfied_location_settings));
-                            status.startResolutionForResult(parentActivity, CHECK_SETTINGS_REQUEST);
+            // sets the callback for result
+            result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
+                @Override
+                public void onResult(LocationSettingsResult result) {
+                    final Status status = result.getStatus();
+                    //  final LocationSettingsStates = result.getLocationSettingsStates();
+                    switch (status.getStatusCode()) {
+                        case LocationSettingsStatusCodes.SUCCESS:
+                            // All location settings are satisfied. The client can initialize location
+                            // requests.
+                            Log.i(GPSProvider.TAG, "Location settings OK");
+                            //  start location requests
+                            startLocationUpdates();
+                            break;
+                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                            // Location settings are not satisfied. But could be fixed by showing the user
+                            // a dialog.
+                            try {
+                                // Show the dialog, onActivityResult() callback in activity will be called
+                                // with result of user action
+                                isResolvingSettings = true;
+                                Log.e(GPSProvider.TAG, "Location settings not satisfied");
+                                status.startResolutionForResult(parentActivity, CHECK_SETTINGS_REQUEST);
 
-                            // onActivityResult() callback in activity will be called with result
-                            // of user action
-
-                        } catch (IntentSender.SendIntentException e) {
-                            // Ignore the error.
-                        }
-                        break;
-                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                        // Location settings are not satisfied. However, we have no way to fix the
-                        // settings so we won't show the dialog.
-                        Log.e(GPSProvider.TAG, CalamarApplication.getInstance().getString(R.string.location_settings_change_unavailable_mandatory));
-                        //parentActivity.finish();
-                        //TODO decide what to do ? toast plus finish ?
-                        break;
+                            } catch (IntentSender.SendIntentException e) {
+                                // Ignore the error.
+                            }
+                            break;
+                        case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                            // Location settings are not satisfied. However, we have no way to fix the
+                            // settings so we won't show the dialog.
+                            if (!parentActivity.isFinishing()) {
+                                parentActivity.displayErrorMessage(
+                                        parentActivity.getString(R.string.settings_change_unavailable), true);
+                            }
+                            break;
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -259,6 +266,23 @@ public final class GPSProvider implements LocationListener {
     private void notifyObservers(Location location) {
         for (GPSProvider.Observer observer : observers) {
             observer.update(location);
+        }
+    }
+
+    public void displayErrorMessage(final BaseActivity context) {
+        // TODO refactor to remove code duplication with baseact.displaydialog, add constant etc..
+        Log.e(GPSProvider.TAG, "we need gps !!");
+        if (!context.isFinishing()) {//&& !isPaused()) {
+            final AlertDialog.Builder errorDialog = new AlertDialog.Builder(context);
+            errorDialog.setTitle(context.getString(R.string.location_settings_unsatisfied_message));
+            errorDialog.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    //OK
+                    isResolvingSettings = false;
+                    context.finish();
+                }
+            });
+            errorDialog.show();
         }
     }
 

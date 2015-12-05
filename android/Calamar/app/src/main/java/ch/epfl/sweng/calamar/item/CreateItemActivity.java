@@ -1,7 +1,5 @@
 package ch.epfl.sweng.calamar.item;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
@@ -103,14 +101,7 @@ public final class CreateItemActivity extends BaseActivity {
                 } catch (IOException e) {
                     // TODO untested code, simulate IOException
                     Log.e(CreateItemActivity.TAG, e.getMessage());
-                    AlertDialog.Builder newUserAlert = new AlertDialog.Builder(CreateItemActivity.this);
-                    newUserAlert.setTitle(R.string.unable_to_create_item);
-                    newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            //OK
-                        }
-                    });
-                    newUserAlert.show();
+                    displayErrorMessage(getString(R.string.unable_to_create_item), false);
                 }
             }
         });
@@ -153,7 +144,9 @@ public final class CreateItemActivity extends BaseActivity {
                         Toast.makeText(this, R.string.select_local_file, Toast.LENGTH_SHORT).show();
                     }
                 }
-            }
+            } // TODO else exception, dialog, toast, log ?
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -228,7 +221,7 @@ public final class CreateItemActivity extends BaseActivity {
             toSendBuilder = new SimpleTextItem.Builder();
         }
         if (message.getText().toString().equals(getString(R.string.empty_string)) && toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
-            displayErrorMessage(getString(R.string.item_create_invalid));
+            displayErrorMessage(getString(R.string.item_create_invalid), false);
             return;
         }
         if (privateCheckbox.isChecked()) {
@@ -250,7 +243,7 @@ public final class CreateItemActivity extends BaseActivity {
         toSendBuilder.setMessage(message.getText().toString());
         Item toSend = toSendBuilder.build();
         if (!toSend.hasLocation() && toSend.getTo().getID() == User.PUBLIC_ID) {
-            displayErrorMessage(getString(R.string.public_without_condition));
+            displayErrorMessage(getString(R.string.public_without_condition), false);
         } else {
             new SendItemTask(toSend).execute();
         }
@@ -262,9 +255,11 @@ public final class CreateItemActivity extends BaseActivity {
     private class SendItemTask extends AsyncTask<Void, Void, Item> {
 
         private final Item item;
+        private final String itemPath;
 
         public SendItemTask(Item item) {
             this.item = item;
+            itemPath = item.getType() != Item.Type.SIMPLETEXTITEM ? ((FileItem) item).getPath() : null;
         }
 
         @Override
@@ -280,11 +275,27 @@ public final class CreateItemActivity extends BaseActivity {
         @Override
         protected void onPostExecute(Item item) {
             if (item != null) {
-                CalamarApplication.getInstance().getStorageManager().storeItem(item, null);
+                if (itemPath != null) {
+                    Item toStore;
+                    //TODO add methods "withPath / withData, etc " to Item for simplification
+                    switch (item.getType()) {
+                        case FILEITEM:
+                            toStore = new FileItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), ((FileItem) item).getData(), itemPath);
+                            break;
+                        case IMAGEITEM:
+                            toStore = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), ((ImageItem) item).getData(), itemPath);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Expected FileItem");
+                    }
+                    CalamarApplication.getInstance().getStorageManager().storeItem(toStore, null);
+                } else {
+                    CalamarApplication.getInstance().getStorageManager().storeItem(item, null);
+                }
                 Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
                 CreateItemActivity.this.finish();
             } else {
-                displayErrorMessage(getString(R.string.item_send_error));
+                displayErrorMessage(getString(R.string.item_send_error), false);
             }
         }
     }

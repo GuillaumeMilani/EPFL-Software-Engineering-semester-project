@@ -182,7 +182,7 @@ public final class ChatActivity extends BaseActivity implements StorageCallbacks
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 storageManager.storeItem(item, ChatActivity.this);
             } else {
-                displayErrorMessage(getString(R.string.item_send_error));
+                displayErrorMessage(getString(R.string.item_send_error), false);
             }
         }
     }
@@ -236,7 +236,7 @@ public final class ChatActivity extends BaseActivity implements StorageCallbacks
                 Toast.makeText(context, getString(R.string.refresh_message),
                         Toast.LENGTH_SHORT).show();
             } else {
-                displayErrorMessage(getString(R.string.unable_to_refresh_message));
+                displayErrorMessage(getString(R.string.unable_to_refresh_message), false);
             }
         }
 

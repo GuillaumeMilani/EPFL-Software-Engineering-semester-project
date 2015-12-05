@@ -86,6 +86,7 @@ public abstract class BaseActivity extends AppCompatActivity
 //        if (googleApiClient.isConnected()) {
 //            googleApiClient.disconnect();
 //        }
+
         super.onStop();
     }
     // *********************************************************************************************
@@ -128,6 +129,8 @@ public abstract class BaseActivity extends AppCompatActivity
         }
     }
 
+    // *********************************************************************************************
+
     // TODO test all use don't crash
 
     /**
@@ -135,37 +138,49 @@ public abstract class BaseActivity extends AppCompatActivity
      *
      * @param message the message to be displayed
      */
-    protected void displayErrorMessage(String message) {
-        Log.e(TAG, message);
-        if (!this.isFinishing()) {
-            AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
+    public void displayErrorMessage(String message, final boolean criticalError) {
+        Log.e(BaseActivity.TAG, message);
+        if (!this.isFinishing()) {//&& !isPaused()) {
+            final AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
             errorDialog.setTitle(message);
             errorDialog.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
                     //OK
+                    if (criticalError) {
+                        BaseActivity.this.finish();
+                    }
                 }
             });
+//            if (criticalError) {
+//                errorDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+//                    @Override
+//                    public void onDismiss(DialogInterface dialog) {
+//                        BaseActivity.this.finish();
+//                    }
+//                });
+//            }
             errorDialog.show();
         }
     }
-
-    // *********************************************************************************************
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case GPSProvider.CHECK_SETTINGS_REQUEST:
+                GPSProvider gpsProvider = GPSProvider.getInstance();
+                //Log.e(TAG, resultCode+"");
                 switch (resultCode) {
                     case Activity.RESULT_OK:
-
                         Log.i(TAG, getString(R.string.location_settings_fixed));
                         // start only the updates, settings should have been fixed now
-                        GPSProvider.getInstance().startLocationUpdates();
-
+                        gpsProvider.startLocationUpdates();
                         break;
-                    default:
-                        Log.e(TAG, getString(R.string.cannot_do_without_gps));
-                        finish();//TODO maybe refine ?
+                    default: {// WARNING, on api level 16, if multiple action need to be done,
+                        // multiple dialog displayed BUT (WTF ?) on 'ok' of 1st dialog
+                        // resultCode = 0 instead of -1(RESULTOK) and all the problem solved...but error msg...
+                        // don't see why...
+                        gpsProvider.displayErrorMessage(this);
+                    }
                 }
                 break;
             case ERROR_RESOLUTION_REQUEST:
@@ -173,15 +188,13 @@ public abstract class BaseActivity extends AppCompatActivity
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         // Make sure the app is not already connected or attempting to connect
-                        GoogleApiClient googleApiClient =
-                                app.getGoogleApiClient();
+                        GoogleApiClient googleApiClient = app.getGoogleApiClient();
                         if (!googleApiClient.isConnecting() && !googleApiClient.isConnected()) {
                             googleApiClient.connect();
                         }
                         break;
                     default:
-                        Log.e(TAG, getString(R.string.google_api_client_cant_connect));
-                        finish();//TODO maybe refine ?
+                        displayErrorMessage(getString(R.string.unable_to_connect_client_message), true);
                 }
                 break;
             case ACCOUNT_CHOOSEN:
@@ -193,8 +206,7 @@ public abstract class BaseActivity extends AppCompatActivity
                         afterAccountAuthentication();
                         break;
                     default:
-                        Log.e(BaseActivity.TAG, getString(R.string.didnt_choose_account));
-                        finish();
+                        displayErrorMessage(getString(R.string.account_not_chosen_message), true);
                 }
                 break;
             default:

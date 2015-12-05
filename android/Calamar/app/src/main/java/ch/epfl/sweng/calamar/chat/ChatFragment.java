@@ -1,10 +1,8 @@
 package ch.epfl.sweng.calamar.chat;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
@@ -21,6 +19,7 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
@@ -93,7 +92,6 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
 
         //Create BroadCastReceiver
         getContext().registerReceiver(new ChatBroadcastReceiver(), new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
-
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -103,7 +101,7 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
     private void addContact() {
         EditText input = (EditText) newContactAlertDialog.findViewById(R.id.newContactInput);
         newContactAlertDialog.dismiss();
-        new retrieveUserTask(input.getText().toString(), getActivity()).execute();
+        new retrieveUserTask(input.getText().toString(), (BaseActivity) getActivity()).execute();
     }
 
     /**
@@ -156,9 +154,9 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
     private class retrieveUserTask extends AsyncTask<Void, Void, User> {
 
         private String name = null;
-        private final Context context;
+        private final BaseActivity context;
 
-        public retrieveUserTask(String name, Context context) {
+        public retrieveUserTask(String name, BaseActivity context) {
             this.name = name;
             this.context = context;
         }
@@ -179,14 +177,9 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
                 //add the user in the contact list
                 addUserInContact(newUser);
             } else {
-                AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
-                newUserAlert.setTitle(R.string.add_new_contact_impossible);
-                newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        //OK
-                    }
-                });
-                newUserAlert.show();
+                if (isAdded()) {
+                    context.displayErrorMessage(getString(R.string.add_new_contact_impossible), false);
+                }
             }
         }
     }
