@@ -208,8 +208,10 @@ public final class GPSProvider implements LocationListener {
                         case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                             // Location settings are not satisfied. However, we have no way to fix the
                             // settings so we won't show the dialog.
-                            parentActivity.displayErrorMessage(
-                                    "LOCATION SETTINGS CHANGE UNAVAILABLE.. but mandatory..", true);
+                            if (!parentActivity.isFinishing()) {
+                                parentActivity.displayErrorMessage(
+                                        parentActivity.getString(R.string.settings_change_unavailable), true);
+                            }
                             break;
                     }
                 }
