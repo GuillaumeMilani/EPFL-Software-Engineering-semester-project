@@ -21,6 +21,7 @@ import ch.epfl.sweng.calamar.recipient.User;
 import ch.epfl.sweng.calamar.utils.StorageManager;
 
 public final class CalamarApplication extends Application implements Application.ActivityLifecycleCallbacks, ComponentCallbacks2 {
+    private static final String TAG = CalamarApplication.class.getSimpleName();
 
     private static final String LAST_USERS_REFRESH_SP = "lastUsersRefresh";
     private static final String LAST_ITEMS_REFRESH_SP = "lastItemsRefresh";
@@ -30,11 +31,12 @@ public final class CalamarApplication extends Application implements Application
     private static final String TODAY_FILE_COUNT_SP = "todayFileCount";
     private static final String USER_PREF_NAME = "user_pref.xml";
 
-    private static final String TAG = CalamarApplication.class.getSimpleName();
     private static final int UPDATE_DB_TIME = 60000;
 
     //TODO Why volatile?
     private static volatile CalamarApplication instance;
+
+    private final int WAITING_TIME = 500;
 
     private SQLiteDatabaseHandler dbHandler;
     private StorageManager storageManager;
@@ -53,7 +55,6 @@ public final class CalamarApplication extends Application implements Application
     private int resumed = 0;
     private int paused = 0;
     private Handler handler;
-    private final int WAITING_TIME = 500;
 
     /**
      * Returns the current instance of the application.
@@ -238,7 +239,7 @@ public final class CalamarApplication extends Application implements Application
      * @return the name of the user
      */
     public String getCurrentUserName() {
-        return sp.getString(CURRENT_USER_NAME_SP, "");
+        return sp.getString(CURRENT_USER_NAME_SP, getString(R.string.empty_string));
     }
 
     /**
@@ -286,7 +287,7 @@ public final class CalamarApplication extends Application implements Application
      * Resets the Username to an empty String.
      */
     public void resetUsername() {
-        setCurrentUserName("");
+        setCurrentUserName(getString(R.string.empty_string));
     }
 
     /**
@@ -441,6 +442,9 @@ public final class CalamarApplication extends Application implements Application
         return onForeground;
     }
 
+    /**
+     * AsyncTask to apply the pending operations in the local database
+     */
     public class ApplyPendingDatabaseOperationsTask extends AsyncTask<Void, Void, Void> {
 
         @Override

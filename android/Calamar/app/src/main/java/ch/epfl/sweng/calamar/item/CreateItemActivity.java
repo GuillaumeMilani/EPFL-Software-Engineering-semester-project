@@ -38,17 +38,17 @@ import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
 
-public class CreateItemActivity extends BaseActivity {
+public final class CreateItemActivity extends BaseActivity {
 
     private static final int PICK_FILE_REQUEST = 1;
+    private static final String TAG = CreateItemActivity.class.getSimpleName();
     public static final String CREATE_ITEM_RECIPIENT_EXTRA_ID = "ch.epfl.sweng.calamar.RECIPIENT_ID";
     public static final String CREATE_ITEM_RECIPIENT_EXTRA_NAME = "ch.epfl.sweng.calamar.RECIPIENT_NAME";
 
-    private static final String TAG = CreateItemActivity.class.getSimpleName();
 
     private Set<String> imageExt;
     private Spinner contactsSpinner;
-    private CheckBox privateCheck;
+    private CheckBox privateCheckbox;
     private CheckBox locationCheck;
     private EditText message;
     private File file;
@@ -65,7 +65,7 @@ public class CreateItemActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_item);
 
-        privateCheck = (CheckBox) findViewById(R.id.privateCheck);
+        privateCheckbox = (CheckBox) findViewById(R.id.privateCheck);
         locationCheck = (CheckBox) findViewById(R.id.locationCheck);
         locationProgressBar = (ProgressBar) findViewById(R.id.locationProgressBar);
         locationProgressBar.setVisibility(ProgressBar.INVISIBLE);
@@ -90,7 +90,7 @@ public class CreateItemActivity extends BaseActivity {
         if (id != -1) {
             final String name = intent.getStringExtra(CREATE_ITEM_RECIPIENT_EXTRA_NAME);
             contactsSpinner.setVisibility(View.VISIBLE);
-            privateCheck.setChecked(true);
+            privateCheckbox.setChecked(true);
             contactsSpinner.setSelection(contacts.indexOf(new User(id, name)));
         }
         browseButton = (Button) findViewById(R.id.selectFileButton);
@@ -122,6 +122,12 @@ public class CreateItemActivity extends BaseActivity {
     }
 
     //Button listeners ; Not a big fan of methods having to be public
+
+    /**
+     * Starts the file picker, to allow the user to select a file. Called by browseButton
+     *
+     * @param v The Browse button
+     */
     public void startFilePicker(View v) {
         Intent target = FileUtils.createGetContentIntent();
         Intent intent = Intent.createChooser(target, getString(R.string.choose_file));
@@ -151,12 +157,17 @@ public class CreateItemActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Called by locationCheckbox. Checks the location if it is checked.
+     *
+     * @param v The location checkbox
+     */
     public void locationChecked(View v) {
         final GPSProvider gpsProvider = GPSProvider.getInstance();
 
-        CheckBox locationBox = (CheckBox) v;
+        CheckBox locationCheckbox = (CheckBox) v;
 
-        if (locationBox.isChecked()) {
+        if (locationCheckbox.isChecked()) {
             // will start updates if settings ok, if not dialog, onActivityResult etc
             GPSProvider.getInstance().checkSettingsAndLaunchIfOK(this);
 
@@ -179,8 +190,13 @@ public class CreateItemActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Called by privateCheckbox. Toggles the contactsSpinner visibility
+     *
+     * @param v the private Checkbox
+     */
     public void privateChecked(View v) {
-        if (privateCheck.isChecked()) {
+        if (privateCheckbox.isChecked()) {
             contactsSpinner.setVisibility(View.VISIBLE);
         } else {
             contactsSpinner.setVisibility(View.INVISIBLE);
@@ -202,7 +218,7 @@ public class CreateItemActivity extends BaseActivity {
         if (file != null) {
             String name = file.getName();
             int extIndex = name.lastIndexOf('.');
-            String ext = extIndex > 0 ? name.substring(extIndex + 1) : "";
+            String ext = extIndex > 0 ? name.substring(extIndex + 1) : getString(R.string.empty_string);
             if (imageExt.contains(ext.toLowerCase())) {
                 toSendBuilder = new ImageItem.Builder().setFile(file);
             } else {
@@ -211,11 +227,11 @@ public class CreateItemActivity extends BaseActivity {
         } else {
             toSendBuilder = new SimpleTextItem.Builder();
         }
-        if (message.getText().toString().equals("") && toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
+        if (message.getText().toString().equals(getString(R.string.empty_string)) && toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
             displayErrorMessage(getString(R.string.item_create_invalid));
             return;
         }
-        if (privateCheck.isChecked()) {
+        if (privateCheckbox.isChecked()) {
             int contactPosition = contactsSpinner.getSelectedItemPosition();
             if (contactPosition != -1) {
                 Recipient to = contacts.get(contactsSpinner.getSelectedItemPosition());

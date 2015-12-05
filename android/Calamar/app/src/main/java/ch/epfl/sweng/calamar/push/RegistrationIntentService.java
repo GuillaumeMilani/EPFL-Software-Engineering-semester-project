@@ -1,6 +1,5 @@
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
- * <<<<<<< HEAD:android/Calamar/app/src/main/java/ch/epfl/sweng/calamar/RegistrationIntentService.java
  * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -8,15 +7,6 @@
  * <p/>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p/>
- * =======
- * <p/>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
- * >>>>>>> dc774c0b4e22aff9aa7e58950946e847eb05e6d8:android/Calamar/app/src/main/java/ch/epfl/sweng/calamar/push/RegistrationIntentService.java
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,14 +35,17 @@ import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 
-public class RegistrationIntentService extends IntentService {
+public final class RegistrationIntentService extends IntentService {
 
     public static final String SENT_TOKEN_TO_SERVER = "sent_token_to_server_gcm";
-    public static final String REGISTRATION_COMPLETE = "registration_complete_gcm";
+    private static final String REGISTRATION_COMPLETE = "registration_complete_gcm";
     private static final String TAG = "RegIntentService";
     private static final String[] TOPICS = {"global"};
     private static final String TOPICS_STR = "/topics/";
 
+    /**
+     * Creates a new RegistrationIntentService
+     */
     public RegistrationIntentService() {
         super(TAG);
     }
@@ -124,6 +117,9 @@ public class RegistrationIntentService extends IntentService {
     }
     // [END subscribe_topics]
 
+    /**
+     * AsyncTask to create a new User and tell it to the server
+     */
     private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
         private String name = null;
         private String token = null;

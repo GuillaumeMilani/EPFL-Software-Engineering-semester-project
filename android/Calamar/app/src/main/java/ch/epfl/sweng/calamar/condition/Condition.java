@@ -25,11 +25,11 @@ public abstract class Condition {
 
     // TODO make tostring usable ^^
 
-    protected static final String JSON_METADATA = "metadata";
     protected static final String JSON_TYPE = "type";
-    protected static final String JSON_VALUE = "val";
-    protected static final String JSON_LEFT = "a";
-    protected static final String JSON_RIGHT = "b";
+    private static final String JSON_METADATA = "metadata";
+    private static final String JSON_VALUE = "val";
+    private static final String JSON_LEFT = "a";
+    private static final String JSON_RIGHT = "b";
     private static final int GREEN = Color.rgb(0, 155, 0);
     private static final int RED = Color.rgb(155, 0, 0);
 
@@ -41,6 +41,13 @@ public abstract class Condition {
     private Boolean value = false;
     private final Set<Observer> observers = new HashSet<>();
 
+    /**
+     * Concats two or more JSONArrays
+     *
+     * @param arrays The arrays to be concatenated
+     * @return The concatenated Array
+     * @throws JSONException If there is a problem with the JSON
+     */
     private static JSONArray concatArray(JSONArray... arrays)
             throws JSONException {
         JSONArray result = new JSONArray();
@@ -84,6 +91,11 @@ public abstract class Condition {
         return value == that.value && getType().equals(that.getType());
     }
 
+    /**
+     * Returns the type of the condition
+     *
+     * @return the type
+     */
     public abstract Type getType();
 
 
@@ -102,6 +114,12 @@ public abstract class Condition {
         return false;
     }
 
+    /**
+     * Returns the view of the condition
+     *
+     * @param context The context from which this method is called
+     * @return The View
+     */
     public View getView(Activity context) {
         LinearLayout layout = new LinearLayout(context);
         layout.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -157,6 +175,12 @@ public abstract class Condition {
         return value;
     }
 
+    /**
+     * Returns the metadata of the condition
+     *
+     * @return the metadata
+     * @throws JSONException
+     */
     public JSONArray getMetadata() throws JSONException {
         return new JSONArray();
     }
@@ -512,10 +536,21 @@ public abstract class Condition {
         }
     }
 
+    /**
+     * Adds an observer of the condition
+     *
+     * @param observer A Condition.Observer (Item generally)
+     */
     public void addObserver(Condition.Observer observer) {
         this.observers.add(observer);
     }
 
+    /**
+     * Removes an observer of the condition
+     *
+     * @param observer a Condition.Observer (Item generally)
+     * @return The result of the removal (true if it existed, false otherwise)
+     */
     public boolean removeObserver(Condition.Observer observer) {
         return this.observers.remove(observer);
     }

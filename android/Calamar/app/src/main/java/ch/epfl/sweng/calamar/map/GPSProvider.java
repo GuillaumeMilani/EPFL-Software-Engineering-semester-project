@@ -28,7 +28,6 @@ import ch.epfl.sweng.calamar.R;
 /**
  * Created by LPI on 06.11.2015.
  */
-@SuppressWarnings("FinalStaticMethod")
 public final class GPSProvider implements LocationListener {
     private static volatile GPSProvider instance = null;
     private static final String TAG = GPSProvider.class.getSimpleName();
@@ -51,7 +50,7 @@ public final class GPSProvider implements LocationListener {
     /**
      * @return the GPSProvider singleton's instance
      */
-    public final static GPSProvider getInstance() {
+    public static GPSProvider getInstance() {
         // avoid call to synchronized if already instantiated
         if (GPSProvider.instance == null) {
             // avoid multiple instantiations by different threads
@@ -131,6 +130,12 @@ public final class GPSProvider implements LocationListener {
         return this.observers.remove(observer);
     }
 
+    /**
+     * Sets a mock location for debugging and testing
+     *
+     * @param location The location to be set
+     * @throws RuntimeException If the app is not in debug mode
+     */
     public void setMockLocation(Location location) {
         if (BuildConfig.DEBUG) {
             notifyObservers(location);
@@ -139,6 +144,9 @@ public final class GPSProvider implements LocationListener {
         }
     }
 
+    /**
+     * @return True if the GPSProvider has been started
+     */
     public boolean isStarted() {
         return isStarted;
     }

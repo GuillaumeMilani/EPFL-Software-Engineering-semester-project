@@ -106,27 +106,13 @@ public final class SimpleTextItem extends Item {
     }
 
     /**
-     * hash the SimpleTextItem
-     *
-     * @return hash of the SimpleTextItem
-     */
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return super.toString();
-    }
-
-    /**
      * A Builder for {@link SimpleTextItem}, currently only used to parse JSON (little overkill..but ..)
      *
      * @see Item.Builder
      */
     protected static class Builder extends Item.Builder {
 
+        @Override
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString(JSON_TYPE);
@@ -136,6 +122,7 @@ public final class SimpleTextItem extends Item {
             return this;
         }
 
+        @Override
         protected SimpleTextItem build() {
             return new SimpleTextItem(super.ID, super.from, super.to, super.date, super.condition, super.message);
         }

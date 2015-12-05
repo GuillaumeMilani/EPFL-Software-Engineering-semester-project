@@ -23,7 +23,7 @@ import ch.epfl.sweng.calamar.map.MapFragment;
  * Created by Guillaume on 12.11.2015.
  */
 
-public class MainActivity extends BaseActivity {
+public final class MainActivity extends BaseActivity {
 
     public static final String TABKEY = MainActivity.class.getCanonicalName() + ":TABID";
 

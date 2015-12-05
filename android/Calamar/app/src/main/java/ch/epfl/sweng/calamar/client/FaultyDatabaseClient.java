@@ -12,7 +12,7 @@ import ch.epfl.sweng.calamar.recipient.User;
 /**
  * Created by Quentin Jaquier, sciper 235825 on 29.11.2015.
  */
-public class FaultyDatabaseClient implements DatabaseClient {
+public final class FaultyDatabaseClient implements DatabaseClient {
     @Override
     public List<Item> getAllItems(Recipient recipient, Date from, VisibleRegion visibleRegion) throws DatabaseClientException {
         throw new DatabaseClientException("Impossible to get all item");

@@ -18,8 +18,8 @@ public interface DatabaseClient {
      * AND whose date is greater than <i>from</i>
      * AND that are located near <i>nearLocation</i>
      *
-     * @param recipient the items we want must have recipient in their destination field
-     * @param from      the items have been sent after from
+     * @param recipient     the items we want must have recipient in their destination field
+     * @param from          the items have been sent after from
      * @param visibleRegion the square visible region of the map
      * @return a list of {@link Item items}
      */
@@ -48,15 +48,15 @@ public interface DatabaseClient {
     /**
      * Retrieve an user from the server from his name.
      *
-     * @param name
+     * @param name The name of the user
      */
     User findUserByName(String name) throws DatabaseClientException;
 
     /**
      * Create a new user on the database
      *
-     * @param email    email of the new user.
-     * @param token    registration token of the new user .
+     * @param email email of the new user.
+     * @param token registration token of the new user .
      * @return the id of the new user given by the database
      * @throws DatabaseClientException
      */

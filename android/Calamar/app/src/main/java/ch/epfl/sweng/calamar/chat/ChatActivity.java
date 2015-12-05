@@ -40,7 +40,7 @@ import ch.epfl.sweng.calamar.utils.StorageManager;
  * This activity manages the chat between two users (or in a group)
  */
 
-public class ChatActivity extends BaseActivity implements StorageCallbacks {
+public final class ChatActivity extends BaseActivity implements StorageCallbacks {
 
     private static final String TAG = ChatActivity.class.getSimpleName();
 
@@ -54,7 +54,6 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
     private StorageManager storageManager;
     private SQLiteDatabaseHandler dbHandler;
-
     private CalamarApplication app;
 
 
@@ -65,10 +64,10 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
         Intent intent = getIntent();
         String correspondentName = intent.getStringExtra(ChatFragment.EXTRA_CORRESPONDENT_NAME);
-        int correspondentID = intent.getIntExtra(ChatFragment.EXTRA_CORRESPONDENT_ID, -1); // -1 = default value
+        int correspondentID = intent.getIntExtra(ChatFragment.EXTRA_CORRESPONDENT_ID, Recipient.DEFAULT_ID);
 
         if (correspondentName == null) {
-            correspondentName = "";
+            correspondentName = getString(R.string.empty_string);
         }
 
         app = CalamarApplication.getInstance();
@@ -147,7 +146,10 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
      */
     private void sendTextItem() {
         String message = editText.getText().toString();
-        Item textMessage = new SimpleTextItem(1, app.getCurrentUser(), correspondent, new Date(), message);
+        Item textMessage = new SimpleTextItem(Item.DUMMY_ID, app.getCurrentUser(), correspondent, new Date(), message);
+        adapter.notifyDataSetChanged();
+        messagesContainer.setSelection(messagesContainer.getCount() - 1);
+        editText.setText(getString(R.string.empty_string));
         new SendItemTask(textMessage).execute();
     }
 

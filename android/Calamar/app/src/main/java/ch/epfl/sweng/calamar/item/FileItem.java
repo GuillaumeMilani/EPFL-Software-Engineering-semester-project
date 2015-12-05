@@ -33,16 +33,16 @@ import ch.epfl.sweng.calamar.utils.Compresser;
  */
 public class FileItem extends Item {
 
-    private final String path;
-    private final String name;
-    private final static Type ITEM_TYPE = Type.FILEITEM;
-    private final byte[] data;
-    private final int hash;
+    public static final String DUMMY_PATH = "/dummy";
 
     private static final String JSON_DATA = "data";
     private static final String UTF8_CHARSET = "UTF-8";
+    private final static Type ITEM_TYPE = Type.FILEITEM;
 
-    public static final String DUMMY_PATH = "/dummy";
+    private final String path;
+    private final String name;
+    private final byte[] data;
+    private final int hash;
 
     /**
      * Instantiates a new FileItem with the given parameters
@@ -85,7 +85,7 @@ public class FileItem extends Item {
      * @param path      The path of the file
      */
     public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path) {
-        this(ID, from, to, date, condition, data, path, "");
+        this(ID, from, to, date, condition, data, path, CalamarApplication.getInstance().getString(R.string.empty_string));
     }
 
     /**
@@ -114,7 +114,7 @@ public class FileItem extends Item {
      * @param path The path of the file
      */
     public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String path) {
-        this(ID, from, to, date, Condition.trueCondition(), data, path, "");
+        this(ID, from, to, date, Condition.trueCondition(), data, path, CalamarApplication.getInstance().getString(R.string.empty_string));
     }
 
     /**
@@ -245,6 +245,9 @@ public class FileItem extends Item {
         }
     }
 
+    /**
+     * A Builder for FileItems
+     */
     public static class Builder extends Item.Builder {
 
         protected byte[] data;

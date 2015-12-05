@@ -29,12 +29,8 @@ import android.util.Log;
 
 import com.google.android.gms.gcm.GcmListenerService;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import ch.epfl.sweng.calamar.MainActivity;
 import ch.epfl.sweng.calamar.R;
@@ -42,7 +38,7 @@ import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.recipient.User;
 
-public class RegistrationGcmListenerService extends GcmListenerService {
+public final class RegistrationGcmListenerService extends GcmListenerService {
 
     private static final String TAG = "RegGcmListenerService";
     private static final String RETRIEVE = "RETRIEVE";
@@ -136,16 +132,5 @@ public class RegistrationGcmListenerService extends GcmListenerService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
-    }
-
-    private static List<Item> itemsFromJSON(String response) throws JSONException {
-        List<Item> result = new ArrayList<>();
-
-        JSONArray array = new JSONArray(response);
-        for (int i = 0; i < array.length(); ++i) {
-            result.add(Item.fromJSON(array.getJSONObject(i)));
-        }
-
-        return result;
     }
 }

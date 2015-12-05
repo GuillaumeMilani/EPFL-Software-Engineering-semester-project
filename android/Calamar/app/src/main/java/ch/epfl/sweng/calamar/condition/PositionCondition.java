@@ -21,7 +21,7 @@ import ch.epfl.sweng.calamar.map.MapFragment;
 /**
  * Created by pierre on 10/27/15.
  */
-public class PositionCondition extends Condition {
+public final class PositionCondition extends Condition {
 
     private final static int MIN_PRECISION = 50;
     private final static int DEFAULT_RADIUS = 20;
@@ -66,6 +66,11 @@ public class PositionCondition extends Condition {
     }
 
 
+    /**
+     * Constructs a PositionCondition with a Location
+     *
+     * @param location An object Location
+     */
     public PositionCondition(Location location) {
         this(location, DEFAULT_RADIUS);
     }
@@ -230,6 +235,11 @@ public class PositionCondition extends Condition {
             return this;
         }
 
+        /**
+         * Builds the Condition
+         *
+         * @return The built PositionCondition
+         */
         public PositionCondition build() {
             return new PositionCondition(latitude, longitude, radius);
         }

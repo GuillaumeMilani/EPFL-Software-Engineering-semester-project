@@ -29,7 +29,7 @@ import ch.epfl.sweng.calamar.utils.Sorter;
 /**
  * Created by LPI on 19.10.2015.
  */
-public class NetworkDatabaseClient implements DatabaseClient {
+public final class NetworkDatabaseClient implements DatabaseClient {
 
     private final static String UTF8_CHARSET = "UTF-8";
 
@@ -128,9 +128,9 @@ public class NetworkDatabaseClient implements DatabaseClient {
     public User findUserByName(String name) throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
-            URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_USER_PATH);
+            final URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_USER_PATH);
 
-            JSONObject jsonParameter = new JSONObject();
+            final JSONObject jsonParameter = new JSONObject();
             jsonParameter.accumulate(JSON_NAME, name);
 
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);

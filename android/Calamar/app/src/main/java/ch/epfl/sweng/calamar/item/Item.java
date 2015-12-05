@@ -30,13 +30,14 @@ import ch.epfl.sweng.calamar.recipient.User;
  */
 public abstract class Item {
 
+    public static final int DUMMY_ID = 1;
+    protected static final String JSON_TYPE = "type";
     private static final String JSON_ID = "ID";
     private static final String JSON_FROM = "from";
     private static final String JSON_TO = "to";
     private static final String JSON_DATE = "date";
     private static final String JSON_CONDITION = "condition";
     private static final String JSON_MESSAGE = "message";
-    protected static final String JSON_TYPE = "type";
     private final int ID;
     private final User from;
     private final Recipient to;
@@ -46,17 +47,8 @@ public abstract class Item {
 
     public enum Type {SIMPLETEXTITEM, IMAGEITEM, FILEITEM}
 
-    private Set<Item.Observer> observers = new HashSet<>();
+    private final Set<Item.Observer> observers = new HashSet<>();
 
-
-    private final Condition.Observer conditionObserver = new Condition.Observer() {
-        @Override
-        public void update(Condition condition) {
-            for (Observer o : observers) {
-                o.update(Item.this);
-            }
-        }
-    };
 
     protected Item(int ID, User from, Recipient to, Date date, Condition condition, String message) {
         if (null == from || null == to || null == condition || null == date) {
@@ -73,6 +65,14 @@ public abstract class Item {
         this.date = date;
         this.condition = condition; //TODO Condition is not immutable...
 
+        final Condition.Observer conditionObserver = new Condition.Observer() {
+            @Override
+            public void update(Condition condition) {
+                for (Observer o : observers) {
+                    o.update(Item.this);
+                }
+            }
+        };
         condition.addObserver(conditionObserver);
     }
 
@@ -94,7 +94,7 @@ public abstract class Item {
     /**
      * Get the complete view of the item. ( With condition(s) )
      *
-     * @param context
+     * @param context the context from which this method is called
      * @return the view of the item.
      */
     public View getView(final Activity context) {

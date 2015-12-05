@@ -73,7 +73,7 @@ public final class ImageItem extends FileItem {
      * @see Item#Item(int, User, Recipient, Date, Condition, String)
      */
     public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path) {
-        this(ID, from, to, date, condition, data, path, "");
+        this(ID, from, to, date, condition, data, path, CalamarApplication.getInstance().getString(R.string.empty_string));
     }
 
     /**
@@ -88,7 +88,7 @@ public final class ImageItem extends FileItem {
      * @see Item#Item(int, User, Recipient, Date, Condition, String)
      */
     public ImageItem(int ID, User from, Recipient to, Date date, byte[] data, String path) {
-        this(ID, from, to, date, Condition.trueCondition(), data, path, "");
+        this(ID, from, to, date, Condition.trueCondition(), data, path, CalamarApplication.getInstance().getString(R.string.empty_string));
     }
 
     /**
@@ -158,7 +158,11 @@ public final class ImageItem extends FileItem {
      */
     public Bitmap getBitmap() {
         byte[] tempData = Compresser.decompress(getData());
-        return BitmapFactory.decodeByteArray(tempData, 0, tempData.length);
+        if (tempData != null) {
+            return BitmapFactory.decodeByteArray(tempData, 0, tempData.length);
+        } else {
+            return null;
+        }
     }
 
 
@@ -192,6 +196,7 @@ public final class ImageItem extends FileItem {
      */
     public static class Builder extends FileItem.Builder {
 
+        @Override
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString(JSON_TYPE);
@@ -201,6 +206,7 @@ public final class ImageItem extends FileItem {
             return this;
         }
 
+        @Override
         public ImageItem build() {
             return new ImageItem(super.ID, super.from, super.to, super.date, super.condition, super.data, super.path, super.message);
         }

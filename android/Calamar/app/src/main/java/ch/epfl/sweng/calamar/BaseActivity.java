@@ -129,7 +129,13 @@ public abstract class BaseActivity extends AppCompatActivity
     }
 
     // TODO test all use don't crash
-    public void displayErrorMessage(String message) {
+
+    /**
+     * Displays an error message in a dialog
+     *
+     * @param message the message to be displayed
+     */
+    protected void displayErrorMessage(String message) {
         Log.e(TAG, message);
         if (!this.isFinishing()) {
             AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);

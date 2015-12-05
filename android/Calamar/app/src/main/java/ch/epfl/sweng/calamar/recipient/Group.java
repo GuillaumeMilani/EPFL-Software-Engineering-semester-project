@@ -32,12 +32,6 @@ public final class Group extends Recipient {
         this(ID, name, new ArrayList<User>());
     }
 
-    /**
-     * java equals
-     *
-     * @param o other Object to compare this with
-     * @return true if o is equal in value to this
-     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -46,11 +40,6 @@ public final class Group extends Recipient {
         return super.equals(that) && that.users.equals(users);
     }
 
-    /**
-     * java hash function
-     *
-     * @return hash of the Object
-     */
     @Override
     public int hashCode() {
         return super.hashCode() * 73 + users.hashCode();
@@ -126,6 +115,7 @@ public final class Group extends Recipient {
     private static class Builder extends Recipient.Builder {
         private List<User> users;
 
+        @Override
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
             String type = json.getString(JSON_TYPE);
@@ -142,7 +132,7 @@ public final class Group extends Recipient {
         }
 
         public Group build() {
-            return new Group(super.ID, super.name);
+            return new Group(super.ID, super.name, users);
         }
     }
 }

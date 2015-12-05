@@ -19,7 +19,7 @@ import ch.epfl.sweng.calamar.item.ImageItem;
 /**
  * Utilitary class used to compress and decompress byte arrays of data using the native zlib implementation of java
  */
-public class Compresser {
+public final class Compresser {
 
     private static final int MIN_SIZE_FOR_COMPRESSION = 30;
     private static final int THUMBNAIL_SIZE = 100;
@@ -27,6 +27,9 @@ public class Compresser {
     private static final byte HEADER_1 = 0x78;
     private static final byte HEADER_2 = (byte) 0xDA;
     private static final byte[] FOOTER = {0x10, 0x23, 0x47, 0x12, 0x45, (byte) 0xa7, (byte) 0xd3, (byte) 0xef, (byte) 0xaa, (byte) 0xfa, 0x02, 0x21, 0x33, 0x22};
+
+    private Compresser() {
+    }
 
     /**
      * Compresses the data if it is not already compressed
@@ -131,6 +134,12 @@ public class Compresser {
         }
     }
 
+    /**
+     * Returns a 100x100 thumbnail of the image as a byte array, or the image itself if it is smaller.
+     *
+     * @param i The ImageItem
+     * @return a byte array representing the thumbnail
+     */
     public static byte[] getImageThumbnail(ImageItem i) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         Bitmap bitmap = i.getBitmap();
@@ -147,6 +156,12 @@ public class Compresser {
         return null;
     }
 
+    /**
+     * Checks if the data is compressed by this Compresser.
+     *
+     * @param data The data
+     * @return true if it is compressed, false otherwise
+     */
     private static boolean isCompressed(byte[] data) {
         if (data.length < FOOTER.length + 2) {
             return false;
