@@ -23,6 +23,7 @@ import ch.epfl.sweng.calamar.map.MapFragment;
  */
 public class PositionCondition extends Condition {
 
+    private final static int MIN_PRECISION = 50;
     private final static int DEFAULT_RADIUS = 20;
     private final static int MIN_LAT = -90;
     private final static int MAX_LAT = 90;
@@ -31,6 +32,7 @@ public class PositionCondition extends Condition {
     private final static String JSON_LAT = "latitude";
     private final static String JSON_LON = "longitude";
     private final static String JSON_RADIUS = "radius";
+
     public static final String TAG = PositionCondition.class.getSimpleName();
 
 
@@ -40,8 +42,8 @@ public class PositionCondition extends Condition {
     /**
      * construct a PositionCondition from a location and a radius
      *
-     * @param location
-     * @param radius
+     * @param location a Location object
+     * @param radius   the radius as a double
      */
     public PositionCondition(Location location, double radius) {
         if (null == location) {
@@ -53,7 +55,9 @@ public class PositionCondition extends Condition {
         GPSProvider.getInstance().addObserver(new GPSProvider.Observer() {
             @Override
             public void update(Location newLocation) {
-                setValue(newLocation.distanceTo(getLocation()) < getRadius());
+                if (newLocation.getAccuracy() <= MIN_PRECISION) {
+                    setValue(newLocation.distanceTo(getLocation()) < getRadius());
+                }
                 if (getValue()) {
                     GPSProvider.getInstance().removeObserver(this);
                 }
@@ -69,9 +73,9 @@ public class PositionCondition extends Condition {
     /**
      * construct a PositionCondition from a latitude, a longitude and a radius
      *
-     * @param latitude
-     * @param longitude
-     * @param radius
+     * @param latitude  the latitude as a double
+     * @param longitude the longitude as a double
+     * @param radius    the radius as a double
      */
     public PositionCondition(double latitude, double longitude, double radius) {
         this(makeLocation(latitude, longitude), radius);
@@ -80,8 +84,8 @@ public class PositionCondition extends Condition {
     /**
      * make a Location from its latitude and longitude
      *
-     * @param latitude
-     * @param longitude
+     * @param latitude  the latitude as a double
+     * @param longitude the longitude as a double
      * @return Location in this place
      */
     private static Location makeLocation(double latitude, double longitude) {
@@ -158,7 +162,7 @@ public class PositionCondition extends Condition {
     @Override
     public View getView(final Activity context) {
         LinearLayout view = (LinearLayout) (super.getView(context));
-        view.setOrientation(LinearLayout.HORIZONTAL);
+        view.setOrientation(LinearLayout.VERTICAL);
 
         // TODO make this looks better, and inflate from xml instead of like now :
         TextView positionText = new TextView(context);

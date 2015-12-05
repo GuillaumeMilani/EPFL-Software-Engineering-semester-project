@@ -36,7 +36,6 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     public final static String EXTRA_CORRESPONDENT_ID = "ch.epfl.sweng.calamar.CORRESPONDENT_ID";
     private static final String TAG = ChatFragment.class.getSimpleName();
 
-    private ListView contactsView;
     private List<Recipient> contacts;
     private ChatUsersListAdapter adapter;
     private TextView actualUserTextView;
@@ -58,9 +57,9 @@ public class ChatFragment extends android.support.v4.app.Fragment {
         getContacts();
 
         actualUserTextView = (TextView) getView().findViewById(R.id.actualUserName);
-      //  setActualUser();
+        //  setActualUser();
 
-        contactsView = (ListView) getView().findViewById(R.id.contactsList);
+        final ListView contactsView = (ListView) getView().findViewById(R.id.contactsList);
         contactsView.setSelector(R.drawable.list_selector);
         adapter = new ChatUsersListAdapter(getActivity(), contacts);
         contactsView.setAdapter(adapter);
@@ -86,7 +85,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
         });
 
         //Create BroadCastReceiver
-        getContext().registerReceiver(new ChatBroadcastReceiver(),new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
+        getContext().registerReceiver(new ChatBroadcastReceiver(), new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
 
         super.onActivityCreated(savedInstanceState);
     }
@@ -109,6 +108,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
 
     /**
      * prints the actual user of the app on textview.
+     *
      * @deprecated to be removed
      */
     public void setActualUser() {
@@ -116,7 +116,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
             actualUserTextView.setText("Actual user : " + app.getCurrentUserName());
         } else {
             // TODO ok ???
-           // getActivity().finish();
+            // getActivity().finish();
         }
     }
 
@@ -149,8 +149,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     /**
      * Add the user in the contact list
      */
-    private void addUserInContact(User user)
-    {
+    private void addUserInContact(User user) {
         adapter.add(user);
         contacts.add(user);
         adapter.notifyDataSetChanged();
@@ -200,7 +199,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
     }
 
     /**
-     *  Receive Broadcast Message and update chat accordingly
+     * Receive Broadcast Message and update chat accordingly
      */
     public class ChatBroadcastReceiver extends BroadcastReceiver {
 
@@ -211,7 +210,7 @@ public class ChatFragment extends android.support.v4.app.Fragment {
         public void onReceive(Context context, Intent intent) {
             // retrieve the user data
             User user = new User(Integer.valueOf(intent.getStringExtra(BROADCAST_EXTRA_ID)),
-                                intent.getStringExtra(BROADCAST_EXTRA_USER));
+                    intent.getStringExtra(BROADCAST_EXTRA_USER));
             //add the user in the contact list
             addUserInContact(user);
         }

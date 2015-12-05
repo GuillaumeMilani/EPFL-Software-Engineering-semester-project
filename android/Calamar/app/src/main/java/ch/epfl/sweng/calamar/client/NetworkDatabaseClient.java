@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -23,11 +24,14 @@ import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
+import ch.epfl.sweng.calamar.utils.Sorter;
 
 /**
  * Created by LPI on 19.10.2015.
  */
 public class NetworkDatabaseClient implements DatabaseClient {
+
+    private final static String UTF8_CHARSET = "UTF-8";
 
     private final static String TAG = NetworkDatabaseClient.class.getSimpleName();
 
@@ -85,10 +89,10 @@ public class NetworkDatabaseClient implements DatabaseClient {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.SEND_PATH);
-            String jsonParameter = item.toJSON().toString();
+            JSONObject jsonParameter = item.toJSON();
             //Log.v(NetworkDatabaseClient.TAG, jsonParameter);
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
-            String response = NetworkDatabaseClient.post(connection, jsonParameter);
+            String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
             //Log.e(NetworkDatabaseClient.TAG, response);
             return Item.fromJSON(new JSONObject(response));
         } catch (IOException | JSONException e) {
@@ -148,7 +152,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
             URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_PATH);
 
             JSONObject jsonParameter = new JSONObject();
-            jsonParameter.accumulate(JSON_RECIPIENT, recipient.toJSON().toString());
+            jsonParameter.accumulate(JSON_RECIPIENT, recipient.toJSON());
             jsonParameter.accumulate(JSON_LAST_REFRESH, from.getTime());
 
             if (visibleRegion != null) {
@@ -207,17 +211,18 @@ public class NetworkDatabaseClient implements DatabaseClient {
      */
     private static String post(HttpURLConnection connection, String jsonParameter)
             throws IOException, DatabaseClientException {
+        String toSend = URLEncoder.encode(jsonParameter, UTF8_CHARSET);
         connection.setRequestMethod(CONNECTION_REQUEST_METHOD);
         connection.setRequestProperty(CONTENT_TYPE,
                 CONNECTION_CONTENT_TYPE);
         connection.setRequestProperty(CONTENT_LENGTH,
-                Integer.toString(jsonParameter.getBytes().length));
+                Integer.toString(toSend.getBytes().length));
         connection.setDoInput(true);//to retrieve result
         connection.setDoOutput(true);//to send request
 
         //send request
         DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-        wr.writeBytes(jsonParameter);
+        wr.writeBytes(toSend);
         wr.flush();
         wr.close();
 
@@ -225,7 +230,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
 
         //TODO Should print message or something ?
         if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
-//            throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )");
+            throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )");
         }
 
         //get result
@@ -250,7 +255,6 @@ public class NetworkDatabaseClient implements DatabaseClient {
         for (int i = 0; i < array.length(); ++i) {
             result.add(Item.fromJSON(array.getJSONObject(i)));
         }
-
-        return result;
+        return Sorter.sortItemList(result);
     }
 }

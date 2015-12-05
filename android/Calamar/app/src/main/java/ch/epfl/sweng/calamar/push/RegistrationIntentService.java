@@ -26,7 +26,9 @@
 package ch.epfl.sweng.calamar.push;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -101,26 +103,10 @@ public class RegistrationIntentService extends IntentService {
      * @param token The new token.
      */
     private void sendRegistrationToServer(String token) {
-        try {
-            final String accountName = CalamarApplication.getInstance().getCurrentUserName();
-            Log.i(TAG, getString(R.string.token_name_is, token, accountName));
-            //  client.send(token, accountName);
-
-            DatabaseClientLocator.getDatabaseClient().newUser(accountName, token);
-
-            //show toast
-            Handler mHandler = new Handler(getMainLooper());
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(), getString(R.string.connected_as_toast, accountName), Toast.LENGTH_SHORT).show();
-                }
-            });
-
-        } catch (DatabaseClientException e) {
-            e.printStackTrace();
-            Log.e(getString(R.string.token), getString(R.string.couldnt_reach_server));
-        }
+        final String accountName = CalamarApplication.getInstance().getCurrentUserName();
+        Log.i(TAG, getString(R.string.token_name_is, token, accountName));
+        //  client.send(token, accountName);
+        new createNewUserTask(accountName, token).execute();
     }
 
     /**
@@ -137,4 +123,64 @@ public class RegistrationIntentService extends IntentService {
         }
     }
     // [END subscribe_topics]
+
+    private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
+        private String name = null;
+        private String token = null;
+
+        public createNewUserTask(String name, String token) {
+            this.name = name;
+            this.token = token;
+        }
+
+        @Override
+        protected Integer doInBackground(Void... v) {
+            try {
+                //Get the device id.
+                return DatabaseClientLocator.getDatabaseClient().newUser(name,
+                        token);//"aaaaaaaaaaaaaaaa",354436053190805
+            } catch (DatabaseClientException e) {
+                e.printStackTrace();
+                // and make use of context safe
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Integer id) {
+            Handler mHandler = new Handler(getMainLooper());
+            if (id != null) {
+                CalamarApplication.getInstance().setCurrentUserID(id);
+
+                //show toast
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Show toast
+                        Context context = getApplicationContext();
+                        CharSequence text = "Connected as " + name;
+                        int duration = Toast.LENGTH_SHORT;
+                        Toast toast = Toast.makeText(context, text, duration);
+                        toast.show();
+                    }
+                });
+
+
+            } else {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        // Show toast
+                        Context context = getApplicationContext();
+                        CharSequence text = "Not connected ";
+                        int duration = Toast.LENGTH_SHORT;
+                        Toast toast = Toast.makeText(context, text, duration);
+                        toast.show();
+                    }
+                });
+
+            }
+        }
+    }
 }
