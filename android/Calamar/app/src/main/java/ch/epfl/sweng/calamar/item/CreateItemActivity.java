@@ -1,7 +1,5 @@
 package ch.epfl.sweng.calamar.item;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
@@ -140,7 +138,9 @@ public class CreateItemActivity extends BaseActivity {
                         Toast.makeText(this, R.string.select_local_file, Toast.LENGTH_SHORT).show();
                     }
                 }
-            }
+            } // TODO else exception, dialog, toast, log ?
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 

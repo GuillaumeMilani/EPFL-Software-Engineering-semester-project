@@ -165,6 +165,7 @@ public abstract class BaseActivity extends AppCompatActivity
         switch (requestCode) {
             case GPSProvider.CHECK_SETTINGS_REQUEST:
                 GPSProvider gpsProvider = GPSProvider.getInstance();
+                //Log.e(TAG, resultCode+"");
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         Log.i(TAG, "LOCATION SETTINGS FIXED (?) : startUpdates");

@@ -1,7 +1,6 @@
 package ch.epfl.sweng.calamar.map;
 
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
@@ -190,7 +189,9 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         if (null != map) {
             List<Item> localizedItems = CalamarApplication.getInstance().getDatabaseHandler().getAllLocalizedItems();
             for (Item i : localizedItems) {
-                addItemToMap(i);
+                if (!items.contains(i)) {
+                    addItemToMap(i);
+                }
             }
         }
     }
