@@ -1,7 +1,5 @@
 package ch.epfl.sweng.calamar.item;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
@@ -103,14 +101,7 @@ public class CreateItemActivity extends BaseActivity {
                 } catch (IOException e) {
                     // TODO untested code, simulate IOException
                     Log.e(CreateItemActivity.TAG, e.getMessage());
-                    AlertDialog.Builder newUserAlert = new AlertDialog.Builder(CreateItemActivity.this);
-                    newUserAlert.setTitle(R.string.unable_to_create_item);
-                    newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            //OK
-                        }
-                    });
-                    newUserAlert.show();
+                    displayErrorMessage(getString(R.string.unable_to_create_item), false);
                 }
             }
         });
@@ -147,7 +138,9 @@ public class CreateItemActivity extends BaseActivity {
                         Toast.makeText(this, R.string.select_local_file, Toast.LENGTH_SHORT).show();
                     }
                 }
-            }
+            } // TODO else exception, dialog, toast, log ?
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -212,7 +205,7 @@ public class CreateItemActivity extends BaseActivity {
             toSendBuilder = new SimpleTextItem.Builder();
         }
         if (message.getText().toString().equals("") && toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
-            displayErrorMessage(getString(R.string.item_create_invalid));
+            displayErrorMessage(getString(R.string.item_create_invalid), false);
             return;
         }
         if (privateCheck.isChecked()) {
@@ -234,7 +227,7 @@ public class CreateItemActivity extends BaseActivity {
         toSendBuilder.setMessage(message.getText().toString());
         Item toSend = toSendBuilder.build();
         if (!toSend.hasLocation() && toSend.getTo().getID() == User.PUBLIC_ID) {
-            displayErrorMessage(getString(R.string.public_without_condition));
+            displayErrorMessage(getString(R.string.public_without_condition), false);
         } else {
             new SendItemTask(toSend).execute();
         }
@@ -286,7 +279,7 @@ public class CreateItemActivity extends BaseActivity {
                 Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
                 CreateItemActivity.this.finish();
             } else {
-                displayErrorMessage(getString(R.string.item_send_error));
+                displayErrorMessage(getString(R.string.item_send_error), false);
             }
         }
     }

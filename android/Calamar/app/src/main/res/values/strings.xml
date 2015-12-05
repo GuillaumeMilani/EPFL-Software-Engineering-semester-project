@@ -70,4 +70,8 @@
     <string name="label_unlocked_item">Unlocked</string>
     <string name="storage_unknown_operation">Unknown operation</string>
     <string name="public_without_condition">A public item must have a location.</string>
+    <string name="unable_to_connect_client_message">google API client definitely can\'t connect...</string>
+    <string name="location_settings_unsatisfied_message">we need the maximal accuracy ! (gps, wifi, etc..)</string>
+    <string name="account_not_chosen_message">You didn\'t choose an account, account is compulsory</string>
+    <string name="settings_change_unavailable">LOCATION SETTINGS CHANGE UNAVAILABLE.. but mandatory..</string>
 </resources>

@@ -105,7 +105,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
 
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
-
+            // Log.v(NetworkDatabaseClient.TAG, response);
             JSONObject object = new JSONObject(response);
             return object.getInt(JSON_ID);
         } catch (IOException | JSONException e) {
@@ -160,7 +160,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             //Log.v(TAG, jsonParameter.toString());
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
-            Log.v(TAG, response);
+            //Log.v(TAG, response);
             return NetworkDatabaseClient.itemsFromJSON(response);
         } catch (IOException | JSONException e) {
             throw new DatabaseClientException(e);
