@@ -537,6 +537,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @return the recipient
      */
     public synchronized Recipient getRecipient(int id) {
+        if (id == User.PUBLIC_ID) {
+            return new User(User.PUBLIC_ID, User.PUBLIC_NAME);
+        }
         Pair<Operation, Recipient> fromPending = pendingRecipients.get(id);
         if (fromPending != null) {
             switch (fromPending.getLeft()) {
@@ -635,6 +638,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 }
                 cursor.close();
             }
+        }
+        if (databaseIds.contains(User.PUBLIC_ID)) {
+            recipients.add(new User(User.PUBLIC_ID, User.PUBLIC_NAME));
         }
         return Sorter.sortRecipientList(new ArrayList<>(updateGetRecipientsFromPending(recipients, toUpdate)));
     }
