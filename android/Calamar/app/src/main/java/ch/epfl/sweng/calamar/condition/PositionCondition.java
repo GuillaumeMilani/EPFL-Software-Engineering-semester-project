@@ -24,6 +24,7 @@ import ch.epfl.sweng.calamar.map.MapFragment;
 public class PositionCondition extends Condition {
 
     private final static double DEFAULT_RADIUS = 20;
+    private final static double MIN_PRECISION = 50;
     public static final String TAG = PositionCondition.class.getSimpleName();
 
 
@@ -46,7 +47,9 @@ public class PositionCondition extends Condition {
         GPSProvider.getInstance().addObserver(new GPSProvider.Observer() {
             @Override
             public void update(Location newLocation) {
-                setValue(newLocation.distanceTo(getLocation()) < getRadius());
+                if(newLocation.getAccuracy() <= MIN_PRECISION) {
+                    setValue(newLocation.distanceTo(getLocation()) < getRadius());
+                }
                 if(getValue()) {
                     GPSProvider.getInstance().removeObserver(this);
                 }
