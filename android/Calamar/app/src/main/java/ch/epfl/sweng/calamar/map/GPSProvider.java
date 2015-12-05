@@ -264,7 +264,7 @@ public final class GPSProvider implements LocationListener {
     }
 
     public void displayErrorMessage(final BaseActivity context) {
-        // TODO refactor add constant etc..
+        // TODO refactor to remove code duplication with baseact.displaydialog, add constant etc..
         Log.e(GPSProvider.TAG, "we need gps !!");
         if (!context.isFinishing() ){//&& !isPaused()) {
             final AlertDialog.Builder errorDialog = new AlertDialog.Builder(context);
