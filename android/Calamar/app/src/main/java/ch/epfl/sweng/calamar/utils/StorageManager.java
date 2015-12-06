@@ -3,6 +3,7 @@ package ch.epfl.sweng.calamar.utils;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.ipaulpro.afilechooser.utils.FileUtils;
@@ -113,40 +114,40 @@ public final class StorageManager {
                 break;
             case IMAGEITEM:
                 if (!i.getFrom().equals(app.getCurrentUser())) {
-                    if (i.getCondition().getValue()) {
-                        ImageItem repathedImage = (ImageItem) rePath((ImageItem) i);
-                        if (caller != null) {
-                            //Gives item updated with new path
-                            caller.onItemRetrieved(repathedImage);
-                        }
-                        ImageItem compressedImage = (ImageItem) Compresser.compressDataForDatabase(repathedImage);
-                        app.increaseImageCount();
-                        dbHandler.addItem(compressedImage);
-                        storeFile((ImageItem) i);
-                    } else {
-                        //Assuming a locked item has no data
-                        dbHandler.addItem(i);
+                    //if (!i.isLocked()) { While metadatas are not implemented...
+                    ImageItem repathedImage = (ImageItem) rePath((ImageItem) i);
+                    if (caller != null) {
+                        //Gives item updated with new path
+                        caller.onItemRetrieved(repathedImage);
                     }
+                    ImageItem compressedImage = (ImageItem) Compresser.compressDataForDatabase(repathedImage);
+                    app.increaseImageCount();
+                    dbHandler.addItem(compressedImage);
+                    storeFile(repathedImage);
+                    // } else {
+                    //Assuming a locked item has no data
+                    //    dbHandler.addItem(i);
+                    //}
                 } else {
                     dbHandler.addItem(Compresser.compressDataForDatabase((ImageItem) i));
                 }
                 break;
             case FILEITEM:
                 if (!i.getFrom().equals(app.getCurrentUser())) {
-                    if (i.getCondition().getValue()) {
-                        FileItem repathedFile = rePath((FileItem) i);
-                        if (caller != null) {
-                            //Gives item updated with new path
-                            caller.onItemRetrieved(repathedFile);
-                        }
-                        FileItem compressedFile = Compresser.compressDataForDatabase(repathedFile);
-                        app.increaseFileCount();
-                        dbHandler.addItem(compressedFile);
-                        storeFile((FileItem) i);
-                    } else {
-                        //Assuming a locked item has no data
-                        dbHandler.addItem(i);
+                    //if (i.getCondition().getValue()) {
+                    FileItem repathedFile = rePath((FileItem) i);
+                    if (caller != null) {
+                        //Gives item updated with new path
+                        caller.onItemRetrieved(repathedFile);
                     }
+                    FileItem compressedFile = Compresser.compressDataForDatabase(repathedFile);
+                    app.increaseFileCount();
+                    dbHandler.addItem(compressedFile);
+                    storeFile(repathedFile);
+                    //} else {
+                    //Assuming a locked item has no data
+                    //    dbHandler.addItem(i);
+                    //}
                 } else {
                     dbHandler.addItem(Compresser.compressDataForDatabase((FileItem) i));
                 }
@@ -546,16 +547,18 @@ public final class StorageManager {
     /**
      * Writes a FileItem in the local storage
      *
-     * @param f    The FileItem to store
-     * @param path Where it will be stored
+     * @param f The FileItem to store
      * @throws IOException If there is a problem writing it
      */
-    private void writeFile(FileItem f, File path) throws IOException {
+    private void writeFile(FileItem f) throws IOException {
         if (f.getData() != null) {
             OutputStream stream = null;
             try {
-                stream = new BufferedOutputStream(new FileOutputStream(path));
-                stream.write(Compresser.decompress(f.getData()));
+                stream = new BufferedOutputStream(new FileOutputStream(f.getPath()));
+                byte[] toWrite = Compresser.decompress(f.getData());
+                if (toWrite != null) {
+                    stream.write(toWrite);
+                }
             } finally {
                 if (stream != null) {
                     stream.close();
@@ -616,9 +619,11 @@ public final class StorageManager {
                     case FILEITEM:
                         File filePath = Environment.getExternalStoragePublicDirectory(FILE_FOLDER_NAME);
                         if (!filePath.exists()) {
+                            Log.i(app.getString(R.string.storage), app.getString(R.string.creating_dir, app.getString(R.string.others_dir)));
                             if (filePath.mkdirs()) {
+                                Log.i(app.getString(R.string.storage), app.getString(R.string.directory_creation_success));
                                 try {
-                                    writeFile(f, filePath);
+                                    writeFile(f);
                                     return true;
                                 } catch (IOException e) {
                                     //Toast.makeText(app, app.getString(R.string.error_file_creation, f.getName()), Toast.LENGTH_SHORT).show();
@@ -628,20 +633,23 @@ public final class StorageManager {
                                 //Toast.makeText(app, R.string.error_directory_creation, Toast.LENGTH_SHORT).show();
                                 return false;
                             }
-                        }
-                        try {
-                            writeFile(f, filePath);
-                            return true;
-                        } catch (IOException e) {
-                            //Toast.makeText(app, app.getString(R.string.error_file_creation, f.getName()), Toast.LENGTH_SHORT).show();
-                            return false;
+                        } else {
+                            try {
+                                writeFile(f);
+                                return true;
+                            } catch (IOException e) {
+                                //Toast.makeText(app, app.getString(R.string.error_file_creation, f.getName()), Toast.LENGTH_SHORT).show();
+                                return false;
+                            }
                         }
                     case IMAGEITEM:
                         File imagePath = Environment.getExternalStoragePublicDirectory(IMAGE_FOLDER_NAME);
                         if (!imagePath.exists()) {
+                            Log.i(app.getString(R.string.storage), app.getString(R.string.creating_dir, app.getString(R.string.images_dir)));
                             if (imagePath.mkdirs()) {
+                                Log.i(app.getString(R.string.storage), app.getString(R.string.directory_creation_success));
                                 try {
-                                    writeFile(f, imagePath);
+                                    writeFile(f);
                                     return true;
                                 } catch (IOException e) {
                                     //Toast.makeText(app, app.getString(R.string.error_image_creation, f.getName()), Toast.LENGTH_SHORT).show();
@@ -653,7 +661,7 @@ public final class StorageManager {
                             }
                         } else {
                             try {
-                                writeFile(f, imagePath);
+                                writeFile(f);
                                 return true;
                             } catch (IOException e) {
                                 //Toast.makeText(app, app.getString(R.string.error_image_creation, f.getName()), Toast.LENGTH_SHORT).show();
@@ -672,10 +680,11 @@ public final class StorageManager {
         protected void onPostExecute(final Boolean b) {
             currentWritingTasks.remove(this);
             if (!b) {
+                Log.i(app.getString(R.string.storage), app.getString(R.string.writing_failed, f.getPath()));
                 if (!isCancelled()) {
                     if (iterCount < MAX_ITER) {
+                        Log.i(app.getString(R.string.storage), app.getString(R.string.retrying_write, f.getPath()));
                         final WritingTask task = new WritingTask(f, iterCount + 1);
-                        task.execute();
                         currentWritingTasks.add(task);
                         handler.postDelayed(new Runnable() {
                             @Override
@@ -692,6 +701,7 @@ public final class StorageManager {
                     }
                 }
             } else {
+                Log.i(app.getString(R.string.storage), app.getString(R.string.file_stored, f.getPath()));
                 currentFilesID.remove(f.getID());
             }
         }
