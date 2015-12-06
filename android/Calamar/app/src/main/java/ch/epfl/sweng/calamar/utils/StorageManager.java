@@ -41,11 +41,12 @@ public final class StorageManager {
 
 
     private static final String ROOT_FOLDER_NAME = "Calamar/";
-    private static final String IMAGE_FOLDER_NAME = ROOT_FOLDER_NAME + "Images/";
-    private static final String FILE_FOLDER_NAME = ROOT_FOLDER_NAME + "Others/";
+    private static final String IMAGE_FOLDER_NAME = ROOT_FOLDER_NAME + "Calamar Images/";
+    private static final String FILE_FOLDER_NAME = ROOT_FOLDER_NAME + "Calamar Others/";
     private static final String FILENAME = "FILE_";
     private static final String IMAGENAME = "IMG_";
     private static final String NAME_SUFFIX = "_CAL";
+    private static final String IMAGE_EXT = ".png";
 
     private static final int RETRY_TIME = 10000;
     private static final int MAX_ITER = 20;
@@ -580,7 +581,7 @@ public final class StorageManager {
                 return new FileItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), f.getData(), filePath.getAbsolutePath() + '/' + FILENAME + app.getString(R.string.empty_string) + formatDate() + NAME_SUFFIX + app.getTodayFileCount());
             case IMAGEITEM:
                 File imagePath = Environment.getExternalStoragePublicDirectory(IMAGE_FOLDER_NAME);
-                return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), f.getData(), imagePath.getAbsolutePath() + '/' + IMAGENAME + app.getString(R.string.empty_string) + formatDate() + NAME_SUFFIX + app.getTodayImageCount());
+                return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), f.getData(), imagePath.getAbsolutePath() + '/' + IMAGENAME + app.getString(R.string.empty_string) + formatDate() + NAME_SUFFIX + app.getTodayImageCount() + IMAGE_EXT);
             default:
                 throw new IllegalArgumentException(app.getString(R.string.expected_fileitem));
         }

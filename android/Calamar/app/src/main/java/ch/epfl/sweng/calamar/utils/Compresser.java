@@ -161,7 +161,7 @@ public final class Compresser {
             }
             return stream.toByteArray();
         }
-        Log.d("Bitmap", CalamarApplication.getInstance().getString(R.string.bitmap_of_is_null, i));
+        Log.d(CalamarApplication.getInstance().getString(R.string.compresser), CalamarApplication.getInstance().getString(R.string.bitmap_of_is_null, i));
         return null;
     }
 

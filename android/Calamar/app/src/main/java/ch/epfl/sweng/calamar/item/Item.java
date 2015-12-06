@@ -1,10 +1,10 @@
 package ch.epfl.sweng.calamar.item;
 
 import android.app.Activity;
-import android.content.Context;
 import android.location.Location;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -82,7 +82,7 @@ public abstract class Item {
 
     public abstract Type getType();
 
-    public abstract View getItemView(Context context);
+    public abstract View getItemView(Activity context);
 
     /**
      * @return the text content (message) of the Item
@@ -127,13 +127,17 @@ public abstract class Item {
      * @param context
      * @return the preview of the item
      */
-    public View getPreView(final Context context) {
+    public View getPreView(final Activity context) {
         final LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
         int childCount = 0;
         if (condition.getValue()) {
             View itemView = getItemView(context);
             if (itemView != null) {
+                if (itemView.getParent() != null) {
+                    ViewGroup parent = (ViewGroup) itemView.getParent();
+                    parent.removeView(itemView);
+                }
                 view.addView(itemView, childCount);
                 childCount += 1;
             }

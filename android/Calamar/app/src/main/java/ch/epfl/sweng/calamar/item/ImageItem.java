@@ -1,6 +1,6 @@
 package ch.epfl.sweng.calamar.item;
 
-import android.content.Context;
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
@@ -26,6 +26,7 @@ import ch.epfl.sweng.calamar.utils.Compresser;
 public final class ImageItem extends FileItem {
 
     protected final static Type ITEM_TYPE = Type.IMAGEITEM;
+    private final static int IMAGE_VIEW_SIZE = 1000;
 
     /**
      * Instantiates a new ImageItem with the following parameters
@@ -102,16 +103,33 @@ public final class ImageItem extends FileItem {
     }
 
     @Override
-    public View getItemView(Context context) {
-        ImageView view = new ImageView(context);
-        view.setImageBitmap(getBitmap());
-        view.setOnClickListener(new View.OnClickListener() {
+    public View getItemView(Activity context) {
+        //Trying to use xml layout
+        /*LayoutInflater inflater = context.getLayoutInflater();
+        LinearLayout parent = (LinearLayout) context.findViewById(R.id.ItemDetailsItemPreview);
+        LinearLayout root;
+        if (parent == null) {
+            root = (LinearLayout) inflater.inflate(R.layout.item_details_base_layout, null);
+            parent = (LinearLayout) root.findViewById(R.id.ItemDetailsItemPreview);
+        }
+        ImageView imageView = (ImageView) context.findViewById(R.id.imageitem_view);
+        if (imageView == null) {
+            imageView = (ImageView) inflater.inflate(R.layout.image_view, parent).findViewById(R.id.imageitem_view);
+        }
+        */
+        ImageView imageView = new ImageView(context);
+        imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+        imageView.setMaxHeight(IMAGE_VIEW_SIZE);
+        imageView.setMaxWidth(IMAGE_VIEW_SIZE);
+        imageView.setImageBitmap(getBitmap());
+        imageView.setAdjustViewBounds(true);
+        imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivityForFile(ImageItem.this);
             }
         });
-        return view;
+        return imageView;
     }
 
     /**

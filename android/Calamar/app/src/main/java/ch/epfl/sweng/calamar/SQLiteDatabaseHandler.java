@@ -958,8 +958,10 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     private void addOrUpdateRecipientWithItem(Item item) {
-        pendingRecipients.put(item.getFrom().getID(), new Pair<>(Operation.ADD, (Recipient) item.getFrom()));
-        if (!(item.getTo().getID() == User.PUBLIC_ID)) {
+        if (item.getFrom().getName() != null) {
+            pendingRecipients.put(item.getFrom().getID(), new Pair<>(Operation.ADD, (Recipient) item.getFrom()));
+        }
+        if (item.getTo().getID() != User.PUBLIC_ID && item.getTo().getName() != null) {
             pendingRecipients.put(item.getTo().getID(), new Pair<>(Operation.ADD, item.getTo()));
         }
     }

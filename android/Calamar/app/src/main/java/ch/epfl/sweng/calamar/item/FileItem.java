@@ -1,7 +1,7 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Base64;
@@ -150,7 +150,7 @@ public class FileItem extends Item {
     }
 
     @Override
-    public View getItemView(Context context) {
+    public View getItemView(Activity context) {
         TextView view = new TextView(context);
         view.setText(name);
         view.setOnClickListener(new View.OnClickListener() {

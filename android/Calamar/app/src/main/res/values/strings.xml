@@ -161,5 +161,6 @@
     <string name="chat_item">chat item.</string>
     <string name="file_item">file item</string>
     <string name="image_item">image item</string>
+    <string name="compresser">Compresser</string>
 
 </resources>
