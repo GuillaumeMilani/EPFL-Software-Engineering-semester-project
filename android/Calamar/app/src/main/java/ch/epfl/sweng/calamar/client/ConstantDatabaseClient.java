@@ -20,15 +20,20 @@ import ch.epfl.sweng.calamar.recipient.User;
  */
 public class ConstantDatabaseClient implements DatabaseClient {
 
-    private final User alice = new User(1, "Alice");
-    private final User bob = new User(2, "Bob");
+    private final User ALICE = new User(1, "Alice");
+    private final User BOB = new User(2, "Bob");
+
+    private final User  RANDOM = new User(3, "Random");
 
     List<Item> toRetrieve = new ArrayList<>();
 
     private final Location location = new Location("abc");
 
-    private final Item itemFrom = new SimpleTextItem(1, alice, bob, new Date(1445198510), Condition.trueCondition(), "Hello Bob, it's Alice !");
-    private final Item itemTo = new SimpleTextItem(1, bob, alice, new Date(1445198510), Condition.and(Condition.falseCondition(), new PositionCondition(location)), "Hello Alice, it's Bob !");
+    private final Item itemFrom = new SimpleTextItem(1, ALICE, BOB, new Date(1445198510), Condition.trueCondition(), "Hello Bob, it's Alice !");
+    private final Item itemTo = new SimpleTextItem(1, BOB, ALICE, new Date(1445198510), Condition.and(Condition.falseCondition(), new PositionCondition(location)), "Hello Alice, it's Bob !");
+    private final Item randomMessage = new SimpleTextItem(1, RANDOM, BOB, new Date(1445198510), Condition.and(Condition.falseCondition(), new PositionCondition(location)), "Hello Bob, it's Random !");
+
+
 
     @Override
     public List<Item> getAllItems(Recipient recipient, Date from, VisibleRegion visibleRegion)
@@ -41,6 +46,7 @@ public class ConstantDatabaseClient implements DatabaseClient {
         List<Item> items = new ArrayList<>();
         items.add(itemFrom);
         items.add(itemTo);
+        items.add(randomMessage);
         items.addAll(toRetrieve);
         return items;
     }

@@ -1,9 +1,13 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.content.Intent;
+import android.os.SystemClock;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 import android.test.ActivityInstrumentationTestCase2;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,8 +17,10 @@ import org.junit.runners.JUnit4;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.chat.ChatActivity;
+import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
+import ch.epfl.sweng.calamar.recipient.User;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -26,9 +32,10 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 @RunWith(JUnit4.class)
 public class ItemsDetailsTest extends ActivityInstrumentationTestCase2<ChatActivity> {
 
-    @Rule
-    public final ActivityTestRule<ChatActivity> mActivityRule = new ActivityTestRule<>(
-            ChatActivity.class);
+    private final User ALICE = new User(1, "Alice");
+    private final User BOB = new User(2, "Bob");
+
+    private Intent conversation;
 
     public ItemsDetailsTest() {
         super(ChatActivity.class);
@@ -38,7 +45,28 @@ public class ItemsDetailsTest extends ActivityInstrumentationTestCase2<ChatActiv
     @Override
     public void setUp() throws Exception {
         super.setUp();
+
+        injectInstrumentation(InstrumentationRegistry.getInstrumentation());
+        conversation = new Intent();
+        conversation.putExtra(ChatFragment.EXTRA_CORRESPONDENT_NAME, ALICE.getName());
+        conversation.putExtra(ChatFragment.EXTRA_CORRESPONDENT_ID, 1);
+
+        setActivityIntent(conversation);
+        getActivity();
+        CalamarApplication.getInstance().resetPreferences();
+        CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
+
         DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
+        CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
+        CalamarApplication.getInstance().setCurrentUserID(BOB.getID());
+        CalamarApplication.getInstance().setCurrentUserName(BOB.getName());
+
+    }
+
+    @After
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
         CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
         CalamarApplication.getInstance().resetPreferences();
     }
@@ -49,6 +77,7 @@ public class ItemsDetailsTest extends ActivityInstrumentationTestCase2<ChatActiv
      */
     @Test
     public void testItemDetailsShowsUsers() {
+        SystemClock.sleep(1);
         onView(withId(R.id.refreshButton)).perform(click());
         onView(withText("Hello Bob, it's Alice !")).perform(click());
 

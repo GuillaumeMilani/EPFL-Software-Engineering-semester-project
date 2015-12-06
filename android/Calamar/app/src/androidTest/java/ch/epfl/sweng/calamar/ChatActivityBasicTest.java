@@ -1,5 +1,8 @@
 package ch.epfl.sweng.calamar;
 
+import android.content.Intent;
+import android.os.SystemClock;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
@@ -7,6 +10,7 @@ import android.support.test.runner.AndroidJUnit4;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.ListView;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -22,6 +26,7 @@ import java.util.Date;
 
 import ch.epfl.sweng.calamar.chat.ChatActivity;
 import ch.epfl.sweng.calamar.chat.ChatAdapter;
+import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.item.ImageItem;
@@ -47,29 +52,11 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
 
     private final static String HELLO_ALICE = "Hello Alice !";
 
-    private static final byte[] testContent = {(byte) 0x89, (byte) 0x50, (byte) 0x4e, (byte) 0x47,
-            (byte) 0x0d, (byte) 0x0a, (byte) 0x1a, (byte) 0x0a, (byte) 0x00, (byte) 0x00,
-            (byte) 0x00, (byte) 0x0d, (byte) 0x49, (byte) 0x48, (byte) 0x44, (byte) 0x52,
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x05, (byte) 0x00, (byte) 0x00,
-            (byte) 0x00, (byte) 0x05, (byte) 0x08, (byte) 0x02, (byte) 0x00, (byte) 0x00,
-            (byte) 0x00, (byte) 0x02, (byte) 0x0d, (byte) 0xb1, (byte) 0xb2, (byte) 0x00,
-            (byte) 0x00, (byte) 0x00, (byte) 0x25, (byte) 0x49, (byte) 0x44, (byte) 0x41,
-            (byte) 0x54, (byte) 0x08, (byte) 0x99, (byte) 0x4d, (byte) 0x8a, (byte) 0xb1,
-            (byte) 0x0d, (byte) 0x00, (byte) 0x20, (byte) 0x0c, (byte) 0x80, (byte) 0xc0,
-            (byte) 0xff, (byte) 0x7f, (byte) 0xc6, (byte) 0xc1, (byte) 0xc4, (byte) 0x96,
-            (byte) 0x81, (byte) 0x05, (byte) 0xa8, (byte) 0x80, (byte) 0x67, (byte) 0xe0,
-            (byte) 0xb0, (byte) 0xa8, (byte) 0xfc, (byte) 0x65, (byte) 0xba, (byte) 0xaa,
-            (byte) 0xce, (byte) 0xb3, (byte) 0x97, (byte) 0x0b, (byte) 0x2b, (byte) 0xd9,
-            (byte) 0x11, (byte) 0xfa, (byte) 0xa5, (byte) 0xad, (byte) 0x00, (byte) 0x06,
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x49, (byte) 0x45,
-            (byte) 0x4e, (byte) 0x44, (byte) 0xae, (byte) 0x42, (byte) 0x60, (byte) 0x82};
+    private final User ALICE = new User(1, "Alice");
+    private final User BOB = new User(2, "Bob");
 
-    @Rule
-    public final ActivityTestRule<ChatActivity> mActivityRule = new ActivityTestRule<>(
-            ChatActivity.class);
+    private Intent conversation;
 
-    @Rule
-    public final TemporaryFolder testFolder = new TemporaryFolder();
 
     public ChatActivityBasicTest() {
         super(ChatActivity.class);
@@ -79,8 +66,29 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
     @Override
     public void setUp() throws Exception {
         super.setUp();
+
+        injectInstrumentation(InstrumentationRegistry.getInstrumentation());
+        conversation = new Intent();
+        conversation.putExtra(ChatFragment.EXTRA_CORRESPONDENT_NAME, ALICE.getName());
+        conversation.putExtra(ChatFragment.EXTRA_CORRESPONDENT_ID, 1);
+
+        CalamarApplication.getInstance().resetPreferences();
+        CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
+
+        setActivityIntent(conversation);
+        getActivity();
         DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
         CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
+        CalamarApplication.getInstance().setCurrentUserID(BOB.getID());
+        CalamarApplication.getInstance().setCurrentUserName(BOB.getName());
+    }
+
+    @After
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
+        CalamarApplication.getInstance().resetPreferences();
     }
 
     /**
@@ -112,10 +120,11 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
 
     /**
      * Test that the message retrieve from the itemClient are displayed.
+     * ( Not more and not less than 2 messages )
      */
     @Test
     public void testTwoMessageAreDisplayed() {
-        ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+        ListView list = (ListView) getActivity().findViewById(R.id.messagesContainer);
         int before = list.getCount();
         onView(withId(R.id.refreshButton)).perform(click());
         assertEquals(list.getCount(), before + 2);
@@ -136,7 +145,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
      */
     @Test
     public void testMessageIsDisplayedWhenSend() {
-        ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+        ListView list = (ListView) getActivity().findViewById(R.id.messagesContainer);
         int before = list.getCount();
         onView(withId(R.id.messageEdit)).perform(typeText(HELLO_ALICE));
         onView(withId(R.id.chatSendButton)).perform(click());
