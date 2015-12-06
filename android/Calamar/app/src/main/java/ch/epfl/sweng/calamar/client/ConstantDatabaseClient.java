@@ -52,7 +52,7 @@ public class ConstantDatabaseClient implements DatabaseClient {
 
     @Override
     public User findUserByName(String name) throws DatabaseClientException {
-        return new User(BOB.getID(), BOB.getName());
+        return BOB;
     }
 
     @Override

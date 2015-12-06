@@ -55,7 +55,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static CalamarApplication app;
     private static SQLiteDatabaseHandler instance;
 
-    private static long lastUpdateTime;
     private static long lastItemTime;
 
     private final Map<Integer, Pair<Operation, Item>> pendingItems;
@@ -933,7 +932,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         String text = cursor.getString(6);
         byte[] data = cursor.getBlob(7);
         String path = cursor.getString(8);
-        System.out.println(id + " " + from + " " + to + " " + time + " " + condition + " " + data + " " + path + " " + text);
         switch (type) {
             case SIMPLETEXTITEM:
                 return new SimpleTextItem(id, from, to, time, condition, text);

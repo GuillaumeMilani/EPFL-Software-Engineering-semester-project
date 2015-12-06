@@ -73,8 +73,8 @@
     <string name="network_db_client_null">\'serverUrl\' or \'networkProvider\' is null</string>
     <string name="network_db_client_visibleregion_null">getAllItems: visibleRegion is null</string>
     <string name="network_db_client_log_fetched_length">"Fetched string of length %s"</string>
-
-
+    <string name="invalid_http_response">Invalid HTTP response code ( %s )</string>
+    
     <!-- Account -->
     <string name="gcm_registration_token">"GCM Registration Token: %s"</string>
     <string name="failed_token_refresh">Failed to complete token refresh</string>

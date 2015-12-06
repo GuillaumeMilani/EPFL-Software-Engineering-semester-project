@@ -228,9 +228,8 @@ public final class NetworkDatabaseClient implements DatabaseClient {
 
         int responseCode = connection.getResponseCode();
 
-        //TODO Should print message or something ?
         if (responseCode < HTTP_SUCCESS_START || responseCode > HTTP_SUCCESS_END) {
-            throw new DatabaseClientException("Invalid HTTP response code (" + responseCode + " )");
+            throw new DatabaseClientException(CalamarApplication.getInstance().getString(R.string.invalid_http_response, responseCode));
         }
 
         //get result

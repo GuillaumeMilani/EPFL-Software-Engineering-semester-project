@@ -149,7 +149,6 @@ public final class ChatActivity extends BaseActivity implements StorageCallbacks
         Item textMessage = new SimpleTextItem(Item.DUMMY_ID, app.getCurrentUser(), correspondent, new Date(), message);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
-        editText.setText(getString(R.string.empty_string));
         new SendItemTask(textMessage).execute();
     }
 
@@ -177,7 +176,7 @@ public final class ChatActivity extends BaseActivity implements StorageCallbacks
         @Override
         protected void onPostExecute(Item item) {
             if (item != null) {
-                editText.setText("");
+                editText.setText(getString(R.string.empty_string));
                 adapter.add(item);
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 storageManager.storeItem(item, ChatActivity.this);
