@@ -207,7 +207,6 @@ public final class ChatActivity extends BaseActivity implements StorageCallbacks
 
         @Override
         protected List<Item> doInBackground(Void... v) {
-            Log.i("REFRESH OFFLINE", "" + offline);
             if (offline) {
                 return dbHandler.getItemsForContact(correspondent);
             } else {

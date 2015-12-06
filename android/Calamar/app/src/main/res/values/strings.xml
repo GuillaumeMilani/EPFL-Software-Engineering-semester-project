@@ -112,6 +112,8 @@
     <string name="file_stored">File %s stored</string>
     <string name="creating_dir">Creating %s directory</string>
     <string name="directory_creation_success">Creation of directory successful</string>
+    <string name="images_dir">Images</string>
+    <string name="others_dir">Others</string>
 
     <!-- Database -->
     <string name="no_placeholders">No placeholders</string>
@@ -159,7 +161,5 @@
     <string name="chat_item">chat item.</string>
     <string name="file_item">file item</string>
     <string name="image_item">image item</string>
-    <string name="images_dir">Images</string>
-    <string name="others_dir">Others</string>
 
 </resources>
