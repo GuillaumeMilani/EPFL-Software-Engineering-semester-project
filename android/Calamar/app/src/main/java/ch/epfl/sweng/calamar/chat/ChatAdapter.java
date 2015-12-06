@@ -20,8 +20,7 @@ import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.item.Item;
 
-
-public class ChatAdapter extends BaseAdapter {
+public final class ChatAdapter extends BaseAdapter {
 
     private final List<Item> messages;
     private final Activity context;
@@ -51,8 +50,8 @@ public class ChatAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, View convertView, final ViewGroup parent) {
         ViewHolder holder;
-        Item item = getItem(position);
-        LayoutInflater li = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        final Item item = getItem(position);
+        final LayoutInflater li = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if (convertView == null) {
             convertView = li.inflate(R.layout.list_chat_messages, null);
             holder = createViewHolder(convertView);
@@ -62,7 +61,7 @@ public class ChatAdapter extends BaseAdapter {
         }
 
 
-        boolean ingoing = item.getTo().getID() == CalamarApplication.getInstance().getCurrentUserID();
+        final boolean ingoing = item.getTo().getID() == CalamarApplication.getInstance().getCurrentUserID();
         setAlignment(holder, ingoing, item.getCondition().getValue());
         holder.itemView.removeAllViews();
         holder.itemView.addView(item.getPreView(context));
@@ -221,7 +220,7 @@ public class ChatAdapter extends BaseAdapter {
      * @return The newly created ViewHolder
      */
     private ViewHolder createViewHolder(View v) {
-        ViewHolder holder = new ViewHolder();
+        final ViewHolder holder = new ViewHolder();
         holder.itemView = (FrameLayout) v.findViewById(R.id.itemView);
         holder.textTime = (TextView) v.findViewById(R.id.textTime);
         holder.content = (LinearLayout) v.findViewById(R.id.content);
@@ -234,10 +233,10 @@ public class ChatAdapter extends BaseAdapter {
      * Avoids using findViewById too much (more efficient and readable)
      */
     private static class ViewHolder {
-        public FrameLayout itemView;
-        public TextView textTime;
-        public LinearLayout content;
-        public LinearLayout contentWithBG;
+        protected FrameLayout itemView;
+        protected TextView textTime;
+        protected LinearLayout content;
+        protected LinearLayout contentWithBG;
     }
 
 }

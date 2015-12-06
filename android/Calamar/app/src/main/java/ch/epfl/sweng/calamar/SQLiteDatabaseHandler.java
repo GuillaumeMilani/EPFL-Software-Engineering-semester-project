@@ -30,24 +30,6 @@ import ch.epfl.sweng.calamar.utils.Sorter;
 
 public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
-    private static CalamarApplication app;
-
-    private static SQLiteDatabaseHandler instance;
-    private SQLiteDatabase db;
-
-    private enum Operation {ADD, UPDATE, DELETE}
-
-    private final Map<Integer, Pair<Operation, Item>> pendingItems;
-    private final Map<Integer, Pair<Operation, Recipient>> pendingRecipients;
-
-    private static long lastItemTime;
-
-    private static final int DATABASE_VERSION = 5;
-    private static final String DATABASE_NAME = "CalamarDB";
-
-    private static final int MAX_PLACEHOLDERS_COUNT = 99;
-    private final String FULL_PLACEHOLDERS;
-
     private static final String ITEMS_TABLE = "tb_Items";
     private static final String ITEMS_KEY_TYPE = "type";
     private static final String ITEMS_KEY_ID = "id";
@@ -64,6 +46,24 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static final String RECIPIENTS_KEY_ID = "id";
     private static final String RECIPIENTS_KEY_NAME = "name";
     private static final String[] RECIPIENTS_COLUMN = {RECIPIENTS_KEY_ID, RECIPIENTS_KEY_NAME};
+
+    private static final int DATABASE_VERSION = 5;
+    private static final String DATABASE_NAME = "CalamarDB";
+
+    private static final int MAX_PLACEHOLDERS_COUNT = 99;
+
+    private static CalamarApplication app;
+    private static SQLiteDatabaseHandler instance;
+
+    private static long lastItemTime;
+
+    private final Map<Integer, Pair<Operation, Item>> pendingItems;
+    private final Map<Integer, Pair<Operation, Recipient>> pendingRecipients;
+    private final String FULL_PLACEHOLDERS;
+
+    private SQLiteDatabase db;
+
+    private enum Operation {ADD, UPDATE, DELETE}
 
     /**
      * Returns the current and only instance of SQLiteDatabaseHandler
@@ -907,7 +907,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             values.put(ITEMS_KEY_PATH, ((FileItem) item).getPath());
         } else if (item.getType() != Item.Type.SIMPLETEXTITEM) {
-            throw new IllegalArgumentException("Unknown item type");
+            throw new IllegalArgumentException(app.getString(R.string.unexpected_item_type, item.getType()));
         }
         return values;
     }
@@ -917,7 +917,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         try {
             type = Item.Type.valueOf(cursor.getString(0));
         } catch (IllegalArgumentException e) {
-            throw new UnsupportedOperationException("Unexpected Item type");
+            throw new IllegalArgumentException(app.getString(R.string.unexpected_item_type));
         }
         int id = cursor.getInt(1);
         User from = (User) getRecipient(cursor.getInt(2));
@@ -940,7 +940,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             case IMAGEITEM:
                 return new ImageItem(id, from, to, time, condition, data, path, text);
             default:
-                throw new UnsupportedOperationException("Unexpected Item type");
+                throw new IllegalArgumentException(app.getString(R.string.unexpected_item_type, type));
         }
     }
 
@@ -1047,7 +1047,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     private String createPlaceholders(int length) {
         if (length < 1) {
-            throw new RuntimeException("No placeholders");
+            throw new RuntimeException(app.getString(R.string.no_placeholders));
         } else {
             StringBuilder builder = new StringBuilder(length * 2 - 1);
             builder.append('?');

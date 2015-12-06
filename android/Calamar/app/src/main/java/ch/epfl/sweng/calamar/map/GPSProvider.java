@@ -1,9 +1,7 @@
 package ch.epfl.sweng.calamar.map;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Location;
 import android.util.Log;
@@ -20,7 +18,6 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -33,12 +30,10 @@ import ch.epfl.sweng.calamar.R;
 /**
  * Created by LPI on 06.11.2015.
  */
-@SuppressWarnings("FinalStaticMethod")
 public final class GPSProvider implements LocationListener {
     private static volatile GPSProvider instance = null;
     private static final String TAG = GPSProvider.class.getSimpleName();
     public static final int CHECK_SETTINGS_REQUEST = 1002;
-
 
 
     // location
@@ -59,11 +54,11 @@ public final class GPSProvider implements LocationListener {
     /**
      * @return the GPSProvider singleton's instance
      */
-    public final static GPSProvider getInstance() {
+    public static GPSProvider getInstance() {
         // avoid call to synchronized if already instantiated
         if (GPSProvider.instance == null) {
             // avoid multiple instantiations by different threads
-            synchronized(GPSProvider.class) {
+            synchronized (GPSProvider.class) {
                 if (GPSProvider.instance == null) {
                     GPSProvider.instance = new GPSProvider();
                 }
@@ -76,9 +71,8 @@ public final class GPSProvider implements LocationListener {
      * Starts the location updates. <br>
      * Registered observers will get new location periodically through their
      * {@link GPSProvider.Observer#update(Location) update} method. <br><br>
-     *
-     *     WARNING: caller should call checkSettingsAndLaunchIfOK instead,     *
-     *     if misused can corrupt gps provider internal state !
+     * <p/>
+     * WARNING: caller should call checkSettingsAndLaunchIfOK instead
      *
      * @throws IllegalStateException when google api client not connected
      */
@@ -88,26 +82,26 @@ public final class GPSProvider implements LocationListener {
                     googleApiClient, locationRequest, GPSProvider.instance);
             isStarted = true;
             isResolvingSettings = false;
-            Log.i(TAG, "GPS request started");
+            Log.i(TAG, CalamarApplication.getInstance().getString(R.string.gps_request_started));
         }
     }
 
     /**
      * Stops the location updates. <br>
-     *     If you only want to unsubscribe, please call {@link #removeObserver(Observer)}
-     * @throws IllegalStateException when google api client not connected
+     * If you only want to unsubscribe, please call {@link #removeObserver(Observer)}
      */
     public void stopLocationUpdates() {
         if (isStarted()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(
                     googleApiClient, this);
             isStarted = false;
-            Log.i(TAG, "GPS request stopped");
+            Log.i(TAG, CalamarApplication.getInstance().getString(R.string.gps_request_stopped));
         }
     }
 
     /**
      * FusedLocationApi callback method
+     *
      * @param location the new location
      */
     @Override
@@ -120,6 +114,7 @@ public final class GPSProvider implements LocationListener {
 
     /**
      * Register a new observer to observable GPSProvider
+     *
      * @param observer the new observer
      */
     public void addObserver(GPSProvider.Observer observer) {
@@ -128,6 +123,7 @@ public final class GPSProvider implements LocationListener {
 
     /**
      * Unsubscribe an observer from GPSProvider observable
+     *
      * @param observer the observer to remove
      * @return true if observer was present and correctly removed
      */
@@ -135,14 +131,23 @@ public final class GPSProvider implements LocationListener {
         return this.observers.remove(observer);
     }
 
+    /**
+     * Sets a mock location for debugging and testing
+     *
+     * @param location The location to be set
+     * @throws RuntimeException If the app is not in debug mode
+     */
     public void setMockLocation(Location location) {
-        if(BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG) {
             notifyObservers(location);
         } else {
-            throw new RuntimeException("can't set mock Location in release version");
+            throw new RuntimeException(CalamarApplication.getInstance().getString(R.string.set_mock_release_exception));
         }
     }
 
+    /**
+     * @return True if the GPSProvider has been started
+     */
     public boolean isStarted() {
         return isStarted;
     }
@@ -159,11 +164,10 @@ public final class GPSProvider implements LocationListener {
 
     /**
      * Verifies location services availability on the device
-     * if KO, attempt to resolve error by showing user a dialog. <br>
      * if OK, location updates are requested, <br>
      * is NOT called by startLocationUpdates(). <br>
      * does nothing if already started
-     * */
+     */
     public void checkSettingsAndLaunchIfOK(final BaseActivity parentActivity) {
         if (!isStarted() && !isResolvingSettings()) {
             googleApiClient.connect();//if already connected does nothing
@@ -187,7 +191,7 @@ public final class GPSProvider implements LocationListener {
                         case LocationSettingsStatusCodes.SUCCESS:
                             // All location settings are satisfied. The client can initialize location
                             // requests.
-                            Log.i(GPSProvider.TAG, "Location settings OK");
+                            Log.i(GPSProvider.TAG, CalamarApplication.getInstance().getString(R.string.location_settings_ok));
                             //  start location requests
                             startLocationUpdates();
                             break;
@@ -198,7 +202,7 @@ public final class GPSProvider implements LocationListener {
                                 // Show the dialog, onActivityResult() callback in activity will be called
                                 // with result of user action
                                 isResolvingSettings = true;
-                                Log.e(GPSProvider.TAG, "Location settings not satisfied");
+                                Log.e(GPSProvider.TAG, CalamarApplication.getInstance().getString(R.string.unsatisfied_location_settings));
                                 status.startResolutionForResult(parentActivity, CHECK_SETTINGS_REQUEST);
 
                             } catch (IntentSender.SendIntentException e) {
@@ -210,7 +214,7 @@ public final class GPSProvider implements LocationListener {
                             // settings so we won't show the dialog.
                             if (!parentActivity.isFinishing()) {
                                 parentActivity.displayErrorMessage(
-                                        parentActivity.getString(R.string.settings_change_unavailable), true);
+                                        parentActivity.getString(R.string.location_settings_change_unavailable_mandatory), true);
                             }
                             break;
                     }
@@ -221,7 +225,7 @@ public final class GPSProvider implements LocationListener {
 
     /**
      * Creates location request
-     * */
+     */
     private LocationRequest createLocationRequest() {
         // TODO tweak constants
         LocationRequest locationRequest = new LocationRequest();
@@ -245,7 +249,6 @@ public final class GPSProvider implements LocationListener {
         locationRequest.setSmallestDisplacement(3); // 3 meters
 
 
-
         // PRIORITY_HIGH_ACCURACY, combined with the ACCESS_FINE_LOCATION permission setting,
         // and a fast update interval of 5 seconds, causes the fused location provider to return
         // location updates that are accurate to within a few feet.
@@ -257,10 +260,11 @@ public final class GPSProvider implements LocationListener {
     /**
      * Notify (call the {@link GPSProvider.Observer#update(Location) update}
      * method of) the registered observers
+     *
      * @param location the new location
      */
     private void notifyObservers(Location location) {
-        for(GPSProvider.Observer observer : observers) {
+        for (GPSProvider.Observer observer : observers) {
             observer.update(location);
         }
     }
@@ -268,9 +272,9 @@ public final class GPSProvider implements LocationListener {
     public void displayErrorMessage(final BaseActivity context) {
         // TODO refactor to remove code duplication with baseact.displaydialog, add constant etc..
         Log.e(GPSProvider.TAG, "we need gps !!");
-        if (!context.isFinishing() ){//&& !isPaused()) {
+        if (!context.isFinishing()) {//&& !isPaused()) {
             final AlertDialog.Builder errorDialog = new AlertDialog.Builder(context);
-            errorDialog.setTitle(context.getString(R.string.location_settings_unsatisfied_message));
+            errorDialog.setTitle(context.getString(R.string.unsatisfied_location_settings));
             errorDialog.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
                     //OK
@@ -286,7 +290,7 @@ public final class GPSProvider implements LocationListener {
      * Defines observer to GPSProvider ...
      */
     public abstract static class Observer {
-        abstract public void update(Location  newLocation);
+        abstract public void update(Location newLocation);
     }
 }
 

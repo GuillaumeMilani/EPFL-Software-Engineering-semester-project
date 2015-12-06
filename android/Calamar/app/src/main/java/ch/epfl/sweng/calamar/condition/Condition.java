@@ -1,7 +1,6 @@
 package ch.epfl.sweng.calamar.condition;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Color;
 import android.location.Location;
 import android.view.Gravity;
@@ -16,6 +15,7 @@ import org.json.JSONObject;
 import java.util.HashSet;
 import java.util.Set;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 
 /**
@@ -25,12 +25,29 @@ public abstract class Condition {
 
     // TODO make tostring usable ^^
 
-    public enum Type {POSITIONCONDITION, TRUECONDITION, FALSECONDITION,
-        ANDCONDITION, ORCONDITION, NOTCONDITION, TESTCONDITION}
+    protected static final String JSON_TYPE = "type";
+    private static final String JSON_METADATA = "metadata";
+    private static final String JSON_VALUE = "val";
+    private static final String JSON_LEFT = "a";
+    private static final String JSON_RIGHT = "b";
+    private static final int GREEN = Color.rgb(0, 155, 0);
+    private static final int RED = Color.rgb(155, 0, 0);
+
+    public enum Type {
+        POSITIONCONDITION, TRUECONDITION, FALSECONDITION,
+        ANDCONDITION, ORCONDITION, NOTCONDITION, TESTCONDITION
+    }
 
     private Boolean value = false;
     private final Set<Observer> observers = new HashSet<>();
 
+    /**
+     * Concats two or more JSONArrays
+     *
+     * @param arrays The arrays to be concatenated
+     * @return The concatenated Array
+     * @throws JSONException If there is a problem with the JSON
+     */
     private static JSONArray concatArray(JSONArray... arrays)
             throws JSONException {
         JSONArray result = new JSONArray();
@@ -59,7 +76,7 @@ public abstract class Condition {
     public JSONObject toJSON() throws JSONException {
         JSONObject ret = new JSONObject();
         this.compose(ret);
-        ret.accumulate("metadata", getMetadata());
+        ret.accumulate(JSON_METADATA, getMetadata());
         return ret;
     }
 
@@ -74,6 +91,11 @@ public abstract class Condition {
         return value == that.value && getType().equals(that.getType());
     }
 
+    /**
+     * Returns the type of the condition
+     *
+     * @return the type
+     */
     public abstract Type getType();
 
 
@@ -82,7 +104,7 @@ public abstract class Condition {
      * @throws UnsupportedOperationException if {@link #hasLocation} returns false
      */
     public Location getLocation() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("the condition does NOT have any position");
+        throw new UnsupportedOperationException(CalamarApplication.getInstance().getString(R.string.condition_getlocation_unsupported));
     }
 
     /**
@@ -92,6 +114,12 @@ public abstract class Condition {
         return false;
     }
 
+    /**
+     * Returns the view of the condition
+     *
+     * @param context The context from which this method is called
+     * @return The View
+     */
     public View getView(Activity context) {
         LinearLayout layout = new LinearLayout(context);
         layout.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -99,7 +127,7 @@ public abstract class Condition {
         // Good, but when we have and(and(c1,c2),c3), c3 is not in the right place.
         //layout.setPadding(10,10,10,10);
 
-        layout.setBackgroundColor(getValue() ? Color.rgb(0, 155, 0) : Color.rgb(155, 0, 0));
+        layout.setBackgroundColor(getValue() ? GREEN : RED);
         return layout;
 
         //TODO : Try to make it work to see if it's better looking
@@ -132,8 +160,8 @@ public abstract class Condition {
      * @param newValue new value to set
      */
     protected void setValue(Boolean newValue) {
-        if (value == false && newValue == true) {
-            value = newValue;
+        if (!value && newValue) {
+            value = true;
             for (Observer o : observers) {
                 o.update(this);
             }
@@ -147,6 +175,12 @@ public abstract class Condition {
         return value;
     }
 
+    /**
+     * Returns the metadata of the condition
+     *
+     * @return the metadata
+     * @throws JSONException
+     */
     public JSONArray getMetadata() throws JSONException {
         return new JSONArray();
     }
@@ -160,23 +194,23 @@ public abstract class Condition {
      * @throws IllegalArgumentException
      */
     public static Condition fromJSON(JSONObject json) throws JSONException, IllegalArgumentException {
-        if (null == json || json.isNull("type")) {
-            throw new IllegalArgumentException("malformed json, either null or no 'type' value");
+        if (null == json || json.isNull(JSON_TYPE)) {
+            throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.malformed_json));
         }
         Condition cond;
-        String type = json.getString("type");
+        String type = json.getString(JSON_TYPE);
         switch (Type.valueOf(type)) {
             case POSITIONCONDITION:
                 cond = PositionCondition.fromJSON(json);
                 break;
             case ANDCONDITION:
-                cond = and(fromJSON(json.getJSONObject("a")), fromJSON(json.getJSONObject("b")));
+                cond = and(fromJSON(json.getJSONObject(JSON_LEFT)), fromJSON(json.getJSONObject(JSON_RIGHT)));
                 break;
             case ORCONDITION:
-                cond = or(fromJSON(json.getJSONObject("a")), fromJSON(json.getJSONObject("b")));
+                cond = or(fromJSON(json.getJSONObject(JSON_LEFT)), fromJSON(json.getJSONObject(JSON_RIGHT)));
                 break;
             case NOTCONDITION:
-                cond = not(fromJSON(json.getJSONObject("val")));
+                cond = not(fromJSON(json.getJSONObject(JSON_VALUE)));
                 break;
             case TRUECONDITION:
                 cond = trueCondition();
@@ -185,7 +219,7 @@ public abstract class Condition {
                 cond = falseCondition();
                 break;
             default:
-                throw new IllegalArgumentException("Unexpected Item type (" + type + ")");
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unexpected_item_type, type));
         }
         return cond;
     }
@@ -203,7 +237,7 @@ public abstract class Condition {
 
             @Override
             protected void compose(JSONObject json) throws JSONException {
-                json.accumulate("type", getType().name());
+                json.accumulate(JSON_TYPE, getType().name());
             }
 
             @Override
@@ -241,7 +275,7 @@ public abstract class Condition {
 
             @Override
             protected void compose(JSONObject json) throws JSONException {
-                json.accumulate("type", getType().name());
+                json.accumulate(JSON_TYPE, getType().name());
             }
 
             @Override
@@ -286,7 +320,7 @@ public abstract class Condition {
                     @Override
                     public void update(Condition c) {
                         setValue(c1.value && c2.value);
-                        if(getValue() == true) {
+                        if (getValue()) {
                             c1.removeObserver(this);
                             c2.removeObserver(this);
                         }
@@ -299,9 +333,9 @@ public abstract class Condition {
 
             @Override
             protected void compose(JSONObject json) throws JSONException {
-                json.accumulate("type", getType().name());
-                json.accumulate("a", c1.toJSON());
-                json.accumulate("b", c2.toJSON());
+                json.accumulate(JSON_TYPE, getType().name());
+                json.accumulate(JSON_LEFT, c1.toJSON());
+                json.accumulate(JSON_RIGHT, c2.toJSON());
             }
 
             @Override
@@ -363,7 +397,7 @@ public abstract class Condition {
                     @Override
                     public void update(Condition c) {
                         setValue(c1.value || c2.value);
-                        if(getValue() == true) {
+                        if (getValue()) {
                             c1.removeObserver(this);
                             c2.removeObserver(this);
                         }
@@ -375,9 +409,9 @@ public abstract class Condition {
 
             @Override
             protected void compose(JSONObject json) throws JSONException {
-                json.accumulate("type", getType().name());
-                json.accumulate("a", c1.toJSON());
-                json.accumulate("b", c2.toJSON());
+                json.accumulate(JSON_TYPE, getType().name());
+                json.accumulate(JSON_LEFT, c1.toJSON());
+                json.accumulate(JSON_RIGHT, c2.toJSON());
             }
 
             @Override
@@ -436,7 +470,7 @@ public abstract class Condition {
                     @Override
                     public void update(Condition c) {
                         setValue(!c.value);
-                        if(getValue() == true) {
+                        if (getValue()) {
                             c.removeObserver(this);
                         }
                     }
@@ -446,8 +480,8 @@ public abstract class Condition {
 
             @Override
             protected void compose(JSONObject json) throws JSONException {
-                json.accumulate("type", getType().name());
-                json.accumulate("val", c.toJSON());
+                json.accumulate(JSON_TYPE, getType().name());
+                json.accumulate(JSON_VALUE, c.toJSON());
             }
 
             @Override
@@ -502,10 +536,21 @@ public abstract class Condition {
         }
     }
 
+    /**
+     * Adds an observer of the condition
+     *
+     * @param observer A Condition.Observer (Item generally)
+     */
     public void addObserver(Condition.Observer observer) {
         this.observers.add(observer);
     }
 
+    /**
+     * Removes an observer of the condition
+     *
+     * @param observer a Condition.Observer (Item generally)
+     * @return The result of the removal (true if it existed, false otherwise)
+     */
     public boolean removeObserver(Condition.Observer observer) {
         return this.observers.remove(observer);
     }

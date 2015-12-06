@@ -31,19 +31,13 @@ import ch.epfl.sweng.calamar.item.Item;
  */
 //TODO Make toasts on UI thread, RuntimeException otherwise
 //TODO Runs dbHandler.get in AsyncTask !
-public class StorageManager {
+public final class StorageManager {
 
     private static final Set<WritingTask> currentWritingTasks = new CopyOnWriteArraySet<>();
 
     //Will be used to requery server if writing of a file has failed and the file is no longer available.
     private static final Set<Integer> currentFilesID = new CopyOnWriteArraySet<>();
 
-    private static final int RETRY_TIME = 10000;
-    private static final int MAX_ITER = 20;
-
-    private static final int OPERATION_READ = 1;
-    private static final int OPERATION_DELETE_WITHOUT_DB = 2;
-    private static final int OPERATION_DELETE_WITH_DB = 3;
 
     private static final String ROOT_FOLDER_NAME = "Calamar/";
     private static final String IMAGE_FOLDER_NAME = ROOT_FOLDER_NAME + "Images/";
@@ -51,6 +45,13 @@ public class StorageManager {
     private static final String FILENAME = "FILE_";
     private static final String IMAGENAME = "IMG_";
     private static final String NAME_SUFFIX = "_CAL";
+
+    private static final int RETRY_TIME = 10000;
+    private static final int MAX_ITER = 20;
+
+    private static final int OPERATION_READ = 1;
+    private static final int OPERATION_DELETE_WITHOUT_DB = 2;
+    private static final int OPERATION_DELETE_WITH_DB = 3;
 
     private static StorageManager instance;
     private final SQLiteDatabaseHandler dbHandler;
@@ -151,7 +152,7 @@ public class StorageManager {
                 }
                 break;
             default:
-                throw new IllegalArgumentException(app.getString(R.string.unknown_item_type));
+                throw new IllegalArgumentException(app.getString(R.string.unexpected_item_type, i.getType().name()));
         }
 
     }
@@ -186,7 +187,7 @@ public class StorageManager {
                 dbHandler.deleteItem(item);
                 break;
             default:
-                throw new IllegalArgumentException(app.getString(R.string.unknown_item_type));
+                throw new IllegalArgumentException(app.getString(R.string.unexpected_item_type, item.getType().name()));
         }
     }
 
@@ -206,7 +207,7 @@ public class StorageManager {
                 new DeleteTask((ImageItem) item).execute();
                 break;
             default:
-                throw new IllegalArgumentException(app.getString(R.string.unknown_item_type));
+                throw new IllegalArgumentException(app.getString(R.string.unexpected_item_type, item.getType().name()));
         }
     }
 
@@ -341,7 +342,7 @@ public class StorageManager {
                     new ReadTask((ImageItem) i, ((ImageItem) i).getPath(), caller).execute();
                     break;
                 default:
-                    throw new IllegalArgumentException(app.getString(R.string.unknown_item_type));
+                    throw new IllegalArgumentException(app.getString(R.string.unexpected_item_type, i.getType().name()));
             }
         }
     }
@@ -410,6 +411,9 @@ public class StorageManager {
         }
     }
 
+    /**
+     * AsyncTask for searching an item in the database given its ID
+     */
     private class GetItemFromIDTask extends AsyncTask<Integer, Void, Item[]> {
 
         private final StorageCallbacks caller;
@@ -570,10 +574,10 @@ public class StorageManager {
         switch (f.getType()) {
             case FILEITEM:
                 File filePath = Environment.getExternalStoragePublicDirectory(FILE_FOLDER_NAME);
-                return new FileItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), f.getData(), filePath.getAbsolutePath() + '/' + FILENAME + "" + formatDate() + NAME_SUFFIX + app.getTodayFileCount());
+                return new FileItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), f.getData(), filePath.getAbsolutePath() + '/' + FILENAME + app.getString(R.string.empty_string) + formatDate() + NAME_SUFFIX + app.getTodayFileCount());
             case IMAGEITEM:
                 File imagePath = Environment.getExternalStoragePublicDirectory(IMAGE_FOLDER_NAME);
-                return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), f.getData(), imagePath.getAbsolutePath() + '/' + IMAGENAME + "" + formatDate() + NAME_SUFFIX + app.getTodayImageCount());
+                return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), f.getData(), imagePath.getAbsolutePath() + '/' + IMAGENAME + app.getString(R.string.empty_string) + formatDate() + NAME_SUFFIX + app.getTodayImageCount());
             default:
                 throw new IllegalArgumentException(app.getString(R.string.expected_fileitem));
         }
@@ -585,7 +589,7 @@ public class StorageManager {
      * @return the String, used in rePath
      */
     private String formatDate() {
-        return calendar.get(Calendar.DAY_OF_MONTH) + "" + (calendar.get(Calendar.MONTH) + 1) + "" + calendar.get(Calendar.YEAR);
+        return calendar.get(Calendar.DAY_OF_MONTH) + app.getString(R.string.empty_string) + (calendar.get(Calendar.MONTH) + 1) + app.getString(R.string.empty_string) + calendar.get(Calendar.YEAR);
     }
 
     /**
@@ -593,8 +597,8 @@ public class StorageManager {
      */
     protected class WritingTask extends AsyncTask<Void, Void, Boolean> {
 
-        private int iterCount;
-        private FileItem f;
+        private final int iterCount;
+        private final FileItem f;
 
         protected WritingTask(FileItem f, int iterCount) {
             this.iterCount = iterCount;
