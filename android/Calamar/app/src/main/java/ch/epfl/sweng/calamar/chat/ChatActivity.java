@@ -229,7 +229,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
                     }
                     //The sever sends back all new item, if we have items from an other correspondent,
                     //we don't want to display them in the actual chat.
-                    adapter.add(filterMessageFromContact(items,correspondent));
+                    adapter.add(filterMessageFromContact(items, correspondent));
                     for (Item item : items) {
                         storageManager.getCompleteItem(item, ChatActivity.this);
                     }
@@ -249,10 +249,10 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
          * @param list list to filter
          * @return a list with item coming from actual correspondent
          */
-        private List<Item> filterMessageFromContact(List<Item> list,Recipient u) {
+        private List<Item> filterMessageFromContact(List<Item> list, Recipient u) {
             List<Item> filteredItem = new ArrayList<>();
-            for(Item i : list) {
-                if(i.getFrom().equals(u) || i.getFrom().equals(CalamarApplication.getInstance().getCurrentUser())){
+            for (Item i : list) {
+                if (i.getFrom().equals(u) || i.getFrom().equals(CalamarApplication.getInstance().getCurrentUser())) {
                     filteredItem.add(i);
                 }
             }
