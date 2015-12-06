@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -104,7 +105,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
 
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
-
+            // Log.v(NetworkDatabaseClient.TAG, response);
             JSONObject object = new JSONObject(response);
             return object.getInt(JSON_ID);
         } catch (IOException | JSONException e) {
@@ -159,7 +160,7 @@ public class NetworkDatabaseClient implements DatabaseClient {
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             //Log.v(TAG, jsonParameter.toString());
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
-            Log.v(TAG, response);
+            //Log.v(TAG, response);
             return NetworkDatabaseClient.itemsFromJSON(response);
         } catch (IOException | JSONException e) {
             throw new DatabaseClientException(e);
@@ -202,17 +203,18 @@ public class NetworkDatabaseClient implements DatabaseClient {
      */
     private static String post(HttpURLConnection connection, String jsonParameter)
             throws IOException, DatabaseClientException {
+        String toSend = URLEncoder.encode(jsonParameter, "UTF-8");
         connection.setRequestMethod(CONNECTION_REQUEST_METHOD);
         connection.setRequestProperty("Content-Type",
                 CONNECTION_CONTENT_TYPE);
         connection.setRequestProperty("Content-Length",
-                Integer.toString(jsonParameter.getBytes().length));
+                Integer.toString(toSend.getBytes().length));
         connection.setDoInput(true);//to retrieve result
         connection.setDoOutput(true);//to send request
 
         //send request
         DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-        wr.writeBytes(jsonParameter);
+        wr.writeBytes(toSend);
         wr.flush();
         wr.close();
 
