@@ -371,6 +371,7 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         final ImageItem item = new ImageItem(0, testUser, testRecipient, new Date(), tc, bitmapData, f1.getAbsolutePath());
         final ImageItem item2 = new ImageItem(1, testUser, testRecipient, new Date(), tc, null, f2.getAbsolutePath());
         final FileItem item3 = new FileItem(2, testUser, testRecipient, new Date(), tc, dummyData, f3.getAbsolutePath());
+        //TODO change when locked item are not stored
         final FileItem item4 = new FileItem(3, testRecipient, testUser, new Date(), tc, null, "/blablabla");
         final ChatActivity activity = mActivityRule.getActivity();
         runTestOnUiThread(new Runnable() {
