@@ -154,9 +154,8 @@ public final class RegistrationIntentService extends IntentService {
                     public void run() {
                         // Show toast
                         Context context = getApplicationContext();
-                        CharSequence text = "Connected as " + name;
-                        int duration = Toast.LENGTH_SHORT;
-                        Toast toast = Toast.makeText(context, text, duration);
+                        Toast toast = Toast.makeText(context, context.getString(R.string.connected_as_toast, name),
+                                Toast.LENGTH_SHORT);
                         toast.show();
                     }
                 });
@@ -166,12 +165,10 @@ public final class RegistrationIntentService extends IntentService {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-
                         // Show toast
                         Context context = getApplicationContext();
-                        CharSequence text = "Not connected ";
-                        int duration = Toast.LENGTH_SHORT;
-                        Toast toast = Toast.makeText(context, text, duration);
+                        Toast toast = Toast.makeText(context, context.getString(R.string.account_not_connected),
+                                Toast.LENGTH_SHORT);
                         toast.show();
                     }
                 });

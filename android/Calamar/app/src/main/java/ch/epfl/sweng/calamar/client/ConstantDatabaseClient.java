@@ -18,7 +18,7 @@ import ch.epfl.sweng.calamar.recipient.User;
 /**
  * Created by Quentin Jaquier, sciper 235825 on 23.10.2015.
  */
-public final class ConstantDatabaseClient implements DatabaseClient {
+public class ConstantDatabaseClient implements DatabaseClient {
 
     private static final User ALICE = new User(1, "Alice");
     private static final User BOB = new User(2, "Bob");

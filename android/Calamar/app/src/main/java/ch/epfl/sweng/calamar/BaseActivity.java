@@ -194,7 +194,7 @@ public abstract class BaseActivity extends AppCompatActivity
                         }
                         break;
                     default:
-                        displayErrorMessage(getString(R.string.unable_to_connect_client_message), true);
+                        displayErrorMessage(getString(R.string.google_api_client_cant_connect), true);
                 }
                 break;
             case ACCOUNT_CHOOSEN:
