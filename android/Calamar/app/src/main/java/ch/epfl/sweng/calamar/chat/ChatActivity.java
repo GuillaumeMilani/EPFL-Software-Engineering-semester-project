@@ -17,6 +17,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -226,7 +227,9 @@ public final class ChatActivity extends BaseActivity implements StorageCallbacks
                         storageManager.storeItems(items, ChatActivity.this);
                         dbHandler.setLastItemTime(items.get(items.size() - 1).getDate().getTime());
                     }
-                    adapter.add(items);
+                    //The sever sends back all new item, if we have items from an other correspondent,
+                    //we don't want to display them in the actual chat.
+                    adapter.add(filterMessageFromContact(items, correspondent));
                     for (Item item : items) {
                         storageManager.getCompleteItem(item, ChatActivity.this);
                     }
@@ -239,7 +242,24 @@ public final class ChatActivity extends BaseActivity implements StorageCallbacks
             }
         }
 
+        /**
+         * Return a list with only the items coming from the actual correspondent or from the
+         * actual user.
+         *
+         * @param list list to filter
+         * @return a list with item coming from actual correspondent
+         */
+        private List<Item> filterMessageFromContact(List<Item> list, Recipient u) {
+            List<Item> filteredItem = new ArrayList<>();
+            for (Item i : list) {
+                if (i.getFrom().equals(u) || i.getFrom().equals(CalamarApplication.getInstance().getCurrentUser())) {
+                    filteredItem.add(i);
+                }
+            }
+            return filteredItem;
+        }
     }
+
 
     /**
      * Returns a copy of the messages history

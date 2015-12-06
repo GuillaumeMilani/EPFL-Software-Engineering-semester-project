@@ -1,21 +1,23 @@
 package ch.epfl.sweng.calamar;
 
+import android.content.Intent;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.matcher.ViewMatchers;
-import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.ListView;
 
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
 import ch.epfl.sweng.calamar.chat.ChatActivity;
+import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
+import ch.epfl.sweng.calamar.recipient.User;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.clearText;
@@ -36,12 +38,8 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
 
     private final static String HELLO_ALICE = "Hello Alice !";
 
-    @Rule
-    public final ActivityTestRule<ChatActivity> mActivityRule = new ActivityTestRule<>(
-            ChatActivity.class);
-
-    @Rule
-    public final TemporaryFolder testFolder = new TemporaryFolder();
+    private final User ALICE = new User(1, "Alice");
+    private final User BOB = new User(2, "Bob");
 
     public ChatActivityBasicTest() {
         super(ChatActivity.class);
@@ -51,8 +49,29 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
     @Override
     public void setUp() throws Exception {
         super.setUp();
+
+        injectInstrumentation(InstrumentationRegistry.getInstrumentation());
+        Intent conversation = new Intent();
+        conversation.putExtra(ChatFragment.EXTRA_CORRESPONDENT_NAME, ALICE.getName());
+        conversation.putExtra(ChatFragment.EXTRA_CORRESPONDENT_ID, 1);
+
+        CalamarApplication.getInstance().resetPreferences();
+        CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
+
+        setActivityIntent(conversation);
+        getActivity();
         DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
         CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
+        CalamarApplication.getInstance().setCurrentUserID(BOB.getID());
+        CalamarApplication.getInstance().setCurrentUserName(BOB.getName());
+    }
+
+    @After
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
+        CalamarApplication.getInstance().resetPreferences();
     }
 
     /**
@@ -84,10 +103,11 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
 
     /**
      * Test that the message retrieve from the itemClient are displayed.
+     * ( Not more and not less than 2 messages )
      */
     @Test
     public void testTwoMessageAreDisplayed() {
-        ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+        ListView list = (ListView) getActivity().findViewById(R.id.messagesContainer);
         int before = list.getCount();
         onView(withId(R.id.refreshButton)).perform(click());
         assertEquals(list.getCount(), before + 2);
@@ -108,7 +128,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
      */
     @Test
     public void testMessageIsDisplayedWhenSend() {
-        ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
+        ListView list = (ListView) getActivity().findViewById(R.id.messagesContainer);
         int before = list.getCount();
         onView(withId(R.id.messageEdit)).perform(typeText(HELLO_ALICE));
         onView(withId(R.id.chatSendButton)).perform(click());

@@ -20,6 +20,7 @@ import ch.epfl.sweng.calamar.recipient.User;
  */
 public class ConstantDatabaseClient implements DatabaseClient {
 
+    private static final User OTHER = new User(3, "Other");
     private static final User ALICE = new User(1, "Alice");
     private static final User BOB = new User(2, "Bob");
     private static final String ALICE_MESSAGE = "Hello Bob, it's Alice !";
@@ -27,6 +28,8 @@ public class ConstantDatabaseClient implements DatabaseClient {
     private static final Location LOCATION = new Location("abc");
     private static final Item ITEM_FROM = new SimpleTextItem(Item.DUMMY_ID, ALICE, BOB, new Date(1445198510), Condition.trueCondition(), ALICE_MESSAGE);
     private static final Item ITEM_TO = new SimpleTextItem(Item.DUMMY_ID, BOB, ALICE, new Date(1445198510), Condition.and(Condition.falseCondition(), new PositionCondition(LOCATION)), BOB_MESSAGE);
+
+    private static final Item ITEM_OTHER = new SimpleTextItem(1, OTHER, BOB, new Date(1445198510), Condition.and(Condition.falseCondition(), new PositionCondition(LOCATION)), "Hello Bob, it's me !");
 
     private final List<Item> toRetrieve = new ArrayList<>();
 
@@ -41,6 +44,7 @@ public class ConstantDatabaseClient implements DatabaseClient {
         List<Item> items = new ArrayList<>();
         items.add(ITEM_FROM);
         items.add(ITEM_TO);
+        items.add(ITEM_OTHER);
         items.addAll(toRetrieve);
         return items;
     }

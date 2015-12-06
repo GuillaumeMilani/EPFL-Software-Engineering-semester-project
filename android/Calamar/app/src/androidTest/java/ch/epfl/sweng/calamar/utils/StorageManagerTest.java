@@ -46,6 +46,7 @@ import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.item.FileItem;
 import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.User;
 
 import static android.support.test.espresso.Espresso.onView;
@@ -594,6 +595,8 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
 
     @Test
     public void testImageItemIsUpdatedWithStorageManager() throws Throwable {
+        final User alice = new User(1, "Alice");
+        final User me = CalamarApplication.getInstance().getCurrentUser();
         File f = temp.newFile();
         Bitmap bitmap = getBitmapFromAsset("testImage.jpg");
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -602,15 +605,20 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
         out.write(bitmapData);
         assertTrue(Arrays.equals(FileUtils.toByteArray(f), bitmapData));
-        ImageItem testItem = new ImageItem(20, CalamarApplication.getInstance().getCurrentUser(), new User(1, "Alice"), new Date(1445198511), null, f.getAbsolutePath(), "BLABLABLA");
+        SimpleTextItem item1 = new SimpleTextItem(0, me, alice, new Date(1445198500), "Hey");
+        SimpleTextItem item2 = new SimpleTextItem(1, me, alice, new Date(144519510), "Hey");
+        ImageItem testItem = new ImageItem(20, me, alice, new Date(1445198511), null, f.getAbsolutePath(), "BLABLABLA");
         ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
         ChatAdapter adapter = (ChatAdapter) list.getAdapter();
-        ((ConstantDatabaseClient) DatabaseClientLocator.getDatabaseClient()).addItem(testItem);
+        ConstantDatabaseClient client = (ConstantDatabaseClient) DatabaseClientLocator.getDatabaseClient();
+        client.addItem(item1);
+        client.addItem(item2);
+        client.addItem(testItem);
         onView(withId(R.id.refreshButton)).perform(click());
         Item firstTextBefore = adapter.getItem(adapter.getCount() - 2);
         Item secondTextBefore = adapter.getItem(adapter.getCount() - 3);
         synchronized (this) {
-            wait(10000);
+            wait(1000);
         }
         assertEquals(firstTextBefore, adapter.getItem(adapter.getCount() - 2));
         assertEquals(secondTextBefore, adapter.getItem(adapter.getCount() - 3));
