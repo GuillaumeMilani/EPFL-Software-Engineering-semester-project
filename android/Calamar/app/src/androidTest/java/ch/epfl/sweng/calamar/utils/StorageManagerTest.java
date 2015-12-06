@@ -60,8 +60,8 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
     private final SQLiteDatabaseHandler dbHandler = SQLiteDatabaseHandler.getInstance();
     private final User testUser = new User(1, "Alice");
     private final User testRecipient = new User(2, "Bob");
-    private Condition tc = Condition.trueCondition();
-    private Condition fc = Condition.falseCondition();
+    private final Condition tc = Condition.trueCondition();
+    private final Condition fc = Condition.falseCondition();
     private Calendar calendar;
 
     private static final String ROOT_FOLDER_NAME = "Calamar/";
@@ -72,7 +72,7 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
     private static final String NAME_SUFFIX = "_CAL";
 
     @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
+    public final TemporaryFolder temp = new TemporaryFolder();
     @Rule
     public final ActivityTestRule<ChatActivity> mActivityRule = new ActivityTestRule<>(
             ChatActivity.class);

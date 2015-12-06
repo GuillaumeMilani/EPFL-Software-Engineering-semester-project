@@ -13,9 +13,8 @@ import java.util.List;
 
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.recipient.Recipient;
-import ch.epfl.sweng.calamar.recipient.User;
 
-public class ChatUsersListAdapter extends BaseAdapter {
+public final class ChatUsersListAdapter extends BaseAdapter {
     private final ArrayList<Recipient> users;
     private final Activity context;
 
@@ -56,7 +55,12 @@ public class ChatUsersListAdapter extends BaseAdapter {
         return convertView;
     }
 
-    public void add(User user) {
+    /**
+     * Adds an user to the list
+     *
+     * @param user The User to add
+     */
+    public void add(Recipient user) {
         users.add(user);
     }
 

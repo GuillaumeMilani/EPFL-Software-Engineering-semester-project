@@ -20,20 +20,18 @@ import ch.epfl.sweng.calamar.recipient.User;
  */
 public class ConstantDatabaseClient implements DatabaseClient {
 
-    private final User ALICE = new User(1, "Alice");
-    private final User BOB = new User(2, "Bob");
+    private static final User OTHER = new User(3, "Other");
+    private static final User ALICE = new User(1, "Alice");
+    private static final User BOB = new User(2, "Bob");
+    private static final String ALICE_MESSAGE = "Hello Bob, it's Alice !";
+    private static final String BOB_MESSAGE = "Hello Alice, it's Bob !";
+    private static final Location LOCATION = new Location("abc");
+    private static final Item ITEM_FROM = new SimpleTextItem(Item.DUMMY_ID, ALICE, BOB, new Date(1445198510), Condition.trueCondition(), ALICE_MESSAGE);
+    private static final Item ITEM_TO = new SimpleTextItem(Item.DUMMY_ID, BOB, ALICE, new Date(1445198510), Condition.and(Condition.falseCondition(), new PositionCondition(LOCATION)), BOB_MESSAGE);
 
-    private final User  RANDOM = new User(3, "Random");
+    private static final Item ITEM_OTHER = new SimpleTextItem(1, OTHER, BOB, new Date(1445198510), Condition.and(Condition.falseCondition(), new PositionCondition(LOCATION)), "Hello Bob, it's me !");
 
-    List<Item> toRetrieve = new ArrayList<>();
-
-    private final Location location = new Location("abc");
-
-    private final Item itemFrom = new SimpleTextItem(1, ALICE, BOB, new Date(1445198510), Condition.trueCondition(), "Hello Bob, it's Alice !");
-    private final Item itemTo = new SimpleTextItem(1, BOB, ALICE, new Date(1445198510), Condition.and(Condition.falseCondition(), new PositionCondition(location)), "Hello Alice, it's Bob !");
-    private final Item randomMessage = new SimpleTextItem(1, RANDOM, BOB, new Date(1445198510), Condition.and(Condition.falseCondition(), new PositionCondition(location)), "Hello Bob, it's Random !");
-
-
+    private final List<Item> toRetrieve = new ArrayList<>();
 
     @Override
     public List<Item> getAllItems(Recipient recipient, Date from, VisibleRegion visibleRegion)
@@ -44,9 +42,9 @@ public class ConstantDatabaseClient implements DatabaseClient {
     @Override
     public List<Item> getAllItems(Recipient recipient, Date from) throws DatabaseClientException {
         List<Item> items = new ArrayList<>();
-        items.add(itemFrom);
-        items.add(itemTo);
-        items.add(randomMessage);
+        items.add(ITEM_FROM);
+        items.add(ITEM_TO);
+        items.add(ITEM_OTHER);
         items.addAll(toRetrieve);
         return items;
     }
@@ -58,7 +56,7 @@ public class ConstantDatabaseClient implements DatabaseClient {
 
     @Override
     public User findUserByName(String name) throws DatabaseClientException {
-        return new User(1, "Bob");
+        return BOB;
     }
 
     @Override
@@ -66,6 +64,11 @@ public class ConstantDatabaseClient implements DatabaseClient {
         return 0;
     }
 
+    /**
+     * Adds an item to the list of items "on the server"
+     *
+     * @param i The item to add
+     */
     public void addItem(Item i) {
         toRetrieve.add(i);
     }

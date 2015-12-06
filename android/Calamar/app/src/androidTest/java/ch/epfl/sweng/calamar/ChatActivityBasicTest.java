@@ -1,36 +1,22 @@
 package ch.epfl.sweng.calamar;
 
 import android.content.Intent;
-import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.matcher.ViewMatchers;
-import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.ListView;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Date;
-
 import ch.epfl.sweng.calamar.chat.ChatActivity;
-import ch.epfl.sweng.calamar.chat.ChatAdapter;
 import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
-import ch.epfl.sweng.calamar.item.ImageItem;
-import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.recipient.User;
 
 import static android.support.test.espresso.Espresso.onView;
@@ -55,9 +41,6 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
     private final User ALICE = new User(1, "Alice");
     private final User BOB = new User(2, "Bob");
 
-    private Intent conversation;
-
-
     public ChatActivityBasicTest() {
         super(ChatActivity.class);
     }
@@ -68,7 +51,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
         super.setUp();
 
         injectInstrumentation(InstrumentationRegistry.getInstrumentation());
-        conversation = new Intent();
+        Intent conversation = new Intent();
         conversation.putExtra(ChatFragment.EXTRA_CORRESPONDENT_NAME, ALICE.getName());
         conversation.putExtra(ChatFragment.EXTRA_CORRESPONDENT_ID, 1);
 
@@ -164,7 +147,7 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
         try {
             onView(withText("Hello Alice, it's Bob !")).check(matches(ViewMatchers.isDisplayed()));
             throw new AssertionError("The content of a lock message should not be displayed");
-        } catch (NoMatchingViewException e){
+        } catch (NoMatchingViewException e) {
             //Good
         }
     }

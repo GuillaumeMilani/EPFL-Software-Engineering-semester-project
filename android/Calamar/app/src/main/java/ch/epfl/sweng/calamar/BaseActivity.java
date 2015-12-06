@@ -22,17 +22,16 @@ import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.push.RegistrationIntentService;
 
 public abstract class BaseActivity extends AppCompatActivity
-        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
-{
-    private CalamarApplication app;
+        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     // LogCat tag
     private static final String TAG = BaseActivity.class.getSimpleName();
 
     // activity request codes
-    private static final int ERROR_RESOLUTION_REQUEST = 1001;
     protected static final int ACCOUNT_CHOOSEN = 3001;
+    private static final int ERROR_RESOLUTION_REQUEST = 1001;
 
+    private CalamarApplication app;
 
     // google api related stuff
     private boolean resolvingError;
@@ -96,7 +95,7 @@ public abstract class BaseActivity extends AppCompatActivity
     // GOOGLE API CLIENT CALLBACKS METHODS
     @Override
     public void onConnected(Bundle arg0) {
-        Log.i(TAG, "google API client connected");
+        Log.i(TAG, getString(R.string.google_api_client_connected));
     }
 
     @Override
@@ -113,8 +112,7 @@ public abstract class BaseActivity extends AppCompatActivity
             return;
         } else if (connectionResult.hasResolution()) {
             resolvingError = true;
-            Log.e(TAG, "google API client failed to connect: automatic resolution started, error = "
-                    + connectionResult.getErrorCode());
+            Log.e(TAG, getString(R.string.google_api_client_failed_auto_resolution, connectionResult.getErrorCode()));
 
             try {
                 connectionResult.startResolutionForResult(this, ERROR_RESOLUTION_REQUEST);
@@ -124,8 +122,7 @@ public abstract class BaseActivity extends AppCompatActivity
             }
         } else {
             resolvingError = true;
-            Log.e(TAG, "google API client failed to connect: no automatic resolution, error = "
-                    + connectionResult.getErrorCode());
+            Log.e(TAG, getString(R.string.google_api_client_failed_no_resolution, connectionResult.getErrorCode()));
 
             // show error dialog
             showGoogleApiErrorDialog(connectionResult.getErrorCode());
@@ -135,9 +132,15 @@ public abstract class BaseActivity extends AppCompatActivity
     // *********************************************************************************************
 
     // TODO test all use don't crash
+
+    /**
+     * Displays an error message in a dialog
+     *
+     * @param message the message to be displayed
+     */
     public void displayErrorMessage(String message, final boolean criticalError) {
         Log.e(BaseActivity.TAG, message);
-        if (!this.isFinishing() ){//&& !isPaused()) {
+        if (!this.isFinishing()) {//&& !isPaused()) {
             final AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
             errorDialog.setTitle(message);
             errorDialog.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
@@ -168,7 +171,7 @@ public abstract class BaseActivity extends AppCompatActivity
                 //Log.e(TAG, resultCode+"");
                 switch (resultCode) {
                     case Activity.RESULT_OK:
-                        Log.i(TAG, "LOCATION SETTINGS FIXED (?) : startUpdates");
+                        Log.i(TAG, getString(R.string.location_settings_fixed));
                         // start only the updates, settings should have been fixed now
                         gpsProvider.startLocationUpdates();
                         break;
@@ -191,7 +194,7 @@ public abstract class BaseActivity extends AppCompatActivity
                         }
                         break;
                     default:
-                        displayErrorMessage(getString(R.string.unable_to_connect_client_message), true);
+                        displayErrorMessage(getString(R.string.google_api_client_cant_connect), true);
                 }
                 break;
             case ACCOUNT_CHOOSEN:
@@ -207,7 +210,7 @@ public abstract class BaseActivity extends AppCompatActivity
                 }
                 break;
             default:
-                throw new IllegalStateException("onActivityResult : unknown request ! ");
+                throw new IllegalStateException(getString(R.string.unknown_onActivityResult_request));
         }
     }
 
@@ -227,7 +230,7 @@ public abstract class BaseActivity extends AppCompatActivity
                 ERROR_RESOLUTION_REQUEST, new DialogInterface.OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
-                        Log.e(TAG, "error dialog cancelled");
+                        Log.e(TAG, getString(R.string.error_dialog_cancelled));
                         //works even if dialog cancelled without clicking any button
                         finish();//TODO maybe refine..and create a method to handle this kind of actions
                     }

@@ -4,6 +4,9 @@ package ch.epfl.sweng.calamar.recipient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
+
 /**
  * Models a recipient (name and ID).<br>
  * known subclasses : <li>
@@ -13,6 +16,12 @@ import org.json.JSONObject;
  * Recipient is immutable
  */
 public abstract class Recipient {
+
+    public final static int DEFAULT_ID = -1;
+    protected final static String JSON_TYPE = "type";
+    private final static String JSON_ID = "ID";
+    private final static String JSON_NAME = "name";
+    private final static String TYPE_USER = "user";
     /**
      * the id of the Recipient
      */
@@ -24,7 +33,7 @@ public abstract class Recipient {
 
     protected Recipient(int ID, String name) {
         if (null == name) {
-            throw new IllegalArgumentException("field 'name' cannot be null");
+            throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.field_name_null));
         }
         this.ID = ID;
         this.name = name;
@@ -63,8 +72,8 @@ public abstract class Recipient {
      * @throws JSONException
      */
     protected void compose(JSONObject json) throws JSONException {
-        json.accumulate("ID", ID);
-        json.accumulate("name", name);
+        json.accumulate(JSON_ID, ID);
+        json.accumulate(JSON_NAME, name);
     }
 
     /**
@@ -84,28 +93,22 @@ public abstract class Recipient {
      * @throws JSONException
      */
     public static Recipient fromJSON(JSONObject json) throws JSONException {
-        if (null == json || json.isNull("type")) {
-            throw new IllegalArgumentException("malformed json, either null or no 'type' value");
+        if (null == json || json.isNull(JSON_TYPE)) {
+            throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.malformed_json));
         }
         Recipient ret;
-        String type = json.getString("type");
+        String type = json.getString(JSON_TYPE);
         switch (type) {
-            case "user":
+            case TYPE_USER:
                 ret = User.fromJSON(json);
                 break;
             //case "group":
             default:
-                throw new IllegalArgumentException("Unexpected Recipient type (" + type + ")");
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unexpected_recipient_type, type));
         }
         return ret;
     }
 
-    /**
-     * java equals
-     *
-     * @param o other Object to compare this with
-     * @return true if o is equal in value to this
-     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -115,11 +118,6 @@ public abstract class Recipient {
         return that.name.equals(name) && that.ID == ID;
     }
 
-    /**
-     * java hash function
-     *
-     * @return hash of the Object
-     */
     @Override
     public int hashCode() {
         return ID + name.hashCode() * 89;
@@ -136,8 +134,8 @@ public abstract class Recipient {
         protected String name = "default";
 
         public Builder parse(JSONObject o) throws JSONException {
-            ID = o.getInt("ID");
-            name = o.getString("name");
+            ID = o.getInt(JSON_ID);
+            name = o.getString(JSON_NAME);
             return this;
         }
     }
