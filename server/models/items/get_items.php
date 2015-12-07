@@ -48,13 +48,13 @@ function get_items($recipient, $last_refresh, $type, $location_params = '') {
 				itm.ID = type.ID
 			AND	itm.condition = cnd.ID
 			AND	'.$to.'
-    		AND itm.date > 0
+    		AND itm.date > :last_refresh
 			'.$location_where);
 	
 	$id = $recipient['ID'];
 	
 	$query->bindParam(':to', $id, PDO::PARAM_INT);
-	// $query->bindParam(':last_refresh', $last_refresh, PDO::PARAM_STR);
+	$query->bindParam(':last_refresh', $last_refresh, PDO::PARAM_STR);
 	
 	if ($location_params != '') {
 		$query->bindParam(':latitude_min', $location_params['latitude_min'], PDO::PARAM_STR);
