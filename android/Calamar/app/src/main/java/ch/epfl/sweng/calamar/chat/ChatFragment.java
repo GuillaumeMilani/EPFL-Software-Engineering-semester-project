@@ -37,6 +37,8 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
     private List<Recipient> contacts;
     private ChatUsersListAdapter adapter;
 
+    private ChatBroadcastReceiver broadcast;
+
     private CalamarApplication app;
 
     private Dialog newContactAlertDialog;
@@ -91,8 +93,23 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
         });
 
         //Create BroadCastReceiver
-        getContext().registerReceiver(new ChatBroadcastReceiver(), new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
+        broadcast = new ChatBroadcastReceiver();
+        getContext().registerReceiver(broadcast, new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
         super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
+    public void onStop() {
+        try
+        {
+            getContext().unregisterReceiver(broadcast);
+        }
+        catch (IllegalArgumentException e)
+        {
+            Log.e(TAG,"register not registered");
+        }
+
+        super.onStop();
     }
 
     /**
