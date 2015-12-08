@@ -107,7 +107,10 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
     public void onResume() {
         getContext().registerReceiver(broadcast, new IntentFilter(ChatBroadcastReceiver.INTENT_FILTER));
         //refresh message
+        // need to change data if we want that the adapter rally update
         adapter.notifyDataSetChanged();
+        
+        Log.e(TAG,"resume");
         super.onResume();
     }
 
