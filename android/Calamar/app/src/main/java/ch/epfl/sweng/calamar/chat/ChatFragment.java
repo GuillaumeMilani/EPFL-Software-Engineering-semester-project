@@ -100,12 +100,10 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
 
     @Override
     public void onStop() {
-        try
-        {
+        try {
             getContext().unregisterReceiver(broadcast);
         }
-        catch (IllegalArgumentException e)
-        {
+        catch (IllegalArgumentException e) {
             Log.e(TAG,"register not registered");
         }
 
