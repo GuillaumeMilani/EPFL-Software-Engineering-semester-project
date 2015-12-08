@@ -31,7 +31,8 @@
         android:layout_alignTop="@+id/messageEdit"
         android:background="@color/background_floating_material_dark"
         android:text="@string/send_message"
-        android:textColor="@color/background_material_light" />
+        android:textColor="@color/background_material_light"
+        android:enabled="false" />
 
     <ListView
         android:id="@+id/messagesContainer"
@@ -66,7 +67,8 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:nestedScrollingEnabled="false"
-        android:text="@string/refresh_button" />
+        android:text="@string/refresh_button"
+        android:enabled="true" />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/chat_create_item_button"

@@ -15,6 +15,7 @@ import android.widget.ListView;
 import com.ipaulpro.afilechooser.utils.FileUtils;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -46,6 +47,7 @@ import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.item.FileItem;
 import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.User;
 
 import static android.support.test.espresso.Espresso.onView;
@@ -59,19 +61,20 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
     private final SQLiteDatabaseHandler dbHandler = SQLiteDatabaseHandler.getInstance();
     private final User testUser = new User(1, "Alice");
     private final User testRecipient = new User(2, "Bob");
-    private Condition tc = Condition.trueCondition();
-    private Condition fc = Condition.falseCondition();
+    private final Condition tc = Condition.trueCondition();
+    private final Condition fc = Condition.falseCondition();
     private Calendar calendar;
 
     private static final String ROOT_FOLDER_NAME = "Calamar/";
-    private static final String IMAGE_FOLDER_NAME = ROOT_FOLDER_NAME + "Images/";
-    private static final String FILE_FOLDER_NAME = ROOT_FOLDER_NAME + "Others/";
+    private static final String IMAGE_FOLDER_NAME = ROOT_FOLDER_NAME + "Calamar Images/";
+    private static final String FILE_FOLDER_NAME = ROOT_FOLDER_NAME + "Calamar Others/";
     private static final String FILENAME = "FILE_";
     private static final String IMAGENAME = "IMG_";
+    private static final String IMAGE_EXT = ".png";
     private static final String NAME_SUFFIX = "_CAL";
 
     @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
+    public final TemporaryFolder temp = new TemporaryFolder();
     @Rule
     public final ActivityTestRule<ChatActivity> mActivityRule = new ActivityTestRule<>(
             ChatActivity.class);
@@ -173,9 +176,14 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         final FileItem item3 = new FileItem(2, testUser, testRecipient, new Date(), tc, null, f3.getAbsolutePath());
         final ListView list = (ListView) activity.findViewById(R.id.messagesContainer);
         final ChatAdapter adapter = (ChatAdapter) list.getAdapter();
-        adapter.add(item);
-        adapter.add(item2);
-        adapter.add(item3);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.add(item);
+                adapter.add(item2);
+                adapter.add(item3);
+            }
+        });
         final List<Item> retrievedFirst = activity.getHistory();
         assertEquals(retrievedFirst.size(), 3);
         assertEquals(app.getTodayImageCount(), 0);
@@ -206,15 +214,16 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         assertEquals(app.getTodayImageCount(), 2);
         List<Item> retrieved = activity.getHistory();
         assertEquals(retrieved.size(), 3);
-        assertEquals(((ImageItem) retrieved.get(0)).getPath(), imagePath.toString() + '/' + IMAGENAME + formatDate() + NAME_SUFFIX + '0');
-        assertEquals(((ImageItem) retrieved.get(1)).getPath(), imagePath.toString() + '/' + IMAGENAME + formatDate() + NAME_SUFFIX + '1');
+        assertEquals(((ImageItem) retrieved.get(0)).getPath(), imagePath.toString() + '/' + IMAGENAME + formatDate() + NAME_SUFFIX + '0' + IMAGE_EXT);
+        assertEquals(((ImageItem) retrieved.get(1)).getPath(), imagePath.toString() + '/' + IMAGENAME + formatDate() + NAME_SUFFIX + '1' + IMAGE_EXT);
         assertEquals(((FileItem) retrieved.get(2)).getPath(), filePath.toString() + '/' + FILENAME + formatDate() + NAME_SUFFIX + '0');
         assertFalse(retrieved.get(0).equals(retrievedFirst.get(0)));
         assertFalse(retrieved.get(1).equals(retrievedFirst.get(1)));
         assertFalse(retrieved.get(2).equals(retrievedFirst.get(2)));
     }
 
-    @Test
+    //TODO Temporally deactivated, because we always write files at the moment
+    @Ignore
     public void testDoesntWriteIfLocked() throws Throwable {
         File f1 = null;
         File f2 = null;
@@ -229,8 +238,13 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         final FileItem item2 = new FileItem(1, testUser, testRecipient, new Date(), fc, null, f2.getAbsolutePath());
         final ListView list = (ListView) activity.findViewById(R.id.messagesContainer);
         final ChatAdapter adapter = (ChatAdapter) list.getAdapter();
-        adapter.add(item);
-        adapter.add(item2);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.add(item);
+                adapter.add(item2);
+            }
+        });
         final List<Item> retrievedFirst = activity.getHistory();
         assertEquals(retrievedFirst.size(), 2);
         assertEquals(app.getTodayImageCount(), 0);
@@ -290,8 +304,13 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         final FileItem item2Empty = new FileItem(item2.getID(), item2.getFrom(), item2.getTo(), item2.getDate(), item2.getCondition(), null, item2.getPath());
         final ListView list = (ListView) activity.findViewById(R.id.messagesContainer);
         final ChatAdapter adapter = (ChatAdapter) list.getAdapter();
-        adapter.add(itemEmpty);
-        adapter.add(item2Empty);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.add(itemEmpty);
+                adapter.add(item2Empty);
+            }
+        });
         final List<Item> retrievedFirst = activity.getHistory();
         assertEquals(retrievedFirst.size(), 2);
         assertEquals(app.getTodayImageCount(), 0);
@@ -336,9 +355,9 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
     @Test
     public void testOperationsAreRepercutedInDatabase() throws Throwable {
         calendar = Calendar.getInstance();
-        File f1 = null;
-        File f2 = null;
-        File f3 = null;
+        File f1;
+        File f2;
+        File f3;
         f1 = temp.newFile();
         f2 = temp.newFile();
         f3 = temp.newFile();
@@ -352,7 +371,8 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         final ImageItem item = new ImageItem(0, testUser, testRecipient, new Date(), tc, bitmapData, f1.getAbsolutePath());
         final ImageItem item2 = new ImageItem(1, testUser, testRecipient, new Date(), tc, null, f2.getAbsolutePath());
         final FileItem item3 = new FileItem(2, testUser, testRecipient, new Date(), tc, dummyData, f3.getAbsolutePath());
-        final FileItem item4 = new FileItem(3, testRecipient, testUser, new Date(), fc, null, "/blablabla");
+        //TODO change when locked item are not stored
+        final FileItem item4 = new FileItem(3, testRecipient, testUser, new Date(), tc, null, "/blablabla");
         final ChatActivity activity = mActivityRule.getActivity();
         runTestOnUiThread(new Runnable() {
             @Override
@@ -365,13 +385,13 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         });
         List<Item> allItems = dbHandler.getAllItems();
         final ImageItem itemAfter = new ImageItem(item.getID(), item.getFrom(), item.getTo(),
-                item.getDate(), item.getCondition(), Compresser.getImageThumbnail(item), imagePath.toString() + '/' + IMAGENAME + formatDate() + NAME_SUFFIX + '0');
+                item.getDate(), item.getCondition(), Compresser.getImageThumbnail(item), imagePath.toString() + '/' + IMAGENAME + formatDate() + NAME_SUFFIX + '0' + IMAGE_EXT);
         final ImageItem item2After = new ImageItem(item2.getID(), item2.getFrom(), item2.getTo(),
-                item2.getDate(), item2.getCondition(), null, imagePath.toString() + '/' + IMAGENAME + formatDate() + NAME_SUFFIX + '1');
+                item2.getDate(), item2.getCondition(), null, imagePath.toString() + '/' + IMAGENAME + formatDate() + NAME_SUFFIX + '1' + IMAGE_EXT);
         final FileItem item3After = new FileItem(item3.getID(), item3.getFrom(), item3.getTo(),
                 item3.getDate(), item3.getCondition(), null, filePath.toString() + '/' + FILENAME + formatDate() + NAME_SUFFIX + '0');
         final FileItem item4After = new FileItem(item4.getID(), item4.getFrom(), item4.getTo(),
-                item4.getDate(), item4.getCondition(), null, item4.getPath());
+                item4.getDate(), item4.getCondition(), null, filePath.toString() + '/' + FILENAME + formatDate() + NAME_SUFFIX + '1');
         assertEquals(allItems.size(), 4);
         assertEquals(allItems.get(0), itemAfter);
         assertEquals(allItems.get(1), item2After);
@@ -393,8 +413,13 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         final FileItem item2 = new FileItem(1, testUser, testRecipient, new Date(), tc, data, f2.getAbsolutePath());
         final ListView list = (ListView) activity.findViewById(R.id.messagesContainer);
         final ChatAdapter adapter = (ChatAdapter) list.getAdapter();
-        adapter.add(item);
-        adapter.add(item2);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.add(item);
+                adapter.add(item2);
+            }
+        });
         final List<Item> retrievedFirst = activity.getHistory();
         assertEquals(retrievedFirst.size(), 2);
         assertEquals(app.getTodayImageCount(), 0);
@@ -441,7 +466,12 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         final FileItem item2 = new FileItem(1, testUser, testRecipient, new Date(), tc, null, f2.getAbsolutePath());
         final ImageItem itemFull = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, item.getPath());
         final FileItem item2Full = new FileItem(item2.getID(), item2.getFrom(), item2.getTo(), item2.getDate(), item2.getCondition(), data, item2.getPath());
-        adapter.add(item);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.add(item);
+            }
+        });
         assertEquals(activity.getHistory().get(0), item);
         runTestOnUiThread(new Runnable() {
             @Override
@@ -464,7 +494,12 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         });
         latch.await(20, TimeUnit.SECONDS);
         assertEquals(activity.getHistory().get(0), itemFull);
-        adapter.update(item);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.update(item);
+            }
+        });
         storageManager.deleteItemWithoutDatabase(itemFull);
         assertEquals(dbHandler.getItem(item.getID()), item);
         final CountDownLatch latch2 = new CountDownLatch(1);
@@ -507,9 +542,22 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         });
         latch3.await(10, TimeUnit.SECONDS);
         assertEquals(activity.getHistory().get(0), itemFull);
-        storageManager.deleteItemWithDatabase(item.getID());
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                storageManager.deleteItemWithDatabase(item.getID());
+            }
+        });
+        synchronized (this) {
+            wait(1000);
+        }
         assertEquals(dbHandler.getItem(item.getID()), null);
-        adapter.update(item);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.update(item);
+            }
+        });
         final CountDownLatch latch4 = new CountDownLatch(1);
         runTestOnUiThread(new Runnable() {
             @Override
@@ -551,6 +599,8 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
 
     @Test
     public void testImageItemIsUpdatedWithStorageManager() throws Throwable {
+        final User alice = new User(1, "Alice");
+        final User me = CalamarApplication.getInstance().getCurrentUser();
         File f = temp.newFile();
         Bitmap bitmap = getBitmapFromAsset("testImage.jpg");
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -559,15 +609,20 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
         out.write(bitmapData);
         assertTrue(Arrays.equals(FileUtils.toByteArray(f), bitmapData));
-        ImageItem testItem = new ImageItem(20, CalamarApplication.getInstance().getCurrentUser(), new User(1, "Alice"), new Date(1445198511), null, f.getAbsolutePath(), "BLABLABLA");
+        SimpleTextItem item1 = new SimpleTextItem(0, me, alice, new Date(1445198500), "Hey");
+        SimpleTextItem item2 = new SimpleTextItem(1, me, alice, new Date(144519510), "Hey");
+        ImageItem testItem = new ImageItem(20, me, alice, new Date(1445198511), null, f.getAbsolutePath(), "BLABLABLA");
         ListView list = (ListView) mActivityRule.getActivity().findViewById(R.id.messagesContainer);
         ChatAdapter adapter = (ChatAdapter) list.getAdapter();
-        ((ConstantDatabaseClient) DatabaseClientLocator.getDatabaseClient()).addItem(testItem);
+        ConstantDatabaseClient client = (ConstantDatabaseClient) DatabaseClientLocator.getDatabaseClient();
+        client.addItem(item1);
+        client.addItem(item2);
+        client.addItem(testItem);
         onView(withId(R.id.refreshButton)).perform(click());
         Item firstTextBefore = adapter.getItem(adapter.getCount() - 2);
         Item secondTextBefore = adapter.getItem(adapter.getCount() - 3);
         synchronized (this) {
-            wait(10000);
+            wait(1000);
         }
         assertEquals(firstTextBefore, adapter.getItem(adapter.getCount() - 2));
         assertEquals(secondTextBefore, adapter.getItem(adapter.getCount() - 3));

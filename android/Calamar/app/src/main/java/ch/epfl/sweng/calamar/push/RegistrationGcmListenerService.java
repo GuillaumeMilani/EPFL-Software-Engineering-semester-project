@@ -1,21 +1,12 @@
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
- * <<<<<<< HEAD:android/Calamar/app/src/main/java/ch/epfl/sweng/calamar/RegistrationGcmListenerService.java
- * <p>
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
+ * <p/>
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * =======
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ * <p/>
  * >>>>>>> dc774c0b4e22aff9aa7e58950946e847eb05e6d8:android/Calamar/app/src/main/java/ch/epfl/sweng/calamar/push/RegistrationGcmListenerService.java
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,11 +29,25 @@ import android.util.Log;
 
 import com.google.android.gms.gcm.GcmListenerService;
 
-import ch.epfl.sweng.calamar.MainActivity;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-public class RegistrationGcmListenerService extends GcmListenerService {
+import ch.epfl.sweng.calamar.MainActivity;
+import ch.epfl.sweng.calamar.R;
+import ch.epfl.sweng.calamar.chat.ChatFragment;
+import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.recipient.User;
+
+public final class RegistrationGcmListenerService extends GcmListenerService {
 
     private static final String TAG = "RegGcmListenerService";
+    private static final String RETRIEVE = "RETRIEVE";
+    private static final String BUNDLE_TYPE = "type";
+    private static final String BUNDLE_EXTRA = "extra";
+    private static final String INTENT_ACTION = "ch.epfl.sweng.UPDATE_INTENT";
+    private static final String JSON_USER = "user";
+    private static final int REQUEST_CODE = 0;
+    private static final int NOTIFICATION_ID = 0;
 
     /**
      * Called when message is received.
@@ -54,30 +59,49 @@ public class RegistrationGcmListenerService extends GcmListenerService {
     // [START receive_message]
     @Override
     public void onMessageReceived(String from, Bundle data) {
-        String message = data.getString("message");
-        Log.d(TAG, "From: " + from);
-        Log.d(TAG, "Message: " + message);
+        String message = getString(R.string.you_received_new);
+        String pushType = data.getString(BUNDLE_TYPE);
+        if (pushType != null && pushType.equals(RETRIEVE)) {
+            // add a new contact
+            try {
+                //extract data
+                JSONObject resp = new JSONObject(data.getString(BUNDLE_EXTRA));
 
-        if (from.startsWith("/topics/")) {
-            // message received from some topic.
+                User addUser = User.fromJSON(resp.getJSONObject(JSON_USER));
+
+                // Send a broadcast message to ChatFragment$ChatBroadcastReceiver
+                Intent i = new Intent();
+                i.setAction(INTENT_ACTION);
+                i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_USER, addUser.getName());
+                i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_ID, String.valueOf(addUser.getID()));
+                sendBroadcast(i);
+            } catch (JSONException e) {
+                Log.e(TAG, getString(R.string.json_extract_failed));
+            }
+
+            message += getString(R.string.contact);
         } else {
-            // normal downstream message.
+            Item.Type type = Item.Type.valueOf(pushType);
+            //Log.d(TAG, "From: " + from);
+            Log.d(TAG, getString(R.string.message_type, type));
+
+            switch (type) {
+                case SIMPLETEXTITEM:
+                    message += getString(R.string.chat_item);
+                    break;
+                case FILEITEM:
+                    message += getString(R.string.file_item);
+                    break;
+                case IMAGEITEM:
+                    message += getString(R.string.image_item);
+                    break;
+                default:
+                    Log.e(TAG, getString(R.string.unexpected_item_type, type.name()));
+            }
         }
 
-        // [START_EXCLUDE]
-        /**
-         * Production applications would usually process the message here.
-         * Eg: - Syncing with server.
-         *     - Store message in local database.
-         *     - Update UI.
-         */
-
-        /**
-         * In some cases it may be useful to show a notification indicating to the user
-         * that a message was received.
-         */
         sendNotification(message);
-        // [END_EXCLUDE]
+
     }
     // [END receive_message]
 
@@ -88,22 +112,25 @@ public class RegistrationGcmListenerService extends GcmListenerService {
      */
     private void sendNotification(String message) {
         //TODO improve the methods
+        Log.i(TAG, getString(R.string.notification_message, message));
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, REQUEST_CODE, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                .setContentTitle("GCM Message")
+                .setContentTitle(getString(R.string.new_item_notification))
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
-                .setContentIntent(pendingIntent);
+                .setContentIntent(pendingIntent)
+                .setSmallIcon(R.drawable.calamar);
+
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
     }
 }

@@ -1,6 +1,7 @@
 package ch.epfl.sweng.calamar;
 
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 import android.test.ActivityInstrumentationTestCase2;
@@ -12,9 +13,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
+import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.item.CreateItemActivity;
+import ch.epfl.sweng.calamar.recipient.Recipient;
+import ch.epfl.sweng.calamar.recipient.User;
 
+import static android.support.test.espresso.Espresso.closeSoftKeyboard;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
@@ -29,6 +34,10 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
     private final static String HELLO_ALICE = "Hello Alice !";
     private final static String ALICE = "Alice";
 
+    private final Recipient BOB = new User(1, "bob");
+
+    private CalamarApplication app;
+
     @Rule
     public final ActivityTestRule<CreateItemActivity> mActivityRule = new ActivityTestRule<>(
             CreateItemActivity.class);
@@ -41,8 +50,26 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        injectInstrumentation(InstrumentationRegistry.getInstrumentation());
         DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
-        CalamarApplication.getInstance().getDatabaseHandler().deleteAllItems();
+        app = CalamarApplication.getInstance();
+        app.getDatabaseHandler().deleteAllItems();
+    }
+
+    @Test
+    public void titleOfActivityIsShown() {
+        onView(withId(R.id.activityTitle)).check(matches(withText("Create a new item")));
+    }
+
+    @Test
+    public void testProgressBarIsInvisibleAtStart() {
+        onView(withId(R.id.locationProgressBar)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
+    }
+
+    @Test
+    public void testBrowseAFileDisplayed() {
+        onView(withId(R.id.selectFileText)).check(matches(withText("File :")));
+        onView(withId(R.id.selectFileButton)).check(matches(withText("Browse…")));
     }
 
     @Test
@@ -55,13 +82,29 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
     }
 
     @Test
+    public void testImpossibleToCreateEmptyItem() {
+        onView(withId(R.id.createButton)).perform(click());
+        onView(withText("An item must either have a text, a file, or both.")).check(matches(ViewMatchers.isDisplayed()));
+        onView(withText("OK")).perform(click());
+    }
+
+    @Test
+    public void testCantSendPublicItemWithoutLocation() throws DatabaseClientException {
+        onView(withId(R.id.createItemActivity_messageText)).perform(typeText(HELLO_ALICE));
+        closeSoftKeyboard();
+        onView(withId(R.id.createButton)).perform(click());
+        onView(withText(CalamarApplication.getInstance().getString(R.string.public_without_condition))).check(matches(ViewMatchers.isDisplayed()));
+    }
+
+    /*
+    @Test
     public void testTimeCheckedToggleTogglesRadioVisibility() {
         onView(withId(R.id.timeGroup)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
         onView(withId(R.id.timeCheck)).perform(click());
         onView(withId(R.id.timeGroup)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)));
         onView(withId(R.id.timeCheck)).perform(click());
         onView(withId(R.id.timeGroup)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
-    }
+    } */
 
     @Test
     public void testCanWriteInTextField() {

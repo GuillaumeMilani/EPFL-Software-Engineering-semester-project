@@ -1,7 +1,5 @@
 package ch.epfl.sweng.calamar.item;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
@@ -13,7 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.RadioGroup;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -38,34 +36,37 @@ import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
 
-public class CreateItemActivity extends BaseActivity {
+public final class CreateItemActivity extends BaseActivity {
 
     private static final int PICK_FILE_REQUEST = 1;
-    private static final String RECIPIENT_EXTRA_ID = "ID";
-    private static final String RECIPIENT_EXTRA_NAME = "Name";
-
     private static final String TAG = CreateItemActivity.class.getSimpleName();
+    public static final String CREATE_ITEM_RECIPIENT_EXTRA_ID = "ch.epfl.sweng.calamar.RECIPIENT_ID";
+    public static final String CREATE_ITEM_RECIPIENT_EXTRA_NAME = "ch.epfl.sweng.calamar.RECIPIENT_NAME";
+
 
     private Set<String> imageExt;
     private Spinner contactsSpinner;
-    private CheckBox privateCheck;
+    private CheckBox privateCheckbox;
     private CheckBox locationCheck;
     private EditText message;
     private File file;
     private List<Recipient> contacts;
     private Location currentLocation;
-    private RadioGroup timeGroup;
-    private CheckBox timeCheck;
+    //private RadioGroup timeGroup;
+    //private CheckBox timeCheck;
     private Button browseButton;
     private Button sendButton;
+    private ProgressBar locationProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_item);
 
-        privateCheck = (CheckBox) findViewById(R.id.privateCheck);
+        privateCheckbox = (CheckBox) findViewById(R.id.privateCheck);
         locationCheck = (CheckBox) findViewById(R.id.locationCheck);
+        locationProgressBar = (ProgressBar) findViewById(R.id.locationProgressBar);
+        locationProgressBar.setVisibility(ProgressBar.INVISIBLE);
         message = (EditText) findViewById(R.id.createItemActivity_messageText);
 
         contacts = CalamarApplication.getInstance().getDatabaseHandler().getAllRecipients();
@@ -78,16 +79,16 @@ public class CreateItemActivity extends BaseActivity {
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, contactsName);
         contactsSpinner.setAdapter(spinnerAdapter);
 
-        timeCheck = (CheckBox) findViewById(R.id.timeCheck);
-        timeGroup = (RadioGroup) findViewById(R.id.timeGroup);
-        timeGroup.setVisibility(View.INVISIBLE);
+        //timeCheck = (CheckBox) findViewById(R.id.timeCheck);
+        //timeGroup = (RadioGroup) findViewById(R.id.timeGroup);
+        //timeGroup.setVisibility(View.INVISIBLE);
 
         Intent intent = getIntent();
-        final int id = intent.getIntExtra(RECIPIENT_EXTRA_ID, -1);
+        final int id = intent.getIntExtra(CREATE_ITEM_RECIPIENT_EXTRA_ID, -1);
         if (id != -1) {
-            final String name = intent.getStringExtra(RECIPIENT_EXTRA_NAME);
+            final String name = intent.getStringExtra(CREATE_ITEM_RECIPIENT_EXTRA_NAME);
             contactsSpinner.setVisibility(View.VISIBLE);
-            privateCheck.setChecked(true);
+            privateCheckbox.setChecked(true);
             contactsSpinner.setSelection(contacts.indexOf(new User(id, name)));
         }
         browseButton = (Button) findViewById(R.id.selectFileButton);
@@ -100,14 +101,7 @@ public class CreateItemActivity extends BaseActivity {
                 } catch (IOException e) {
                     // TODO untested code, simulate IOException
                     Log.e(CreateItemActivity.TAG, e.getMessage());
-                    AlertDialog.Builder newUserAlert = new AlertDialog.Builder(CreateItemActivity.this);
-                    newUserAlert.setTitle(R.string.unable_to_create_item);
-                    newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            //OK
-                        }
-                    });
-                    newUserAlert.show();
+                    displayErrorMessage(getString(R.string.unable_to_create_item), false);
                 }
             }
         });
@@ -119,6 +113,12 @@ public class CreateItemActivity extends BaseActivity {
     }
 
     //Button listeners ; Not a big fan of methods having to be public
+
+    /**
+     * Starts the file picker, to allow the user to select a file. Called by browseButton
+     *
+     * @param v The Browse button
+     */
     public void startFilePicker(View v) {
         Intent target = FileUtils.createGetContentIntent();
         Intent intent = Intent.createChooser(target, getString(R.string.choose_file));
@@ -135,64 +135,83 @@ public class CreateItemActivity extends BaseActivity {
                     String path = FileUtils.getPath(this, fileUri);
                     if (path != null) {
                         file = new File(path);
-                        if (file.getName().length() > 15) {
-                            String text = file.getName().substring(0, 15) + "...";
-                            browseButton.setText(text);
-                        } else {
-                            browseButton.setText(file.getName());
+                        String name = file.getName();
+                        if (name.length() > 15) {
+                            name = name.substring(0, 15) + "...";
                         }
+                        browseButton.setText(name);
                     } else {
                         Toast.makeText(this, R.string.select_local_file, Toast.LENGTH_SHORT).show();
                     }
                 }
-            }
+            } // TODO else exception, dialog, toast, log ?
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
+    /**
+     * Called by locationCheckbox. Checks the location if it is checked.
+     *
+     * @param v The location checkbox
+     */
     public void locationChecked(View v) {
         final GPSProvider gpsProvider = GPSProvider.getInstance();
-        gpsProvider.startLocationUpdates(this);
-        sendButton.setEnabled(false);
 
-        // TODO show "sablier" + test
+        CheckBox locationCheckbox = (CheckBox) v;
 
-        gpsProvider.addObserver(new GPSProvider.Observer() {
-            @Override
-            public void update(Location newLocation) {
-                currentLocation = newLocation;
-                sendButton.setEnabled(true);
-                gpsProvider.removeObserver(this);
-                // TODO ConcurrentModificationException
-                // because set modified during notify iteration
-                // normally solved now, but wait and see
-                GPSProvider.getInstance().stopLocationUpdates();
-            }
-        });
+        if (locationCheckbox.isChecked()) {
+            // will start updates if settings ok, if not dialog, onActivityResult etc
+            GPSProvider.getInstance().checkSettingsAndLaunchIfOK(this);
 
+            locationProgressBar.setVisibility(ProgressBar.VISIBLE);
+            sendButton.setEnabled(false);
+
+            gpsProvider.addObserver(new GPSProvider.Observer() {
+                @Override
+                public void update(Location newLocation) {
+                    currentLocation = newLocation;
+                    sendButton.setEnabled(true);
+                    gpsProvider.removeObserver(this);
+                    locationProgressBar.setVisibility(ProgressBar.INVISIBLE);
+                    sendButton.setEnabled(true);
+                    GPSProvider.getInstance().stopLocationUpdates();
+                }
+            });
+        } else {
+            sendButton.setEnabled(true);
+        }
     }
 
+    /**
+     * Called by privateCheckbox. Toggles the contactsSpinner visibility
+     *
+     * @param v the private Checkbox
+     */
     public void privateChecked(View v) {
-        if (privateCheck.isChecked()) {
+        if (privateCheckbox.isChecked()) {
             contactsSpinner.setVisibility(View.VISIBLE);
         } else {
             contactsSpinner.setVisibility(View.INVISIBLE);
         }
     }
 
+    /*
     public void timeChecked(View v) {
         if (timeCheck.isChecked()) {
             timeGroup.setVisibility(View.VISIBLE);
         } else {
             timeGroup.setVisibility(View.INVISIBLE);
         }
-    }
+    }*/
 
+    //TODO enhancement not recreate everything each time, look for changes instead
     private void createAndSend() throws IOException {
         Item.Builder toSendBuilder;
         if (file != null) {
             String name = file.getName();
             int extIndex = name.lastIndexOf('.');
-            String ext = extIndex > 0 ? name.substring(extIndex + 1) : "";
+            String ext = extIndex > 0 ? name.substring(extIndex + 1) : getString(R.string.empty_string);
             if (imageExt.contains(ext.toLowerCase())) {
                 toSendBuilder = new ImageItem.Builder().setFile(file);
             } else {
@@ -201,14 +220,11 @@ public class CreateItemActivity extends BaseActivity {
         } else {
             toSendBuilder = new SimpleTextItem.Builder();
         }
-        if (message.getText().toString().equals("") && toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
-
-            Toast.makeText(getApplicationContext(), getString(R.string.item_create_invalid),
-                    Toast.LENGTH_SHORT).show();
+        if (message.getText().toString().equals(getString(R.string.empty_string)) && toSendBuilder.getClass() == SimpleTextItem.Builder.class) {
+            displayErrorMessage(getString(R.string.item_create_invalid), false);
             return;
         }
-        if (privateCheck.isChecked()) {
-            // TODO clean this..........
+        if (privateCheckbox.isChecked()) {
             int contactPosition = contactsSpinner.getSelectedItemPosition();
             if (contactPosition != -1) {
                 Recipient to = contacts.get(contactsSpinner.getSelectedItemPosition());
@@ -226,8 +242,11 @@ public class CreateItemActivity extends BaseActivity {
         toSendBuilder.setDate(new Date().getTime());
         toSendBuilder.setMessage(message.getText().toString());
         Item toSend = toSendBuilder.build();
-        new SendItemTask(toSend).execute();
-        this.finish();
+        if (!toSend.hasLocation() && toSend.getTo().getID() == User.PUBLIC_ID) {
+            displayErrorMessage(getString(R.string.public_without_condition), false);
+        } else {
+            new SendItemTask(toSend).execute();
+        }
     }
 
     /**
@@ -236,9 +255,11 @@ public class CreateItemActivity extends BaseActivity {
     private class SendItemTask extends AsyncTask<Void, Void, Item> {
 
         private final Item item;
+        private final String itemPath;
 
         public SendItemTask(Item item) {
             this.item = item;
+            itemPath = item.getType() != Item.Type.SIMPLETEXTITEM ? ((FileItem) item).getPath() : null;
         }
 
         @Override
@@ -254,11 +275,27 @@ public class CreateItemActivity extends BaseActivity {
         @Override
         protected void onPostExecute(Item item) {
             if (item != null) {
-                CalamarApplication.getInstance().getStorageManager().storeItem(item, null);
+                if (itemPath != null) {
+                    Item toStore;
+                    //TODO add methods "withPath / withData, etc " to Item for simplification
+                    switch (item.getType()) {
+                        case FILEITEM:
+                            toStore = new FileItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), ((FileItem) item).getData(), itemPath);
+                            break;
+                        case IMAGEITEM:
+                            toStore = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), ((ImageItem) item).getData(), itemPath);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Expected FileItem");
+                    }
+                    CalamarApplication.getInstance().getStorageManager().storeItem(toStore, null);
+                } else {
+                    CalamarApplication.getInstance().getStorageManager().storeItem(item, null);
+                }
                 Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
+                CreateItemActivity.this.finish();
             } else {
-                Toast.makeText(getApplicationContext(), getString(R.string.item_send_error),
-                        Toast.LENGTH_SHORT).show();
+                displayErrorMessage(getString(R.string.item_send_error), false);
             }
         }
     }

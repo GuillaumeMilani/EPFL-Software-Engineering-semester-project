@@ -1,6 +1,6 @@
 package ch.epfl.sweng.calamar.item;
 
-import android.content.Context;
+import android.app.Activity;
 import android.view.View;
 
 import org.json.JSONException;
@@ -8,6 +8,8 @@ import org.json.JSONObject;
 
 import java.util.Date;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
@@ -34,7 +36,7 @@ public final class SimpleTextItem extends Item {
     public SimpleTextItem(int ID, User from, Recipient to, Date date, Condition condition, String message) {
         super(ID, from, to, date, condition, message);
         if (null == message || message.length() == 0) {
-            throw new IllegalArgumentException("field 'message' cannot be null");
+            throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.simpletext_message_null));
         }
     }
 
@@ -48,7 +50,7 @@ public final class SimpleTextItem extends Item {
     }
 
     @Override
-    public View getItemView(Context context) {
+    public View getItemView(Activity context) {
         return null;
     }
 
@@ -62,7 +64,7 @@ public final class SimpleTextItem extends Item {
     @Override
     protected void compose(JSONObject json) throws JSONException {
         super.compose(json);
-        json.accumulate("type", ITEM_TYPE.name());
+        json.accumulate(JSON_TYPE, ITEM_TYPE.name());
     }
 
     /**
@@ -104,36 +106,23 @@ public final class SimpleTextItem extends Item {
     }
 
     /**
-     * hash the SimpleTextItem
-     *
-     * @return hash of the SimpleTextItem
-     */
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return super.toString();
-    }
-
-    /**
      * A Builder for {@link SimpleTextItem}, currently only used to parse JSON (little overkill..but ..)
      *
      * @see Item.Builder
      */
     protected static class Builder extends Item.Builder {
 
+        @Override
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
-            String type = json.getString("type");
+            String type = json.getString(JSON_TYPE);
             if (!type.equals(SimpleTextItem.ITEM_TYPE.name())) {
-                throw new IllegalArgumentException("expected " + SimpleTextItem.ITEM_TYPE.name() + " was : " + type);
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.expected_but_was, SimpleTextItem.ITEM_TYPE.name(), type));
             }
             return this;
         }
 
+        @Override
         protected SimpleTextItem build() {
             return new SimpleTextItem(super.ID, super.from, super.to, super.date, super.condition, super.message);
         }

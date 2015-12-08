@@ -1,6 +1,6 @@
 package ch.epfl.sweng.calamar.item;
 
-import android.content.Context;
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
@@ -13,6 +13,8 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
@@ -24,6 +26,7 @@ import ch.epfl.sweng.calamar.utils.Compresser;
 public final class ImageItem extends FileItem {
 
     protected final static Type ITEM_TYPE = Type.IMAGEITEM;
+    private final static int IMAGE_VIEW_SIZE = 1000;
 
     /**
      * Instantiates a new ImageItem with the following parameters
@@ -71,7 +74,7 @@ public final class ImageItem extends FileItem {
      * @see Item#Item(int, User, Recipient, Date, Condition, String)
      */
     public ImageItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path) {
-        this(ID, from, to, date, condition, data, path, "");
+        this(ID, from, to, date, condition, data, path, CalamarApplication.getInstance().getString(R.string.empty_string));
     }
 
     /**
@@ -86,7 +89,7 @@ public final class ImageItem extends FileItem {
      * @see Item#Item(int, User, Recipient, Date, Condition, String)
      */
     public ImageItem(int ID, User from, Recipient to, Date date, byte[] data, String path) {
-        this(ID, from, to, date, Condition.trueCondition(), data, path, "");
+        this(ID, from, to, date, Condition.trueCondition(), data, path, CalamarApplication.getInstance().getString(R.string.empty_string));
     }
 
     /**
@@ -100,16 +103,33 @@ public final class ImageItem extends FileItem {
     }
 
     @Override
-    public View getItemView(Context context) {
-        ImageView view = new ImageView(context);
-        view.setImageBitmap(getBitmap());
-        view.setOnClickListener(new View.OnClickListener() {
+    public View getItemView(Activity context) {
+        //Trying to use xml layout
+        /*LayoutInflater inflater = context.getLayoutInflater();
+        LinearLayout parent = (LinearLayout) context.findViewById(R.id.ItemDetailsItemPreview);
+        LinearLayout root;
+        if (parent == null) {
+            root = (LinearLayout) inflater.inflate(R.layout.item_details_base_layout, null);
+            parent = (LinearLayout) root.findViewById(R.id.ItemDetailsItemPreview);
+        }
+        ImageView imageView = (ImageView) context.findViewById(R.id.imageitem_view);
+        if (imageView == null) {
+            imageView = (ImageView) inflater.inflate(R.layout.image_view, parent).findViewById(R.id.imageitem_view);
+        }
+        */
+        ImageView imageView = new ImageView(context);
+        imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+        imageView.setMaxHeight(IMAGE_VIEW_SIZE);
+        imageView.setMaxWidth(IMAGE_VIEW_SIZE);
+        imageView.setImageBitmap(getBitmap());
+        imageView.setAdjustViewBounds(true);
+        imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivityForFile(ImageItem.this);
             }
         });
-        return view;
+        return imageView;
     }
 
     /**
@@ -122,7 +142,7 @@ public final class ImageItem extends FileItem {
     @Override
     protected void compose(JSONObject json) throws JSONException {
         super.compose(json);
-        json.put("type", ITEM_TYPE.name());
+        json.put(JSON_TYPE, ITEM_TYPE.name());
     }
 
     /**
@@ -156,7 +176,11 @@ public final class ImageItem extends FileItem {
      */
     public Bitmap getBitmap() {
         byte[] tempData = Compresser.decompress(getData());
-        return BitmapFactory.decodeByteArray(tempData, 0, tempData.length);
+        if (tempData != null) {
+            return BitmapFactory.decodeByteArray(tempData, 0, tempData.length);
+        } else {
+            return null;
+        }
     }
 
 
@@ -190,15 +214,17 @@ public final class ImageItem extends FileItem {
      */
     public static class Builder extends FileItem.Builder {
 
+        @Override
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
-            String type = json.getString("type");
+            String type = json.getString(JSON_TYPE);
             if (!type.equals(ImageItem.ITEM_TYPE.name())) {
-                throw new IllegalArgumentException("expected " + ImageItem.ITEM_TYPE.name() + " was : " + type);
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.expected_but_was, ImageItem.ITEM_TYPE.name(), type));
             }
             return this;
         }
 
+        @Override
         public ImageItem build() {
             return new ImageItem(super.ID, super.from, super.to, super.date, super.condition, super.data, super.path, super.message);
         }
