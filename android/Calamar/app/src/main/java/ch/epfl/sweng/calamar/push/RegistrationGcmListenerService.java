@@ -67,7 +67,7 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
                 //extract data
                 JSONObject resp = new JSONObject(data.getString(BUNDLE_EXTRA));
 
-                User addUser = User.fromJSON(resp.getJSONObject(JSON_USER));
+                User addUser = User.fromJSON(resp);
 
                 // Send a broadcast message to ChatFragment$ChatBroadcastReceiver
                 Intent i = new Intent();
