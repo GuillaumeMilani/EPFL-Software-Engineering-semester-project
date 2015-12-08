@@ -32,7 +32,8 @@ function add_recipient($name,$deviceID)
 	
 	
 	//TODO check how to do for group
-	$query = $pdo->prepare('INSERT INTO `tb_recipient` (`name`) VALUES(NULL)');
+	$query = $pdo->prepare('INSERT INTO `tb_recipient` (`name`) VALUES(:name)');
+	$query->bindParam(':name', $name, PDO::PARAM_STR);
 	
 	if($query->execute() == true)
 	{
