@@ -11,6 +11,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 import android.test.ActivityInstrumentationTestCase2;
+import android.widget.Spinner;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -39,6 +40,7 @@ import static android.support.test.espresso.Espresso.closeSoftKeyboard;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
@@ -162,6 +164,23 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
             }
         });
         onView(withId(R.id.selectFileButton)).check(matches(withText("IMG1.png")));
+    }
+
+    @Ignore //Works, but activity is killed, so espresso is not happy
+    public void testSendFileItem() throws Throwable {
+        testOnActivityResult();
+        final Spinner contactsSpinner = (Spinner) mActivityRule.getActivity().findViewById(R.id.contactSpinner);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                contactsSpinner.setSelection(1);
+            }
+        });
+        mActivityRule.getActivity();
+        onView(withId(R.id.privateCheck)).perform(click());
+        onView(withId(R.id.createButton)).perform(click());
+        onView(withText("Item sent")).check(matches(ViewMatchers.isDisplayed()));
+        onView(withId(R.id.createButton)).check(doesNotExist());
     }
 
     private Bitmap getBitmapFromAsset(String filePath) throws IOException {

@@ -58,6 +58,8 @@ public class EqualsAndHashcodeTest {
         helperVerifyEqualsAndHashcode(testUser1, new User(13, "bob"));
         helperVerifyNotEqualsAndHashcode(testUser1, new User(13, "bo"));
         helperVerifyNotEqualsAndHashcode(testUser1, new User(12, "bob"));
+        helperVerifyEqualsAndHashcode(testUser1, testUser1);
+        helperVerifyNotEqualsAndHashcode(testUser1, tc);
     }
 
     @Test

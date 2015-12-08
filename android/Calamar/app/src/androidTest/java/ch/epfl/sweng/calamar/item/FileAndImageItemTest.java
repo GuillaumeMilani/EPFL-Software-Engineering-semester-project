@@ -3,7 +3,9 @@ package ch.epfl.sweng.calamar.item;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.test.espresso.matcher.ViewMatchers;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -21,10 +23,13 @@ import java.util.Arrays;
 import java.util.Date;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
-import ch.epfl.sweng.calamar.utils.Compresser;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -95,6 +100,31 @@ public class FileAndImageItemTest {
         ImageItem i = new ImageItem(testId, testFrom, testTo, testDate, bitmapData, "/bla");
         assertFalse(Arrays.equals(bitmapData, i.getData()));
         assertTrue(bitmap.sameAs(i.getBitmap()));
+    }
+
+    @Test
+    public void testGetName() {
+        FileItem f = new FileItem(testId, testFrom, testTo, testDate, null, "/asdfasf/bla.png");
+        assertEquals(f.getName(), "bla.png");
+    }
+
+    @Test
+    public void testThirdConstructor() {
+        FileItem f = new FileItem(testId, testFrom, testTo, testDate, null, "/bla", "blabla");
+        assertEquals(f.getID(), testId);
+        assertEquals(f.getFrom(), testFrom);
+        assertEquals(f.getTo(), testTo);
+        assertEquals(f.getDate(), testDate);
+        assertTrue(Arrays.equals(f.getData(), new byte[0]));
+        assertEquals(f.getPath(), "/bla");
+        assertEquals(f.getMessage(), "blabla");
+    }
+
+    @Ignore
+    public void testActivityForFile() {
+        FileItem f = new FileItem(testId, testFrom, testTo, testDate, null, "/bla", "blabla");
+        FileItem.startActivityForFile(f);
+        onView(withText(CalamarApplication.getInstance().getString(R.string.no_handler_found))).check(matches(ViewMatchers.isDisplayed()));
     }
 
     private Bitmap getBitmapFromAsset(String filePath) throws IOException {
