@@ -114,6 +114,16 @@ public class ConditionTest {
         o.assertAll(true, 1);
         b.set(false);
         o.assertAll(true, 1);
+        try {
+            Condition.and(null, a);
+            fail("Condition shouldn't be null");
+        } catch (IllegalArgumentException e) {
+        }
+        try {
+            Condition.and(a, null);
+            fail("Condition shouldn't be null");
+        } catch (IllegalArgumentException e) {
+        }
     }
 
     @Test
@@ -131,6 +141,16 @@ public class ConditionTest {
         a.set(false);
         b.set(false);
         o.assertAll(true, 1);
+        try {
+            Condition.or(null, a);
+            fail("Condition shouldn't be null");
+        } catch (IllegalArgumentException e) {
+        }
+        try {
+            Condition.or(a, null);
+            fail("Condition shouldn't be null");
+        } catch (IllegalArgumentException e) {
+        }
     }
 
     @Test

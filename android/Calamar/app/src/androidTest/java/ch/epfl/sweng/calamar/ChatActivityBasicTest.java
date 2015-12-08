@@ -186,4 +186,13 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
 
         onView(withId(R.id.chatSendButton)).check(matches(not(isEnabled())));
     }
+
+    @Test
+    public void testClearChat() {
+        onView(withId(R.id.refreshButton)).perform(click());
+        ListView list = (ListView) getActivity().findViewById(R.id.messagesContainer);
+        assertFalse(list.getCount() == 0);
+        getActivity().clearChat();
+        assertTrue(list.getCount() == 0);
+    }
 }

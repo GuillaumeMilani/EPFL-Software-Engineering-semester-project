@@ -136,6 +136,8 @@ public class EqualsAndHashcodeTest {
     public void testCondition() {
         CalamarApplication.getInstance().setGoogleApiClient(mock(GoogleApiClient.class));
         helperVerifyEqualsAndHashcode(tc, Condition.trueCondition());
+        helperVerifyEqualsAndHashcode(tc, tc);
+        helperVerifyNotEqualsAndHashcode(tc, testUser1);
         helperVerifyNotEqualsAndHashcode(tc, Condition.falseCondition());
         helperVerifyEqualsAndHashcode(Condition.falseCondition(), Condition.falseCondition());
         helperVerifyEqualsAndHashcode(new PositionCondition(4.5, 4.5, 20), new PositionCondition(4.5, 4.5, 20));
