@@ -1,12 +1,16 @@
 package ch.epfl.sweng.calamar;
 
 
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 import android.test.ActivityInstrumentationTestCase2;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -110,6 +114,26 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
     public void testCanWriteInTextField() {
         onView(withId(R.id.createItemActivity_messageText)).perform(typeText(HELLO_ALICE));
         onView(withId(R.id.createItemActivity_messageText)).check(matches(withText(HELLO_ALICE)));
+    }
+
+    @Ignore //Causes problems, hangs in FileChooserActivity
+    public void testFilePickerIsLaunched() {
+        onView(withId(R.id.createItemActivity_messageText)).check(matches(withText("")));
+        onView(withId(R.id.selectFileButton)).perform(click());
+        /*No activity on stage Resumed
+        onView(withId(R.id.createItemActivity_messageText)).check(doesNotExist());
+        onView(withId(R.id.selectFileButton)).check(doesNotExist());
+        onView(withId(R.id.contactSpinner)).check(doesNotExist());*/
+    }
+
+    @Test
+    public void testOnActivityResult() {
+        Intent goodIntent = new Intent();
+        goodIntent.setData(Uri.parse("content://Calamar/Calamar Images/IMG1.png"));
+        getActivity().onActivityResult(1, Activity.RESULT_CANCELED, null); //Does nothing
+        onView(withId(R.id.selectFileButton)).check(matches(withText("Browse...")));
+        getActivity().onActivityResult(1, Activity.RESULT_OK, goodIntent);
+        onView(withId(R.id.selectFileButton)).check(matches(withText("IMG1.png")));
     }
 
 
