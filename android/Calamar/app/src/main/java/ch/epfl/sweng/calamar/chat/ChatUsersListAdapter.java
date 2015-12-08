@@ -19,8 +19,6 @@ public final class ChatUsersListAdapter extends BaseAdapter {
     private final ArrayList<Recipient> users;
     private final Activity context;
 
-    private ArrayList<Recipient> highlights = new ArrayList<>();
-
     public ChatUsersListAdapter(Activity context, List<Recipient> users) {
         this.users = new ArrayList<>(users);
         this.context = context;
@@ -56,7 +54,7 @@ public final class ChatUsersListAdapter extends BaseAdapter {
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
-            if(highlights.contains(user)) {
+            if(user.getHighlight()) {
                 holder.userName.setTextColor(Color.GREEN);
             }
         }
@@ -92,13 +90,5 @@ public final class ChatUsersListAdapter extends BaseAdapter {
      */
     private static class ViewHolder {
         public TextView userName;
-    }
-
-    public void addHighlight(Recipient user) {
-        highlights.add(user);
-    }
-
-    public void removeHighlight(Recipient user){
-        highlights.remove(user);
     }
 }

@@ -30,6 +30,10 @@ public abstract class Recipient {
      * the name of the Recipient ("Bob" ...)
      */
     private final String name;
+    /**
+     * if the recipient is highlight
+     */
+    private Boolean highlight = false;
 
     protected Recipient(int ID, String name) {
         if (null == name) {
@@ -51,6 +55,14 @@ public abstract class Recipient {
      */
     public int getID() {
         return ID;
+    }
+
+    public Boolean getHighlight() {
+        return highlight;
+    }
+
+    public void setHighlight(Boolean highlight) {
+        this.highlight = highlight;
     }
 
     /**
