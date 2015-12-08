@@ -471,19 +471,23 @@ public final class CalamarApplication extends Application implements Application
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
-        if (level >= TRIM_MEMORY_BACKGROUND) {
+        if (level >= TRIM_MEMORY_COMPLETE) {
             dbHandler.applyPendingOperations();
-        } else if (level >= TRIM_MEMORY_MODERATE && level < TRIM_MEMORY_COMPLETE) {
+            storageManager.cancelWritingTasks(1);
+        } else if (level >= TRIM_MEMORY_MODERATE) {
             dbHandler.applyPendingOperations();
             storageManager.cancelWritingTasks(5);
-        } else if (level <= TRIM_MEMORY_RUNNING_CRITICAL && level > TRIM_MEMORY_RUNNING_MODERATE) {
+        } else if (level >= TRIM_MEMORY_BACKGROUND) {
+            dbHandler.applyPendingOperations();
+        } else if (level >= TRIM_MEMORY_UI_HIDDEN) {
+            dbHandler.applyPendingOperations();
+        } else if (level >= TRIM_MEMORY_RUNNING_MODERATE) {
+            dbHandler.applyPendingOperations();
+            storageManager.cancelWritingTasks(5);
+        } else if ((level >= TRIM_MEMORY_RUNNING_CRITICAL)) {
             dbHandler.applyPendingOperations();
             storageManager.cancelWritingTasks(1);
-        } else if (level >= TRIM_MEMORY_COMPLETE) {
-            dbHandler.applyPendingOperations();
-            storageManager.cancelWritingTasks(1);
-        } else if ((level > TRIM_MEMORY_RUNNING_CRITICAL && level < TRIM_MEMORY_MODERATE)
-                || level < TRIM_MEMORY_RUNNING_MODERATE) {
+        } else { //Will never happen now, is not implemented
             storageManager.retryFailedWriting();
         }
     }

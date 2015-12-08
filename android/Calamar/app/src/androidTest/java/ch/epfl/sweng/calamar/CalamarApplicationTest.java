@@ -94,7 +94,11 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
         dbHandler.addItem(testItem);
         assertTrue(dbHandler.areOperationsPending());
         app.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE);
+        assertFalse(dbHandler.areOperationsPending());
+        dbHandler.addItem(testItem);
         assertTrue(dbHandler.areOperationsPending());
+        app.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN);
+        assertFalse(dbHandler.areOperationsPending());
     }
 
     @Test
