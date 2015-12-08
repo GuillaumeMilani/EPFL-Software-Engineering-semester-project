@@ -76,7 +76,7 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
                 i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_ID, String.valueOf(addUser.getID()));
                 sendBroadcast(i);
             } catch (JSONException e) {
-                Log.e(TAG, getString(R.string.json_extract_failed) + e);
+                Log.e(TAG, getString(R.string.json_extract_failed));
             }
 
             message += getString(R.string.contact);
