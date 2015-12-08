@@ -1,7 +1,6 @@
 package ch.epfl.sweng.calamar.map;
 
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
@@ -32,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
@@ -47,9 +47,8 @@ import ch.epfl.sweng.calamar.utils.StorageCallbacks;
 /**
  * A simple {@link Fragment} subclass holding the calamar map !.
  */
-public class MapFragment extends android.support.v4.app.Fragment implements OnMapReadyCallback {
+public final class MapFragment extends android.support.v4.app.Fragment implements OnMapReadyCallback {
 
-    public static final String TAG = MapFragment.class.getSimpleName();
     public static final String LATITUDEKEY = PositionCondition.class.getCanonicalName() + ":LATITUDEKEY";
     public static final String LONGITUDEKEY = PositionCondition.class.getCanonicalName() + ":LONGITUDEKEY";
 
@@ -57,27 +56,18 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     public static final double DEFAULTLATITUDE = 46.518797; // guess ^^;
     public static final double DEFAULTLONGITUDE = 6.561908;
 
-    private double initialLat;
-    private double initialLong;
+    private static final String TAG = MapFragment.class.getSimpleName();
 
-
-    // public static final String POSITIONKEY = MapFragment.class.getCanonicalName() + ":POSITION";
-
-    // TODO : do we save state of fragment/map using a bundle ?
-
-
-    // TODO : Use a bidirectional map ?
-    private Map<Item, Marker> markers;
-    private Map<Marker, Item> itemFromMarkers;
-    private Set<Item> items;
-
-
-    private GoogleMap map; // Might be null if Google Play services APK is not available.
-    // however google play services are checked at app startup...and
-    // maps fragment will do all the necessary if gplay services apk not present
-    // see comment on setupMapIfNeeded
-    // ....maybe delegate all the work to the map fragment, I think google has correctly done the job...
-
+    //When the condition is okay, we update the item description
+    private final Item.Observer detailsItemObserver = new Item.Observer() {
+        @Override
+        public void update(Item item) {
+            //Update the dialog with the new view.
+            View itemView = item.getView(getActivity());
+            detailsViewDialog.removeAllViews();
+            detailsViewDialog.addView(itemView);
+        }
+    };
 
     // The condition is updated when the location change and if the value(true/false) of the
     // condition change -> The item is updated, if all are true
@@ -91,18 +81,25 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
         }
     };
 
+    // TODO : Use a bidirectional map ?
+    private Map<Item, Marker> markers;
+    private Map<Marker, Item> itemFromMarkers;
+    private Set<Item> items;
     private LinearLayout detailsViewDialog;
 
-    //When the condition is okay, we update the item description
-    private final Item.Observer detailsItemObserver = new Item.Observer() {
-        @Override
-        public void update(Item item) {
-            //Update the dialog with the new view.
-            View itemView = item.getView(getActivity());
-            detailsViewDialog.removeAllViews();
-            detailsViewDialog.addView(itemView);
-        }
-    };
+    private GoogleMap map; // Might be null if Google Play services APK is not available.
+    // however google play services are checked at app startup...and
+    // maps fragment will do all the necessary if gplay services apk not present
+    // see comment on setupMapIfNeeded
+    // ....maybe delegate all the work to the map fragment, I think google has correctly done the job...
+
+
+    private double initialLat;
+    private double initialLong;
+
+    // public static final String POSITIONKEY = MapFragment.class.getCanonicalName() + ":POSITION";
+
+    // TODO : do we save state of fragment/map using a bundle ?
 
     public MapFragment() {
         // required
@@ -115,10 +112,10 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     /**
      * Replaces the "onCreate" method from an Activity
      *
-     * @param inflater
-     * @param container
-     * @param savedInstanceState
-     * @returnS
+     * @param inflater           The LayoutInflater to be used
+     * @param container          The parent container
+     * @param savedInstanceState The saved state
+     * @return The view of the fragment
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -144,31 +141,41 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     @Override
     public void onResume() {
         super.onResume();
-        GPSProvider gpsProvider = GPSProvider.getInstance();
 
-        if (!gpsProvider.isStarted()) {
-            gpsProvider.checkSettingsAndLaunchIfOK(getActivity());
+        if (isVisible()) {
+            GPSProvider.getInstance().checkSettingsAndLaunchIfOK((BaseActivity) getActivity());
         }
 
         // REFRESH BUTTON
-        getView().findViewById(R.id.refreshButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addAllItemsInRegionToMap();
-            }
-        });
+        View v = getView();
+        if (v != null) {
+            getView().findViewById(R.id.refreshButton).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    addAllItemsInRegionToMap();
+                }
+            });
+        } else {
+            throw new IllegalStateException("View is null.");
+        }
 
+
+        //TODO : Make it more efficient.
         setUpMapIfNeeded();
+        //We (indirectly) go through all items on the local database every times we resume on the
+        //main activity, I don't think it's an efficient idea, but it's the easiest way to directly
+        //update the map if we add a new private item.
+        //The problem is that we add a new item from an other activity ( create Item activity ),
+        //if we want to solve this problem, we have to find a way to only retrieve new private item.
+        //The same problem occurs on the chat activity, in a less severe way.
         addAllPrivateItem();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        GPSProvider gpsProvider = GPSProvider.getInstance();
-        if (gpsProvider.isStarted()) {
-            GPSProvider.getInstance().stopLocationUpdates();
-        }
+        // if provider started, stop
+        GPSProvider.getInstance().stopLocationUpdates();
     }
 
     // map setup here :
@@ -186,21 +193,30 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
 
 
     // *********************************************************************************************
+
+    /**
+     * Adds all private items in the visible region to the map
+     */
     private void addAllPrivateItem() {
         if (null != map) {
             List<Item> localizedItems = CalamarApplication.getInstance().getDatabaseHandler().getAllLocalizedItems();
             for (Item i : localizedItems) {
-                addItemToMap(i);
+                if (!items.contains(i)) {
+                    addItemToMap(i);
+                }
             }
         }
     }
 
+    /**
+     * Adds all items in the visible region to the map
+     */
     private void addAllItemsInRegionToMap() {
         if (null != map) {
             VisibleRegion visibleRegion = map.getProjection().getVisibleRegion();
-            new RefreshTask(visibleRegion, getActivity()).execute();
+            new RefreshTask(visibleRegion, (BaseActivity) getActivity()).execute();
         } else {
-            throw new IllegalStateException("map not ready when refresh");
+            throw new IllegalStateException(CalamarApplication.getInstance().getString(R.string.map_refreshed_not_ready));
         }
     }
 
@@ -209,7 +225,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
      */
     private void addItemToMap(Item item) {
         if (!item.hasLocation()) {
-            throw new IllegalStateException("Ecublens we have a problem : item on map hasn't any location");
+            throw new IllegalStateException(CalamarApplication.getInstance().getString(R.string.item_map_no_location));
         }
         Location location = item.getLocation();
 
@@ -250,7 +266,9 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     }
 
     /**
-     * @param item
+     * Returns a string depending on the state of the item
+     *
+     * @param item The item
      * @return the correct lock label for <i>item</i>
      */
     private String getLockStringForItem(Item item) {
@@ -288,11 +306,11 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
     private class RefreshTask extends AsyncTask<Void, Void, List<Item>> {
 
         private final VisibleRegion visibleRegion;
-        private final Activity context;
+        private final BaseActivity context;
 
-        public RefreshTask(VisibleRegion visibleRegion, Activity context) {
+        public RefreshTask(VisibleRegion visibleRegion, BaseActivity context) {
             if (null == visibleRegion || null == context) {
-                throw new IllegalArgumentException("RefreshTask: visibleRegion or context is null");
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.refreshtask_visibleregion_or_context_null));
             }
             this.visibleRegion = visibleRegion;
             this.context = context;
@@ -326,20 +344,14 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                     }
                 }
 
-                Log.i(MapFragment.TAG, "map refreshed");
+                Log.i(MapFragment.TAG, context.getString(R.string.map_refreshed));
 
                 Toast.makeText(context, R.string.refresh_message,
                         Toast.LENGTH_SHORT).show();
             } else {
-                Log.e(MapFragment.TAG, "unable to refresh");
-                AlertDialog.Builder newUserAlert = new AlertDialog.Builder(context);
-                newUserAlert.setTitle(R.string.unable_to_refresh_message);
-                newUserAlert.setPositiveButton(R.string.alert_dialog_default_positive_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        //OK
-                    }
-                });
-                newUserAlert.show();
+                if (isAdded()) {
+                    context.displayErrorMessage(getString(R.string.unable_to_refresh_message), false);
+                }
             }
         }
     }
@@ -410,7 +422,7 @@ public class MapFragment extends android.support.v4.app.Fragment implements OnMa
                     item = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, ((ImageItem) item).getPath());
                     break;
                 default:
-                    throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unknown_item_type));
+                    throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unexpected_item_type, item.getType().name()));
             }
             dialog.setView(item.getView(MapFragment.this.getActivity()));
         }

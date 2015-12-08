@@ -3,14 +3,19 @@ package ch.epfl.sweng.calamar.recipient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
+
 /**
  * Models an user, (kind of {@link Recipient}).<br><br>
  * User is immutable.
  */
 public final class User extends Recipient {
-    private final static String RECIPIENT_TYPE = "user";
     public static final int PUBLIC_ID = -1;
     public static final String PUBLIC_NAME = "Public";
+    private final static String DUMMY_PASSWORD = "password";
+    private final static String RECIPIENT_TYPE = "user";
+
 
     /**
      * Instantiates a new User with <i>ID</i> and <i>name</i>
@@ -33,7 +38,7 @@ public final class User extends Recipient {
     @Override
     protected void compose(JSONObject json) throws JSONException {
         super.compose(json);//adds parent fields
-        json.accumulate("type", User.RECIPIENT_TYPE);
+        json.accumulate(JSON_TYPE, User.RECIPIENT_TYPE);
     }
 
     /**
@@ -74,23 +79,13 @@ public final class User extends Recipient {
     }
 
     /**
-     * java hash function
-     *
-     * @return hash of the Object
-     */
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    /**
      * Returns the password of the user to decrypt data on the phone.
      *
      * @return a constant String "password" for now.
      */
     public String getPassword() {
         //TODO Change this method once a better encoding is found
-        return "password";
+        return DUMMY_PASSWORD;
     }
 
     /**
@@ -99,11 +94,13 @@ public final class User extends Recipient {
      * @see Recipient.Builder
      */
     private static class Builder extends Recipient.Builder {
+
+        @Override
         public Builder parse(JSONObject json) throws JSONException {
             super.parse(json);
-            String type = json.getString("type");
+            String type = json.getString(JSON_TYPE);
             if (!type.equals(User.RECIPIENT_TYPE)) {
-                throw new IllegalArgumentException("expected " + User.RECIPIENT_TYPE + " was : " + type);
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.expected_but_was, RECIPIENT_TYPE, type));
             }
             return this;
         }

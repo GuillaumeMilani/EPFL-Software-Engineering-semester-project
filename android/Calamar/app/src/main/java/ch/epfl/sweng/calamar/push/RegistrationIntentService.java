@@ -1,6 +1,5 @@
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
- * <<<<<<< HEAD:android/Calamar/app/src/main/java/ch/epfl/sweng/calamar/RegistrationIntentService.java
  * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -8,15 +7,6 @@
  * <p/>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p/>
- * =======
- * <p/>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
- * >>>>>>> dc774c0b4e22aff9aa7e58950946e847eb05e6d8:android/Calamar/app/src/main/java/ch/epfl/sweng/calamar/push/RegistrationIntentService.java
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,14 +15,11 @@
  */
 package ch.epfl.sweng.calamar.push;
 
-import android.app.AlertDialog;
 import android.app.IntentService;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.provider.Settings;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -48,13 +35,17 @@ import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 
-public class RegistrationIntentService extends IntentService {
+public final class RegistrationIntentService extends IntentService {
 
+    public static final String SENT_TOKEN_TO_SERVER = "sent_token_to_server_gcm";
+    private static final String REGISTRATION_COMPLETE = "registration_complete_gcm";
     private static final String TAG = "RegIntentService";
     private static final String[] TOPICS = {"global"};
-    public static final String SENT_TOKEN_TO_SERVER = "sent_token_to_server_gcm";
-    public static final String REGISTRATION_COMPLETE = "registration_complete_gcm";
+    private static final String TOPICS_STR = "/topics/";
 
+    /**
+     * Creates a new RegistrationIntentService
+     */
     public RegistrationIntentService() {
         super(TAG);
     }
@@ -73,7 +64,7 @@ public class RegistrationIntentService extends IntentService {
             String token = instanceID.getToken(getString(R.string.gcm_defaultSenderId),
                     GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
             // [END get_token]
-            Log.i(TAG, "GCM Registration Token: " + token);
+            Log.i(TAG, getString(R.string.gcm_registration_token, token));
             sendRegistrationToServer(token);
 
             // Subscribe to topic channels
@@ -85,7 +76,7 @@ public class RegistrationIntentService extends IntentService {
             CalamarApplication.getInstance().setTokenSent(true);
             // [END register_for_gcm]
         } catch (Exception e) {
-            Log.d(TAG, "Failed to complete token refresh", e);
+            Log.d(TAG, getString(R.string.failed_token_refresh), e);
             e.printStackTrace();
             // If an exception happens while fetching the new token or updating our registration data
             // on a third-party server, this ensures that we'll attempt the update at a later time.
@@ -105,10 +96,10 @@ public class RegistrationIntentService extends IntentService {
      * @param token The new token.
      */
     private void sendRegistrationToServer(String token) {
-            final String accountName = CalamarApplication.getInstance().getCurrentUserName();
-            Log.i(TAG, "(token,name) is (" + token + "," + accountName + ")");
-
-            new createNewUserTask(accountName).execute();
+        final String accountName = CalamarApplication.getInstance().getCurrentUserName();
+        Log.i(TAG, getString(R.string.token_name_is, token, accountName));
+        //  client.send(token, accountName);
+        new createNewUserTask(accountName, token).execute();
     }
 
     /**
@@ -121,16 +112,21 @@ public class RegistrationIntentService extends IntentService {
     private void subscribeTopics(String token) throws IOException {
         GcmPubSub pubSub = GcmPubSub.getInstance(this);
         for (String topic : TOPICS) {
-            pubSub.subscribe(token, "/topics/" + topic, null);
+            pubSub.subscribe(token, TOPICS_STR + topic, null);
         }
     }
     // [END subscribe_topics]
 
+    /**
+     * AsyncTask to create a new User and tell it to the server
+     */
     private class createNewUserTask extends AsyncTask<Void, Void, Integer> {
         private String name = null;
+        private String token = null;
 
-        public createNewUserTask(String name) {
+        public createNewUserTask(String name, String token) {
             this.name = name;
+            this.token = token;
         }
 
         @Override
@@ -138,14 +134,14 @@ public class RegistrationIntentService extends IntentService {
             try {
                 //Get the device id.
                 return DatabaseClientLocator.getDatabaseClient().newUser(name,
-                        Settings.Secure.getString(getContentResolver(),
-                                Settings.Secure.ANDROID_ID));//"aaaaaaaaaaaaaaaa",354436053190805
+                        token);//"aaaaaaaaaaaaaaaa",354436053190805
             } catch (DatabaseClientException e) {
                 e.printStackTrace();
                 // and make use of context safe
                 return null;
             }
         }
+
         @Override
         protected void onPostExecute(Integer id) {
             Handler mHandler = new Handler(getMainLooper());
@@ -158,9 +154,8 @@ public class RegistrationIntentService extends IntentService {
                     public void run() {
                         // Show toast
                         Context context = getApplicationContext();
-                        CharSequence text = "Connected as " + name;
-                        int duration = Toast.LENGTH_SHORT;
-                        Toast toast = Toast.makeText(context, text, duration);
+                        Toast toast = Toast.makeText(context, context.getString(R.string.connected_as_toast, name),
+                                Toast.LENGTH_SHORT);
                         toast.show();
                     }
                 });
@@ -172,14 +167,9 @@ public class RegistrationIntentService extends IntentService {
                     public void run() {
                         // Show toast
                         Context context = getApplicationContext();
-                        AlertDialog.Builder newUser = new AlertDialog.Builder(context);
-                        newUser.setTitle(R.string.new_account_creation_fail);
-                        newUser.setPositiveButton(R.string.new_account_creation_retry, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                new createNewUserTask(name).execute();
-                            }
-                        });
-                        newUser.show();
+                        Toast toast = Toast.makeText(context, context.getString(R.string.account_not_connected),
+                                Toast.LENGTH_SHORT);
+                        toast.show();
                     }
                 });
 

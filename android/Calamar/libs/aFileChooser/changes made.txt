@@ -13,3 +13,5 @@ Adds final to mPath in FileLoader
 Uses list.addAll(Arrays.asList(dirs/files)) in FileLoader instead of copying each dir/file
 Removes useless explicit argument <File> in FileListAdapter and FileLoader
 Removes useless casting from File to File in FileListFragment
+Removes namespace in dimens.xml
+Removes useless uses-sdk in manifest

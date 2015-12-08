@@ -18,6 +18,7 @@
         android:paddingEnd="0dp"
         android:paddingLeft="12dp"
         android:paddingRight="0dp"
+        android:paddingStart="12dp"
         android:paddingTop="12dp"
         android:singleLine="false"
         android:text="@string/create_new_item_title"
@@ -168,16 +169,16 @@
         android:text="@string/create_button_text" />
 
     <ProgressBar
+        android:id="@+id/locationProgressBar"
         style="?android:attr/progressBarStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/locationProgressBar"
+        android:layout_below="@+id/contactSpinner"
+        android:layout_toEndOf="@+id/locationCheck"
+        android:layout_toRightOf="@+id/locationCheck"
         android:indeterminate="false"
         android:max="10"
-        android:visibility="invisible"
-        android:layout_below="@+id/contactSpinner"
-        android:layout_toRightOf="@+id/locationCheck"
-        android:layout_toEndOf="@+id/locationCheck" />
+        android:visibility="invisible" />
 
 
 </RelativeLayout>

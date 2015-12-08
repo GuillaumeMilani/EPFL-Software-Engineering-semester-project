@@ -1,7 +1,7 @@
 package ch.epfl.sweng.calamar.item;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Base64;
@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
@@ -32,16 +33,16 @@ import ch.epfl.sweng.calamar.utils.Compresser;
  */
 public class FileItem extends Item {
 
-    private final String path;
-    private final String name;
-    private final static Type ITEM_TYPE = Type.FILEITEM;
-    private final byte[] data;
-    private final int hash;
+    public static final String DUMMY_PATH = "/dummy";
 
     private static final String JSON_DATA = "data";
     private static final String UTF8_CHARSET = "UTF-8";
+    private final static Type ITEM_TYPE = Type.FILEITEM;
 
-    public static final String DUMMY_PATH = "/dummy";
+    private final String path;
+    private final String name;
+    private final byte[] data;
+    private final int hash;
 
     /**
      * Instantiates a new FileItem with the given parameters
@@ -64,7 +65,7 @@ public class FileItem extends Item {
         }
         final int idx = path.lastIndexOf('/');
         if (idx == -1) {
-            throw new IllegalArgumentException("Bad path of file : " + path);
+            throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.bad_path_fileitem, path));
         } else {
             this.path = path;
             this.name = path.substring(idx + 1);
@@ -84,7 +85,7 @@ public class FileItem extends Item {
      * @param path      The path of the file
      */
     public FileItem(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path) {
-        this(ID, from, to, date, condition, data, path, "");
+        this(ID, from, to, date, condition, data, path, CalamarApplication.getInstance().getString(R.string.empty_string));
     }
 
     /**
@@ -113,7 +114,7 @@ public class FileItem extends Item {
      * @param path The path of the file
      */
     public FileItem(int ID, User from, Recipient to, Date date, byte[] data, String path) {
-        this(ID, from, to, date, Condition.trueCondition(), data, path, "");
+        this(ID, from, to, date, Condition.trueCondition(), data, path, CalamarApplication.getInstance().getString(R.string.empty_string));
     }
 
     /**
@@ -149,7 +150,7 @@ public class FileItem extends Item {
     }
 
     @Override
-    public View getItemView(Context context) {
+    public View getItemView(Activity context) {
         TextView view = new TextView(context);
         view.setText(name);
         view.setOnClickListener(new View.OnClickListener() {
@@ -240,10 +241,13 @@ public class FileItem extends Item {
         try {
             CalamarApplication.getInstance().startActivity(newIntent);
         } catch (ActivityNotFoundException e) {
-            Toast.makeText(CalamarApplication.getInstance(), "No handler for this type of file.", Toast.LENGTH_LONG).show();
+            Toast.makeText(CalamarApplication.getInstance(), R.string.no_handler_found, Toast.LENGTH_LONG).show();
         }
     }
 
+    /**
+     * A Builder for FileItems
+     */
     public static class Builder extends Item.Builder {
 
         protected byte[] data;
@@ -259,7 +263,7 @@ public class FileItem extends Item {
             super.parse(json);
             String type = json.getString(JSON_TYPE);
             if (!(type.equals(FileItem.ITEM_TYPE.name()) || type.equals(ImageItem.ITEM_TYPE.name()))) {
-                throw new IllegalArgumentException("expected " + FileItem.ITEM_TYPE.name() + " was : " + type);
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.expected_but_was, FileItem.ITEM_TYPE.name(), type));
             }
             data = Compresser.decompress(base64StringToByteArray(json.getString(JSON_DATA)));
             path = DUMMY_PATH;
@@ -298,7 +302,7 @@ public class FileItem extends Item {
             this.path = path;
             final int idx = path.lastIndexOf('/');
             if (idx == -1) {
-                throw new IllegalArgumentException("Bad path of file : " + path);
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.bad_path_fileitem, path));
             } else {
                 this.path = path;
             }

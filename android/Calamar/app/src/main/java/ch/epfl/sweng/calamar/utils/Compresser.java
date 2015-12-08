@@ -11,13 +11,15 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.item.FileItem;
 import ch.epfl.sweng.calamar.item.ImageItem;
 
 /**
  * Utilitary class used to compress and decompress byte arrays of data using the native zlib implementation of java
  */
-public class Compresser {
+public final class Compresser {
 
     private static final int MIN_SIZE_FOR_COMPRESSION = 30;
     private static final int THUMBNAIL_SIZE = 100;
@@ -25,6 +27,9 @@ public class Compresser {
     private static final byte HEADER_1 = 0x78;
     private static final byte HEADER_2 = (byte) 0xDA;
     private static final byte[] FOOTER = {0x10, 0x23, 0x47, 0x12, 0x45, (byte) 0xa7, (byte) 0xd3, (byte) 0xef, (byte) 0xaa, (byte) 0xfa, 0x02, 0x21, 0x33, 0x22};
+
+    private Compresser() {
+    }
 
     /**
      * Compresses the data if it is not already compressed
@@ -125,31 +130,52 @@ public class Compresser {
             case IMAGEITEM:
                 return new ImageItem(f.getID(), f.getFrom(), f.getTo(), f.getDate(), f.getCondition(), getImageThumbnail((ImageItem) f), f.getPath());
             default:
-                throw new IllegalArgumentException("Expected FileItem");
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.expected_fileitem));
         }
     }
 
+    /**
+     * Returns a 100x100 thumbnail of the image as a byte array, or the image itself if it is smaller.
+     *
+     * @param i The ImageItem
+     * @return a byte array representing the thumbnail
+     */
     public static byte[] getImageThumbnail(ImageItem i) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        Bitmap bitmap = i.getBitmap();
+        final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        final Bitmap bitmap = i.getBitmap();
         if (bitmap != null) {
-            if (bitmap.getWidth() <= THUMBNAIL_SIZE && bitmap.getHeight() <= THUMBNAIL_SIZE) {
+            final int width = bitmap.getWidth();
+            final int height = bitmap.getHeight();
+            if (width <= THUMBNAIL_SIZE && height <= THUMBNAIL_SIZE) {
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
             } else {
-                Bitmap thumbnail = ThumbnailUtils.extractThumbnail(bitmap, THUMBNAIL_SIZE, THUMBNAIL_SIZE);
+                Bitmap thumbnail;
+                if (width > height) {
+                    final double ratio = width / height;
+                    thumbnail = ThumbnailUtils.extractThumbnail(bitmap, THUMBNAIL_SIZE, (int) Math.floor(THUMBNAIL_SIZE / ratio));
+                } else {
+                    final double ratio = height / width;
+                    thumbnail = ThumbnailUtils.extractThumbnail(bitmap, (int) Math.floor(THUMBNAIL_SIZE / ratio), THUMBNAIL_SIZE);
+                }
                 thumbnail.compress(Bitmap.CompressFormat.PNG, 100, stream);
             }
             return stream.toByteArray();
         }
-        Log.d("Bitmap", "Bitmap of " + i + " is null.");
+        Log.d(CalamarApplication.getInstance().getString(R.string.compresser), CalamarApplication.getInstance().getString(R.string.bitmap_of_is_null, i));
         return null;
     }
 
+    /**
+     * Checks if the data is compressed by this Compresser.
+     *
+     * @param data The data
+     * @return true if it is compressed, false otherwise
+     */
     private static boolean isCompressed(byte[] data) {
         if (data.length < FOOTER.length + 2) {
             return false;
         } else {
-            byte[] dataFooter = Arrays.copyOfRange(data, data.length - FOOTER.length, data.length);
+            final byte[] dataFooter = Arrays.copyOfRange(data, data.length - FOOTER.length, data.length);
             return (Arrays.equals(dataFooter, FOOTER) && data[0] == HEADER_1 && data[1] == HEADER_2);
         }
     }

@@ -7,7 +7,7 @@ import com.google.android.gms.iid.InstanceIDListenerService;
 /**
  * Created by Tony on 06.11.2015.
  */
-public class CalamarInstanceIDListenerService extends InstanceIDListenerService {
+public final class CalamarInstanceIDListenerService extends InstanceIDListenerService {
 
     private static final String TAG = "CalamarInstanceIDListenerService";
 
