@@ -153,7 +153,7 @@
     <string name="bitmap_of_is_null">"Bitmap of %s is null."</string>
 
     <!-- Notifications -->
-    <string name="new_item_notification">Calamar : New item !</string>
+    <string name="new_item_notification">Calamar : </string>
     <string name="notification_message">Notification : %s"</string>
     <string name="you_received_new">"You have received a new "</string>
     <string name="message_type">"Message: %s"</string>

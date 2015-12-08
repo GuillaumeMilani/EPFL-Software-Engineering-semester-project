@@ -47,10 +47,10 @@ public final class ChatUsersListAdapter extends BaseAdapter {
         if (convertView == null) {
             convertView = li.inflate(R.layout.list_contacts_chat, null);
 
-           /* TextView text = (TextView) convertView.findViewById(R.id.textView);
-            text.setTextColor(Color.RED);*/
-
             holder = createViewHolder(convertView);
+            if(user.getHighlight()) {
+                holder.userName.setTextColor(Color.GREEN);
+            }
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();

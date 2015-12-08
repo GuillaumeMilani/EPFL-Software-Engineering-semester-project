@@ -81,6 +81,7 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
                 Recipient user = contacts.get(position);
                 //remove the highlight on that user ( if there is one )
                 user.setHighlight(false);
+                adapter.notifyDataSetChanged();
                 conversation.putExtra(EXTRA_CORRESPONDENT_NAME, user.getName());
 
                 conversation.putExtra(EXTRA_CORRESPONDENT_ID, user.getID());
@@ -169,11 +170,15 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
      * Add the user in the contact list
      */
     private void addUserInContact(User user) {
-        adapter.add(user);
-        contacts.add(user);
-        adapter.notifyDataSetChanged();
-        //Add in memory
-        app.getDatabaseHandler().addRecipient(user);
+        if(!contacts.contains(user))
+        {
+            adapter.add(user);
+            contacts.add(user);
+
+            adapter.notifyDataSetChanged();
+            //Add in memory
+            app.getDatabaseHandler().addRecipient(user);
+        }
     }
 
     /**
