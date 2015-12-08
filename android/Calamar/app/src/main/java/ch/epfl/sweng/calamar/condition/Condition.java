@@ -307,6 +307,9 @@ public abstract class Condition {
      * @return a new condition that is the intersection of c1 and c2
      */
     public static Condition and(final Condition c1, final Condition c2) {
+        if(c1 == null || c2 == null) {
+            throw new IllegalArgumentException("null condition");
+        }
         return new Condition() {
             //constructor
             {
@@ -388,6 +391,9 @@ public abstract class Condition {
      * @return a new condition that is the union of c1 and c2
      */
     public static Condition or(final Condition c1, final Condition c2) {
+        if(c1 == null || c2 == null) {
+            throw new IllegalArgumentException("null condition");
+        }
         return new Condition() {
             //constructor
             {
@@ -461,6 +467,9 @@ public abstract class Condition {
      * @return a condition that is true when c is false and false when c is true
      */
     public static Condition not(final Condition c) {
+        if(c == null) {
+        throw new IllegalArgumentException("null condition");
+    }
         return new Condition() {
             //constructor
             {

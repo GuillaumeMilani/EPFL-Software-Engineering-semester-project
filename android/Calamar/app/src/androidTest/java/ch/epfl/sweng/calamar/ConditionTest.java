@@ -320,4 +320,31 @@ public class ConditionTest {
 
         assertEquals(jo1.toString(), pc1.toJSON().toString());
     }
+
+    @Test
+    public void testConditionFromJSONExceptions() throws JSONException {
+        try {
+            Condition.fromJSON(null);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // yikiyik
+        }
+        Condition condition = new PositionCondition(2, 2, 20);
+        try {
+            JSONObject jsonObject = condition.toJSON();
+            jsonObject.remove("type");
+            Condition.fromJSON(jsonObject);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // Boum Boum
+        }
+        try {
+            JSONObject jsonObject = condition.toJSON();
+            jsonObject.put("type", "wrong type");
+            Condition.fromJSON(jsonObject);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // yes
+        }
+    }
 }
