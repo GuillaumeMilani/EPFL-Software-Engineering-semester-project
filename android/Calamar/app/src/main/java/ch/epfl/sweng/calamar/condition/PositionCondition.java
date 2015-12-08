@@ -12,7 +12,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import ch.epfl.sweng.calamar.BuildConfig;
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.MainActivity;
 import ch.epfl.sweng.calamar.R;
@@ -85,15 +84,6 @@ public final class PositionCondition extends Condition {
      */
     public PositionCondition(double latitude, double longitude, double radius) {
         this(makeLocation(latitude, longitude), radius);
-    }
-
-    private PositionCondition(Location l, boolean mock) {
-        if (BuildConfig.DEBUG && mock) {
-            this.location = l;
-            this.radius = DEFAULT_RADIUS;
-        } else {
-            throw new IllegalStateException("Must be debug");
-        }
     }
 
     /**
@@ -220,14 +210,6 @@ public final class PositionCondition extends Condition {
      */
     public static Condition fromJSON(JSONObject json) throws JSONException {
         return new PositionCondition.Builder().parse(json).build();
-    }
-
-    public static PositionCondition mock(double longitude, double latitude) {
-        if (BuildConfig.DEBUG) {
-            return new PositionCondition(makeLocation(longitude, latitude), true);
-        } else {
-            throw new IllegalStateException("Must be debug");
-        }
     }
 
     /**

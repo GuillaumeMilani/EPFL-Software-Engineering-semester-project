@@ -104,6 +104,8 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         storageManager.deleteItemWithoutDatabase(testSimple);
         waitFor(500);
         assertEquals(dbHandler.getItem(testSimple.getID()), testSimple);
+        storageManager.deleteItemWithoutDatabase(testSimple.getID());
+        assertEquals(dbHandler.getItem(testSimple.getID()), testSimple);
         List<Integer> toDelete = new ArrayList<>();
         toDelete.add(testSimple.getID());
         List<Item> itemsToDelete = new ArrayList<>();

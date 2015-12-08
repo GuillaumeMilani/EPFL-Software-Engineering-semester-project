@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.map.GPSProvider;
@@ -25,10 +26,10 @@ import static junit.framework.Assert.fail;
 public class ConditionTest {
 
 
-        /**
-         * helps defining observers that test Condition
-         * TO for TestingObserver
-         */
+    /**
+     * helps defining observers that test Condition
+     * TO for TestingObserver
+     */
     class TO extends Condition.Observer {
 
         private int triggered = 0;
@@ -146,9 +147,8 @@ public class ConditionTest {
         a.set(false);
         o.assertAll(true, 0);
     }
-    
-    public static Location makeLocation(double latitude, double longitude)
-    {
+
+    public static Location makeLocation(double latitude, double longitude) {
         Location loc = new Location("calamarTestingTeam");
         loc.setLatitude(latitude);
         loc.setLongitude(longitude);
@@ -204,12 +204,14 @@ public class ConditionTest {
         try {
             Condition.trueCondition().getLocation();
             fail("getLocation on condition without location didn't throw an exception");
-        } catch (UnsupportedOperationException e) {}
+        } catch (UnsupportedOperationException e) {
+        }
 
         try {
             Condition.falseCondition().getLocation();
             fail("getLocation on condition without location didn't throw an exception");
-        } catch (UnsupportedOperationException e) {}
+        } catch (UnsupportedOperationException e) {
+        }
 
         // and
         Condition and1 = Condition.and(Condition.trueCondition(), posCond);
@@ -245,7 +247,8 @@ public class ConditionTest {
         try {
             or5.getLocation();
             fail("getLocation on condition without location didn't throw an exception");
-        } catch (UnsupportedOperationException e) {}
+        } catch (UnsupportedOperationException e) {
+        }
     }
 
 

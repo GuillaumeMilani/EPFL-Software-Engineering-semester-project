@@ -58,7 +58,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     private final SimpleTextItem testItem4 = new SimpleTextItem(3, testUser, testUser2, new Date(3), "3");
     private final FileItem testFile = new FileItem(4, testUser, testUser2, new Date(4), Condition.trueCondition(), testContent, "Calamar/1/2/FileItem");
     private final ImageItem testImage = new ImageItem(5, testUser, testRecipient, new Date(5), Condition.falseCondition(), testContent, "Calamar/1/2/ImageItem");
-    private final SimpleTextItem posItem = new SimpleTextItem(6, testUser, testRecipient, new Date(6), PositionCondition.mock(4.5, 4.5), "6");
+    private final SimpleTextItem posItem = new SimpleTextItem(6, testUser, testRecipient, new Date(6), new PositionCondition(4.5, 4.5, 20), "6");
     private final SimpleTextItem testPublic = new SimpleTextItem(7, testUser, new User(User.PUBLIC_ID, User.PUBLIC_NAME), new Date(7), Condition.trueCondition(), "7");
 
     private final int NUM_ITER = 500;
