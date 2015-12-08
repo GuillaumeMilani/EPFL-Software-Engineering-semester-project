@@ -90,10 +90,10 @@ public final class NetworkDatabaseClient implements DatabaseClient {
         try {
             URL url = new URL(serverUrl + NetworkDatabaseClient.SEND_PATH);
             JSONObject jsonParameter = item.toJSON();
-            //Log.v(NetworkDatabaseClient.TAG, jsonParameter);
+            Log.v(NetworkDatabaseClient.TAG, "send json request : " + jsonParameter.toString());
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
-            //Log.e(NetworkDatabaseClient.TAG, response);
+            Log.v(NetworkDatabaseClient.TAG, "server response : " + response);
             return Item.fromJSON(new JSONObject(response));
         } catch (IOException | JSONException e) {
             throw new DatabaseClientException(e);
@@ -111,10 +111,11 @@ public final class NetworkDatabaseClient implements DatabaseClient {
             JSONObject jsonParameter = new JSONObject();
             jsonParameter.accumulate(JSON_TOKEN, token);
             jsonParameter.accumulate(JSON_NAME, email);
-
+            Log.v(NetworkDatabaseClient.TAG, "newUser json request : " + jsonParameter.toString());
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
-            // Log.v(NetworkDatabaseClient.TAG, response);
+
+            Log.v(NetworkDatabaseClient.TAG, "server response : " + response);
             JSONObject object = new JSONObject(response);
             return object.getInt(JSON_ID);
         } catch (IOException | JSONException e) {
@@ -137,7 +138,7 @@ public final class NetworkDatabaseClient implements DatabaseClient {
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
             JSONObject resp = new JSONObject(response);
-            //Log.e(TAG, response);
+            Log.v(NetworkDatabaseClient.TAG, "server response : " + response);
             return User.fromJSON(resp.getJSONObject(JSON_USER));
         } catch (IOException | JSONException e) {
             throw new DatabaseClientException(e);
@@ -172,9 +173,9 @@ public final class NetworkDatabaseClient implements DatabaseClient {
             }
 
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
-            //Log.v(TAG, jsonParameter.toString());
+            Log.v(NetworkDatabaseClient.TAG, "getItems json request : " + jsonParameter.toString());
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
-            Log.v(TAG, response);
+            Log.v(NetworkDatabaseClient.TAG, "server response : " + response);
             return NetworkDatabaseClient.itemsFromJSON(response);
         } catch (IOException | JSONException e) {
             throw new DatabaseClientException(e);
@@ -215,7 +216,11 @@ public final class NetworkDatabaseClient implements DatabaseClient {
      * @throws DatabaseClientException
      */
     private static String post(HttpURLConnection connection, String jsonParameter)
-            throws IOException, DatabaseClientException {
+            throws IOException, DatabaseClientException
+    {
+        if (null == connection) {
+            throw new IllegalArgumentException("null connection");
+        }
         String toSend = URLEncoder.encode(jsonParameter, UTF8_CHARSET);
         connection.setRequestMethod(CONNECTION_REQUEST_METHOD);
         connection.setRequestProperty(CONTENT_TYPE,

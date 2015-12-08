@@ -1,10 +1,11 @@
-package ch.epfl.sweng.calamar;
+package ch.epfl.sweng.calamar.client;
 
 import android.support.test.espresso.core.deps.guava.collect.ImmutableSet;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -20,6 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.client.DatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
@@ -35,6 +37,7 @@ import ch.epfl.sweng.calamar.recipient.User;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -45,8 +48,30 @@ import static org.mockito.Mockito.mock;
 @RunWith(JUnit4.class)
 public class NetworkDatabaseClientTest {
 
+    // TODO for the test asserting that the method work, use test server with mock data
+    // (instead of mock connections.)
+    // to test server communication in the same time !
+
     private static String URL = "http://calamar.japan-impact.ch";
+    private java.net.URL retrieveUrl;
     private Recipient recipient = new User(42, "test");
+
+    private NetworkProvider disabledNetProvider = mock(NetworkProvider.class);
+
+    private NetworkProvider mockNetProvider = mock(NetworkProvider.class);
+    private HttpURLConnection mockConnection = mock(HttpURLConnection.class);
+
+    @Before
+    public void init() throws IOException {
+        // to shut his mouth
+        CalamarApplication.getInstance().setGoogleApiClient(mock(GoogleApiClient.class));
+
+        DatabaseClientLocator.resetDatabaseClient();
+        doThrow(new IOException()).when(disabledNetProvider).getConnection((URL) any());
+
+        doReturn(mockConnection).when(mockNetProvider).getConnection((URL)any());
+        doReturn(new ByteArrayOutputStream()).when(mockConnection).getOutputStream();  // wtf...
+    }
 
     @Test
     public void testConstructorThrowsOnInvalidInput() {
@@ -73,7 +98,6 @@ public class NetworkDatabaseClientTest {
                     return null;
                 }
             });
-
         } catch (IllegalArgumentException e) {
             fail("IllegalArgumentException was thrown on valid input");
         }
@@ -87,7 +111,7 @@ public class NetworkDatabaseClientTest {
         } catch (IllegalArgumentException e) {
             // ok
         } catch (DatabaseClientException e) {
-            fail();
+            fail("wrong exception");
         }
 
         try {
@@ -96,7 +120,7 @@ public class NetworkDatabaseClientTest {
         } catch (IllegalArgumentException e) {
             // ok
         } catch (DatabaseClientException e) {
-            fail();
+            fail("wrong exception");
         }
 
         try {
@@ -105,32 +129,23 @@ public class NetworkDatabaseClientTest {
         } catch (IllegalArgumentException e) {
             // ok
         } catch (DatabaseClientException e) {
-            fail();
+            fail("wrong exception");
         }
     }
 
     @Test(expected = DatabaseClientException.class)
-    public void getAllItemsThrowsOnIOError() throws IOException, DatabaseClientException {
-        NetworkProvider disabledNetProvider = mock(NetworkProvider.class);
-        doThrow(new IOException()).when(disabledNetProvider).getConnection((URL) any());
-        DatabaseClient client = new NetworkDatabaseClient(URL,
-                disabledNetProvider);
+    public void getAllItemsThrowsOnIOError() throws DatabaseClientException {
+        DatabaseClient client = new NetworkDatabaseClient(URL, disabledNetProvider);
         client.getAllItems(recipient, new Date(0));
     }
 
     @Test(expected = DatabaseClientException.class)
     public void getAllItemsThrowsOnMalformedResponse() throws IOException, DatabaseClientException {
-        NetworkProvider networkProvider = mock(NetworkProvider.class);
-        HttpURLConnection mockConnection = mock(HttpURLConnection.class);
-        DatabaseClient client = new NetworkDatabaseClient(URL,
-                networkProvider);
-        java.net.URL url = new URL(URL + "/items.php?action=retrieve");
+        DatabaseClient client = new NetworkDatabaseClient(URL, mockNetProvider);
 
         // todo insert better wrong json....
-        InputStream response = new ByteArrayInputStream(("malformed response").getBytes());
-        doReturn(response).when(mockConnection).getInputStream();
-        doReturn(new ByteArrayOutputStream()).when(mockConnection).getOutputStream();  // wtf...
-        doReturn(mockConnection).when(networkProvider).getConnection(url);
+        InputStream mockResponse = new ByteArrayInputStream(("malformed response").getBytes());
+        doReturn(mockResponse).when(mockConnection).getInputStream();
 
 
         client.getAllItems(recipient, new Date(0));
@@ -138,34 +153,18 @@ public class NetworkDatabaseClientTest {
 
     @Test(expected = DatabaseClientException.class)
     public void getAllItemsThrowsOnInvalidResponseCode() throws IOException, DatabaseClientException {
-        NetworkProvider networkProvider = mock(NetworkProvider.class);
-        HttpURLConnection mockConnection = mock(HttpURLConnection.class);
-        DatabaseClient client = new NetworkDatabaseClient(URL,
-                networkProvider);
+        DatabaseClient client = new NetworkDatabaseClient(URL, mockNetProvider);
 
-        java.net.URL url = new URL(URL + "/items.php?action=retrieve");
-        doReturn(new ByteArrayOutputStream()).when(mockConnection).getOutputStream();  // wtf...
         doReturn(404).when(mockConnection).getResponseCode();
-        doReturn(mockConnection).when(networkProvider).getConnection(url);
-
 
         client.getAllItems(recipient, new Date(0));
     }
 
     @Test
     public void getAllItemsWorksOnValidResponse() throws IOException, DatabaseClientException {
-        NetworkProvider networkProvider = mock(NetworkProvider.class);
-        HttpURLConnection mockConnection = mock(HttpURLConnection.class);
-        // to shut his mouth
-        CalamarApplication.getInstance().setGoogleApiClient(mock(GoogleApiClient.class));
+        DatabaseClient client = new NetworkDatabaseClient(URL, mockNetProvider);
 
-
-        DatabaseClient client = new NetworkDatabaseClient(URL,
-                networkProvider);
-
-        java.net.URL url = new URL(URL + "/items.php?action=retrieve");
-
-        InputStream response = new ByteArrayInputStream(("[\n" +
+        InputStream mockResponse = new ByteArrayInputStream(("[\n" +
                 "\t{\n" +
                 "\t\t\"type\":\"SIMPLETEXTITEM\",\n" +
                 "\t\t\"ID\":1,\n" +
@@ -237,26 +236,90 @@ public class NetworkDatabaseClientTest {
         Condition cond1 = new PositionCondition(46.495, 6.513, 10);
         Condition cond2 = new PositionCondition(47.495, 7.513, 10);
 
-        Item item1 = new SimpleTextItem(1, alice, recipient, new Date(1445198510), Condition.or(cond1, cond2), "Hello test, it's Alice !");
-        Item item2 = new SimpleTextItem(2, carol, recipient, new Date(1445198520), "Hello test, it's Carol !");
-        Item item3 = new SimpleTextItem(3, bob, recipient, new Date(1445198530), "Hello test, it's Bob !");
+        Item item1 = new SimpleTextItem(1, alice, recipient, new Date(1445198510),
+                Condition.or(cond1, cond2), "Hello test, it's Alice !");
+        Item item2 = new SimpleTextItem(2, carol, recipient, new Date(1445198520),
+                "Hello test, it's Carol !");
+        Item item3 = new SimpleTextItem(3, bob, recipient, new Date(1445198530),
+                "Hello test, it's Bob !");
         List<Item> items = Arrays.asList(item1, item2, item3);
 
 
-        // ~"server configuration" through mock objects
-        doReturn(response).when(mockConnection).getInputStream();
-        doReturn(new ByteArrayOutputStream()).when(mockConnection).getOutputStream();  // wtf...
-        doReturn(200).when(mockConnection).getResponseCode();
-        doReturn(mockConnection).when(networkProvider).getConnection(url);
 
+        doReturn(201).when(mockConnection).getResponseCode();
+        doReturn(mockResponse).when(mockConnection).getInputStream();
 
         List<Item> receivedItems = client.getAllItems(recipient, new Date(0));
         assertTrue(receivedItems.size() == items.size());
         Set received = ImmutableSet.copyOf(receivedItems);
         Set itemsSet = ImmutableSet.copyOf(items);
-        //Log.e("junit", received.equals(itemsSet)+"");
         assertTrue(received.equals(itemsSet));
     }
 
+    @Test(expected = DatabaseClientException.class)
+    public void sendThrowsOnIOError() throws DatabaseClientException {
+        DatabaseClient client = new NetworkDatabaseClient(URL, disabledNetProvider);
+        Item item = new SimpleTextItem(42, new User(1, "titi"), recipient, new Date(1445198520),
+                "Hello test, it's titi !");
+        client.send(item);
+    }
+
+    // yes these test (the following) does nothing...^^ but see TODO
+
+    @Test
+    public void sendWorksIfNoIOError() throws DatabaseClientException, IOException {
+        DatabaseClient client = new NetworkDatabaseClient(URL, mockNetProvider);
+        Item sentItem = new SimpleTextItem(42, new User(1, "titi"), recipient, new Date(1445198520),
+                "Hello test, it's titi !");
+
+        InputStream mockResponse = new ByteArrayInputStream((
+                "{\n" +
+                "  \"type\":\"SIMPLETEXTITEM\",\n" +
+                "  \"ID\":42,\n" +
+                "  \"message\":\"Hello test, it's titi !\",\n" +
+                "  \"from\": {\n" +
+                "      \"name\":\"titi\",\n" +
+                "      \"ID\":1,\n" +
+                "      \"type\":\"user\"\n" +
+                "  },\n" +
+                " \"to\": {\n" +
+                "      \"name\":\"test\",\n" +
+                "      \"ID\":42,\n" +
+                "      \"type\":\"user\"\n" +
+                "  },\n" +
+                " \"date\":1445198520\n" +
+                "}").getBytes());
+
+        doReturn(201).when(mockConnection).getResponseCode();
+        doReturn(mockResponse).when(mockConnection).getInputStream();
+
+        Item item = client.send(sentItem);
+    }
+
+    @Test(expected = DatabaseClientException.class)
+    public void newUserThrowsOnIOError() throws DatabaseClientException {
+        DatabaseClient client = new NetworkDatabaseClient(URL, disabledNetProvider);
+
+        int id = client.newUser("test@calamar.com", "this is a very special magick token");
+    }
+
+
+    @Test
+    public void newUserWorksIfNoIOError() throws DatabaseClientException, IOException {
+        DatabaseClient client = new NetworkDatabaseClient(URL, mockNetProvider);
+
+
+        InputStream mockResponse = new ByteArrayInputStream(
+                ("{\n" +
+                "  \"ID\": 1\n" +
+                "}").getBytes());
+
+        doReturn(201).when(mockConnection).getResponseCode();
+        doReturn(mockResponse).when(mockConnection).getInputStream();
+
+        int id = client.newUser("test@calamar.com", "this is a very special magick token");
+    }
+
+    // etc... for finduserby name.........
 
 }
