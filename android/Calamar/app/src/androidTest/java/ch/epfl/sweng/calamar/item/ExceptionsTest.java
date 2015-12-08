@@ -56,15 +56,6 @@ public class ExceptionsTest {
         }
     }
 
-    public void assertExceptionInFileItemCreation(int ID, User from, Recipient to, Date date, Condition condition, byte[] data, String path, String message) {
-        try {
-            Item item = new FileItem(ID, from, to, date, condition, data, path, message);
-            fail();
-        } catch(IllegalArgumentException e) {
-            // awesome
-        }
-    }
-
     @Test
     public void testItemConstructor() {
         assertExceptionInItemCreation(defaultID, null, defaultTo, defaultDate, defaultCondition, defaultMessage);
@@ -73,15 +64,14 @@ public class ExceptionsTest {
         assertExceptionInItemCreation(defaultID, defaultFrom, defaultTo, defaultDate, null, defaultMessage);
         // because we use SimpleTextItem
         assertExceptionInItemCreation(defaultID, defaultFrom, defaultTo, defaultDate, defaultCondition, null);
-        assertExceptionInFileItemCreation(defaultID, defaultFrom, defaultTo, defaultDate, defaultCondition, defaultData, defaultPath, defaultMessage);
     }
 
     @Test
-    public void testItemFromJSON() {
+    public void testItemFromJSON() throws JSONException {
         try {
             Item.fromJSON(null);
             fail();
-        } catch (JSONException e) {
+        } catch (IllegalArgumentException e) {
             // nice
         }
         Item item = new SimpleTextItem(defaultID, defaultFrom, defaultTo, defaultDate, defaultCondition, defaultMessage);
@@ -90,7 +80,7 @@ public class ExceptionsTest {
             jsonObject.remove(Item.JSON_TYPE);
             Item.fromJSON(jsonObject);
             fail();
-        } catch (JSONException e) {
+        } catch (IllegalArgumentException e) {
             // rock it
         }
         try {
@@ -98,17 +88,17 @@ public class ExceptionsTest {
             jsonObject.put(Item.JSON_TYPE, "wrong type");
             Item.fromJSON(jsonObject);
             fail();
-        } catch (JSONException e) {
+        } catch (IllegalArgumentException e) {
             // oh yeeaaaahh
         }
     }
 
     @Test
-    public void testRecipientFromJSON() {
+    public void testRecipientFromJSON() throws JSONException {
         try {
             Recipient.fromJSON(null);
             fail();
-        } catch (JSONException e) {
+        } catch (IllegalArgumentException e) {
             // woop woop
         }
         Recipient recipient = defaultFrom;
@@ -117,7 +107,7 @@ public class ExceptionsTest {
             jsonObject.remove("type");
             Recipient.fromJSON(jsonObject);
             fail();
-        } catch (JSONException e) {
+        } catch (IllegalArgumentException e) {
             // Boum Boum
         }
         try {
@@ -125,7 +115,7 @@ public class ExceptionsTest {
             jsonObject.put("type", "wrong type");
             Recipient.fromJSON(jsonObject);
             fail();
-        } catch (JSONException e) {
+        } catch (IllegalArgumentException e) {
             // yes
         }
     }
