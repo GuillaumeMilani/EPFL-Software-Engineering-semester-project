@@ -94,8 +94,14 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
 
         //Create BroadCastReceiver
         broadcast = new ChatBroadcastReceiver();
-        getContext().registerReceiver(broadcast, new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
+
         super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
+    public void onResume() {
+        getContext().registerReceiver(broadcast, new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
+        super.onResume();
     }
 
     @Override

@@ -114,7 +114,7 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
         //TODO improve the methods
         Log.i(TAG, getString(R.string.notification_message, message));
         Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, REQUEST_CODE, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
