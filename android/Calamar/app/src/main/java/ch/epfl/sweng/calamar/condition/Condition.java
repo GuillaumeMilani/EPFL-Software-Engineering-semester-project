@@ -241,6 +241,11 @@ public abstract class Condition {
             }
 
             @Override
+            protected void setValue(Boolean newValue) throws UnsupportedOperationException {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
             public String toString() {
                 return "(true)";
             }
@@ -276,6 +281,11 @@ public abstract class Condition {
             @Override
             protected void compose(JSONObject json) throws JSONException {
                 json.accumulate(JSON_TYPE, getType().name());
+            }
+
+            @Override
+            protected void setValue(Boolean newValue) throws UnsupportedOperationException {
+                throw new UnsupportedOperationException();
             }
 
             @Override
