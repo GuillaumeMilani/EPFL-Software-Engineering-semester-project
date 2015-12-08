@@ -63,6 +63,7 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
     private final User testRecipient = new User(2, "Bob");
     private final Condition tc = Condition.trueCondition();
     private final Condition fc = Condition.falseCondition();
+    private final SimpleTextItem testSimple = new SimpleTextItem(0, testUser, testRecipient, new Date(), "bla");
     private Calendar calendar;
 
     private static final String ROOT_FOLDER_NAME = "Calamar/";
@@ -93,6 +94,38 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         dbHandler.deleteAllRecipients();
         DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
         injectInstrumentation(InstrumentationRegistry.getInstrumentation());
+    }
+
+    @Test
+    public void testOperationsOnSimpleTextItems() {
+        storageManager.storeItem(testSimple, null);
+        assertEquals(dbHandler.getItem(testSimple.getID()), testSimple);
+        storageManager.deleteItemWithoutDatabase(testSimple);
+        assertEquals(dbHandler.getItem(testSimple.getID()), testSimple);
+        List<Integer> toDelete = new ArrayList<>();
+        toDelete.add(testSimple.getID());
+        List<Item> itemsToDelete = new ArrayList<>();
+        itemsToDelete.add(testSimple);
+        storageManager.deleteItemsForIdsWithoutDatabase(toDelete);
+        assertEquals(dbHandler.getItem(testSimple.getID()), testSimple);
+        storageManager.deleteItemsWithoutDatabase(itemsToDelete);
+        assertEquals(dbHandler.getItem(testSimple.getID()), testSimple);
+        storageManager.deleteAllItemsWithoutDatabase();
+        assertEquals(dbHandler.getItem(testSimple.getID()), testSimple);
+        storageManager.deleteItemWithDatabase(testSimple);
+        assertEquals(dbHandler.getItem(testSimple.getID()), null);
+        storageManager.storeItem(testSimple, null);
+        storageManager.deleteItemWithDatabase(testSimple.getID());
+        assertEquals(dbHandler.getItem(testSimple.getID()), null);
+        storageManager.storeItem(testSimple, null);
+        storageManager.deleteItemsForIdsWithDatabase(toDelete);
+        assertEquals(dbHandler.getItem(testSimple.getID()), null);
+        storageManager.storeItem(testSimple, null);
+        storageManager.deleteItemsWithDatabase(itemsToDelete);
+        assertEquals(dbHandler.getItem(testSimple.getID()), null);
+        storageManager.storeItem(testSimple, null);
+        storageManager.deleteAllItemsWithDatabase();
+        assertEquals(dbHandler.getItem(testSimple.getID()), null);
     }
 
     @Test
