@@ -141,18 +141,27 @@ public final class Compresser {
      * @return a byte array representing the thumbnail
      */
     public static byte[] getImageThumbnail(ImageItem i) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        Bitmap bitmap = i.getBitmap();
+        final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        final Bitmap bitmap = i.getBitmap();
         if (bitmap != null) {
-            if (bitmap.getWidth() <= THUMBNAIL_SIZE && bitmap.getHeight() <= THUMBNAIL_SIZE) {
+            final int width = bitmap.getWidth();
+            final int height = bitmap.getHeight();
+            if (width <= THUMBNAIL_SIZE && height <= THUMBNAIL_SIZE) {
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
             } else {
-                Bitmap thumbnail = ThumbnailUtils.extractThumbnail(bitmap, THUMBNAIL_SIZE, THUMBNAIL_SIZE);
+                Bitmap thumbnail;
+                if (width > height) {
+                    final double ratio = width / height;
+                    thumbnail = ThumbnailUtils.extractThumbnail(bitmap, THUMBNAIL_SIZE, (int) Math.floor(THUMBNAIL_SIZE / ratio));
+                } else {
+                    final double ratio = height / width;
+                    thumbnail = ThumbnailUtils.extractThumbnail(bitmap, (int) Math.floor(THUMBNAIL_SIZE / ratio), THUMBNAIL_SIZE);
+                }
                 thumbnail.compress(Bitmap.CompressFormat.PNG, 100, stream);
             }
             return stream.toByteArray();
         }
-        Log.d("Bitmap", CalamarApplication.getInstance().getString(R.string.bitmap_of_is_null, i));
+        Log.d(CalamarApplication.getInstance().getString(R.string.compresser), CalamarApplication.getInstance().getString(R.string.bitmap_of_is_null, i));
         return null;
     }
 
@@ -166,7 +175,7 @@ public final class Compresser {
         if (data.length < FOOTER.length + 2) {
             return false;
         } else {
-            byte[] dataFooter = Arrays.copyOfRange(data, data.length - FOOTER.length, data.length);
+            final byte[] dataFooter = Arrays.copyOfRange(data, data.length - FOOTER.length, data.length);
             return (Arrays.equals(dataFooter, FOOTER) && data[0] == HEADER_1 && data[1] == HEADER_2);
         }
     }

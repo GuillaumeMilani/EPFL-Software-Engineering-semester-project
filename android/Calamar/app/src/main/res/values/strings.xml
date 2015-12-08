@@ -74,7 +74,7 @@
     <string name="network_db_client_visibleregion_null">getAllItems: visibleRegion is null</string>
     <string name="network_db_client_log_fetched_length">"Fetched string of length %s"</string>
     <string name="invalid_http_response">Invalid HTTP response code ( %s )</string>
-    
+
     <!-- Account -->
     <string name="gcm_registration_token">"GCM Registration Token: %s"</string>
     <string name="failed_token_refresh">Failed to complete token refresh</string>
@@ -106,6 +106,14 @@
     <string name="error_file_creation">Couldn\'t write %s file to storage</string>
     <string name="error_image_creation">Couldn\'t write %s image to storage</string>
     <string name="storage_unknown_operation">Unknown operation</string>
+    <string name="storage">Storage</string>
+    <string name="writing_failed">Writing of %s failed</string>
+    <string name="retrying_write">Retrying to write %s</string>
+    <string name="file_stored">File %s stored</string>
+    <string name="creating_dir">Creating %s directory</string>
+    <string name="directory_creation_success">Creation of directory successful</string>
+    <string name="images_dir">Images</string>
+    <string name="others_dir">Others</string>
 
     <!-- Database -->
     <string name="no_placeholders">No placeholders</string>
@@ -146,12 +154,13 @@
 
     <!-- Notifications -->
     <string name="new_item_notification">Calamar : New item !</string>
-    <string name="notification_message">"Notification : %s"</string>
+    <string name="notification_message">Notification : %s"</string>
     <string name="you_received_new">"You have received a new "</string>
     <string name="message_type">"Message: %s"</string>
     <string name="contact">contact</string>
     <string name="chat_item">chat item.</string>
     <string name="file_item">file item</string>
     <string name="image_item">image item</string>
+    <string name="compresser">Compresser</string>
 
 </resources>

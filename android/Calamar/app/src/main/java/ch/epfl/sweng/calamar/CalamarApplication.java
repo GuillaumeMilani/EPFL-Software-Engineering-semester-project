@@ -31,7 +31,7 @@ public final class CalamarApplication extends Application implements Application
     private static final String TODAY_FILE_COUNT_SP = "todayFileCount";
     private static final String USER_PREF_NAME = "user_pref.xml";
 
-    private static final int UPDATE_DB_TIME = 60000;
+    private static final int UPDATE_DB_TIME = 600000;
 
     //TODO Why volatile?
     private static volatile CalamarApplication instance;
@@ -81,8 +81,6 @@ public final class CalamarApplication extends Application implements Application
         handler = new Handler();
         dbHandler = SQLiteDatabaseHandler.getInstance();
         storageManager = StorageManager.getInstance();
-        setLastItemsRefresh(0);
-        setLastUsersRefresh(0);
         calendar = Calendar.getInstance();
         day = calendar.get(Calendar.DAY_OF_MONTH);
         loopDatabaseUpdate();
@@ -450,6 +448,7 @@ public final class CalamarApplication extends Application implements Application
         @Override
         protected Void doInBackground(Void... v) {
             dbHandler.applyPendingOperations();
+            Log.i("Database", "Applied operations");
             return null;
         }
     }

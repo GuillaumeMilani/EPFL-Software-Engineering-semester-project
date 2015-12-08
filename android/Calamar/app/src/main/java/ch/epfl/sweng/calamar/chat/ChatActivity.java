@@ -229,8 +229,9 @@ public final class ChatActivity extends BaseActivity implements StorageCallbacks
                     }
                     //The sever sends back all new item, if we have items from an other correspondent,
                     //we don't want to display them in the actual chat.
-                    adapter.add(filterMessageFromContact(items, correspondent));
-                    for (Item item : items) {
+                    List<Item> filteredMessages = filterMessageFromContact(items, correspondent);
+                    adapter.add(filteredMessages);
+                    for (Item item : filteredMessages) {
                         storageManager.getCompleteItem(item, ChatActivity.this);
                     }
                     messagesContainer.setSelection(messagesContainer.getCount() - 1);

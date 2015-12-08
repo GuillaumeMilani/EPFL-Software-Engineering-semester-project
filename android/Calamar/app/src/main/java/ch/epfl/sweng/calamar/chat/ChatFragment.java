@@ -112,6 +112,7 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
     }
 
     private void getContacts() {
+        //TODO asynchronously get recipients ? Database operations should not be done on main thread
         contacts.addAll(app.getDatabaseHandler().getAllRecipients());
         contacts.remove(app.getCurrentUser());
     }
