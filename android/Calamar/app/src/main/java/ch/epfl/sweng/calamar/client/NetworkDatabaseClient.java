@@ -131,6 +131,7 @@ public final class NetworkDatabaseClient implements DatabaseClient {
             final URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_USER_PATH);
 
             final JSONObject jsonParameter = new JSONObject();
+            jsonParameter.accumulate(JSON_ID,CalamarApplication.getInstance().getCurrentUserID());
             jsonParameter.accumulate(JSON_NAME, name);
 
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
