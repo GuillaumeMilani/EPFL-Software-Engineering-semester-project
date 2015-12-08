@@ -32,6 +32,7 @@ import com.google.android.gms.gcm.GcmListenerService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.MainActivity;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.chat.ChatFragment;
@@ -60,7 +61,9 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
     @Override
     public void onMessageReceived(String from, Bundle data) {
         String message = getString(R.string.you_received_new);
+        String action = MainActivity.ACTION_OPEN_CHAT;
         String pushType = data.getString(BUNDLE_TYPE);
+
         if (pushType != null && pushType.equals(RETRIEVE)) {
             // add a new contact
             try {
@@ -100,7 +103,7 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
             }
         }
 
-        sendNotification(message);
+        sendNotification(message, action);
 
     }
     // [END receive_message]
@@ -110,11 +113,12 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
      *
      * @param message GCM message received.
      */
-    private void sendNotification(String message) {
+    private void sendNotification(String message,String action) {
         //TODO improve the methods
         Log.i(TAG, getString(R.string.notification_message, message));
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setAction(action);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, REQUEST_CODE, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 

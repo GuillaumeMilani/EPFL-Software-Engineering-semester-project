@@ -49,6 +49,10 @@ public final class MainActivity extends BaseActivity {
         }
     }
 
+    //Intent Action
+    public static final String ACTION_OPEN_CHAT = "ACTION_OPEN_CHAT";
+    public static final String ACTION_OPEN_MAP = "ACTION_OPEN_MAP";
+
     // Tabs related stuff
     private Toolbar toolbar;
     private TabLayout tabLayout;
@@ -99,7 +103,26 @@ public final class MainActivity extends BaseActivity {
                     null, null);
             startActivityForResult(accountIntent, BaseActivity.ACCOUNT_CHOOSEN);
         }
+
+
     }
+
+    @Override
+    protected void onResume() {
+        switch (getIntent().getAction()){
+            case ACTION_OPEN_CHAT:
+                viewPager.setCurrentItem(TabID.CHAT.ordinal());
+                break;
+            case ACTION_OPEN_MAP:
+                viewPager.setCurrentItem(TabID.MAP.ordinal());
+                break;
+            default:
+                break;
+        }
+
+        super.onResume();
+    }
+
     // *********************************************************************************************
 
     private void setupViewPager(ViewPager viewPager, Intent intent) {
