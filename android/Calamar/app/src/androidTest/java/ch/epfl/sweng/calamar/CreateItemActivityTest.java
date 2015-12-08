@@ -3,6 +3,9 @@ package ch.epfl.sweng.calamar;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.matcher.ViewMatchers;
@@ -13,8 +16,17 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
@@ -46,6 +58,9 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
     public final ActivityTestRule<CreateItemActivity> mActivityRule = new ActivityTestRule<>(
             CreateItemActivity.class);
 
+    @Rule
+    public final TemporaryFolder folder = new TemporaryFolder();
+
     public CreateItemActivityTest() {
         super(CreateItemActivity.class);
     }
@@ -58,6 +73,7 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
         DatabaseClientLocator.setDatabaseClient(new ConstantDatabaseClient());
         app = CalamarApplication.getInstance();
         app.getDatabaseHandler().deleteAllItems();
+        mActivityRule.getActivity();
     }
 
     @Test
@@ -127,13 +143,32 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
     }
 
     @Test
-    public void testOnActivityResult() {
-        Intent goodIntent = new Intent();
-        goodIntent.setData(Uri.parse("content://Calamar/Calamar Images/IMG1.png"));
-        getActivity().onActivityResult(1, Activity.RESULT_CANCELED, null); //Does nothing
-        onView(withId(R.id.selectFileButton)).check(matches(withText("Browse...")));
-        getActivity().onActivityResult(1, Activity.RESULT_OK, goodIntent);
+    public void testOnActivityResult() throws Throwable {
+        final Intent goodIntent = new Intent();
+        File file = new File(folder.getRoot().getAbsolutePath() + "/IMG1.png");
+        Bitmap bitmap = getBitmapFromAsset("testImage.jpg");
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] bitmapData = stream.toByteArray();
+        OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
+        out.write(bitmapData);
+        goodIntent.setData(Uri.fromFile(file));
+        mActivityRule.getActivity().onActivityResult(1, Activity.RESULT_CANCELED, null); //Does nothing
+        onView(withId(R.id.selectFileButton)).check(matches(withText("Browse…")));
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mActivityRule.getActivity().onActivityResult(1, Activity.RESULT_OK, goodIntent);
+            }
+        });
         onView(withId(R.id.selectFileButton)).check(matches(withText("IMG1.png")));
+    }
+
+    private Bitmap getBitmapFromAsset(String filePath) throws IOException {
+        AssetManager assetManager = CalamarApplication.getInstance().getAssets();
+        InputStream istr;
+        istr = assetManager.open(filePath);
+        return BitmapFactory.decodeStream(istr);
     }
 
 
