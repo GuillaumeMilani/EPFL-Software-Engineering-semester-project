@@ -1,6 +1,7 @@
 package ch.epfl.sweng.calamar;
 
 import android.support.test.espresso.core.deps.guava.collect.ImmutableSet;
+import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 
@@ -155,80 +156,97 @@ public class NetworkDatabaseClientTest {
     public void getAllItemsWorksOnValidResponse() throws IOException, DatabaseClientException {
         NetworkProvider networkProvider = mock(NetworkProvider.class);
         HttpURLConnection mockConnection = mock(HttpURLConnection.class);
+        // to shut his mouth
+        CalamarApplication.getInstance().setGoogleApiClient(mock(GoogleApiClient.class));
+
+
         DatabaseClient client = new NetworkDatabaseClient(URL,
                 networkProvider);
 
         java.net.URL url = new URL(URL + "/items.php?action=retrieve");
 
         InputStream response = new ByteArrayInputStream(("[\n" +
-                "  {\n" +
-                "    \"type\":\"SIMPLETEXTITEM\",\n" +
-                "    \"ID\":1,\n" +
-                "    \"message\":\"Hello Bob, it's Alice !\",\n" +
-                "    \"from\": {\n" +
-                "        \"name\":\"Alice\",\n" +
-                "        \"ID\":1,\n" +
-                "        \"type\":\"user\"\n" +
-                "    },\n" +
-                "   \"to\": {\n" +
-                "        \"name\":\"Bob\",\n" +
-                "        \"ID\":2,\n" +
-                "        \"type\":\"user\"\n" +
-                "    },\n" +
-                "   \"date\":1445198510,\n" +
-                "   \"condition\": {\n" +
-                "       \"type\":\"or\",\n" +
-                "       \"a\":{\n" +
-                "           \"type\":\"POSITIONCONDITION\",\n" +
-                "           \"latitude\":46.495,\n" +
-                "           \"longitude\":6.513,\n" +
-                "           \"radius\":10\n" +
-                "       },\n" +
-                "       \"b\":{\n" +
-                "           \"type\":\"POSITIONCONDITION\",\n" +
-                "           \"latitude\":47.495,\n" +
-                "           \"longitude\":7.513,\n" +
-                "           \"radius\":10\n" +
-                "       }\n" +
-                "   }\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"type\":\"SIMPLETEXTITEM\",\n" +
-                "    \"ID\":2,\n" +
-                "    \"message\":\"Hello Bob, it's Carol !\",\n" +
-                "    \"from\": {\n" +
-                "        \"name\":\"Carol\",\n" +
-                "        \"ID\":3,\n" +
-                "        \"type\":\"user\"\n" +
-                "    },\n" +
-                "   \"to\": {\n" +
-                "        \"name\":\"Bob\",\n" +
-                "        \"ID\":2,\n" +
-                "        \"type\":\"user\"\n" +
-                "    },\n" +
-                "   \"date\":1445198520,\n" +
-                "  }\n" +
-                "]").getBytes());
+                "\t{\n" +
+                "\t\t\"type\":\"SIMPLETEXTITEM\",\n" +
+                "\t\t\"ID\":1,\n" +
+                "\t\t\"message\":\"Hello test, it's Alice !\",\n" +
+                "\t\t\"from\": {\n" +
+                "\t\t\t\"name\":\"Alice\",\n" +
+                "\t\t\t\"ID\":1,\n" +
+                "\t\t\t\"type\":\"user\"\n" +
+                "\t\t},\n" +
+                "\t\t\"to\": {\n" +
+                "\t\t\t\"name\":\"test\",\n" +
+                "\t\t\t\"ID\":42,\n" +
+                "\t\t\t\"type\":\"user\"\n" +
+                "\t\t},\n" +
+                "\t\t\"date\":1445198510,\n" +
+                "\t\t\"condition\": {\n" +
+                "\t\t   \"type\":\"ORCONDITION\",\n" +
+                "\t\t   \"a\":{\n" +
+                "\t\t\t\t\"type\":\"POSITIONCONDITION\",\n" +
+                "\t\t\t\t\"latitude\":46.495,\n" +
+                "\t\t\t\t\"longitude\":6.513,\n" +
+                "\t\t\t\t\"radius\":10\n" +
+                "\t\t   },\n" +
+                "\t\t   \"b\":{\n" +
+                "\t\t\t\t\"type\":\"POSITIONCONDITION\",\n" +
+                "\t\t\t\t\"latitude\":47.495,\n" +
+                "\t\t\t\t\"longitude\":7.513,\n" +
+                "\t\t\t\t\"radius\":10\n" +
+                "\t\t   }\n" +
+                "\t   }\n" +
+                "   },\n" +
+                "   {\n" +
+                "\t\"type\":\"SIMPLETEXTITEM\",\n" +
+                "\t\t\"ID\":2,\n" +
+                "\t\t\"message\":\"Hello test, it's Carol !\",\n" +
+                "\t\t\"from\": {\n" +
+                "\t\t\t\"name\":\"Carol\",\n" +
+                "\t\t\t\"ID\":3,\n" +
+                "\t\t\t\"type\":\"user\"\n" +
+                "\t\t},\n" +
+                "\t\t\"to\": {\n" +
+                "\t\t\t\"name\":\"test\",\n" +
+                "\t\t\t\"ID\":42,\n" +
+                "\t\t\t\"type\":\"user\"\n" +
+                "\t\t},\n" +
+                "\t\t\"date\":1445198520\t\t\n" +
+                "   }," +
+                "   {\n" +
+                "\t\"type\":\"SIMPLETEXTITEM\", \n" +
+                "\t\"ID\":3, \n" +
+                "\t\"message\":\"Hello test, it's Bob !\", \n" +
+                "\t\"from\": { \n" +
+                "\t\t\"name\":\"Bob\", \n" +
+                "\t\t\"ID\":2, \n" +
+                "\t\t\"type\":\"user\" \n" +
+                "\t}, \n" +
+                "\t\"to\": { \n" +
+                "\t\t\"name\":\"test\", \n" +
+                "\t\t\"ID\":42, \n" +
+                "\t\t\"type\":\"user\" \n" +
+                "\t}, \n" +
+                "\t\"date\":1445198530 \n" +
+                "}\n]").getBytes());
 
 
         User alice = new User(1, "Alice");
         User bob = new User(2, "Bob");
         User carol = new User(3, "Carol");
-
-
-        // to shut his mouth
-        CalamarApplication.getInstance().setGoogleApiClient(mock(GoogleApiClient.class));
         Condition cond1 = new PositionCondition(46.495, 6.513, 10);
         Condition cond2 = new PositionCondition(47.495, 7.513, 10);
 
+        Item item1 = new SimpleTextItem(1, alice, recipient, new Date(1445198510), Condition.or(cond1, cond2), "Hello test, it's Alice !");
+        Item item2 = new SimpleTextItem(2, carol, recipient, new Date(1445198520), "Hello test, it's Carol !");
+        Item item3 = new SimpleTextItem(3, bob, recipient, new Date(1445198530), "Hello test, it's Bob !");
+        List<Item> items = Arrays.asList(item1, item2, item3);
 
-        Item item1 = new SimpleTextItem(1, alice, bob, new Date(1445198510), Condition.or(cond1, cond2), "Hello Bob, it's Alice !");
-        Item item2 = new SimpleTextItem(2, carol, bob, new Date(1445198520), "Hello Bob, it's Carol !");
-        List<Item> items = Arrays.asList(item1, item2);
 
+        // ~"server configuration" through mock objects
         doReturn(response).when(mockConnection).getInputStream();
         doReturn(new ByteArrayOutputStream()).when(mockConnection).getOutputStream();  // wtf...
-        doReturn(201).when(mockConnection).getResponseCode();
+        doReturn(200).when(mockConnection).getResponseCode();
         doReturn(mockConnection).when(networkProvider).getConnection(url);
 
 
@@ -236,7 +254,7 @@ public class NetworkDatabaseClientTest {
         assertTrue(receivedItems.size() == items.size());
         Set received = ImmutableSet.copyOf(receivedItems);
         Set itemsSet = ImmutableSet.copyOf(items);
-
+        //Log.e("junit", received.equals(itemsSet)+"");
         assertTrue(received.equals(itemsSet));
     }
 

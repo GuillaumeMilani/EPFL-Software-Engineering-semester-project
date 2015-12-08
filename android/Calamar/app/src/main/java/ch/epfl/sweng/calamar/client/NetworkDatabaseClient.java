@@ -173,7 +173,7 @@ public final class NetworkDatabaseClient implements DatabaseClient {
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
             //Log.v(TAG, jsonParameter.toString());
             String response = NetworkDatabaseClient.post(connection, jsonParameter.toString());
-            //Log.v(TAG, response);
+            Log.v(TAG, response);
             return NetworkDatabaseClient.itemsFromJSON(response);
         } catch (IOException | JSONException e) {
             throw new DatabaseClientException(e);
