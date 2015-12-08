@@ -13,23 +13,22 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.item.Item;
 
-//TODO : Support other item types
-
-public class ChatAdapter extends BaseAdapter {
+public final class ChatAdapter extends BaseAdapter {
 
     private final List<Item> messages;
     private final Activity context;
 
-    public ChatAdapter(Activity context, List<Item> messages) {
-        assert (context != null && messages != null);
+    public ChatAdapter(Activity context) {
+        assert (context != null);
         this.context = context;
-        this.messages = messages;
+        this.messages = new ArrayList<>();
 
     }
 
@@ -51,8 +50,8 @@ public class ChatAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, View convertView, final ViewGroup parent) {
         ViewHolder holder;
-        Item item = getItem(position);
-        LayoutInflater li = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        final Item item = getItem(position);
+        final LayoutInflater li = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if (convertView == null) {
             convertView = li.inflate(R.layout.list_chat_messages, null);
             holder = createViewHolder(convertView);
@@ -62,7 +61,7 @@ public class ChatAdapter extends BaseAdapter {
         }
 
 
-        boolean ingoing = item.getTo().getID() == CalamarApplication.getInstance().getCurrentUserID();
+        final boolean ingoing = item.getTo().getID() == CalamarApplication.getInstance().getCurrentUserID();
         setAlignment(holder, ingoing, item.getCondition().getValue());
         holder.itemView.removeAllViews();
         holder.itemView.addView(item.getPreView(context));
@@ -76,7 +75,23 @@ public class ChatAdapter extends BaseAdapter {
      * @param message the message to be added
      */
     public void add(Item message) {
-        this.messages.add(message);
+        if (!messages.contains(message)) {
+            this.messages.add(message);
+        }
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Add a message to the adapter to a given position
+     *
+     * @param message  the message to be added
+     * @param position the position of the new object
+     */
+    public void set(Item message, int position) {
+        if (!messages.contains(message)) {
+            this.messages.set(position, message);
+        }
+        notifyDataSetChanged();
     }
 
     /**
@@ -85,7 +100,10 @@ public class ChatAdapter extends BaseAdapter {
      * @param messages the list of messages
      */
     public void add(List<Item> messages) {
-        this.messages.addAll(messages);
+        for (Item m : messages) {
+            add(m);
+        }
+        notifyDataSetChanged();
     }
 
     /**
@@ -101,6 +119,7 @@ public class ChatAdapter extends BaseAdapter {
                 found = true;
             }
         }
+        notifyDataSetChanged();
     }
 
     /**
@@ -115,6 +134,25 @@ public class ChatAdapter extends BaseAdapter {
                 break;
             }
         }
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Returns a copy of the messages history
+     *
+     * @return the messages history
+     */
+    public List<Item> getHistory() {
+        return new ArrayList<>(messages);
+    }
+
+
+    /**
+     * Clear the chat messages.
+     */
+    public void clear() {
+        messages.clear();
+        notifyDataSetChanged();
     }
 
 
@@ -182,7 +220,7 @@ public class ChatAdapter extends BaseAdapter {
      * @return The newly created ViewHolder
      */
     private ViewHolder createViewHolder(View v) {
-        ViewHolder holder = new ViewHolder();
+        final ViewHolder holder = new ViewHolder();
         holder.itemView = (FrameLayout) v.findViewById(R.id.itemView);
         holder.textTime = (TextView) v.findViewById(R.id.textTime);
         holder.content = (LinearLayout) v.findViewById(R.id.content);
@@ -195,10 +233,10 @@ public class ChatAdapter extends BaseAdapter {
      * Avoids using findViewById too much (more efficient and readable)
      */
     private static class ViewHolder {
-        public FrameLayout itemView;
-        public TextView textTime;
-        public LinearLayout content;
-        public LinearLayout contentWithBG;
+        protected FrameLayout itemView;
+        protected TextView textTime;
+        protected LinearLayout content;
+        protected LinearLayout contentWithBG;
     }
 
 }

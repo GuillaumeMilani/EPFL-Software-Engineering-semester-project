@@ -30,25 +30,6 @@ import ch.epfl.sweng.calamar.utils.Sorter;
 
 public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
-    private static CalamarApplication app;
-
-    private static SQLiteDatabaseHandler instance;
-    private SQLiteDatabase db;
-
-    private enum Operation {ADD, UPDATE, DELETE}
-
-    private final Map<Integer, Pair<Operation, Item>> pendingItems;
-    private final Map<Integer, Pair<Operation, Recipient>> pendingRecipients;
-
-    private static long lastUpdateTime;
-    private static long lastItemTime;
-
-    private static final int DATABASE_VERSION = 5;
-    private static final String DATABASE_NAME = "CalamarDB";
-
-    private static final int MAX_PLACEHOLDERS_COUNT = 99;
-    private final String FULL_PLACEHOLDERS;
-
     private static final String ITEMS_TABLE = "tb_Items";
     private static final String ITEMS_KEY_TYPE = "type";
     private static final String ITEMS_KEY_ID = "id";
@@ -65,6 +46,24 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static final String RECIPIENTS_KEY_ID = "id";
     private static final String RECIPIENTS_KEY_NAME = "name";
     private static final String[] RECIPIENTS_COLUMN = {RECIPIENTS_KEY_ID, RECIPIENTS_KEY_NAME};
+
+    private static final int DATABASE_VERSION = 5;
+    private static final String DATABASE_NAME = "CalamarDB";
+
+    private static final int MAX_PLACEHOLDERS_COUNT = 99;
+
+    private static CalamarApplication app;
+    private static SQLiteDatabaseHandler instance;
+
+    private static long lastItemTime;
+
+    private final Map<Integer, Pair<Operation, Item>> pendingItems;
+    private final Map<Integer, Pair<Operation, Recipient>> pendingRecipients;
+    private final String FULL_PLACEHOLDERS;
+
+    private SQLiteDatabase db;
+
+    private enum Operation {ADD, UPDATE, DELETE}
 
     /**
      * Returns the current and only instance of SQLiteDatabaseHandler
@@ -86,7 +85,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private SQLiteDatabaseHandler() {
         super(app, DATABASE_NAME, null, DATABASE_VERSION);
         lastItemTime = app.getLastItemsRefresh().getTime();
-        lastUpdateTime = app.getLastItemsRefresh().getTime();
         db = getReadableDatabase(app.getCurrentUser().getPassword());
         this.pendingRecipients = new HashMap<>();
         this.pendingItems = new HashMap<>();
@@ -111,7 +109,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 + RECIPIENTS_KEY_ID + " INTEGER PRIMARY KEY NOT NULL,"
                 + RECIPIENTS_KEY_NAME + " TEXT NOT NULL)";
         db.execSQL(createRecipientsTable);
-        lastUpdateTime = 0;
         lastItemTime = 0;
         app.resetLastItemsRefresh();
         app.resetLastUsersRefresh();
@@ -122,8 +119,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         //TODO only recreates db at the moment
         db.execSQL("DROP TABLE IF EXISTS " + ITEMS_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + RECIPIENTS_TABLE);
-        app.setLastItemsRefresh(lastUpdateTime);
-        app.setLastUsersRefresh(lastUpdateTime);
         onCreate(db);
     }
 
@@ -134,8 +129,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         pendingItems.clear();
         db = getWritableIfNotOpen();
         db.delete(ITEMS_TABLE, null, null);
-        lastUpdateTime = lastItemTime;
-        app.setLastItemsRefresh(lastUpdateTime);
+        app.setLastItemsRefresh(lastItemTime);
     }
 
     /**
@@ -196,7 +190,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized void addItem(Item item) {
         pendingItems.put(item.getID(), new Pair<>(Operation.ADD, item));
         addOrUpdateRecipientWithItem(item);
-        updateTime(item);
     }
 
     /**
@@ -208,7 +201,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         for (Item item : items) {
             pendingItems.put(item.getID(), new Pair<>(Operation.ADD, item));
             addOrUpdateRecipientWithItem(item);
-            updateTime(item);
         }
     }
 
@@ -220,7 +212,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public synchronized void updateItem(Item item) {
         manageItemUpdate(item);
-        updateTime(item);
     }
 
     /**
@@ -232,7 +223,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     public synchronized void updateItems(List<Item> items) {
         for (Item item : items) {
             manageItemUpdate(item);
-            updateTime(item);
         }
     }
 
@@ -445,6 +435,22 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     /**
+     * Return all localized items
+     *
+     * @return a list of localized item
+     */
+    public synchronized List<Item> getAllLocalizedItems() {
+        List<Item> localizedItems = new ArrayList<>();
+        List<Item> allItems = getAllItems();
+        for (Item i : allItems) {
+            if (i.hasLocation()) {
+                localizedItems.add(i);
+            }
+        }
+        return localizedItems;
+    }
+
+    /**
      * Adds a Recipient to the database
      *
      * @param recipient the recipient to add
@@ -531,6 +537,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      * @return the recipient
      */
     public synchronized Recipient getRecipient(int id) {
+        if (id == User.PUBLIC_ID) {
+            return new User(User.PUBLIC_ID, User.PUBLIC_NAME);
+        }
         Pair<Operation, Recipient> fromPending = pendingRecipients.get(id);
         if (fromPending != null) {
             switch (fromPending.getLeft()) {
@@ -629,6 +638,9 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 }
                 cursor.close();
             }
+        }
+        if (databaseIds.contains(User.PUBLIC_ID)) {
+            recipients.add(new User(User.PUBLIC_ID, User.PUBLIC_NAME));
         }
         return Sorter.sortRecipientList(new ArrayList<>(updateGetRecipientsFromPending(recipients, toUpdate)));
     }
@@ -732,7 +744,8 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 pendingItems.clear();
                 pendingRecipients.clear();
-                lastUpdateTime = lastItemTime;
+                app.setLastItemsRefresh(lastItemTime);
+                app.setLastUsersRefresh(lastItemTime);
             } finally {
                 db.endTransaction();
             }
@@ -750,12 +763,23 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     /**
+     * Sets the time of the last received item
+     *
+     * @param time the long
+     */
+    public synchronized void setLastItemTime(long time) {
+        if (lastItemTime < time) {
+            lastItemTime = time;
+        }
+    }
+
+    /**
      * Returns the time corresponding to the most recent item the database has updated/added.
      *
      * @return the time as a long
      */
-    public synchronized long getLastUpdateTime() {
-        return lastUpdateTime;
+    public synchronized long getLastItemTime() {
+        return lastItemTime;
     }
 
     /**
@@ -763,7 +787,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public synchronized void resetLastUpdateTime() {
         lastItemTime = 0;
-        lastUpdateTime = 0;
     }
 
     //Helper methods for applyPendingOperations
@@ -884,7 +907,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             }
             values.put(ITEMS_KEY_PATH, ((FileItem) item).getPath());
         } else if (item.getType() != Item.Type.SIMPLETEXTITEM) {
-            throw new IllegalArgumentException("Unknown item type");
+            throw new IllegalArgumentException(app.getString(R.string.unexpected_item_type, item.getType()));
         }
         return values;
     }
@@ -894,7 +917,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
         try {
             type = Item.Type.valueOf(cursor.getString(0));
         } catch (IllegalArgumentException e) {
-            throw new UnsupportedOperationException("Unexpected Item type");
+            throw new IllegalArgumentException(app.getString(R.string.unexpected_item_type));
         }
         int id = cursor.getInt(1);
         User from = (User) getRecipient(cursor.getInt(2));
@@ -917,7 +940,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
             case IMAGEITEM:
                 return new ImageItem(id, from, to, time, condition, data, path, text);
             default:
-                throw new UnsupportedOperationException("Unexpected Item type");
+                throw new IllegalArgumentException(app.getString(R.string.unexpected_item_type, type));
         }
     }
 
@@ -935,8 +958,10 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     }
 
     private void addOrUpdateRecipientWithItem(Item item) {
-        pendingRecipients.put(item.getFrom().getID(), new Pair<>(Operation.ADD, (Recipient) item.getFrom()));
-        if (!(item.getTo().getID() == User.PUBLIC_ID)) {
+        if (item.getFrom().getName() != null) {
+            pendingRecipients.put(item.getFrom().getID(), new Pair<>(Operation.ADD, (Recipient) item.getFrom()));
+        }
+        if (item.getTo().getID() != User.PUBLIC_ID && item.getTo().getName() != null) {
             pendingRecipients.put(item.getTo().getID(), new Pair<>(Operation.ADD, item.getTo()));
         }
     }
@@ -1024,7 +1049,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
 
     private String createPlaceholders(int length) {
         if (length < 1) {
-            throw new RuntimeException("No placeholders");
+            throw new RuntimeException(app.getString(R.string.no_placeholders));
         } else {
             StringBuilder builder = new StringBuilder(length * 2 - 1);
             builder.append('?');
@@ -1032,13 +1057,6 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
                 builder.append(",?");
             }
             return builder.toString();
-        }
-    }
-
-    private void updateTime(Item i) {
-        long itemTime = i.getDate().getTime();
-        if (lastItemTime < itemTime) {
-            lastItemTime = itemTime;
         }
     }
 }

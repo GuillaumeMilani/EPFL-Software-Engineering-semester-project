@@ -1,25 +1,25 @@
 package ch.epfl.sweng.calamar;
 
 
-import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 import android.test.ActivityInstrumentationTestCase2;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
+import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
 import ch.epfl.sweng.calamar.item.CreateItemActivity;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
 
+import static android.support.test.espresso.Espresso.closeSoftKeyboard;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
@@ -36,7 +36,7 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
 
     private final Recipient BOB = new User(1, "bob");
 
-    CalamarApplication app;
+    private CalamarApplication app;
 
     @Rule
     public final ActivityTestRule<CreateItemActivity> mActivityRule = new ActivityTestRule<>(
@@ -82,10 +82,18 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
     }
 
     @Test
-    public void testImpossibleToCreateEmptyItem(){
+    public void testImpossibleToCreateEmptyItem() {
         onView(withId(R.id.createButton)).perform(click());
         onView(withText("An item must either have a text, a file, or both.")).check(matches(ViewMatchers.isDisplayed()));
         onView(withText("OK")).perform(click());
+    }
+
+    @Test
+    public void testCantSendPublicItemWithoutLocation() throws DatabaseClientException {
+        onView(withId(R.id.createItemActivity_messageText)).perform(typeText(HELLO_ALICE));
+        closeSoftKeyboard();
+        onView(withId(R.id.createButton)).perform(click());
+        onView(withText(CalamarApplication.getInstance().getString(R.string.public_without_condition))).check(matches(ViewMatchers.isDisplayed()));
     }
 
     /*

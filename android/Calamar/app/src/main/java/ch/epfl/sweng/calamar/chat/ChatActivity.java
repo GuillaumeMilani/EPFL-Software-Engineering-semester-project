@@ -37,21 +37,17 @@ import ch.epfl.sweng.calamar.recipient.User;
 import ch.epfl.sweng.calamar.utils.StorageCallbacks;
 import ch.epfl.sweng.calamar.utils.StorageManager;
 
-//TODO Support other item types
-
 /**
  * This activity manages the chat between two users (or in a group)
  */
 
-public class ChatActivity extends BaseActivity implements StorageCallbacks {
+public final class ChatActivity extends BaseActivity implements StorageCallbacks {
 
     private static final String TAG = ChatActivity.class.getSimpleName();
 
 
     private EditText editText;
     private Button sendButton;
-    private Button refreshButton;
-    private List<Item> messagesHistory;
     private ListView messagesContainer;
     private ChatAdapter adapter;
 
@@ -59,7 +55,6 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
     private StorageManager storageManager;
     private SQLiteDatabaseHandler dbHandler;
-
     private CalamarApplication app;
 
 
@@ -70,15 +65,14 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
         Intent intent = getIntent();
         String correspondentName = intent.getStringExtra(ChatFragment.EXTRA_CORRESPONDENT_NAME);
-        int correspondentID = intent.getIntExtra(ChatFragment.EXTRA_CORRESPONDENT_ID, -1); // -1 = default value
+        int correspondentID = intent.getIntExtra(ChatFragment.EXTRA_CORRESPONDENT_ID, Recipient.DEFAULT_ID);
 
         if (correspondentName == null) {
-            correspondentName = "";
+            correspondentName = getString(R.string.empty_string);
         }
 
         app = CalamarApplication.getInstance();
         correspondent = new User(correspondentID, correspondentName);
-
 
         sendButton = (Button) findViewById(R.id.chatSendButton);
         sendButton.setEnabled(false);
@@ -107,7 +101,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
             }
         });
 
-        refreshButton = (Button) findViewById(R.id.refreshButton);
+        final Button refreshButton = (Button) findViewById(R.id.refreshButton);
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -115,9 +109,8 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
             }
         });
 
-        messagesHistory = new ArrayList<>();
         messagesContainer = (ListView) findViewById(R.id.messagesContainer);
-        adapter = new ChatAdapter(this, messagesHistory);
+        adapter = new ChatAdapter(this);
         messagesContainer.setAdapter(adapter);
 
         messagesContainer.setOnItemClickListener(new ItemClickWithStorageCallbackListener());
@@ -127,9 +120,19 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
         storageManager = app.getStorageManager();
         dbHandler = app.getDatabaseHandler();
+    }
 
-        boolean offline = true;
-        refresh(offline);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refresh(true);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //Save sent messages
+        app.new ApplyPendingDatabaseOperationsTask().execute();
     }
 
     /**
@@ -144,14 +147,11 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
      */
     private void sendTextItem() {
         String message = editText.getText().toString();
-        Item textMessage = new SimpleTextItem(1, app.getCurrentUser(), correspondent, new Date(), message);
-        messagesHistory.add(textMessage);
+        Item textMessage = new SimpleTextItem(Item.DUMMY_ID, app.getCurrentUser(), correspondent, new Date(), message);
         adapter.notifyDataSetChanged();
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
-        editText.setText("");
         new SendItemTask(textMessage).execute();
     }
-
 
     /**
      * Async task for sending a message.
@@ -177,12 +177,12 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
         @Override
         protected void onPostExecute(Item item) {
             if (item != null) {
-                messagesHistory.set(messagesHistory.indexOf(this.item), item);
-                adapter.notifyDataSetChanged();
+                editText.setText(getString(R.string.empty_string));
+                adapter.add(item);
                 messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 storageManager.storeItem(item, ChatActivity.this);
             } else {
-                displayErrorMessage(getString(R.string.item_send_error));
+                displayErrorMessage(getString(R.string.item_send_error), false);
             }
         }
     }
@@ -211,7 +211,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
                 return dbHandler.getItemsForContact(correspondent);
             } else {
                 try {
-                    return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, app.getLastItemsRefresh());
+                    return DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, new Date(dbHandler.getLastItemTime()));
                 } catch (DatabaseClientException e) {
                     Log.e(ChatActivity.TAG, e.getMessage());
                     return null;
@@ -222,23 +222,45 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
         @Override
         protected void onPostExecute(List<Item> items) {
             if (items != null) {
-                if (!offline) {
-                    storageManager.storeItems(items, ChatActivity.this);
+                if (!items.isEmpty()) {
+                    if (!offline) {
+                        storageManager.storeItems(items, ChatActivity.this);
+                        dbHandler.setLastItemTime(items.get(items.size() - 1).getDate().getTime());
+                    }
+                    //The sever sends back all new item, if we have items from an other correspondent,
+                    //we don't want to display them in the actual chat.
+                    List<Item> filteredMessages = filterMessageFromContact(items, correspondent);
+                    adapter.add(filteredMessages);
+                    for (Item item : filteredMessages) {
+                        storageManager.getCompleteItem(item, ChatActivity.this);
+                    }
+                    messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 }
-                messagesHistory.addAll(items);
-                adapter.notifyDataSetChanged();
-                for (Item item : items) {
-                    storageManager.getCompleteItem(item, ChatActivity.this);
-                }
-                messagesContainer.setSelection(messagesContainer.getCount() - 1);
                 Toast.makeText(context, getString(R.string.refresh_message),
                         Toast.LENGTH_SHORT).show();
             } else {
-                displayErrorMessage(getString(R.string.unable_to_refresh_message));
+                displayErrorMessage(getString(R.string.unable_to_refresh_message), false);
             }
         }
 
+        /**
+         * Return a list with only the items coming from the actual correspondent or from the
+         * actual user.
+         *
+         * @param list list to filter
+         * @return a list with item coming from actual correspondent
+         */
+        private List<Item> filterMessageFromContact(List<Item> list, Recipient u) {
+            List<Item> filteredItem = new ArrayList<>();
+            for (Item i : list) {
+                if (i.getFrom().equals(u) || i.getFrom().equals(CalamarApplication.getInstance().getCurrentUser())) {
+                    filteredItem.add(i);
+                }
+            }
+            return filteredItem;
+        }
     }
+
 
     /**
      * Returns a copy of the messages history
@@ -246,7 +268,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
      * @return the messages history
      */
     public List<Item> getHistory() {
-        return new ArrayList<>(messagesHistory);
+        return adapter.getHistory();
     }
 
     /**
@@ -257,10 +279,9 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
     @Override
     public void onItemRetrieved(Item item) {
         boolean notFound = true;
-        for (int i = messagesHistory.size() - 1; i >= 0 && notFound; --i) {
-            if (item.getID() == messagesHistory.get(i).getID()) {
-                messagesHistory.set(i, item);
-                adapter.notifyDataSetChanged();
+        for (int i = adapter.getCount() - 1; i >= 0 && notFound; --i) {
+            if (item.getID() == adapter.getItem(i).getID()) {
+                adapter.set(item, i);
                 notFound = false;
             }
         }
@@ -284,8 +305,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
     }
 
     public void clearChat() {
-        this.messagesHistory.clear();
-        adapter.notifyDataSetChanged();
+        adapter.clear();
     }
 
     private class ItemClickWithStorageCallbackListener implements AdapterView.OnItemClickListener, StorageCallbacks {
@@ -296,7 +316,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-            item = messagesHistory.get(position);
+            item = adapter.getItem(position);
 
             AlertDialog.Builder itemDescription = new AlertDialog.Builder(ChatActivity.this);
             itemDescription.setTitle(R.string.item_details_alertDialog_title);
@@ -316,7 +336,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
 
         @Override
         public void onItemRetrieved(Item i) {
-            item=i;
+            item = i;
             if (dialog != null) {
                 dialog.setView(item.getView(ChatActivity.this));
             }
@@ -334,7 +354,7 @@ public class ChatActivity extends BaseActivity implements StorageCallbacks {
                     item = new ImageItem(item.getID(), item.getFrom(), item.getTo(), item.getDate(), item.getCondition(), data, ((ImageItem) item).getPath());
                     break;
                 default:
-                    throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unknown_item_type));
+                    throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unexpected_item_type, item.getType().name()));
             }
             dialog.setView(item.getView(ChatActivity.this));
         }

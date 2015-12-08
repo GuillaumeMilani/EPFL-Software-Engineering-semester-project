@@ -45,10 +45,10 @@
             android:name=".chat.ChatActivity"
             android:label="@string/title_activity_chat"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".chat.ChatUsersListActivity"
-            android:label="@string/title_activity_chat_users_list"
-            android:theme="@style/AppTheme.NoActionBar" />
+
+        <!-- <activity
+            android:name=".map.MapsActivity"
+            android:label="@string/title_activity_maps" /> -->
 
         <activity
             android:name=".MainActivity"
@@ -83,7 +83,6 @@
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="@string/google_maps_key" />
-
         <!-- [START gcm_receiver] -->
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"

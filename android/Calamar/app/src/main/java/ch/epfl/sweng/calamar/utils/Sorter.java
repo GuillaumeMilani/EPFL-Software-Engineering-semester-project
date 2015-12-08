@@ -12,6 +12,7 @@ import ch.epfl.sweng.calamar.recipient.Recipient;
  * A class which contains static methods to sort Objects created in this project.
  */
 public final class Sorter {
+
     private static final Comparator<Item> itemComparator = new Comparator<Item>() {
         @Override
         public int compare(Item lhs, Item rhs) {
@@ -45,6 +46,7 @@ public final class Sorter {
 
     /**
      * Sorts the given list of items by ascending order.
+     *
      * @param items The list to be sorted
      * @return the sorted list
      */
@@ -55,6 +57,7 @@ public final class Sorter {
 
     /**
      * Sorts the given list of recipients by ascending order.
+     *
      * @param recipients The list to be sorted
      * @return the sorted list
      */

@@ -1,10 +1,10 @@
 package ch.epfl.sweng.calamar.item;
 
 import android.app.Activity;
-import android.content.Context;
 import android.location.Location;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -28,6 +29,15 @@ import ch.epfl.sweng.calamar.recipient.User;
  * Item is immutable
  */
 public abstract class Item {
+
+    public static final int DUMMY_ID = 1;
+    protected static final String JSON_TYPE = "type";
+    private static final String JSON_ID = "ID";
+    private static final String JSON_FROM = "from";
+    private static final String JSON_TO = "to";
+    private static final String JSON_DATE = "date";
+    private static final String JSON_CONDITION = "condition";
+    private static final String JSON_MESSAGE = "message";
     private final int ID;
     private final User from;
     private final Recipient to;
@@ -37,24 +47,15 @@ public abstract class Item {
 
     public enum Type {SIMPLETEXTITEM, IMAGEITEM, FILEITEM}
 
-    private Set<Item.Observer> observers = new HashSet<>();
+    private final Set<Item.Observer> observers = new HashSet<>();
 
-
-    private final Condition.Observer conditionObserver = new Condition.Observer() {
-        @Override
-        public void update(Condition condition) {
-            for (Observer o : observers) {
-                o.update(Item.this);
-            }
-        }
-    };
 
     protected Item(int ID, User from, Recipient to, Date date, Condition condition, String message) {
         if (null == from || null == to || null == condition || null == date) {
-            throw new IllegalArgumentException("field 'from' and/or 'to' and/or 'condition' and/or 'date' cannot be null");
+            throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.item_field_null));
         }
         if (message == null) {
-            this.message = "";
+            this.message = CalamarApplication.getInstance().getString(R.string.empty_string);
         } else {
             this.message = message;
         }
@@ -64,6 +65,14 @@ public abstract class Item {
         this.date = date;
         this.condition = condition; //TODO Condition is not immutable...
 
+        final Condition.Observer conditionObserver = new Condition.Observer() {
+            @Override
+            public void update(Condition condition) {
+                for (Observer o : observers) {
+                    o.update(Item.this);
+                }
+            }
+        };
         condition.addObserver(conditionObserver);
     }
 
@@ -73,7 +82,7 @@ public abstract class Item {
 
     public abstract Type getType();
 
-    public abstract View getItemView(Context context);
+    public abstract View getItemView(Activity context);
 
     /**
      * @return the text content (message) of the Item
@@ -85,7 +94,7 @@ public abstract class Item {
     /**
      * Get the complete view of the item. ( With condition(s) )
      *
-     * @param context
+     * @param context the context from which this method is called
      * @return the view of the item.
      */
     public View getView(final Activity context) {
@@ -118,17 +127,21 @@ public abstract class Item {
      * @param context
      * @return the preview of the item
      */
-    public View getPreView(final Context context) {
+    public View getPreView(final Activity context) {
         final LinearLayout view = new LinearLayout(context);
         view.setOrientation(LinearLayout.VERTICAL);
         int childCount = 0;
         if (condition.getValue()) {
             View itemView = getItemView(context);
             if (itemView != null) {
+                if (itemView.getParent() != null) {
+                    ViewGroup parent = (ViewGroup) itemView.getParent();
+                    parent.removeView(itemView);
+                }
                 view.addView(itemView, childCount);
                 childCount += 1;
             }
-            if (!message.equals("")) {
+            if (!message.equals(CalamarApplication.getInstance().getString(R.string.empty_string))) {
                 TextView text = new TextView(context);
                 text.setText(message);
                 view.addView(text, childCount);
@@ -211,12 +224,12 @@ public abstract class Item {
      * @throws JSONException
      */
     protected void compose(JSONObject json) throws JSONException {
-        json.accumulate("ID", ID);
-        json.accumulate("from", from.toJSON());
-        json.accumulate("to", to.toJSON());
-        json.accumulate("date", date.getTime());
-        json.accumulate("condition", condition.toJSON());
-        json.accumulate("message", message);
+        json.accumulate(JSON_ID, ID);
+        json.accumulate(JSON_FROM, from.toJSON());
+        json.accumulate(JSON_TO, to.toJSON());
+        json.accumulate(JSON_DATE, date.getTime());
+        json.accumulate(JSON_CONDITION, condition.toJSON());
+        json.accumulate(JSON_MESSAGE, message);
     }
 
     /**
@@ -236,11 +249,11 @@ public abstract class Item {
      * @throws JSONException
      */
     public static Item fromJSON(JSONObject json) throws JSONException, IllegalArgumentException {
-        if (null == json || json.isNull("type")) {
-            throw new IllegalArgumentException("malformed json, either null or no 'type' value");
+        if (null == json || json.isNull(JSON_TYPE)) {
+            throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.malformed_json));
         }
         Item item;
-        String type = json.getString("type");
+        String type = json.getString(JSON_TYPE);
         switch (Type.valueOf(type)) {
             case SIMPLETEXTITEM:
                 item = SimpleTextItem.fromJSON(json);
@@ -252,7 +265,7 @@ public abstract class Item {
                 item = FileItem.fromJSON(json);
                 break;
             default:
-                throw new IllegalArgumentException("Unexpected Item type (" + type + ")");
+                throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.unexpected_item_type, type));
         }
         return item;
     }
@@ -304,20 +317,20 @@ public abstract class Item {
         protected String message;
 
         public Builder parse(JSONObject o) throws JSONException {
-            ID = o.getInt("ID");
-            from = User.fromJSON(o.getJSONObject("from"));
-            if (o.isNull("to")) {
+            ID = o.getInt(JSON_ID);
+            from = User.fromJSON(o.getJSONObject(JSON_FROM));
+            if (o.isNull(JSON_TO)) {
                 to = new User(User.PUBLIC_ID, User.PUBLIC_NAME);
             } else {
-                to = Recipient.fromJSON(o.getJSONObject("to"));
+                to = Recipient.fromJSON(o.getJSONObject(JSON_TO));
             }
-            message = o.getString("message");
-            date = new Date(o.getLong("date"));
+            message = o.getString(JSON_MESSAGE);
+            date = new Date(o.getLong(JSON_DATE));
 
-            if (o.isNull("condition")) {
+            if (o.isNull(JSON_CONDITION)) {
                 condition = Condition.trueCondition();
             } else {
-                condition = Condition.fromJSON(new JSONObject(o.getString("condition")));
+                condition = Condition.fromJSON(new JSONObject(o.getString(JSON_CONDITION)));
             }
 
             return this;
