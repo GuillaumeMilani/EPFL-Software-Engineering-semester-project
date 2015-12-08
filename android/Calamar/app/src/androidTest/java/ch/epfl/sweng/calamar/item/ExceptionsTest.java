@@ -127,7 +127,7 @@ public class ExceptionsTest {
             Recipient r = new User(defaultID, null);
             fail();
         } catch(IllegalArgumentException e) {
-            // smooth
+            // bueno
         }
     }
 
