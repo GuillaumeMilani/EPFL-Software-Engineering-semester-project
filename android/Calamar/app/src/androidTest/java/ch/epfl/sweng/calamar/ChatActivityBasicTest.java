@@ -23,7 +23,9 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.clearText;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
@@ -194,5 +196,12 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
         assertFalse(list.getCount() == 0);
         getActivity().clearChat();
         assertTrue(list.getCount() == 0);
+    }
+
+    @Test
+    public void testCreateItem() {
+        onView(withId(R.id.selectFileButton)).check(doesNotExist());
+        onView(withId(R.id.chat_create_item_button)).perform(click());
+        onView(withId(R.id.selectFileButton)).check(matches(isDisplayed()));
     }
 }
