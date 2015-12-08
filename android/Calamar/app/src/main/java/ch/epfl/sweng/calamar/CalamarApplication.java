@@ -447,7 +447,9 @@ public final class CalamarApplication extends Application implements Application
 
         @Override
         protected Void doInBackground(Void... v) {
-            dbHandler.applyPendingOperations();
+            if (dbHandler.areOperationsPending()) {
+                dbHandler.applyPendingOperations();
+            }
             Log.i("Database", "Applied operations");
             return null;
         }

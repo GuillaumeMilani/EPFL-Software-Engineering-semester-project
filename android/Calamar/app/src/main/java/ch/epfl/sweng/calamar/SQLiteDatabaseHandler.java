@@ -47,7 +47,7 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
     private static final String RECIPIENTS_KEY_NAME = "name";
     private static final String[] RECIPIENTS_COLUMN = {RECIPIENTS_KEY_ID, RECIPIENTS_KEY_NAME};
 
-    private static final int DATABASE_VERSION = 5;
+    protected static final int DATABASE_VERSION = 5;
     private static final String DATABASE_NAME = "CalamarDB";
 
     private static final int MAX_PLACEHOLDERS_COUNT = 99;
@@ -787,6 +787,15 @@ public final class SQLiteDatabaseHandler extends SQLiteOpenHelper {
      */
     public synchronized void resetLastUpdateTime() {
         lastItemTime = 0;
+    }
+
+    /**
+     * Tells if operations are waiting to be applied
+     *
+     * @return true if there are pending operations
+     */
+    public boolean areOperationsPending() {
+        return !pendingItems.isEmpty() || !pendingRecipients.isEmpty();
     }
 
     //Helper methods for applyPendingOperations

@@ -138,8 +138,13 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         toUpdate.add(new User(testUser.getID(), "User1"));
         toUpdate.add(new User(testUser2.getID(), "User2"));
         dbHandler.updateRecipients(toUpdate);
-        assertEquals(dbHandler.getRecipient(testUser.getID()), toUpdate.get(0));
-        assertEquals(dbHandler.getRecipient(testUser2.getID()), toUpdate.get(1));
+        List<Integer> toGet = new ArrayList<>();
+        toGet.add(testUser.getID());
+        toGet.add(testUser2.getID());
+        List<Recipient> got = dbHandler.getRecipients(toGet);
+        assertEquals(got.size(), 2);
+        assertEquals(got.get(0), toUpdate.get(0));
+        assertEquals(got.get(1), toUpdate.get(1));
         dbHandler.applyPendingOperations();
         assertEquals(dbHandler.getRecipient(testUser.getID()), toUpdate.get(0));
         assertEquals(dbHandler.getRecipient(testUser2.getID()), toUpdate.get(1));
@@ -930,9 +935,11 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     @Test
     public void testDeleteItemsForContact() {
         initDB();
+        app.setCurrentUserID(testUser2.getID());
+        app.setCurrentUserName(testUser2.getName());
         dbHandler.applyPendingOperations();
         dbHandler.updateItem(testItem);
-        assertEquals(dbHandler.getItemsForContact(testUser).size(), 7);
+        assertEquals(dbHandler.getItemsForContact(testUser).size(), 3);
         dbHandler.deleteItemsForContact(testUser);
         assertTrue(dbHandler.getItemsForContact(testUser).isEmpty());
     }
@@ -950,11 +957,21 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     @Test
     public void testOnUpgrade() {
         initDB();
+        dbHandler.applyPendingOperations();
         dbHandler.setLastItemTime(1000);
         assertEquals(dbHandler.getLastItemTime(), 1000);
-        dbHandler.onUpgrade(dbHandler.getWritableDatabase(testUser.getPassword()), 0, 1);
+        dbHandler.onUpgrade(dbHandler.getWritableDatabase(testUser.getPassword()), 0, SQLiteDatabaseHandler.DATABASE_VERSION);
         assertEquals(dbHandler.getLastItemTime(), 0);
         assertEquals(dbHandler.getAllItems().size(), 0);
+        dbHandler.addItem(testItem);
+    }
+
+    @Test
+    public void testPending() {
+        initDB();
+        assertTrue(dbHandler.areOperationsPending());
+        dbHandler.applyPendingOperations();
+        assertFalse(dbHandler.areOperationsPending());
     }
 
     @Override
