@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -78,6 +79,8 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
                 Intent conversation = new Intent(getActivity(), ChatActivity.class);
                 //Assuming in same order
                 Recipient user = contacts.get(position);
+                //remove the highlight on that user ( if there is one )
+                adapter.removeHighlight(user);
                 conversation.putExtra(EXTRA_CORRESPONDENT_NAME, user.getName());
 
                 conversation.putExtra(EXTRA_CORRESPONDENT_ID, user.getID());
