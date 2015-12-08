@@ -32,7 +32,6 @@ import com.google.android.gms.gcm.GcmListenerService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import ch.epfl.sweng.calamar.BaseActivity;
 import ch.epfl.sweng.calamar.MainActivity;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.chat.ChatFragment;
@@ -42,7 +41,7 @@ import ch.epfl.sweng.calamar.recipient.User;
 public final class RegistrationGcmListenerService extends GcmListenerService {
 
     private static final String TAG = "RegGcmListenerService";
-    private static final String RETRIEVE = "RETRIEVE";
+    public static final String RETRIEVE = "RETRIEVE";
     private static final String BUNDLE_TYPE = "type";
     private static final String BUNDLE_EXTRA = "extra";
     private static final int REQUEST_CODE = 0;
@@ -61,25 +60,19 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
         String message = getString(R.string.you_received_new);
         String action = MainActivity.ACTION_OPEN_CHAT;
         String pushType = data.getString(BUNDLE_TYPE);
+        User fromUser;
+
+        //extract from User Data
+        try {
+            JSONObject resp = new JSONObject(data.getString(BUNDLE_EXTRA));
+            fromUser = User.fromJSON(resp);
+        } catch (JSONException e) {
+            Log.e(TAG, getString(R.string.json_extract_failed));
+            return; // push corrupted
+        }
+
 
         if (pushType != null && pushType.equals(RETRIEVE)) {
-            // add a new contact
-            try {
-                //extract data
-                JSONObject resp = new JSONObject(data.getString(BUNDLE_EXTRA));
-
-                User addUser = User.fromJSON(resp);
-
-                // Send a broadcast message to ChatFragment$ChatBroadcastReceiver
-                Intent i = new Intent();
-                i.setAction(ChatFragment.ChatBroadcastReceiver.INTENT_FILTER);
-                i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_USER, addUser.getName());
-                i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_ID, String.valueOf(addUser.getID()));
-                sendBroadcast(i);
-            } catch (JSONException e) {
-                Log.e(TAG, getString(R.string.json_extract_failed));
-            }
-
             message += getString(R.string.contact);
         } else {
             Item.Type type = Item.Type.valueOf(pushType);
@@ -100,6 +93,14 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
                     Log.e(TAG, getString(R.string.unexpected_item_type, type.name()));
             }
         }
+
+        // Send a broadcast message to ChatFragment$ChatBroadcastReceiver
+        Intent i = new Intent();
+        i.setAction(ChatFragment.ChatBroadcastReceiver.INTENT_FILTER);
+        i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_USER, fromUser.getName());
+        i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_ID, String.valueOf(fromUser.getID()));
+        i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_TYPE,pushType);
+        sendBroadcast(i);
 
         sendNotification(message, action);
 

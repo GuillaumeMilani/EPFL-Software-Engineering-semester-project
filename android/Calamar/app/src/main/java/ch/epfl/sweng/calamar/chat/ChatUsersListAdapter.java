@@ -2,6 +2,7 @@ package ch.epfl.sweng.calamar.chat;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,8 @@ import ch.epfl.sweng.calamar.recipient.Recipient;
 public final class ChatUsersListAdapter extends BaseAdapter {
     private final ArrayList<Recipient> users;
     private final Activity context;
+
+    private ArrayList<Recipient> highlights = new ArrayList<>();
 
     public ChatUsersListAdapter(Activity context, List<Recipient> users) {
         this.users = new ArrayList<>(users);
@@ -45,10 +48,17 @@ public final class ChatUsersListAdapter extends BaseAdapter {
         LayoutInflater li = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if (convertView == null) {
             convertView = li.inflate(R.layout.list_contacts_chat, null);
+
+           /* TextView text = (TextView) convertView.findViewById(R.id.textView);
+            text.setTextColor(Color.RED);*/
+
             holder = createViewHolder(convertView);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
+            if(highlights.contains(user)) {
+                holder.userName.setTextColor(Color.GREEN);
+            }
         }
 
         holder.userName.setText(user.getName());
@@ -82,5 +92,13 @@ public final class ChatUsersListAdapter extends BaseAdapter {
      */
     private static class ViewHolder {
         public TextView userName;
+    }
+
+    public void addHighlight(Recipient user) {
+        highlights.add(user);
+    }
+
+    public void removeHighlight(Recipient user){
+        highlights.remove(user);
     }
 }

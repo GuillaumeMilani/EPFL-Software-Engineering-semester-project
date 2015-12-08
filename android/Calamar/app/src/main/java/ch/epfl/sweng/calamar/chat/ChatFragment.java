@@ -24,6 +24,7 @@ import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
+import ch.epfl.sweng.calamar.push.RegistrationGcmListenerService;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
 
@@ -215,16 +216,25 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
 
         public final static String BROADCAST_EXTRA_USER = "user";
         public final static String BROADCAST_EXTRA_ID = "id";
+        public final static String BROADCAST_EXTRA_TYPE = "type";
 
         public final static String INTENT_FILTER = "ch.epfl.sweng.UPDATE_INTENT";
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            // retrieve the user data
+                // retrieve the user data
             User user = new User(Integer.valueOf(intent.getStringExtra(BROADCAST_EXTRA_ID)),
-                    intent.getStringExtra(BROADCAST_EXTRA_USER));
-            //add the user in the contact list
-            addUserInContact(user);
+                        intent.getStringExtra(BROADCAST_EXTRA_USER));
+            // highlight the sender
+            adapter.addHighlight(user);
+
+            if(intent.getStringExtra(BROADCAST_EXTRA_TYPE).equals(RegistrationGcmListenerService.RETRIEVE)) {
+                //add the user in the contact list
+                addUserInContact(user);
+
+            } else { // it's an item
+                adapter.notifyDataSetChanged();
+            }
         }
     }
 
