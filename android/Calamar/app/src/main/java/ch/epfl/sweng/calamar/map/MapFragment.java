@@ -62,10 +62,12 @@ public final class MapFragment extends android.support.v4.app.Fragment implement
     private final Item.Observer detailsItemObserver = new Item.Observer() {
         @Override
         public void update(Item item) {
-            //Update the dialog with the new view.
-            View itemView = item.getView(getActivity());
-            detailsViewDialog.removeAllViews();
-            detailsViewDialog.addView(itemView);
+            if (isAdded()) {
+                //Update the dialog with the new view.
+                View itemView = item.getView(getActivity());
+                detailsViewDialog.removeAllViews();
+                detailsViewDialog.addView(itemView);
+            }
         }
     };
 
@@ -75,9 +77,11 @@ public final class MapFragment extends android.support.v4.app.Fragment implement
     private final Item.Observer itemObserver = new Item.Observer() {
         @Override
         public void update(Item item) {
-            Marker updatedMarker = markers.get(item);
-            updatedMarker.setTitle(getLockStringForItem(item));
-            updatedMarker.setIcon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
+            if (isAdded()) {
+                Marker updatedMarker = markers.get(item);
+                updatedMarker.setTitle(getLockStringForItem(item));
+                updatedMarker.setIcon(BitmapDescriptorFactory.fromResource(getLockIdForItem(item)));
+            }
         }
     };
 
