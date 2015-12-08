@@ -2,9 +2,12 @@ package ch.epfl.sweng.calamar;
 
 import android.location.Location;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -16,6 +19,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 /**
  * Created by pierre on 11/6/15.
@@ -88,6 +92,13 @@ public class ConditionTest {
             return Type.TESTCONDITION;
         }
     }
+
+    @Before
+    public void setUp() {
+        // to shut his mouth
+        CalamarApplication.getInstance().setGoogleApiClient(mock(GoogleApiClient.class));
+    }
+
 
 
     @Test
