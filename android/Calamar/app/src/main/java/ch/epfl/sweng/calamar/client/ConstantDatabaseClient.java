@@ -26,10 +26,10 @@ public class ConstantDatabaseClient implements DatabaseClient {
     private static final String ALICE_MESSAGE = "Hello Bob, it's Alice !";
     private static final String BOB_MESSAGE = "Hello Alice, it's Bob !";
     private static final Location LOCATION = new Location("abc");
-    private static final Item ITEM_FROM = new SimpleTextItem(Item.DUMMY_ID, ALICE, BOB, new Date(1445198510), Condition.trueCondition(), ALICE_MESSAGE);
-    private static final Item ITEM_TO = new SimpleTextItem(Item.DUMMY_ID, BOB, ALICE, new Date(1445198510), Condition.and(Condition.falseCondition(), new PositionCondition(LOCATION)), BOB_MESSAGE);
+    private static final Item ITEM_FROM = new SimpleTextItem(0, ALICE, BOB, new Date(1445198510), Condition.trueCondition(), ALICE_MESSAGE);
+    private static final Item ITEM_TO = new SimpleTextItem(1, BOB, ALICE, new Date(1445198510), Condition.and(Condition.falseCondition(), new PositionCondition(LOCATION)), BOB_MESSAGE);
 
-    private static final Item ITEM_OTHER = new SimpleTextItem(1, OTHER, BOB, new Date(1445198510), Condition.and(Condition.falseCondition(), new PositionCondition(LOCATION)), "Hello Bob, it's me !");
+    private static final Item ITEM_OTHER = new SimpleTextItem(2, OTHER, BOB, new Date(1445198510), Condition.and(Condition.falseCondition(), new PositionCondition(LOCATION)), "Hello Bob, it's me !");
 
     private final List<Item> toRetrieve = new ArrayList<>();
 

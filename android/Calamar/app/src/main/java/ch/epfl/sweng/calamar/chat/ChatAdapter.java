@@ -75,9 +75,12 @@ public final class ChatAdapter extends BaseAdapter {
      * @param message the message to be added
      */
     public void add(Item message) {
-        if (!messages.contains(message)) {
-            this.messages.add(message);
+        for (Item i : messages) {
+            if (i.getID() == message.getID()) {
+                return;
+            }
         }
+        this.messages.add(message);
         notifyDataSetChanged();
     }
 
@@ -88,9 +91,12 @@ public final class ChatAdapter extends BaseAdapter {
      * @param position the position of the new object
      */
     public void set(Item message, int position) {
-        if (!messages.contains(message)) {
-            this.messages.set(position, message);
+        for (Item i : messages) {
+            if (i.getID() == message.getID()) {
+                return;
+            }
         }
+        this.messages.set(position, message);
         notifyDataSetChanged();
     }
 
