@@ -64,7 +64,7 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
         assertEquals(false, app.getTokenSent());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = IllegalStateException.class)
     public void testGetGoogleClientNotSet() {
         app.getGoogleApiClient();
     }
@@ -90,15 +90,11 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
         dbHandler.addItem(testItem);
         assertTrue(dbHandler.areOperationsPending());
         app.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW);
-        assertTrue(dbHandler.areOperationsPending());
+        assertFalse(dbHandler.areOperationsPending());
         dbHandler.addItem(testItem);
         assertTrue(dbHandler.areOperationsPending());
         app.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE);
-        assertFalse(dbHandler.areOperationsPending());
-        dbHandler.addItem(testItem);
         assertTrue(dbHandler.areOperationsPending());
-        app.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN);
-        assertFalse(dbHandler.areOperationsPending());
     }
 
     @Test
