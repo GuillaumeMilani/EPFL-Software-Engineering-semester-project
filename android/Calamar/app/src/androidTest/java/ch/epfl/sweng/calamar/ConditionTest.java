@@ -339,4 +339,32 @@ public class ConditionTest {
             // yes
         }
     }
+
+    @Test
+    public void testBadLongitudeOrLatitude() {
+        try {
+            new PositionCondition(-91, 140, 20);
+            fail("Latitude shouldn't be smaller than -90");
+        } catch (IllegalArgumentException e) {
+
+        }
+        try {
+            new PositionCondition(91, 140, 20);
+            fail("Latitude shouldn't be greater than 90");
+        } catch (IllegalArgumentException e) {
+
+        }
+        try {
+            new PositionCondition(45, -181, 20);
+            fail("Longitude shouldn't be smaller than -180");
+        } catch (IllegalArgumentException e) {
+
+        }
+        try {
+            new PositionCondition(45, 181, 20);
+            fail("Longitude shouldn't be greater than 180");
+        } catch (IllegalArgumentException e) {
+
+        }
+    }
 }
