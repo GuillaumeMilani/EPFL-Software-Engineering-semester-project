@@ -278,13 +278,7 @@ public final class ChatActivity extends BaseActivity implements StorageCallbacks
      */
     @Override
     public void onItemRetrieved(Item item) {
-        boolean notFound = true;
-        for (int i = adapter.getCount() - 1; i >= 0 && notFound; --i) {
-            if (item.getID() == adapter.getItem(i).getID()) {
-                adapter.set(item, i);
-                notFound = false;
-            }
-        }
+        adapter.update(item);
     }
 
     /**
