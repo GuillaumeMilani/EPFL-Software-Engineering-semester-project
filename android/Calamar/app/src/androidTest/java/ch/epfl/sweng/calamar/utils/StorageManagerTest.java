@@ -97,34 +97,48 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
     }
 
     @Test
-    public void testOperationsOnSimpleTextItems() {
+    public void testOperationsOnSimpleTextItems() throws InterruptedException {
         storageManager.storeItem(testSimple, null);
+        waitFor(500);
         assertEquals(dbHandler.getItem(testSimple.getID()), testSimple);
         storageManager.deleteItemWithoutDatabase(testSimple);
+        waitFor(500);
         assertEquals(dbHandler.getItem(testSimple.getID()), testSimple);
         List<Integer> toDelete = new ArrayList<>();
         toDelete.add(testSimple.getID());
         List<Item> itemsToDelete = new ArrayList<>();
         itemsToDelete.add(testSimple);
         storageManager.deleteItemsForIdsWithoutDatabase(toDelete);
+        waitFor(500);
         assertEquals(dbHandler.getItem(testSimple.getID()), testSimple);
         storageManager.deleteItemsWithoutDatabase(itemsToDelete);
+        waitFor(500);
         assertEquals(dbHandler.getItem(testSimple.getID()), testSimple);
         storageManager.deleteAllItemsWithoutDatabase();
+        waitFor(500);
         assertEquals(dbHandler.getItem(testSimple.getID()), testSimple);
         storageManager.deleteItemWithDatabase(testSimple);
+        waitFor(500);
         assertEquals(dbHandler.getItem(testSimple.getID()), null);
         storageManager.storeItem(testSimple, null);
+        waitFor(500);
         storageManager.deleteItemWithDatabase(testSimple.getID());
+        waitFor(500);
         assertEquals(dbHandler.getItem(testSimple.getID()), null);
         storageManager.storeItem(testSimple, null);
+        waitFor(500);
         storageManager.deleteItemsForIdsWithDatabase(toDelete);
+        waitFor(500);
         assertEquals(dbHandler.getItem(testSimple.getID()), null);
         storageManager.storeItem(testSimple, null);
+        waitFor(500);
         storageManager.deleteItemsWithDatabase(itemsToDelete);
+        waitFor(500);
         assertEquals(dbHandler.getItem(testSimple.getID()), null);
         storageManager.storeItem(testSimple, null);
+        waitFor(500);
         storageManager.deleteAllItemsWithDatabase();
+        waitFor(500);
         assertEquals(dbHandler.getItem(testSimple.getID()), null);
     }
 
@@ -686,6 +700,12 @@ public class StorageManagerTest extends ActivityInstrumentationTestCase2<ChatAct
         InputStream istr;
         istr = assetManager.open(filePath);
         return BitmapFactory.decodeStream(istr);
+    }
+
+    private synchronized void waitFor(int millis) throws InterruptedException {
+        synchronized (this) {
+            wait(millis);
+        }
     }
 
 }
