@@ -9,6 +9,7 @@ import org.junit.runners.JUnit4;
 import java.util.Date;
 
 import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.item.Item;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -128,6 +129,33 @@ public class ExceptionsTest {
         } catch(IllegalArgumentException e) {
             // smooth
         }
+    }
 
+    @Test
+    public void testConditionConstructor() {
+        try {
+            Condition r = new PositionCondition(null, 20);
+            fail();
+        } catch(IllegalArgumentException e) {
+            // smooth
+        }
+        try {
+            Condition.and(null, null);
+            fail();
+        } catch(IllegalArgumentException e) {
+            // yep
+        }
+        try {
+            Condition.or(null, null);
+            fail();
+        } catch(IllegalArgumentException e) {
+            // ja
+        }
+        try {
+            Condition.not(null);
+            fail();
+        } catch(IllegalArgumentException e) {
+            // si
+        }
     }
 }
