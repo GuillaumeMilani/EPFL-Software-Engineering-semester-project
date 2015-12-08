@@ -4,6 +4,9 @@ import android.support.test.espresso.core.deps.guava.collect.ImmutableSet;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.VisibleRegion;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -114,8 +117,13 @@ public class NetworkDatabaseClientTest {
             fail("wrong exception");
         }
 
+        LatLng a = new LatLng(0, 0);
+        LatLngBounds b = new LatLngBounds(a,a);
+        VisibleRegion region = new VisibleRegion(a,a,a,a,b);
+
         try {
-            DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, null, null);
+
+            DatabaseClientLocator.getDatabaseClient().getAllItems(recipient, null, region);
             fail("IllegalArgumentException not thrown on invalid input");
         } catch (IllegalArgumentException e) {
             // ok
@@ -124,7 +132,7 @@ public class NetworkDatabaseClientTest {
         }
 
         try {
-            DatabaseClientLocator.getDatabaseClient().getAllItems(null, null, null);
+            DatabaseClientLocator.getDatabaseClient().getAllItems(null, new Date(0), region);
             fail("IllegalArgumentException not thrown on invalid input");
         } catch (IllegalArgumentException e) {
             // ok
