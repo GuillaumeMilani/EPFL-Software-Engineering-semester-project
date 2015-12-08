@@ -100,7 +100,7 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
 
     @Override
     public void onResume() {
-        getContext().registerReceiver(broadcast, new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
+        getContext().registerReceiver(broadcast, new IntentFilter(ChatBroadcastReceiver.INTENT_FILTER));
         //refresh message
         adapter.notifyDataSetChanged();
         super.onResume();
@@ -215,6 +215,8 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
 
         public final static String BROADCAST_EXTRA_USER = "user";
         public final static String BROADCAST_EXTRA_ID = "id";
+
+        public final static String INTENT_FILTER = "ch.epfl.sweng.UPDATE_INTENT";
 
         @Override
         public void onReceive(Context context, Intent intent) {

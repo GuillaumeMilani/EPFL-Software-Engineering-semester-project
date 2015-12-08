@@ -45,8 +45,6 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
     private static final String RETRIEVE = "RETRIEVE";
     private static final String BUNDLE_TYPE = "type";
     private static final String BUNDLE_EXTRA = "extra";
-    private static final String INTENT_ACTION = "ch.epfl.sweng.UPDATE_INTENT";
-    private static final String JSON_USER = "user";
     private static final int REQUEST_CODE = 0;
     private static final int NOTIFICATION_ID = 0;
 
@@ -74,7 +72,7 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
 
                 // Send a broadcast message to ChatFragment$ChatBroadcastReceiver
                 Intent i = new Intent();
-                i.setAction(INTENT_ACTION);
+                i.setAction(ChatFragment.ChatBroadcastReceiver.INTENT_FILTER);
                 i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_USER, addUser.getName());
                 i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_ID, String.valueOf(addUser.getID()));
                 sendBroadcast(i);
