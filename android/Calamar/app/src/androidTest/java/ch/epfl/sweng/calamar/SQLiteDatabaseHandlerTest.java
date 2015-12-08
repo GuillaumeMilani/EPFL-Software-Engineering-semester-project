@@ -59,6 +59,7 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     private final FileItem testFile = new FileItem(4, testUser, testUser2, new Date(4), Condition.trueCondition(), testContent, "Calamar/1/2/FileItem");
     private final ImageItem testImage = new ImageItem(5, testUser, testRecipient, new Date(5), Condition.falseCondition(), testContent, "Calamar/1/2/ImageItem");
     private final SimpleTextItem posItem = new SimpleTextItem(6, testUser, testRecipient, new Date(6), PositionCondition.mock(4.5, 4.5), "6");
+    private final SimpleTextItem testPublic = new SimpleTextItem(7, testUser, new User(User.PUBLIC_ID, User.PUBLIC_NAME), new Date(7), Condition.trueCondition(), "7");
 
     private final int NUM_ITER = 500;
     private final int MIN_ITER = 100; //For queries reasons => max placeholders=99
@@ -923,6 +924,37 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         dbHandler.addItem(posItem);
         assertEquals(dbHandler.getAllLocalizedItems().size(), 1);
         assertEquals(dbHandler.getAllLocalizedItems().get(0), posItem);
+        clearDB();
+    }
+
+    @Test
+    public void testDeleteItemsForContact() {
+        initDB();
+        dbHandler.applyPendingOperations();
+        dbHandler.updateItem(testItem);
+        assertEquals(dbHandler.getItemsForContact(testUser).size(), 7);
+        dbHandler.deleteItemsForContact(testUser);
+        assertTrue(dbHandler.getItemsForContact(testUser).isEmpty());
+    }
+
+    @Test
+    public void testPublic() {
+        dbHandler.addItem(testPublic);
+        final User PUBLIC = new User(User.PUBLIC_ID, User.PUBLIC_NAME);
+        assertEquals(PUBLIC, dbHandler.getRecipient(User.PUBLIC_ID));
+        List<Integer> toGet = new ArrayList<>();
+        toGet.add(User.PUBLIC_ID);
+        assertEquals(PUBLIC, dbHandler.getRecipients(toGet).get(0));
+    }
+
+    @Test
+    public void testOnUpgrade() {
+        initDB();
+        dbHandler.setLastItemTime(1000);
+        assertEquals(dbHandler.getLastItemTime(), 1000);
+        dbHandler.onUpgrade(dbHandler.getWritableDatabase(testUser.getPassword()), 0, 1);
+        assertEquals(dbHandler.getLastItemTime(), 0);
+        assertEquals(dbHandler.getAllItems().size(), 0);
     }
 
     @Override
