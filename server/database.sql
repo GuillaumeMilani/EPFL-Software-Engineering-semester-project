@@ -1,147 +1,286 @@
--- -----------------------------------------------------
--- Table `tb_recipient`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tb_recipient` (
-  `ID` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) NULL,
-  PRIMARY KEY (`ID`)
-)
-ENGINE = InnoDB;
+-- phpMyAdmin SQL Dump
+-- version 4.5.0.2
+-- http://www.phpmyadmin.net
+--
+-- Host: localhost
+-- Generation Time: Dec 09, 2015 at 10:38 AM
+-- Server version: 5.5.44-37.3-log
+-- PHP Version: 5.6.16
 
-CREATE UNIQUE INDEX `idx_un_name_recipient` ON `tb_recipient` (`name` ASC)  ;
-
-
--- -----------------------------------------------------
--- Table `tb_recipient_user`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tb_recipient_user` (
-  `ID` INT NOT NULL,
-  `device_id` VARCHAR(16),
-  `email` VARCHAR(45),
-  `registrationToken` VARCHAR(152),
-  PRIMARY KEY (`ID`) ,
-  UNIQUE (`email`)
-  CONSTRAINT `ct_id_recipient_user`
-    FOREIGN KEY (`ID`)
-    REFERENCES `tb_recipient` (`ID`)
-    ON DELETE RESTRICT
-    ON UPDATE RESTRICT
-)
-ENGINE = InnoDB;
-
--- -----------------------------------------------------
--- Table `tb_condition`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tb_condition` (
-    `ID` INT NOT NULL AUTO_INCREMENT,
-    `condition` VARCHAR(512),
-    `value` TINYINT(1) NOT NULL,
-    PRIMARY KEY (`ID`)
-)
-ENGINE = InnoDB;
-
--- -----------------------------------------------------
--- Table `tb_metadata`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tb_metadata` (
-    `ID` INT NOT NULL AUTO_INCREMENT,
-    `condition` INT NOT NULL,
-    PRIMARY KEY (`ID`),
-    CONSTRAINT `ct_metadata_condition`
-      FOREIGN KEY (`condition`)
-      REFERENCES `tb_condition` (`ID`)
-      ON DELETE RESTRICT
-      ON UPDATE RESTRICT
-)
-ENGINE = InnoDB;
-
--- -----------------------------------------------------
--- Table `tb_metadata_position`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tb_metadata_position` (
-  `ID` INT NOT NULL,
-  `latitude` FLOAT( 10, 6 ) NOT NULL ,
-  `longitude` FLOAT( 10, 6 ) NOT NULL
-  PRIMARY KEY (`ID`),
-  CONSTRAINT `ct_id_metadata_position`
-    FOREIGN KEY (`ID`)
-    REFERENCES `tb_metadata` (`ID`)
-    ON DELETE RESTRICT
-    ON UPDATE RESTRICT
-)
-ENGINE = InnoDB;
-
--- -----------------------------------------------------
--- Table `tb_item`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tb_item` (
-  `ID` INT NOT NULL AUTO_INCREMENT,
-  `from` INT NOT NULL,
-  `to` INT NULL,
-  `date` MEDIUMTEXT NOT NULL,
-  `condition` INT NULL,
-  `message` LONGTEXT NULL,
-  PRIMARY KEY (`ID`) ,
-  CONSTRAINT `ct_from`
-    FOREIGN KEY (`from`)
-    REFERENCES `tb_recipient_user` (`ID`)
-    ON DELETE RESTRICT
-    ON UPDATE RESTRICT,
-  CONSTRAINT `ct_to`
-    FOREIGN KEY (`to`)
-    REFERENCES `tb_recipient` (`ID`)
-    ON DELETE RESTRICT
-    ON UPDATE RESTRICT,
-  CONSTRAINT `ct_item_condition`
-    FOREIGN KEY (`condition`)
-    REFERENCES `tb_condition` (`ID`)
-    ON DELETE RESTRICT
-    ON UPDATE RESTRICT
-)
-ENGINE = InnoDB;
-
-CREATE INDEX `idx_from_item` ON `tb_item` (`from` ASC)  ;
-CREATE INDEX `idx_to_item` ON `tb_item` (`to` ASC)  ;
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
 
 
--- -----------------------------------------------------
--- Table `tb_item_text`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tb_item_text` (
-  `ID` INT NOT NULL,
-  PRIMARY KEY (`ID`) ,
-  CONSTRAINT `ct_id_item_text`
-    FOREIGN KEY (`ID`)
-    REFERENCES `tb_item` (`ID`)
-    ON DELETE RESTRICT
-    ON UPDATE RESTRICT
-)
-ENGINE = InnoDB;
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
--- -----------------------------------------------------
--- Placeholder table for view `view_text_message`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `view_text_message` (`ID` INT, `from` INT, `to` INT, `date` INT, `condition` INT, `text` INT);
+--
+-- Database: `japanimp_calamar`
+--
 
--- -----------------------------------------------------
--- Placeholder table for view `mydb`.`view_user`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `view_user` (`ID` INT, `name` INT);
+-- --------------------------------------------------------
 
--- -----------------------------------------------------
--- View `view_text_message`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `view_text_message`;
+--
+-- Table structure for table `tb_condition`
+--
 
-CREATE OR REPLACE VIEW `view_text_message` AS
-SELECT 
-    itm.ID, itm.from, itm.to, itm.date, itm.condition, txt.text
-FROM tb_item itm, tb_item_text txt WHERE itm.id = txt.id;
+CREATE TABLE `tb_condition` (
+  `ID` int(11) NOT NULL,
+  `condition` varchar(512) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- -----------------------------------------------------
--- View `view_user`
--- -----------------------------------------------------
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tb_item`
+--
+
+CREATE TABLE `tb_item` (
+  `ID` int(11) NOT NULL,
+  `from` int(11) NOT NULL,
+  `to` int(11) DEFAULT NULL,
+  `date` mediumtext NOT NULL,
+  `condition` int(11) DEFAULT NULL,
+  `message` longtext
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tb_item_file`
+--
+
+CREATE TABLE `tb_item_file` (
+  `ID` int(11) NOT NULL,
+  `data` blob NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tb_item_image`
+--
+
+CREATE TABLE `tb_item_image` (
+  `ID` int(11) NOT NULL,
+  `data` mediumblob NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tb_item_text`
+--
+
+CREATE TABLE `tb_item_text` (
+  `ID` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tb_metadata`
+--
+
+CREATE TABLE `tb_metadata` (
+  `ID` int(11) NOT NULL,
+  `condition` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tb_metadata_position`
+--
+
+CREATE TABLE `tb_metadata_position` (
+  `ID` int(11) NOT NULL,
+  `latitude` float(10,6) NOT NULL,
+  `longitude` float(10,6) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tb_recipient`
+--
+
+CREATE TABLE `tb_recipient` (
+  `ID` int(11) NOT NULL,
+  `name` varchar(45) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tb_recipient_user`
+--
+
+CREATE TABLE `tb_recipient_user` (
+  `ID` int(11) NOT NULL,
+  `device_id` varchar(16) DEFAULT NULL,
+  `email` varchar(45) NOT NULL,
+  `registrationToken` varchar(152) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `view_user`
+--
+CREATE TABLE `view_user` (
+`ID` int(11)
+,`name` varchar(45)
+,`registrationToken` varchar(152)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `view_user`
+--
 DROP TABLE IF EXISTS `view_user`;
 
-CREATE OR REPLACE VIEW `view_user` AS
-SELECT rec.ID, rec.name,usr.registrationToken FROM tb_recipient rec, tb_recipient_user usr WHERE rec.id = usr.id;
+CREATE ALGORITHM=UNDEFINED DEFINER=`japanimp`@`localhost` SQL SECURITY DEFINER VIEW `view_user`  AS  select `rec`.`ID` AS `ID`,`rec`.`name` AS `name`,`usr`.`registrationToken` AS `registrationToken` from (`tb_recipient` `rec` join `tb_recipient_user` `usr`) where (`rec`.`ID` = `usr`.`ID`) ;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `tb_condition`
+--
+ALTER TABLE `tb_condition`
+  ADD PRIMARY KEY (`ID`);
+
+--
+-- Indexes for table `tb_item`
+--
+ALTER TABLE `tb_item`
+  ADD PRIMARY KEY (`ID`),
+  ADD KEY `idx_from_item` (`from`),
+  ADD KEY `idx_to_item` (`to`),
+  ADD KEY `ct_item_condition` (`condition`);
+
+--
+-- Indexes for table `tb_item_file`
+--
+ALTER TABLE `tb_item_file`
+  ADD PRIMARY KEY (`ID`);
+
+--
+-- Indexes for table `tb_item_image`
+--
+ALTER TABLE `tb_item_image`
+  ADD PRIMARY KEY (`ID`);
+
+--
+-- Indexes for table `tb_item_text`
+--
+ALTER TABLE `tb_item_text`
+  ADD PRIMARY KEY (`ID`);
+
+--
+-- Indexes for table `tb_metadata`
+--
+ALTER TABLE `tb_metadata`
+  ADD PRIMARY KEY (`ID`),
+  ADD KEY `ct_metadata_condition` (`condition`);
+
+--
+-- Indexes for table `tb_metadata_position`
+--
+ALTER TABLE `tb_metadata_position`
+  ADD PRIMARY KEY (`ID`);
+
+--
+-- Indexes for table `tb_recipient`
+--
+ALTER TABLE `tb_recipient`
+  ADD PRIMARY KEY (`ID`),
+  ADD UNIQUE KEY `idx_un_name_recipient` (`name`);
+
+--
+-- Indexes for table `tb_recipient_user`
+--
+ALTER TABLE `tb_recipient_user`
+  ADD PRIMARY KEY (`ID`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `tb_condition`
+--
+ALTER TABLE `tb_condition`
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
+--
+-- AUTO_INCREMENT for table `tb_item`
+--
+ALTER TABLE `tb_item`
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+--
+-- AUTO_INCREMENT for table `tb_metadata`
+--
+ALTER TABLE `tb_metadata`
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+--
+-- AUTO_INCREMENT for table `tb_recipient`
+--
+ALTER TABLE `tb_recipient`
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `tb_item`
+--
+ALTER TABLE `tb_item`
+  ADD CONSTRAINT `ct_from` FOREIGN KEY (`from`) REFERENCES `tb_recipient_user` (`ID`),
+  ADD CONSTRAINT `ct_item_condition` FOREIGN KEY (`condition`) REFERENCES `tb_condition` (`ID`),
+  ADD CONSTRAINT `ct_to` FOREIGN KEY (`to`) REFERENCES `tb_recipient` (`ID`);
+
+--
+-- Constraints for table `tb_item_file`
+--
+ALTER TABLE `tb_item_file`
+  ADD CONSTRAINT `ct_id_item_file` FOREIGN KEY (`ID`) REFERENCES `tb_item` (`ID`);
+
+--
+-- Constraints for table `tb_item_image`
+--
+ALTER TABLE `tb_item_image`
+  ADD CONSTRAINT `ct_id_image_file` FOREIGN KEY (`ID`) REFERENCES `tb_item` (`ID`);
+
+--
+-- Constraints for table `tb_item_text`
+--
+ALTER TABLE `tb_item_text`
+  ADD CONSTRAINT `ct_id_item_text` FOREIGN KEY (`ID`) REFERENCES `tb_item` (`ID`);
+
+--
+-- Constraints for table `tb_metadata`
+--
+ALTER TABLE `tb_metadata`
+  ADD CONSTRAINT `ct_metadata_condition` FOREIGN KEY (`condition`) REFERENCES `tb_condition` (`ID`);
+
+--
+-- Constraints for table `tb_metadata_position`
+--
+ALTER TABLE `tb_metadata_position`
+  ADD CONSTRAINT `ct_id_metadata_position` FOREIGN KEY (`ID`) REFERENCES `tb_metadata` (`ID`);
+
+--
+-- Constraints for table `tb_recipient_user`
+--
+ALTER TABLE `tb_recipient_user`
+  ADD CONSTRAINT `ct_id_recipient_user` FOREIGN KEY (`ID`) REFERENCES `tb_recipient` (`ID`);
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

@@ -7,5 +7,6 @@
 	DEFINE('MYSQL_HOST','localhost');          // Database address
 	DEFINE('MYSQL_PORT','3306');               // Database port
 	DEFINE('MYSQL_DBNAME','dbname');           // Database name
+	DEFINE('MYSQL_TESTDB_NAME','testdb_name');	// Database used for tests
 	DEFINE('MYSQL_USER','dbuser');             // User
 	DEFINE('MYSQL_PASSWORD','dbpassword');     // Password
