@@ -103,24 +103,6 @@ public final class MainActivity extends BaseActivity {
                     null, null);
             startActivityForResult(accountIntent, BaseActivity.ACCOUNT_CHOOSEN);
         }
-
-
-    }
-
-    @Override
-    protected void onResume() {
-        switch (getIntent().getAction()){
-            case ACTION_OPEN_CHAT:
-                viewPager.setCurrentItem(TabID.CHAT.ordinal());
-                break;
-            case ACTION_OPEN_MAP:
-                viewPager.setCurrentItem(TabID.MAP.ordinal());
-                break;
-            default:
-                break;
-        }
-
-        super.onResume();
     }
 
     // *********************************************************************************************
