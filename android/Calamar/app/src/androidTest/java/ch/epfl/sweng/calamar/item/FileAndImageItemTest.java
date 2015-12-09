@@ -3,7 +3,9 @@ package ch.epfl.sweng.calamar.item;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.test.espresso.matcher.ViewMatchers;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -21,10 +23,13 @@ import java.util.Arrays;
 import java.util.Date;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
+import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
-import ch.epfl.sweng.calamar.utils.Compresser;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -98,38 +103,28 @@ public class FileAndImageItemTest {
     }
 
     @Test
-    public void testCompressDecompress() {
-
-        assertTrue(Arrays.equals(testContent, Compresser.decompress(Compresser.compress(testContent))));
-        assertTrue(Arrays.equals(testContent, Compresser.decompress(testContent)));
+    public void testGetName() {
+        FileItem f = new FileItem(testId, testFrom, testTo, testDate, null, "/asdfasf/bla.png");
+        assertEquals(f.getName(), "bla.png");
     }
 
     @Test
-    public void testCantDecompress() {
-        final byte[] notCompressed = {(byte) 0x89, (byte) 0x50, (byte) 0x4e, (byte) 0x47,
-                (byte) 0x0d, (byte) 0x0a, (byte) 0x1a, (byte) 0x0a, (byte) 0x00, (byte) 0x00,
-                (byte) 0x00, (byte) 0x0d, (byte) 0x49};
-        assertTrue(Arrays.equals(notCompressed, Compresser.decompress(notCompressed)));
+    public void testThirdConstructor() {
+        FileItem f = new FileItem(testId, testFrom, testTo, testDate, null, "/bla", "blabla");
+        assertEquals(f.getID(), testId);
+        assertEquals(f.getFrom(), testFrom);
+        assertEquals(f.getTo(), testTo);
+        assertEquals(f.getDate(), testDate);
+        assertTrue(Arrays.equals(f.getData(), new byte[0]));
+        assertEquals(f.getPath(), "/bla");
+        assertEquals(f.getMessage(), "blabla");
     }
 
-    @Test
-    public void testCantCompress() {
-        final byte[] tooShort = {0x44, 0x44, 0x22, 0x23, 0x45, 0x44, 0x44, 0x22, 0x23, 0x45
-                , 0x44, 0x44, 0x22, 0x23, 0x45, 0x44, 0x44, 0x22, 0x23, 0x45, 0x44, 0x44, 0x22, 0x23, 0x45};
-        final byte[] notCompressed = {(byte) 0x89, (byte) 0x50, (byte) 0x4e, (byte) 0x47,
-                (byte) 0x0d, (byte) 0x0a, (byte) 0x1a, (byte) 0x0a, (byte) 0x00, (byte) 0x00,
-                (byte) 0x00, (byte) 0x0d, (byte) 0x49, (byte) 0x89, (byte) 0x50, (byte) 0x4e, (byte) 0x47,
-                (byte) 0x0d, (byte) 0x0a, (byte) 0x1a, (byte) 0x0a, (byte) 0x00, (byte) 0x00,
-                (byte) 0x00, (byte) 0x0d, (byte) 0x49, (byte) 0x89, (byte) 0x50, (byte) 0x4e, (byte) 0x47,
-                (byte) 0x0d, (byte) 0x0a, (byte) 0x1a, (byte) 0x0a, (byte) 0x00, (byte) 0x00,
-                (byte) 0x00, (byte) 0x0d, (byte) 0x49, (byte) 0x89, (byte) 0x50, (byte) 0x4e, (byte) 0x47,
-                (byte) 0x0d, (byte) 0x0a, (byte) 0x1a, (byte) 0x0a, (byte) 0x00, (byte) 0x00,
-                (byte) 0x00, (byte) 0x0d, (byte) 0x49};
-        final byte[] compressed = {(byte) 0x78, (byte) 0xDA, (byte) 0x12, 0x10, 0x23, 0x47, 0x12, 0x45, (byte) 0xa7, (byte) 0xd3, (byte) 0xef, (byte) 0xaa, (byte) 0xfa, 0x02, 0x21, 0x33, 0x22};
-        assertTrue(Arrays.equals(Compresser.compress(compressed), compressed));
-        assertFalse(Arrays.equals(notCompressed, Compresser.compress(notCompressed)));
-        assertTrue(Arrays.equals(Compresser.compress(tooShort), tooShort));
-        assertTrue(Arrays.equals(Compresser.decompress(tooShort), tooShort));
+    @Ignore
+    public void testActivityForFile() {
+        FileItem f = new FileItem(testId, testFrom, testTo, testDate, null, "/bla", "blabla");
+        FileItem.startActivityForFile(f);
+        onView(withText(CalamarApplication.getInstance().getString(R.string.no_handler_found))).check(matches(ViewMatchers.isDisplayed()));
     }
 
     private Bitmap getBitmapFromAsset(String filePath) throws IOException {

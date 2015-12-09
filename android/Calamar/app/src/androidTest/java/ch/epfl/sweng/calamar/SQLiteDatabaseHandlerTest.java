@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.item.FileItem;
 import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.Item;
@@ -57,6 +58,8 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
     private final SimpleTextItem testItem4 = new SimpleTextItem(3, testUser, testUser2, new Date(3), "3");
     private final FileItem testFile = new FileItem(4, testUser, testUser2, new Date(4), Condition.trueCondition(), testContent, "Calamar/1/2/FileItem");
     private final ImageItem testImage = new ImageItem(5, testUser, testRecipient, new Date(5), Condition.falseCondition(), testContent, "Calamar/1/2/ImageItem");
+    private final SimpleTextItem posItem = new SimpleTextItem(6, testUser, testRecipient, new Date(6), new PositionCondition(4.5, 4.5, 20), "6");
+    private final SimpleTextItem testPublic = new SimpleTextItem(7, testUser, new User(User.PUBLIC_ID, User.PUBLIC_NAME), new Date(7), Condition.trueCondition(), "7");
 
     private final int NUM_ITER = 500;
     private final int MIN_ITER = 100; //For queries reasons => max placeholders=99
@@ -135,8 +138,13 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         toUpdate.add(new User(testUser.getID(), "User1"));
         toUpdate.add(new User(testUser2.getID(), "User2"));
         dbHandler.updateRecipients(toUpdate);
-        assertEquals(dbHandler.getRecipient(testUser.getID()), toUpdate.get(0));
-        assertEquals(dbHandler.getRecipient(testUser2.getID()), toUpdate.get(1));
+        List<Integer> toGet = new ArrayList<>();
+        toGet.add(testUser.getID());
+        toGet.add(testUser2.getID());
+        List<Recipient> got = dbHandler.getRecipients(toGet);
+        assertEquals(got.size(), 2);
+        assertEquals(got.get(0), toUpdate.get(0));
+        assertEquals(got.get(1), toUpdate.get(1));
         dbHandler.applyPendingOperations();
         assertEquals(dbHandler.getRecipient(testUser.getID()), toUpdate.get(0));
         assertEquals(dbHandler.getRecipient(testUser2.getID()), toUpdate.get(1));
@@ -911,6 +919,59 @@ public class SQLiteDatabaseHandlerTest extends ApplicationTestCase<CalamarApplic
         dbHandler.deleteAllRecipients();
         assertTrue(dbHandler.getAllRecipients().isEmpty());
         clearDB();
+    }
+
+    @Test
+    public void testGetLocalizedItems() {
+        initDB();
+        assertFalse(dbHandler.getAllItems().isEmpty());
+        assertTrue(dbHandler.getAllLocalizedItems().isEmpty());
+        dbHandler.addItem(posItem);
+        assertEquals(dbHandler.getAllLocalizedItems().size(), 1);
+        assertEquals(dbHandler.getAllLocalizedItems().get(0), posItem);
+        clearDB();
+    }
+
+    @Test
+    public void testDeleteItemsForContact() {
+        initDB();
+        app.setCurrentUserID(testUser2.getID());
+        app.setCurrentUserName(testUser2.getName());
+        dbHandler.applyPendingOperations();
+        dbHandler.updateItem(testItem);
+        assertEquals(dbHandler.getItemsForContact(testUser).size(), 3);
+        dbHandler.deleteItemsForContact(testUser);
+        assertTrue(dbHandler.getItemsForContact(testUser).isEmpty());
+    }
+
+    @Test
+    public void testPublic() {
+        dbHandler.addItem(testPublic);
+        final User PUBLIC = new User(User.PUBLIC_ID, User.PUBLIC_NAME);
+        assertEquals(PUBLIC, dbHandler.getRecipient(User.PUBLIC_ID));
+        List<Integer> toGet = new ArrayList<>();
+        toGet.add(User.PUBLIC_ID);
+        assertEquals(PUBLIC, dbHandler.getRecipients(toGet).get(0));
+    }
+
+    @Test
+    public void testOnUpgrade() {
+        initDB();
+        dbHandler.applyPendingOperations();
+        dbHandler.setLastItemTime(1000);
+        assertEquals(dbHandler.getLastItemTime(), 1000);
+        dbHandler.onUpgrade(dbHandler.getWritableDatabase(testUser.getPassword()), 0, SQLiteDatabaseHandler.DATABASE_VERSION);
+        assertEquals(dbHandler.getLastItemTime(), 0);
+        assertEquals(dbHandler.getAllItems().size(), 0);
+        dbHandler.addItem(testItem);
+    }
+
+    @Test
+    public void testPending() {
+        initDB();
+        assertTrue(dbHandler.areOperationsPending());
+        dbHandler.applyPendingOperations();
+        assertFalse(dbHandler.areOperationsPending());
     }
 
     @Override
