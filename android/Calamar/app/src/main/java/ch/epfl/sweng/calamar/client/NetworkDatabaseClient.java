@@ -41,6 +41,7 @@ public final class NetworkDatabaseClient implements DatabaseClient {
     private final static String RETRIEVE_PATH = "/items.php?action=retrieve";
     private final static String RETRIEVE_USER_PATH = "/users.php?action=retrieve";
     private final static String NEW_USER_PATH = "/users.php?action=add";
+    private final static String TEST_OPTION = "&test=enabled";
 
     private final static String JSON_TOKEN = "token";
     private final static String JSON_ID = "ID";
@@ -61,13 +62,19 @@ public final class NetworkDatabaseClient implements DatabaseClient {
 
     private final String serverUrl;
     private final NetworkProvider networkProvider;
+    private final boolean testMode;
 
     public NetworkDatabaseClient(String serverUrl, NetworkProvider networkProvider) {
+        this(serverUrl, networkProvider, false);
+    }
+
+    public NetworkDatabaseClient(String serverUrl, NetworkProvider networkProvider, boolean testMode) {
         if (null == serverUrl || null == networkProvider) {
             throw new IllegalArgumentException(CalamarApplication.getInstance().getString(R.string.network_db_client_null));
         }
         this.serverUrl = serverUrl;
         this.networkProvider = networkProvider;
+        this.testMode = testMode;
     }
 
     @Override
@@ -88,7 +95,7 @@ public final class NetworkDatabaseClient implements DatabaseClient {
     public Item send(Item item) throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
-            URL url = new URL(serverUrl + NetworkDatabaseClient.SEND_PATH);
+            URL url = new URL(serverUrl + NetworkDatabaseClient.SEND_PATH + (testMode ? TEST_OPTION : null));
             JSONObject jsonParameter = item.toJSON();
             Log.v(NetworkDatabaseClient.TAG, "send json request : " + jsonParameter.toString());
             connection = NetworkDatabaseClient.createConnection(networkProvider, url);
@@ -106,7 +113,7 @@ public final class NetworkDatabaseClient implements DatabaseClient {
     public int newUser(String email, String token) throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
-            URL url = new URL(serverUrl + NetworkDatabaseClient.NEW_USER_PATH);
+            URL url = new URL(serverUrl + NetworkDatabaseClient.NEW_USER_PATH + (testMode ? TEST_OPTION : null));
 
             JSONObject jsonParameter = new JSONObject();
             jsonParameter.accumulate(JSON_TOKEN, token);
@@ -129,7 +136,7 @@ public final class NetworkDatabaseClient implements DatabaseClient {
     public User findUserByName(String name) throws DatabaseClientException {
         HttpURLConnection connection = null;
         try {
-            final URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_USER_PATH);
+            final URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_USER_PATH + (testMode ? TEST_OPTION : null));
 
             final JSONObject jsonParameter = new JSONObject();
             jsonParameter.accumulate(JSON_ID,CalamarApplication.getInstance().getCurrentUserID());
@@ -155,7 +162,7 @@ public final class NetworkDatabaseClient implements DatabaseClient {
 
         HttpURLConnection connection = null;
         try {
-            URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_PATH);
+            URL url = new URL(serverUrl + NetworkDatabaseClient.RETRIEVE_PATH + (testMode ? TEST_OPTION : null));
 
             JSONObject jsonParameter = new JSONObject();
             jsonParameter.accumulate(JSON_RECIPIENT, recipient.toJSON());
