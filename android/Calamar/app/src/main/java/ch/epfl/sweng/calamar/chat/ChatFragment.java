@@ -234,16 +234,14 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
                 // retrieve the user data
             User user = new User(Integer.valueOf(intent.getStringExtra(BROADCAST_EXTRA_ID)),
                         intent.getStringExtra(BROADCAST_EXTRA_USER));
-            // highlight the sender
-            user.setHighlight(true);
 
             if(intent.getStringExtra(BROADCAST_EXTRA_TYPE).equals(RegistrationGcmListenerService.RETRIEVE) && !contacts.contains(user)) {
                 //add the user in the contact list
                 addUserInContact(user);
             } else { // it's an item
-                adapter.highlight(user,true);
                 adapter.notifyDataSetChanged();
             }
+            adapter.highlight(user,true);
         }
     }
 
