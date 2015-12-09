@@ -29,9 +29,9 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_alignTop="@+id/messageEdit"
-        android:background="@color/background_floating_material_dark"
+        android:background="@color/background_color"
         android:text="@string/send_message"
-        android:textColor="@color/background_material_light"
+        android:textColor="@color/background_text_color"
         android:enabled="false" />
 
     <ListView
