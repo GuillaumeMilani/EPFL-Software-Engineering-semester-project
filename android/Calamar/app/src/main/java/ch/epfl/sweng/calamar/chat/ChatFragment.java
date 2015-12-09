@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -80,7 +79,7 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
                 //Assuming in same order
                 Recipient user = contacts.get(position);
                 //remove the highlight on that user ( if there is one )
-                adapter.highlight(user,false);
+                adapter.highlight(user, false);
                 adapter.notifyDataSetChanged();
                 conversation.putExtra(EXTRA_CORRESPONDENT_NAME, user.getName());
 
@@ -109,8 +108,7 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
         //refresh message
         // need to change data if we want that the adapter rally update
         adapter.notifyDataSetChanged();
-        
-        Log.e(TAG,"resume");
+
         super.onResume();
     }
 
@@ -120,7 +118,7 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
             getContext().unregisterReceiver(broadcast);
         }
         catch (IllegalArgumentException e) {
-            Log.e(TAG,"register not registered");
+            Log.d(TAG,"register not registered");
         }
 
         super.onStop();
@@ -239,20 +237,12 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
             // highlight the sender
             user.setHighlight(true);
 
-            if(intent.getStringExtra(BROADCAST_EXTRA_TYPE).equals(RegistrationGcmListenerService.RETRIEVE)) {
+            if(intent.getStringExtra(BROADCAST_EXTRA_TYPE).equals(RegistrationGcmListenerService.RETRIEVE) && !contacts.contains(user)) {
                 //add the user in the contact list
-                if(!contacts.contains(user)) {
-                    addUserInContact(user);
-                }
-                else
-                {
-                    adapter.highlight(user,true);
-                    adapter.notifyDataSetChanged();
-                }
+                addUserInContact(user);
             } else { // it's an item
                 adapter.highlight(user,true);
                 adapter.notifyDataSetChanged();
-
             }
         }
     }
