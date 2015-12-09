@@ -3,6 +3,7 @@ package ch.epfl.sweng.calamar.chat;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,19 +49,26 @@ public final class ChatUsersListAdapter extends BaseAdapter {
             convertView = li.inflate(R.layout.list_contacts_chat, null);
 
             holder = createViewHolder(convertView);
-            if(user.getHighlight()) {
-                holder.userName.setTextColor(Color.GREEN);
-            }
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
-            if(user.getHighlight()) {
-                holder.userName.setTextColor(Color.GREEN);
-            }
+        }
+
+        if(user.getHighlight()) {
+            holder.userName.setTextColor(Color.GREEN);
+        }
+        else {
+            holder.userName.setTextColor(Color.BLACK);
         }
 
         holder.userName.setText(user.getName());
+
         return convertView;
+    }
+
+    public void highlight(Recipient user,Boolean state)
+    {
+        users.get(users.indexOf(user)).setHighlight(state);
     }
 
     /**

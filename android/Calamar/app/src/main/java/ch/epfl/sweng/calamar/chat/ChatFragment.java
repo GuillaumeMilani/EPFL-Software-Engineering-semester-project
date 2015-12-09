@@ -80,7 +80,7 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
                 //Assuming in same order
                 Recipient user = contacts.get(position);
                 //remove the highlight on that user ( if there is one )
-                user.setHighlight(false);
+                adapter.highlight(user,false);
                 adapter.notifyDataSetChanged();
                 conversation.putExtra(EXTRA_CORRESPONDENT_NAME, user.getName());
 
@@ -241,10 +241,18 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
 
             if(intent.getStringExtra(BROADCAST_EXTRA_TYPE).equals(RegistrationGcmListenerService.RETRIEVE)) {
                 //add the user in the contact list
-                addUserInContact(user);
-
+                if(!contacts.contains(user)) {
+                    addUserInContact(user);
+                }
+                else
+                {
+                    adapter.highlight(user,true);
+                    adapter.notifyDataSetChanged();
+                }
             } else { // it's an item
+                adapter.highlight(user,true);
                 adapter.notifyDataSetChanged();
+
             }
         }
     }
