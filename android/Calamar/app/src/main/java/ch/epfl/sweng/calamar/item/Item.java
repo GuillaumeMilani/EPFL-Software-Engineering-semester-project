@@ -25,6 +25,8 @@ import ch.epfl.sweng.calamar.recipient.User;
  * Models an Item, superclass of all the possibly many kind of 'item' the app manage. <br><br>
  * known subclasses : <li>
  * <ul>{@link SimpleTextItem},</ul>
+ * <ul>{@link FileItem},</ul>
+ * <ul>{@link ImageItem},</ul>
  * </li>
  * Item is immutable
  */
@@ -45,6 +47,9 @@ public abstract class Item {
     private final Condition condition;
     private final String message;
 
+    /**
+     * Type of the item, (SIMPLETEXTITEM, IMAGEITEM, FILEITEM)
+     */
     public enum Type {SIMPLETEXTITEM, IMAGEITEM, FILEITEM}
 
     private final Set<Item.Observer> observers = new HashSet<>();
@@ -80,8 +85,15 @@ public abstract class Item {
         this(ID, from, to, date, Condition.trueCondition(), message);
     }
 
+    /**
+     * @return the type of the item ({@link ch.epfl.sweng.calamar.item.Item.Type})
+     */
     public abstract Type getType();
 
+    /**
+     * @param context parent activity
+     * @return view of the item
+     */
     public abstract View getItemView(Activity context);
 
     /**
@@ -124,7 +136,7 @@ public abstract class Item {
     /**
      * Get a simple pre view of the item
      *
-     * @param context
+     * @param context parent activity
      * @return the preview of the item
      */
     public View getPreView(final Activity context) {
@@ -242,7 +254,7 @@ public abstract class Item {
     /**
      * Parses an Item from a JSONObject.<br>
      * To instantiate the correct Item ({@link SimpleTextItem}, etc ...)
-     * the JSON must have a 'type' field indicating the type...('simpleText', ...)
+     * the JSON must have a {@link ch.epfl.sweng.calamar.item.Item.Type 'type'} field indicating the type...('simpleText', ...)
      *
      * @param json the well formed {@link JSONObject json} representing the {@link Item item}
      * @return a {@link Item item} parsed from the JSONObject

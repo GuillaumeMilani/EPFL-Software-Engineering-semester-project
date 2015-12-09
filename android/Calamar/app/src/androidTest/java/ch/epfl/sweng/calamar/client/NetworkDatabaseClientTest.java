@@ -1,7 +1,6 @@
 package ch.epfl.sweng.calamar.client;
 
 import android.support.test.espresso.core.deps.guava.collect.ImmutableSet;
-import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.model.LatLng;
@@ -40,7 +39,6 @@ import ch.epfl.sweng.calamar.recipient.User;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -57,12 +55,12 @@ public class NetworkDatabaseClientTest {
 
     private static String URL = "http://calamar.japan-impact.ch";
     private java.net.URL retrieveUrl;
-    private Recipient recipient = new User(42, "test");
+    private final Recipient recipient = new User(42, "test");
 
-    private NetworkProvider disabledNetProvider = mock(NetworkProvider.class);
+    private final NetworkProvider disabledNetProvider = mock(NetworkProvider.class);
 
-    private NetworkProvider mockNetProvider = mock(NetworkProvider.class);
-    private HttpURLConnection mockConnection = mock(HttpURLConnection.class);
+    private final NetworkProvider mockNetProvider = mock(NetworkProvider.class);
+    private final HttpURLConnection mockConnection = mock(HttpURLConnection.class);
 
     @Before
     public void init() throws IOException {
