@@ -68,9 +68,7 @@ task jacocoReport(type: JacocoReport, dependsOn: "connectedAndroidTest") {
                     '**/BuildConfig.*',
                     '**/Manifest*.*',
                     '**/*Test*.*',
-                    '**/android/**/*.*',
-                    '**/libs/**/*.*',
-                    '**/aFileChooser/**/*.*'
+                    '**/android/**/*.*'
             ]
     )
 
