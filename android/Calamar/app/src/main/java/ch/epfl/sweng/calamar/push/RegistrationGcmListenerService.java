@@ -101,6 +101,8 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
         }
 
         sendNotification(message);
+        // TODO enhancement, add id of item, to retrieve its info and open
+        // application in map or chat if localized etc..
 
     }
     // [END receive_message]
@@ -115,6 +117,11 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
         Log.i(TAG, getString(R.string.notification_message, message));
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        intent.putExtra(MainActivity.TABKEY, MainActivity.TabID.CHAT.ordinal());
+
+
+
         PendingIntent pendingIntent = PendingIntent.getActivity(this, REQUEST_CODE, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 

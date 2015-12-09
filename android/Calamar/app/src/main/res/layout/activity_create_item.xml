@@ -180,5 +180,14 @@
         android:max="10"
         android:visibility="invisible" />
 
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/sendProgressBar"
+        android:layout_alignBottom="@+id/createButton"
+        android:layout_alignRight="@+id/createButton"
+        android:layout_alignEnd="@+id/createButton"
+        android:visibility="invisible" />
+
 
 </RelativeLayout>

@@ -57,6 +57,7 @@ public final class CreateItemActivity extends BaseActivity {
     private Button browseButton;
     private Button sendButton;
     private ProgressBar locationProgressBar;
+    private ProgressBar sendProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +106,8 @@ public final class CreateItemActivity extends BaseActivity {
                 }
             }
         });
+        sendProgressBar = (ProgressBar) findViewById(R.id.sendProgressBar);
+        sendProgressBar.setVisibility(ProgressBar.INVISIBLE);
 
         final String[] imgExt = {"png", "jpg", "jpeg", "bmp"};
         imageExt = new HashSet<>(Arrays.asList(imgExt));
@@ -245,6 +248,8 @@ public final class CreateItemActivity extends BaseActivity {
         if (!toSend.hasLocation() && toSend.getTo().getID() == User.PUBLIC_ID) {
             displayErrorMessage(getString(R.string.public_without_condition), false);
         } else {
+            sendButton.setEnabled(false);
+            sendProgressBar.setVisibility(ProgressBar.VISIBLE);
             new SendItemTask(toSend).execute();
         }
     }

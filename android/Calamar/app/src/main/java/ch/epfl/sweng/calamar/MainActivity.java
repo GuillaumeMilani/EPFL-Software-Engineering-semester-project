@@ -111,6 +111,7 @@ public final class MainActivity extends BaseActivity {
         double latitude = intent.getDoubleExtra(MapFragment.LATITUDEKEY, MapFragment.DEFAULTLATITUDE);
         double longitude = intent.getDoubleExtra(MapFragment.LONGITUDEKEY, MapFragment.DEFAULTLONGITUDE);
 
+
         Bundle args = new Bundle();
         args.putDouble(MapFragment.LATITUDEKEY, latitude);
         args.putDouble(MapFragment.LONGITUDEKEY, longitude);
@@ -147,8 +148,8 @@ public final class MainActivity extends BaseActivity {
 
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
-        private final List<Fragment> mFragmentList = new ArrayList<>();
-        private final List<String> mFragmentTitleList = new ArrayList<>();
+        private final List<Fragment> fragmentList = new ArrayList<>();
+        private final List<String> fragmentTitleList = new ArrayList<>();
 
         public ViewPagerAdapter(FragmentManager manager) {
             super(manager);
@@ -156,22 +157,22 @@ public final class MainActivity extends BaseActivity {
 
         @Override
         public Fragment getItem(int position) {
-            return mFragmentList.get(position);
+            return fragmentList.get(position);
         }
 
         @Override
         public int getCount() {
-            return mFragmentList.size();
+            return fragmentList.size();
         }
 
         public void addFragment(Fragment fragment, String title) {
-            mFragmentList.add(fragment);
-            mFragmentTitleList.add(title);
+            fragmentList.add(fragment);
+            fragmentTitleList.add(title);
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return mFragmentTitleList.get(position);
+            return fragmentTitleList.get(position);
         }
     }
 }

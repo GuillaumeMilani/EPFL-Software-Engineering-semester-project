@@ -85,7 +85,7 @@ public class NetworkDatabaseClientTest {
             // ok
         }
         try {
-            new NetworkDatabaseClient(null, null);
+            new NetworkDatabaseClient(null, mock(NetworkProvider.class));
             fail("IllegalArgumentException not thrown on invalid input");
         } catch (IllegalArgumentException e) {
             // ok
@@ -258,6 +258,11 @@ public class NetworkDatabaseClientTest {
         doReturn(mockResponse).when(mockConnection).getInputStream();
 
         List<Item> receivedItems = client.getAllItems(recipient, new Date(0));
+        LatLng a = new LatLng(4,2);
+//        receivedItems = client.getAllItems(recipient, new Date(0), // to please jacoco..but see remark on server communication
+//                new VisibleRegion(a,a,a,a, new LatLngBounds(a, a)));
+
+
         assertTrue(receivedItems.size() == items.size());
         Set received = ImmutableSet.copyOf(receivedItems);
         Set itemsSet = ImmutableSet.copyOf(items);
@@ -311,11 +316,24 @@ public class NetworkDatabaseClientTest {
         int id = client.newUser("test@calamar.com", "this is a very special magick token");
     }
 
-
-    @Test
-    public void newUserWorksIfNoIOError() throws DatabaseClientException, IOException {
+    @Test(expected = DatabaseClientException.class)
+    public void newUserThrowsOnMalformedResponse() throws DatabaseClientException, IOException {
         DatabaseClient client = new NetworkDatabaseClient(URL, mockNetProvider);
 
+        InputStream mockResponse = new ByteArrayInputStream((
+                        "{\n" +
+                        "  \"IDX\": 1\n" +
+                        "}").getBytes());
+
+        doReturn(201).when(mockConnection).getResponseCode();
+        doReturn(mockResponse).when(mockConnection).getInputStream();
+
+        int id = client.newUser("test@calamar.com", "this is a very special magick token");
+    }
+
+    @Test
+    public void newUserWorksOnValidResponse() throws DatabaseClientException, IOException {
+        DatabaseClient client = new NetworkDatabaseClient(URL, mockNetProvider);
 
         InputStream mockResponse = new ByteArrayInputStream(
                 ("{\n" +
@@ -326,8 +344,47 @@ public class NetworkDatabaseClientTest {
         doReturn(mockResponse).when(mockConnection).getInputStream();
 
         int id = client.newUser("test@calamar.com", "this is a very special magick token");
+        assertTrue(id == 1);
     }
 
-    // etc... for finduserby name.........
+    @Test(expected = DatabaseClientException.class)
+    public void findUserThrowsOnIOError() throws DatabaseClientException {
+        DatabaseClient client = new NetworkDatabaseClient(URL, disabledNetProvider);
+
+        User test = client.findUserByName("titi");
+    }
+
+    @Test(expected = DatabaseClientException.class)
+    public void findUserThrowsOnMalformedResponse() throws DatabaseClientException, IOException {
+        DatabaseClient client = new NetworkDatabaseClient(URL, mockNetProvider);
+
+        InputStream mockResponse = new ByteArrayInputStream((
+                        "{\n" +
+                        "  \"not a user\": 1\n" +
+                        "}").getBytes());
+
+        doReturn(201).when(mockConnection).getResponseCode();
+        doReturn(mockResponse).when(mockConnection).getInputStream();
+        User test = client.findUserByName("titi");
+    }
+
+    @Test
+    public void findUserWorksOnValidResponse() throws DatabaseClientException, IOException {
+        DatabaseClient client = new NetworkDatabaseClient(URL, mockNetProvider);
+
+        InputStream mockResponse = new ByteArrayInputStream(("{\n" +
+                " \"user\": {\n" +
+                "      \"name\":\"calamar@gmail.com\",\n" +
+                "      \"ID\":2,\n" +
+                "      \"type\":\"user\"\n" +
+                "  }\n" +
+                "}").getBytes());
+
+        doReturn(201).when(mockConnection).getResponseCode();
+        doReturn(mockResponse).when(mockConnection).getInputStream();
+
+        User test = client.findUserByName("titi");
+        assertTrue(test.getID() == 2 && test.getName().equals("calamar@gmail.com"));
+    }
 
 }
