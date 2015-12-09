@@ -132,7 +132,9 @@ public final class CreateItemActivity extends BaseActivity {
             if (resultCode == RESULT_OK) {
                 if (data != null) {
                     Uri fileUri = data.getData();
+                    System.out.println(fileUri.toString());
                     String path = FileUtils.getPath(this, fileUri);
+                    System.out.println(path.toString());
                     if (path != null) {
                         file = new File(path);
                         String name = file.getName();

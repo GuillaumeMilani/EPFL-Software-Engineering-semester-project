@@ -9,12 +9,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.recipient.Recipient;
@@ -115,8 +111,8 @@ public final class ChatUsersListAdapter extends BaseAdapter {
 
     /**
      * LinkedMap to preserve the order, mendatory for a list
-     * @param <K>
-     * @param <V>
+     * @param <K> Key
+     * @param <V> Value which can be set by default
      */
     private class HighlightMap<K,V> extends LinkedHashMap<K,V>
     {

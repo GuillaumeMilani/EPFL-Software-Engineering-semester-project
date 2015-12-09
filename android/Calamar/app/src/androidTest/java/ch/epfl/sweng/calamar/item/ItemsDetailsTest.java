@@ -1,18 +1,19 @@
 package ch.epfl.sweng.calamar.item;
 
 import android.content.Intent;
+import android.location.Location;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.matcher.ViewMatchers;
-import android.support.test.rule.ActivityTestRule;
 import android.test.ActivityInstrumentationTestCase2;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
+import java.util.Date;
 
 import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
@@ -20,6 +21,8 @@ import ch.epfl.sweng.calamar.chat.ChatActivity;
 import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
+import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.recipient.User;
 
 import static android.support.test.espresso.Espresso.onView;
@@ -139,5 +142,19 @@ public class ItemsDetailsTest extends ActivityInstrumentationTestCase2<ChatActiv
         onView(withText("Go here !")).check(matches(ViewMatchers.isDisplayed()));
         onView(withText("and")).check(matches(ViewMatchers.isDisplayed()));
         onView(withText("false")).check(matches(ViewMatchers.isDisplayed()));
+    }
+
+    @Test
+    public void testItemLocked() {
+        Item item1 = new SimpleTextItem(0, ALICE, BOB, new Date(), Condition.falseCondition(), "bla");
+        assertTrue(item1.isLocked());
+        Item item2 = new SimpleTextItem(0, ALICE, BOB, new Date(), Condition.trueCondition(), "bla");
+        assertFalse(item2.isLocked());
+    }
+
+    @Test
+    public void testGetLocation() {
+        Item item1 = new SimpleTextItem(0, ALICE, BOB, new Date(), new PositionCondition(new Location("test")), "bla");
+        assertNotNull(item1.getLocation());
     }
 }
