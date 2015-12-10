@@ -303,6 +303,8 @@ public final class CreateItemActivity extends BaseActivity {
                 Toast.makeText(getApplicationContext(), getString(R.string.item_sent_successful), Toast.LENGTH_SHORT).show();
                 CreateItemActivity.this.finish();
             } else {
+                sendButton.setEnabled(true);
+                sendProgressBar.setVisibility(ProgressBar.INVISIBLE);
                 displayErrorMessage(getString(R.string.item_send_error), false);
             }
         }
