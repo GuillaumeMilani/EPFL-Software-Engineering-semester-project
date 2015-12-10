@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import ch.epfl.sweng.calamar.BaseActivity;
@@ -217,7 +218,7 @@ public final class CreateItemActivity extends BaseActivity {
             String name = file.getName();
             int extIndex = name.lastIndexOf('.');
             String ext = extIndex > 0 ? name.substring(extIndex + 1) : getString(R.string.empty_string);
-            if (imageExt.contains(ext.toLowerCase())) {
+            if (imageExt.contains(ext.toLowerCase(Locale.getDefault()))) {
                 toSendBuilder = new ImageItem.Builder().setFile(file);
             } else {
                 toSendBuilder = new FileItem.Builder().setFile(file);

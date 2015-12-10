@@ -30,7 +30,6 @@ import ch.epfl.sweng.calamar.item.Item;
 /**
  * A Singleton managing storing, retrieving and deleting items on local storage.
  */
-//TODO Make toasts on UI thread, RuntimeException otherwise
 //TODO Runs dbHandler.get in AsyncTask !
 public final class StorageManager {
 
@@ -315,7 +314,7 @@ public final class StorageManager {
                 File file = new File(f.getPath());
                 if (file.exists()) {
                     if (!file.delete()) {
-                        //Toast.makeText(CalamarApplication.getInstance(), R.string.error_file_deletion, Toast.LENGTH_SHORT).show();
+                        showToast(app.getString(R.string.error_file_deletion, f.getPath()));
                     }
                 }
             } else {
@@ -494,7 +493,12 @@ public final class StorageManager {
                 }
             }
         } else {
-            //showStorageStateToast();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    showStorageStateToast();
+                }
+            });
         }
         return null;
     }
@@ -627,11 +631,16 @@ public final class StorageManager {
                                     writeFile(f);
                                     return true;
                                 } catch (IOException e) {
-                                    //Toast.makeText(app, app.getString(R.string.error_file_creation, f.getName()), Toast.LENGTH_SHORT).show();
+                                    showToast(app.getString(R.string.error_file_creation, f.getName()));
                                     return false;
                                 }
                             } else {
-                                //Toast.makeText(app, R.string.error_directory_creation, Toast.LENGTH_SHORT).show();
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(app, app.getString(R.string.error_directory_creation), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                                 return false;
                             }
                         } else {
@@ -639,7 +648,7 @@ public final class StorageManager {
                                 writeFile(f);
                                 return true;
                             } catch (IOException e) {
-                                //Toast.makeText(app, app.getString(R.string.error_file_creation, f.getName()), Toast.LENGTH_SHORT).show();
+                                showToast(app.getString(R.string.error_file_creation, f.getName()));
                                 return false;
                             }
                         }
@@ -653,11 +662,11 @@ public final class StorageManager {
                                     writeFile(f);
                                     return true;
                                 } catch (IOException e) {
-                                    //Toast.makeText(app, app.getString(R.string.error_image_creation, f.getName()), Toast.LENGTH_SHORT).show();
+                                    showToast(app.getString(R.string.error_image_creation, f.getName()));
                                     return false;
                                 }
                             } else {
-                                //Toast.makeText(app, R.string.error_directory_creation, Toast.LENGTH_SHORT).show();
+                                showToast(app.getString(R.string.error_directory_creation));
                                 return false;
                             }
                         } else {
@@ -665,7 +674,7 @@ public final class StorageManager {
                                 writeFile(f);
                                 return true;
                             } catch (IOException e) {
-                                //Toast.makeText(app, app.getString(R.string.error_image_creation, f.getName()), Toast.LENGTH_SHORT).show();
+                                showToast(app.getString(R.string.error_image_creation, f.getName()));
                                 return false;
                             }
                         }
@@ -719,5 +728,19 @@ public final class StorageManager {
 
     protected Set<Integer> getCurrentFilesID() {
         return new HashSet<>(currentFilesID);
+    }
+
+    /**
+     * Shows toast on the UI thread
+     *
+     * @param str The string to print
+     */
+    private void showToast(final String str) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(app, str, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
