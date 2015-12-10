@@ -235,13 +235,12 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
             User user = new User(Integer.valueOf(intent.getStringExtra(BROADCAST_EXTRA_ID)),
                         intent.getStringExtra(BROADCAST_EXTRA_USER));
 
-            if(intent.getStringExtra(BROADCAST_EXTRA_TYPE).equals(RegistrationGcmListenerService.RETRIEVE) && !contacts.contains(user)) {
+            if(intent.getStringExtra(BROADCAST_EXTRA_TYPE).equals(RegistrationGcmListenerService.RETRIEVE)) {
                 //add the user in the contact list
                 addUserInContact(user);
-            } else { // it's an item
-                adapter.notifyDataSetChanged();
             }
             adapter.highlight(user,true);
+            adapter.notifyDataSetChanged();
         }
     }
 

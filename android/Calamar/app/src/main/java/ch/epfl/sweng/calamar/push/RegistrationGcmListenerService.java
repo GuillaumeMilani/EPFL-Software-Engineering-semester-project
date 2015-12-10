@@ -60,7 +60,7 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
         String message = getString(R.string.you_received_new);
         String action = MainActivity.ACTION_OPEN_CHAT;
         String pushType = data.getString(BUNDLE_TYPE);
-        String titre;
+        String title;
         User fromUser;
 
         //extract from User Data
@@ -75,12 +75,12 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
 
         if (pushType != null && pushType.equals(RETRIEVE)) {
             message += getString(R.string.contact);
-            titre = "contact";
+            title = "contact";
         } else {
             Item.Type type = Item.Type.valueOf(pushType);
             //Log.d(TAG, "From: " + from);
             Log.d(TAG, getString(R.string.message_type, type));
-            titre = "item";
+            title = "item";
 
             switch (type) {
                 case SIMPLETEXTITEM:
@@ -105,7 +105,7 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
         i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_TYPE,pushType);
         sendBroadcast(i);
 
-        sendNotification(message, action, titre);
+        sendNotification(message, action, title);
 
     }
     // [END receive_message]
@@ -115,7 +115,7 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
      *
      * @param message GCM message received.
      */
-    private void sendNotification(String message,String action,String titre) {
+    private void sendNotification(String message,String action,String title) {
         //TODO improve the methods
         Log.i(TAG, getString(R.string.notification_message, message));
         Intent intent = new Intent(this, MainActivity.class);
@@ -126,7 +126,7 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                .setContentTitle(getString(R.string.new_item_notification) + titre)
+                .setContentTitle(getString(R.string.new_item_notification) + title)
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
