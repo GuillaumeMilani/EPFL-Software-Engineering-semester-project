@@ -17,7 +17,6 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
-import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.item.CreateItemActivity;
 import ch.epfl.sweng.calamar.map.GPSProvider;
 import ch.epfl.sweng.calamar.push.RegistrationIntentService;

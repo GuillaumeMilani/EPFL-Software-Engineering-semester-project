@@ -13,17 +13,23 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Date;
+
 import ch.epfl.sweng.calamar.chat.ChatActivity;
+import ch.epfl.sweng.calamar.chat.ChatAdapter;
 import ch.epfl.sweng.calamar.chat.ChatFragment;
 import ch.epfl.sweng.calamar.client.ConstantDatabaseClient;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
+import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.User;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.clearText;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
@@ -185,5 +191,59 @@ public class ChatActivityBasicTest extends ActivityInstrumentationTestCase2<Chat
         onView(withId(R.id.messageEdit)).perform(clearText());
 
         onView(withId(R.id.chatSendButton)).check(matches(not(isEnabled())));
+    }
+
+    @Test
+    public void testClearChat() throws Throwable {
+        onView(withId(R.id.refreshButton)).perform(click());
+        ListView list = (ListView) getActivity().findViewById(R.id.messagesContainer);
+        assertFalse(list.getCount() == 0);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().clearChat();
+            }
+        });
+        assertTrue(list.getCount() == 0);
+    }
+
+    @Test
+    public void testCreateItem() {
+        onView(withId(R.id.selectFileButton)).check(doesNotExist());
+        onView(withId(R.id.chat_create_item_button)).perform(click());
+        onView(withId(R.id.selectFileButton)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void testAdapter() throws Throwable {
+        final ChatAdapter adapter = (ChatAdapter) ((ListView) getActivity().findViewById(R.id.messagesContainer)).getAdapter();
+        final SimpleTextItem item1 = new SimpleTextItem(0, ALICE, BOB, new Date(), "Bla");
+        final SimpleTextItem itemUpdate1 = new SimpleTextItem(0, ALICE, BOB, item1.getDate(), "Blabla");
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.add(item1);
+                assertEquals(adapter.getCount(), 1);
+                adapter.add(itemUpdate1);
+                assertEquals(adapter.getCount(), 1);
+                assertEquals(adapter.getItem(0), item1);
+                adapter.update(itemUpdate1);
+                assertEquals(adapter.getItem(0), itemUpdate1);
+                adapter.set(item1, 0);
+                assertEquals(adapter.getItem(0), item1);
+                adapter.delete(item1);
+                assertEquals(adapter.getCount(), 0);
+                adapter.add(item1);
+                assertEquals(adapter.getCount(), 1);
+                adapter.delete(itemUpdate1.getID());
+                assertEquals(adapter.getCount(), 0);
+                adapter.add(item1);
+                adapter.add(new SimpleTextItem(1, ALICE, BOB, new Date(), "BLABLABLA"));
+                assertEquals(adapter.getCount(), 2);
+                adapter.clear();
+                assertEquals(adapter.getCount(), 0);
+            }
+        });
+
     }
 }

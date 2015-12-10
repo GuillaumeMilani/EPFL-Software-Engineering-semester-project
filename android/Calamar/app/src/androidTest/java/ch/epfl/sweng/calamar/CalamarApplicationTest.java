@@ -1,8 +1,8 @@
 package ch.epfl.sweng.calamar;
 
+import android.content.ComponentCallbacks2;
 import android.support.test.InstrumentationRegistry;
 import android.test.ApplicationTestCase;
-import android.util.Log;
 
 import org.junit.After;
 import org.junit.Before;
@@ -11,6 +11,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.util.Date;
+
+import ch.epfl.sweng.calamar.item.Item;
+import ch.epfl.sweng.calamar.item.SimpleTextItem;
+import ch.epfl.sweng.calamar.recipient.User;
 
 @RunWith(JUnit4.class)
 public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplication> {
@@ -23,10 +27,10 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
     private final int testID = 0;
     private final Date testTime = new Date(100);
 
-    private String curUsername = "";
-    private int curUserID = 0;
+    private final Item testItem = new SimpleTextItem(0, new User(0, "Alice"), new User(1, "Bob"), new Date(), "Bla");
 
     private CalamarApplication app;
+    private SQLiteDatabaseHandler dbHandler;
 
     @Before
     @Override
@@ -34,6 +38,8 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
         super.setUp();
         app = (CalamarApplication) InstrumentationRegistry.getTargetContext().getApplicationContext();
         getApplication();
+        app.resetPreferences();
+        dbHandler = app.getDatabaseHandler();
     }
 
     public CalamarApplicationTest() {
@@ -43,50 +49,84 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
 
     @Test
     public void testDefaultValues() {
-        app.resetPreferences();
-        Log.v("Def ", app.getCurrentUserID() + "");
         assertEquals(defaultID, app.getCurrentUserID());
         assertEquals(defaultUsername, app.getCurrentUserName());
         assertEquals(defaultLastRefresh, app.getLastItemsRefresh());
         assertEquals(defaultLastRefresh, app.getLastUsersRefresh());
-        app.resetPreferences();
+        assertEquals(false, app.getTokenSent());
+    }
+
+    @Test
+    public void testSetToken() {
+        app.setTokenSent(true);
+        assertEquals(true, app.getTokenSent());
+        app.setTokenSent(false);
+        assertEquals(false, app.getTokenSent());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testGetGoogleClientNotSet() {
+        app.getGoogleApiClient();
+    }
+
+    @Test
+    public void testOnTrimMemory() {
+        dbHandler.addItem(testItem);
+        assertTrue(dbHandler.areOperationsPending());
+        app.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_BACKGROUND);
+        assertFalse(dbHandler.areOperationsPending());
+        dbHandler.addItem(testItem);
+        assertTrue(dbHandler.areOperationsPending());
+        app.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_COMPLETE);
+        assertFalse(dbHandler.areOperationsPending());
+        dbHandler.addItem(testItem);
+        assertTrue(dbHandler.areOperationsPending());
+        app.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_MODERATE);
+        assertFalse(dbHandler.areOperationsPending());
+        dbHandler.addItem(testItem);
+        assertTrue(dbHandler.areOperationsPending());
+        app.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL);
+        assertFalse(dbHandler.areOperationsPending());
+        dbHandler.addItem(testItem);
+        assertTrue(dbHandler.areOperationsPending());
+        app.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW);
+        assertFalse(dbHandler.areOperationsPending());
+        dbHandler.addItem(testItem);
+        assertTrue(dbHandler.areOperationsPending());
+        app.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE);
+        assertFalse(dbHandler.areOperationsPending());
+        dbHandler.addItem(testItem);
+        assertTrue(dbHandler.areOperationsPending());
+        app.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN);
+        assertFalse(dbHandler.areOperationsPending());
     }
 
     @Test
     public void testSetUsername() {
-        app.resetPreferences();
         app.setCurrentUserName(testUsername);
         assertEquals(testUsername, app.getCurrentUserName());
-        app.resetPreferences();
     }
 
     @Test
     public void testSetUserID() {
-        app.resetPreferences();
         app.setCurrentUserID(testID);
         assertEquals(testID, app.getCurrentUserID());
-        app.resetPreferences();
     }
 
     @Test
     public void testSetLastItemsRefresh() {
-        app.resetPreferences();
         app.setLastItemsRefresh(testTime);
         assertEquals(testTime, app.getLastItemsRefresh());
-        app.resetPreferences();
     }
 
     @Test
     public void testSetLastUsersRefresh() {
-        app.resetPreferences();
         app.setLastUsersRefresh(testTime);
         assertEquals(testTime, app.getLastUsersRefresh());
-        app.resetPreferences();
     }
 
     @Test
     public void testResets() {
-        app.resetPreferences();
         app.setLastUsersRefresh(testTime);
         app.resetLastUsersRefresh();
         assertEquals(defaultLastRefresh, app.getLastUsersRefresh());
@@ -99,11 +139,10 @@ public class CalamarApplicationTest extends ApplicationTestCase<CalamarApplicati
         app.setCurrentUserID(defaultID);
         app.resetUserID();
         assertEquals(defaultID, app.getCurrentUserID());
-        app.resetPreferences();
     }
 
     @After
     public void tearDown() {
-        //app.resetPreferences();
+        app.resetPreferences();
     }
 }

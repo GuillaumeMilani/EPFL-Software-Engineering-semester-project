@@ -41,11 +41,9 @@ import ch.epfl.sweng.calamar.recipient.User;
 public final class RegistrationGcmListenerService extends GcmListenerService {
 
     private static final String TAG = "RegGcmListenerService";
-    private static final String RETRIEVE = "RETRIEVE";
+    public static final String RETRIEVE = "RETRIEVE";
     private static final String BUNDLE_TYPE = "type";
     private static final String BUNDLE_EXTRA = "extra";
-    private static final String INTENT_ACTION = "ch.epfl.sweng.UPDATE_INTENT";
-    private static final String JSON_USER = "user";
     private static final int REQUEST_CODE = 0;
     private static final int NOTIFICATION_ID = 0;
 
@@ -60,30 +58,29 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
     @Override
     public void onMessageReceived(String from, Bundle data) {
         String message = getString(R.string.you_received_new);
+        String action = MainActivity.ACTION_OPEN_CHAT;
         String pushType = data.getString(BUNDLE_TYPE);
+        String title;
+        User fromUser;
+
+        //extract from User Data
+        try {
+            JSONObject resp = new JSONObject(data.getString(BUNDLE_EXTRA));
+            fromUser = User.fromJSON(resp);
+        } catch (JSONException e) {
+            Log.e(TAG, getString(R.string.json_extract_failed));
+            return; // push corrupted
+        }
+
+
         if (pushType != null && pushType.equals(RETRIEVE)) {
-            // add a new contact
-            try {
-                //extract data
-                JSONObject resp = new JSONObject(data.getString(BUNDLE_EXTRA));
-
-                User addUser = User.fromJSON(resp);
-
-                // Send a broadcast message to ChatFragment$ChatBroadcastReceiver
-                Intent i = new Intent();
-                i.setAction(INTENT_ACTION);
-                i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_USER, addUser.getName());
-                i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_ID, String.valueOf(addUser.getID()));
-                sendBroadcast(i);
-            } catch (JSONException e) {
-                Log.e(TAG, getString(R.string.json_extract_failed));
-            }
-
             message += getString(R.string.contact);
+            title = "contact";
         } else {
             Item.Type type = Item.Type.valueOf(pushType);
             //Log.d(TAG, "From: " + from);
             Log.d(TAG, getString(R.string.message_type, type));
+            title = "item";
 
             switch (type) {
                 case SIMPLETEXTITEM:
@@ -100,7 +97,15 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
             }
         }
 
-        sendNotification(message);
+        // Send a broadcast message to ChatFragment$ChatBroadcastReceiver
+        Intent i = new Intent();
+        i.setAction(ChatFragment.ChatBroadcastReceiver.INTENT_FILTER);
+        i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_USER, fromUser.getName());
+        i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_ID, String.valueOf(fromUser.getID()));
+        i.putExtra(ChatFragment.ChatBroadcastReceiver.BROADCAST_EXTRA_TYPE,pushType);
+        sendBroadcast(i);
+
+        sendNotification(message, action, title);
 
     }
     // [END receive_message]
@@ -110,17 +115,18 @@ public final class RegistrationGcmListenerService extends GcmListenerService {
      *
      * @param message GCM message received.
      */
-    private void sendNotification(String message) {
+    private void sendNotification(String message,String action,String title) {
         //TODO improve the methods
         Log.i(TAG, getString(R.string.notification_message, message));
         Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(MainActivity.TABKEY, MainActivity.TabID.CHAT.ordinal());
         PendingIntent pendingIntent = PendingIntent.getActivity(this, REQUEST_CODE, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                .setContentTitle(getString(R.string.new_item_notification))
+                .setContentTitle(getString(R.string.new_item_notification) + title)
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
