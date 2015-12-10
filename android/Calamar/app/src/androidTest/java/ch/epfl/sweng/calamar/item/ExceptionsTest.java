@@ -10,8 +10,6 @@ import java.util.Date;
 
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
-import ch.epfl.sweng.calamar.item.Item;
-import ch.epfl.sweng.calamar.item.SimpleTextItem;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
 
@@ -52,7 +50,7 @@ public class ExceptionsTest {
         try {
             Item item = new SimpleTextItem(ID, from, to, date, condition, message);
             fail();
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             // good ... good
         }
     }
@@ -126,7 +124,7 @@ public class ExceptionsTest {
         try {
             Recipient r = new User(defaultID, null);
             fail();
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             // bueno
         }
     }
@@ -136,26 +134,47 @@ public class ExceptionsTest {
         try {
             Condition r = new PositionCondition(null, 20);
             fail();
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             // smooth
         }
         try {
             Condition.and(null, null);
             fail();
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             // yep
         }
         try {
             Condition.or(null, null);
             fail();
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             // ja
         }
         try {
             Condition.not(null);
             fail();
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             // si
         }
     }
+
+    @Test
+    public void testSimpleTextItem() {
+        try {
+            new SimpleTextItem(0, new User(0, "A"), new User(1, "B"), new Date(), "");
+            fail("A message length shouldn't be 0");
+        } catch (IllegalArgumentException e) {
+
+        }
+        try {
+            new SimpleTextItem(0, new User(0, "A"), new User(1, "B"), new Date(), null);
+            fail("A message shouldn't be null");
+        } catch (IllegalArgumentException e) {
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testFileItemBadPath() {
+        new FileItem(0, new User(0, "A"), new User(1, "B"), new Date(), null, "bla");
+    }
+
 }

@@ -49,6 +49,9 @@ public final class MainActivity extends BaseActivity {
         }
     }
 
+    //Intent Action
+    public static final String ACTION_OPEN_CHAT = "ACTION_OPEN_CHAT";
+
     // Tabs related stuff
     private Toolbar toolbar;
     private TabLayout tabLayout;
@@ -100,6 +103,7 @@ public final class MainActivity extends BaseActivity {
             startActivityForResult(accountIntent, BaseActivity.ACCOUNT_CHOOSEN);
         }
     }
+
     // *********************************************************************************************
 
     private void setupViewPager(ViewPager viewPager, Intent intent) {

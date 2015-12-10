@@ -149,7 +149,12 @@ public final class PositionCondition extends Condition {
         if (this == o) return true;
         if (!(o instanceof PositionCondition)) return false;
         PositionCondition that = (PositionCondition) o;
-        return super.equals(that) && location.equals(that.location) && radius == that.radius;
+        return super.equals(that) && location.getLatitude() == that.location.getLatitude() && location.getLongitude() == that.location.getLongitude() && radius == that.radius;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() * 83 + (int) Math.round(location.getLatitude()) * 137 + (int) (location.getLongitude()) * 191 + (int) Math.round(radius) * 317;
     }
 
     @Override // WARNING, if modified maintain TestCondPosition, DIRTY copy paste to work around

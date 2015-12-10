@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
 import ch.epfl.sweng.calamar.condition.Condition;
 import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.map.GPSProvider;
@@ -29,10 +30,10 @@ import static org.mockito.Mockito.mock;
 public class ConditionTest {
 
 
-        /**
-         * helps defining observers that test Condition
-         * TO for TestingObserver
-         */
+    /**
+     * helps defining observers that test Condition
+     * TO for TestingObserver
+     */
     class TO extends Condition.Observer {
 
         private int triggered = 0;
@@ -124,6 +125,16 @@ public class ConditionTest {
         o.assertAll(true, 1);
         b.set(false);
         o.assertAll(true, 1);
+        try {
+            Condition.and(null, a);
+            fail("Condition shouldn't be null");
+        } catch (IllegalArgumentException e) {
+        }
+        try {
+            Condition.and(a, null);
+            fail("Condition shouldn't be null");
+        } catch (IllegalArgumentException e) {
+        }
     }
 
     @Test
@@ -141,6 +152,16 @@ public class ConditionTest {
         a.set(false);
         b.set(false);
         o.assertAll(true, 1);
+        try {
+            Condition.or(null, a);
+            fail("Condition shouldn't be null");
+        } catch (IllegalArgumentException e) {
+        }
+        try {
+            Condition.or(a, null);
+            fail("Condition shouldn't be null");
+        } catch (IllegalArgumentException e) {
+        }
     }
 
     @Test
@@ -157,9 +178,8 @@ public class ConditionTest {
         a.set(false);
         o.assertAll(true, 0);
     }
-    
-    public static Location makeLocation(double latitude, double longitude)
-    {
+
+    public static Location makeLocation(double latitude, double longitude) {
         Location loc = new Location("calamarTestingTeam");
         loc.setLatitude(latitude);
         loc.setLongitude(longitude);
@@ -215,12 +235,14 @@ public class ConditionTest {
         try {
             Condition.trueCondition().getLocation();
             fail("getLocation on condition without location didn't throw an exception");
-        } catch (UnsupportedOperationException e) {}
+        } catch (UnsupportedOperationException e) {
+        }
 
         try {
             Condition.falseCondition().getLocation();
             fail("getLocation on condition without location didn't throw an exception");
-        } catch (UnsupportedOperationException e) {}
+        } catch (UnsupportedOperationException e) {
+        }
 
         // and
         Condition and1 = Condition.and(Condition.trueCondition(), posCond);
@@ -256,7 +278,8 @@ public class ConditionTest {
         try {
             or5.getLocation();
             fail("getLocation on condition without location didn't throw an exception");
-        } catch (UnsupportedOperationException e) {}
+        } catch (UnsupportedOperationException e) {
+        }
     }
 
 
@@ -345,6 +368,34 @@ public class ConditionTest {
             fail();
         } catch (IllegalArgumentException e) {
             // yes
+        }
+    }
+
+    @Test
+    public void testBadLongitudeOrLatitude() {
+        try {
+            new PositionCondition(-91, 140, 20);
+            fail("Latitude shouldn't be smaller than -90");
+        } catch (IllegalArgumentException e) {
+
+        }
+        try {
+            new PositionCondition(91, 140, 20);
+            fail("Latitude shouldn't be greater than 90");
+        } catch (IllegalArgumentException e) {
+
+        }
+        try {
+            new PositionCondition(45, -181, 20);
+            fail("Longitude shouldn't be smaller than -180");
+        } catch (IllegalArgumentException e) {
+
+        }
+        try {
+            new PositionCondition(45, 181, 20);
+            fail("Longitude shouldn't be greater than 180");
+        } catch (IllegalArgumentException e) {
+
         }
     }
 }

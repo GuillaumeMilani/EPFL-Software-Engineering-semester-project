@@ -1,5 +1,7 @@
 package ch.epfl.sweng.calamar;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +12,7 @@ import java.util.Date;
 import java.util.List;
 
 import ch.epfl.sweng.calamar.condition.Condition;
+import ch.epfl.sweng.calamar.condition.PositionCondition;
 import ch.epfl.sweng.calamar.item.FileItem;
 import ch.epfl.sweng.calamar.item.ImageItem;
 import ch.epfl.sweng.calamar.item.SimpleTextItem;
@@ -18,6 +21,7 @@ import ch.epfl.sweng.calamar.recipient.User;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.mockito.Mockito.mock;
 
 /**
  * Created by pierre on 10/24/15.
@@ -54,6 +58,8 @@ public class EqualsAndHashcodeTest {
         helperVerifyEqualsAndHashcode(testUser1, new User(13, "bob"));
         helperVerifyNotEqualsAndHashcode(testUser1, new User(13, "bo"));
         helperVerifyNotEqualsAndHashcode(testUser1, new User(12, "bob"));
+        helperVerifyEqualsAndHashcode(testUser1, testUser1);
+        helperVerifyNotEqualsAndHashcode(testUser1, tc);
     }
 
     @Test
@@ -126,6 +132,20 @@ public class EqualsAndHashcodeTest {
         ImageItem i = new ImageItem(12, testUser1, testUser2, testDate, tc, testContent, path + "ImageItem");
         ImageItem i2 = new ImageItem(12, testUser1, testUser2, testDate, tc, testContent, path + "ImageItem");
         helperVerifyEqualsAndHashcode(i, i2);
+    }
+
+    @Test
+    public void testCondition() {
+        CalamarApplication.getInstance().setGoogleApiClient(mock(GoogleApiClient.class));
+        helperVerifyEqualsAndHashcode(tc, Condition.trueCondition());
+        helperVerifyEqualsAndHashcode(tc, tc);
+        helperVerifyNotEqualsAndHashcode(tc, testUser1);
+        helperVerifyNotEqualsAndHashcode(tc, Condition.falseCondition());
+        helperVerifyEqualsAndHashcode(Condition.falseCondition(), Condition.falseCondition());
+        helperVerifyEqualsAndHashcode(new PositionCondition(4.5, 4.5, 20), new PositionCondition(4.5, 4.5, 20));
+        helperVerifyNotEqualsAndHashcode(new PositionCondition(4.5, 4.4, 20), new PositionCondition(4.4, 4.5, 20));
+        helperVerifyEqualsAndHashcode(Condition.and(Condition.trueCondition(), Condition.falseCondition()), Condition.and(Condition.falseCondition(), Condition.trueCondition()));
+        helperVerifyEqualsAndHashcode(Condition.or(Condition.trueCondition(), Condition.falseCondition()), Condition.or(Condition.falseCondition(), Condition.trueCondition()));
     }
 
     @Ignore

@@ -91,13 +91,18 @@ public final class ChatAdapter extends BaseAdapter {
      * @param position the position of the new object
      */
     public void set(Item message, int position) {
-        for (Item i : messages) {
-            if (i.getID() == message.getID()) {
-                return;
+        if (messages.get(position).getID() == message.getID()) {
+            this.messages.set(position, message);
+            notifyDataSetChanged();
+        } else {
+            for (Item i : messages) {
+                if (i.getID() == message.getID()) {
+                    return;
+                }
             }
+            this.messages.set(position, message);
+            notifyDataSetChanged();
         }
-        this.messages.set(position, message);
-        notifyDataSetChanged();
     }
 
     /**
@@ -134,13 +139,23 @@ public final class ChatAdapter extends BaseAdapter {
      * @param message the message to delete
      */
     public void delete(Item message) {
-        for (Item i : messages) {
-            if (i.equals(message)) {
+        messages.remove(message);
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Removes an item from the list with its id
+     *
+     * @param id the id of the message
+     */
+    public void delete(int id) {
+        boolean removed = false;
+        for (int i = 0; i < messages.size() && !removed; ++i) {
+            if (messages.get(i).getID() == id) {
                 messages.remove(i);
-                break;
+                removed = true;
             }
         }
-        notifyDataSetChanged();
     }
 
     /**

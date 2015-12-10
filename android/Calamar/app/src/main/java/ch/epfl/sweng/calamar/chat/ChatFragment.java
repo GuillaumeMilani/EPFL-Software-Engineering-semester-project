@@ -24,6 +24,7 @@ import ch.epfl.sweng.calamar.CalamarApplication;
 import ch.epfl.sweng.calamar.R;
 import ch.epfl.sweng.calamar.client.DatabaseClientException;
 import ch.epfl.sweng.calamar.client.DatabaseClientLocator;
+import ch.epfl.sweng.calamar.push.RegistrationGcmListenerService;
 import ch.epfl.sweng.calamar.recipient.Recipient;
 import ch.epfl.sweng.calamar.recipient.User;
 
@@ -77,6 +78,9 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
                 Intent conversation = new Intent(getActivity(), ChatActivity.class);
                 //Assuming in same order
                 Recipient user = contacts.get(position);
+                //remove the highlight on that user ( if there is one )
+                adapter.highlight(user, false);
+                adapter.notifyDataSetChanged();
                 conversation.putExtra(EXTRA_CORRESPONDENT_NAME, user.getName());
 
                 conversation.putExtra(EXTRA_CORRESPONDENT_ID, user.getID());
@@ -94,8 +98,18 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
 
         //Create BroadCastReceiver
         broadcast = new ChatBroadcastReceiver();
-        getContext().registerReceiver(broadcast, new IntentFilter("ch.epfl.sweng.UPDATE_INTENT"));
+
         super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
+    public void onResume() {
+        getContext().registerReceiver(broadcast, new IntentFilter(ChatBroadcastReceiver.INTENT_FILTER));
+        //refresh message
+        // need to change data if we want that the adapter rally update
+        adapter.notifyDataSetChanged();
+
+        super.onResume();
     }
 
     @Override
@@ -104,7 +118,7 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
             getContext().unregisterReceiver(broadcast);
         }
         catch (IllegalArgumentException e) {
-            Log.e(TAG,"register not registered");
+            Log.d(TAG,"register not registered");
         }
 
         super.onStop();
@@ -157,11 +171,15 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
      * Add the user in the contact list
      */
     private void addUserInContact(User user) {
-        adapter.add(user);
-        contacts.add(user);
-        adapter.notifyDataSetChanged();
-        //Add in memory
-        app.getDatabaseHandler().addRecipient(user);
+        if(!contacts.contains(user))
+        {
+            adapter.add(user);
+            contacts.add(user);
+
+            adapter.notifyDataSetChanged();
+            //Add in memory
+            app.getDatabaseHandler().addRecipient(user);
+        }
     }
 
     /**
@@ -207,14 +225,22 @@ public final class ChatFragment extends android.support.v4.app.Fragment {
 
         public final static String BROADCAST_EXTRA_USER = "user";
         public final static String BROADCAST_EXTRA_ID = "id";
+        public final static String BROADCAST_EXTRA_TYPE = "type";
+
+        public final static String INTENT_FILTER = "ch.epfl.sweng.UPDATE_INTENT";
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            // retrieve the user data
+                // retrieve the user data
             User user = new User(Integer.valueOf(intent.getStringExtra(BROADCAST_EXTRA_ID)),
-                    intent.getStringExtra(BROADCAST_EXTRA_USER));
-            //add the user in the contact list
-            addUserInContact(user);
+                        intent.getStringExtra(BROADCAST_EXTRA_USER));
+
+            if(intent.getStringExtra(BROADCAST_EXTRA_TYPE).equals(RegistrationGcmListenerService.RETRIEVE)) {
+                //add the user in the contact list
+                addUserInContact(user);
+            }
+            adapter.highlight(user,true);
+            adapter.notifyDataSetChanged();
         }
     }
 
