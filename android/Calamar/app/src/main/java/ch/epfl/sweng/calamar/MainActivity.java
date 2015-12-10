@@ -60,8 +60,7 @@ public final class MainActivity extends BaseActivity {
 
 
     //TODO check activity lifecycle and pertinent action to make when entering new states
-    // regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
-    // etc...
+    // regarding connection / disconnection of googleapiclient, etc...
 
     // *********************************************************************************************
     // ACTIVITY LIFECYCLE CALLBACKS

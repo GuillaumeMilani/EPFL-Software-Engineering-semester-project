@@ -259,7 +259,7 @@ public abstract class Condition {
             public View getView(Activity context) {
                 LinearLayout view = (LinearLayout) (super.getView(context));
                 TextView tv = new TextView(context);
-                tv.setText(context.getResources().getString(R.string.condition_true)); // TODO differs from name in enum...
+                tv.setText(context.getResources().getString(R.string.condition_true));
                 view.addView(tv);
                 return view;
             }
