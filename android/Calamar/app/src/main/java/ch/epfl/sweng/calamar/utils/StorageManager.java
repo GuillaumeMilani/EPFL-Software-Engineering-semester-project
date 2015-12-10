@@ -315,7 +315,12 @@ public final class StorageManager {
                 File file = new File(f.getPath());
                 if (file.exists()) {
                     if (!file.delete()) {
-                        //Toast.makeText(CalamarApplication.getInstance(), R.string.error_file_deletion, Toast.LENGTH_SHORT).show();
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(CalamarApplication.getInstance(), R.string.error_file_deletion, Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
                 }
             } else {
@@ -494,7 +499,12 @@ public final class StorageManager {
                 }
             }
         } else {
-            //showStorageStateToast();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    showStorageStateToast();
+                }
+            });
         }
         return null;
     }
@@ -627,11 +637,21 @@ public final class StorageManager {
                                     writeFile(f);
                                     return true;
                                 } catch (IOException e) {
-                                    //Toast.makeText(app, app.getString(R.string.error_file_creation, f.getName()), Toast.LENGTH_SHORT).show();
+                                    handler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(app, app.getString(R.string.error_file_creation, f.getName()), Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
                                     return false;
                                 }
                             } else {
-                                //Toast.makeText(app, R.string.error_directory_creation, Toast.LENGTH_SHORT).show();
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(app, app.getString(R.string.error_directory_creation), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                                 return false;
                             }
                         } else {
@@ -639,7 +659,12 @@ public final class StorageManager {
                                 writeFile(f);
                                 return true;
                             } catch (IOException e) {
-                                //Toast.makeText(app, app.getString(R.string.error_file_creation, f.getName()), Toast.LENGTH_SHORT).show();
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(app, app.getString(R.string.error_file_creation, f.getName()), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                                 return false;
                             }
                         }
@@ -653,11 +678,21 @@ public final class StorageManager {
                                     writeFile(f);
                                     return true;
                                 } catch (IOException e) {
-                                    //Toast.makeText(app, app.getString(R.string.error_image_creation, f.getName()), Toast.LENGTH_SHORT).show();
+                                    handler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(app, app.getString(R.string.error_image_creation, f.getName()), Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
                                     return false;
                                 }
                             } else {
-                                //Toast.makeText(app, R.string.error_directory_creation, Toast.LENGTH_SHORT).show();
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(app, app.getString(R.string.error_directory_creation), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                                 return false;
                             }
                         } else {
@@ -665,7 +700,12 @@ public final class StorageManager {
                                 writeFile(f);
                                 return true;
                             } catch (IOException e) {
-                                //Toast.makeText(app, app.getString(R.string.error_image_creation, f.getName()), Toast.LENGTH_SHORT).show();
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(app, app.getString(R.string.error_image_creation, f.getName()), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                                 return false;
                             }
                         }
