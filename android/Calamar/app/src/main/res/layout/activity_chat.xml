@@ -44,7 +44,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_above="@+id/messageEdit"
-        android:layout_below="@+id/refreshButton" />
+        android:layout_alignTop="@+id/refreshButton" />
 
     <TextView
         android:id="@+id/recipientLabel"
@@ -83,7 +83,7 @@
             app:fabSize="normal"
             app:layout_anchor="@id/messageEdit"
             app:layout_anchorGravity="bottom|right|end"
-            android:layout_below="@+id/refreshButton"
+            android:layout_alignTop="@+id/messagesContainer"
             android:layout_centerHorizontal="true" />
 
 
