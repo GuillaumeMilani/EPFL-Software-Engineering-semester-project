@@ -30,7 +30,6 @@ import ch.epfl.sweng.calamar.item.Item;
 /**
  * A Singleton managing storing, retrieving and deleting items on local storage.
  */
-//TODO Make toasts on UI thread, RuntimeException otherwise
 //TODO Runs dbHandler.get in AsyncTask !
 public final class StorageManager {
 
