@@ -79,15 +79,6 @@ public abstract class BaseActivity extends AppCompatActivity
         app.onActivityPaused(this);
     }
 
-    @Override
-    protected void onStop() {
-        // TODO maybe rethink later
-//        GoogleApiClient googleApiClient = app.getGoogleApiClient();
-//        if (googleApiClient.isConnected()) {
-//            googleApiClient.disconnect();
-//        }
-        super.onStop();
-    }
     // *********************************************************************************************
 
     // *********************************************************************************************
