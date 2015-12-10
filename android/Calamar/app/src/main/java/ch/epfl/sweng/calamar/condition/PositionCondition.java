@@ -125,8 +125,7 @@ public final class PositionCondition extends Condition {
      * @param json jsonObject to put this in
      * @throws JSONException
      */
-    @Override // WARNING, if modified maintain TestCondPosition, DIRTY copy paste to work around
-    // problem of google api client in tests // TODO check way to test without that kind of ugly things
+    @Override
     protected void compose(JSONObject json) throws JSONException {
         json.accumulate(JSON_TYPE, getType().name());
         json.accumulate(JSON_LAT, location.getLatitude());
@@ -157,8 +156,7 @@ public final class PositionCondition extends Condition {
         return super.hashCode() * 83 + (int) Math.round(location.getLatitude()) * 137 + (int) (location.getLongitude()) * 191 + (int) Math.round(radius) * 317;
     }
 
-    @Override // WARNING, if modified maintain TestCondPosition, DIRTY copy paste to work around
-    // problem of google api client in tests // TODO check way to test without that kind of ugly things
+    @Override
     public JSONArray getMetadata() throws JSONException {
         JSONArray array = new JSONArray();
         JSONObject jObject = new JSONObject();

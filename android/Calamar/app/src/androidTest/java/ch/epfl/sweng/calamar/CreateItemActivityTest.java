@@ -86,6 +86,7 @@ public class CreateItemActivityTest extends ActivityInstrumentationTestCase2<Cre
     @Test
     public void testProgressBarIsInvisibleAtStart() {
         onView(withId(R.id.locationProgressBar)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
+        onView(withId(R.id.sendProgressBar)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
     }
 
     @Test

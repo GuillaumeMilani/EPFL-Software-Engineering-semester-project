@@ -218,9 +218,6 @@ public final class NetworkDatabaseClient implements DatabaseClient {
     private static String post(HttpURLConnection connection, String jsonParameter)
             throws IOException, DatabaseClientException
     {
-        if (null == connection) {
-            throw new IllegalArgumentException("null connection");
-        }
         String toSend = URLEncoder.encode(jsonParameter, UTF8_CHARSET);
         connection.setRequestMethod(CONNECTION_REQUEST_METHOD);
         connection.setRequestProperty(CONTENT_TYPE,

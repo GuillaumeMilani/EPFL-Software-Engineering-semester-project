@@ -51,7 +51,6 @@ public final class MainActivity extends BaseActivity {
 
     //Intent Action
     public static final String ACTION_OPEN_CHAT = "ACTION_OPEN_CHAT";
-    public static final String ACTION_OPEN_MAP = "ACTION_OPEN_MAP";
 
     // Tabs related stuff
     private Toolbar toolbar;
@@ -61,8 +60,7 @@ public final class MainActivity extends BaseActivity {
 
 
     //TODO check activity lifecycle and pertinent action to make when entering new states
-    // regarding connection / disconnection of googleapiclient, start stop GPSProvider updates
-    // etc...
+    // regarding connection / disconnection of googleapiclient, etc...
 
     // *********************************************************************************************
     // ACTIVITY LIFECYCLE CALLBACKS
@@ -116,6 +114,7 @@ public final class MainActivity extends BaseActivity {
         double latitude = intent.getDoubleExtra(MapFragment.LATITUDEKEY, MapFragment.DEFAULTLATITUDE);
         double longitude = intent.getDoubleExtra(MapFragment.LONGITUDEKEY, MapFragment.DEFAULTLONGITUDE);
 
+
         Bundle args = new Bundle();
         args.putDouble(MapFragment.LATITUDEKEY, latitude);
         args.putDouble(MapFragment.LONGITUDEKEY, longitude);
@@ -152,8 +151,8 @@ public final class MainActivity extends BaseActivity {
 
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
-        private final List<Fragment> mFragmentList = new ArrayList<>();
-        private final List<String> mFragmentTitleList = new ArrayList<>();
+        private final List<Fragment> fragmentList = new ArrayList<>();
+        private final List<String> fragmentTitleList = new ArrayList<>();
 
         public ViewPagerAdapter(FragmentManager manager) {
             super(manager);
@@ -161,22 +160,22 @@ public final class MainActivity extends BaseActivity {
 
         @Override
         public Fragment getItem(int position) {
-            return mFragmentList.get(position);
+            return fragmentList.get(position);
         }
 
         @Override
         public int getCount() {
-            return mFragmentList.size();
+            return fragmentList.size();
         }
 
         public void addFragment(Fragment fragment, String title) {
-            mFragmentList.add(fragment);
-            mFragmentTitleList.add(title);
+            fragmentList.add(fragment);
+            fragmentTitleList.add(title);
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return mFragmentTitleList.get(position);
+            return fragmentTitleList.get(position);
         }
     }
 }
