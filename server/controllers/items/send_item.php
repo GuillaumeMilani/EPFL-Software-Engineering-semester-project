@@ -83,4 +83,4 @@ http_response_code(201);
 $return_array['ID'] = $item_id;
 $return_array['condition'] = json_decode($condition);
 echo json_encode($return_array);
-send_push_to($to,$type);
+send_push_to($to['ID'],$type);
