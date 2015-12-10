@@ -126,6 +126,7 @@ public final class ChatActivity extends BaseActivity implements StorageCallbacks
     protected void onResume() {
         super.onResume();
         refresh(true);
+        refresh(false);
     }
 
     @Override
