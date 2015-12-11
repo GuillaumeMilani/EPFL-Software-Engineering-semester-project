@@ -1,0 +1,4 @@
+Options +FollowSymlinks
+RewriteEngine On
+RewriteRule ^test/(.*) $1?test=enabled [R=301,QSA]
+
